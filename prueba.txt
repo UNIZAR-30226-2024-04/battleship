@@ -1,2 +1,3 @@
 Comprobación funcionamiento Git clone-push-pull
 Prueba con conflicto
+Prueba push-pull con conflicto
