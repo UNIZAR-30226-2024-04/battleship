@@ -12,14 +12,13 @@ import { Navbar } from "./Components/Navbar";
 function App() {
   return (
     <Router>
+      <Layout/>
       <Routes>
-        <Route element={<Layout/>}>
         <Route path="/" element={<Home/>}/>
         <Route path="/fleet" element={<Fleet/>}/>
         <Route path="/profile" element={<Profile/>}/>
         <Route path="/settings" element={<Settings/>}/>
         <Route path="/social" element={<Social/>}/>
-        </Route>
       </Routes>
     </Router>
   )
