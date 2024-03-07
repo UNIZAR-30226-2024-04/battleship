@@ -1,70 +1,44 @@
 import "./Navbar.css";
-import React/*, { useEffect }*/ from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React from 'react';
+import { Sidebar, Menu, MenuItem } from 'react-pro-sidebar'
+import { useNavigate } from 'react-router-dom';
 
 
 export function Navbar() {
-    return <div className="navBar">
-            <Link to="/">
-                <button>Jugar</button>
-            </Link>
-            <Link to="/Fleet">
-                <button>Flota</button>
-            </Link>
-            <Link to="/Settings">
-                <button>Ajustes</button>
-            </Link>
-            <Link to="/Profile">
-                <button>Perfil</button>
-            </Link>
-            <Link to="/Social">
-                <button>Social</button>
-            </Link>
-        </div>
+    const navigate = useNavigate();
+    return (
+        <Sidebar>
+            <Menu>
+                <MenuItem onClick={() => navigate('/')}>Home</MenuItem>
+                <MenuItem onClick={() => navigate('/fleet')}>Flota</MenuItem>
+                <MenuItem onClick={() => navigate('/settings')}>Ajustes</MenuItem>
+                <MenuItem onClick={() => navigate('/profile')}>Perfil</MenuItem>
+                <MenuItem onClick={() => navigate('/social')}>Social</MenuItem>
+            </Menu>
+        </Sidebar>
+    );
 }
 
-    /*
+/*
     const navigate = useNavigate();
-
-    const handleNavigation = (destiny) => {
-        navigate("/" + destiny);
-        console.log(destiny)
-    };
-
-    // Usamos 
-    useEffect(() => {
-        handleNavigation("home");
-    }, [navigate]);
-    
-    const handleNavigationClick = (destiny) => {
-        navigate("/" + destiny);
-    }
-    
     return (
         <div className="navBar">
-        <button onClick={handleNavigation("home")}>Jugar</button>
-        <button onClick={handleNavigation("fleet")}>Flota</button>
-        <button onClick={handleNavigation("settings")}>Ajustes</button>
-        <button onClick={handleNavigation("profile")}>Perfil</button>
-        <button onClick={handleNavigation("social")}>Social</button>
-        </div>    
+            <button onClick={() => navigate('/')}>Jugar</button>
+            <button onClick={() => navigate('/fleet')}> Flota</button>
+            <button onClick={() => navigate('/settings')}>Ajustes</button>
+            <button onClick={() => navigate('/profile')}>Perfil</button>
+            <button onClick={() => navigate('/social')}>Social</button>
+        </div>
     );
-    */
+*/
+
 
 /*
-            <Link to="/">
-                <button>Jugar</button>
-            </Link>
-            <Link to="/Fleet">
-                <button>Flota</button>
-            </Link>
-            <Link to="/Settings">
-                <button>Ajustes</button>
-            </Link>
-            <Link to="/Profile">
-                <button>Perfil</button>
-            </Link>
-            <Link to="/Social">
-                <button>Social</button>
-            </Link>
+<div className="navBar">
+    <NavLink to="/">Jugar</NavLink>
+    <NavLink to="/fleet">Flota</NavLink>
+    <NavLink to="/settings">Ajustes</NavLink>
+    <NavLink to="/profile">Perfil</NavLink>
+    <NavLink to="/social">Social</NavLink>
+</div>
 */
