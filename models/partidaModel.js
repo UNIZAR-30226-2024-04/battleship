@@ -6,7 +6,10 @@ const Schema = mongoose.Schema;
 
 // Partida Schema
 const partidaSchema = new mongoose.Schema({
-  chat: [{ mensaje: String, autor: mongoose.Schema.Types.ObjectId, timestamp: Date }],
+  chat: {
+    type: [{ mensaje: String, autor: mongoose.Schema.Types.ObjectId, timestamp: Date }],
+    default: []
+  },
   contadorTurno: { type: Number, default: 1}, // Jugador 1 juga si es impar, jugador 2 si es par
   jugador1: { // Perfil del jugador 1
     type: mongoose.Schema.Types.ObjectId, 

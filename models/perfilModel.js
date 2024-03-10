@@ -22,9 +22,10 @@ const perfilSchema = new Schema({
     type: Number, 
     default: 0 
   },
-  tableroBarcos: {           // Lista barcos del jugador 
+  tableroInicial: {           // Lista barcos del jugador 
     type: [{
-      coordenadas: [{        // Barco = lista de coordenadas y estado
+      // Barco = lista de coordenadas y estado
+      coordenadas: [{        
         type: [{             // Cada coordenada es un par (x, y) con un booleano de tocada
           x: { type: Number, required: true, min: 1, max: 10 },
           y: { type: Number, required: true, min: 1, max: 10 },
@@ -32,7 +33,8 @@ const perfilSchema = new Schema({
         }],
         required: true        // Cada barco debe tener al menos una coordenada
       }],
-      barcoHundido: {         // Estado del barco
+      // Estado del barco
+      barcoHundido: {         
         type: Boolean,
         default: false        // Por defecto no esta hundido
       }
@@ -40,7 +42,9 @@ const perfilSchema = new Schema({
     required: true
   },
   mazoHabilidadesElegidas: {  // Habilidades(enteros) elegidas de una lista fija
-    type: [Number], 
+    type: [{
+      type: String,
+      enum: ['Rafaga', 'Recargado', 'Sonar', 'Mina', 'Teledirigido']}], 
     default: [] 
   },
   correo: {                  // OBLIGATORIO: Correo electrónico del usuario
