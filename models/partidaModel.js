@@ -110,9 +110,16 @@ const partidaSchema = new mongoose.Schema({
     type: String,
     enum: ['Mediterraneo', 'Cantabrico', 'Norte', 'Bermudas'],
     required: true
+  },
+  ganador: {  // Perfil del jugador ganador
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: 'Perfil',
+    default: null // Valor predeterminado como null
   }
 }, { timestamps: true }); // timestamps añade automáticamente campos para 'createdAt' y 'updatedAt'
 
 
 const Partida = mongoose.model('Partida', partidaSchema);
 module.exports = Perfil;
+
+

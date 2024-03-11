@@ -151,7 +151,6 @@ exports.modificarPerfilMazoOTablero = async (req, res) => {
       res.status(404).send('Perfil no encontrado');
       console.error("Perfil no encontrado");
     }
-
   } catch (error) {
     res.status(500).send('Hubo un error');
     console.error("Error al modificar el perfil", error);
@@ -162,9 +161,44 @@ exports.modificarPerfilMazoOTablero = async (req, res) => {
 exports.actualizarEstadisticas = async (req, res) => {
   try {
     // Extracción de parámetros del cuerpo de la solicitud
-    const { nombreId, resultado, barcosHundidos, disparosAcertados, disparosFallidos, tiempoJugado } = req.body;
+    const { nombreId, resultado, nuevosBarcosHundidos, nuevosBarcosAliadosHundidos, nuevosDisparosAcertados, nuevosDisparosFallidos } = req.body;
 
-    // TO DO
+    // Verificar si alguno de los parámetros está ausente
+    if (!nombreId) {
+      res.status(400).json({ error: 'Falta el nombre del perfil en la solicitud' });
+      console.error("Falta el nombre del perfil en la solicitud");
+      return;
+    }
+    // Buscar y actualizar el perfil en la base de datos
+    const perfilModificado = await Perfil.findOneAndUpdate(
+      { nombreId: nombreId }, // Filtro para encontrar el perfil a modificar
+      {
+        $set: {
+          partidasJugadas : partidasJugadas + 1,
+          partidasGanadas : resultado ? partidasGanadas + 1 : partidasGanadas,
+          barcosEnemigosHundidos : barcosEnemigosHundidos + nuevosBarcosHundidos,
+          barcosAliadosPerdidos : barcosAliadosPerdidos + nuevosBarcosAliadosHundidos,
+          disparosAcertados : disparosAcertados + nuevosDisparosAcertados,
+          disparosFallidos : disparosFallidos + nuevosDisparosFallidos
+        }
+      },
+      { new: true } // Para devolver el documento actualizado
+    );
+    // Verificar si el perfil existe y enviar la respuesta al cliente
+    if (perfilModificado) {
+      res.json(perfilModificado);
+      console.log("Perfil modificado con éxito", perfilModificado);
+    } else {
+      res.status(404).send('Perfil no encontrado');
+      console.error("Perfil no encontrado");
+    }
+
+  } catch (error) {
+    res.status(500).send('Hubo un error');
+    console.error("Error al modificar el perfil", error);
+  }
+};
+
 
 // Funcion para comprobar que un parametro es un correo electronico
 function verificarCorreo(correo) {

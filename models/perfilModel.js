@@ -66,6 +66,14 @@ const perfilSchema = new Schema({
   barcosAliadosPerdidos: { 
     type: Number, 
     default: 0 
+  },
+  disparosAcertados: {        // Estadísticas de disparos acertados y fallados
+    type: Number, 
+    default: 0 
+  },
+  disparosFallados: { 
+    type: Number, 
+    default: 0 
   }
 });
 
