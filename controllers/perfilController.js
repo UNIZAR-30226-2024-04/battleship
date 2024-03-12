@@ -71,7 +71,7 @@ exports.crearPerfil = async (req, res) => {
 exports.modificarPerfilDatosPersonales = async (req, res) => {
   try {
     // Extracción de parámetros del cuerpo de la solicitud
-    const { nombreId, contraseña, correo } = req.body;
+    const { nombreId, nuevaContraseña, nuevoCorreo } = req.body;
     // Verificar si alguno de los parámetros está ausente
     if (!nombreId) {
       res.status(400).json({ error: 'Falta el nombre del perfil en la solicitud' });
@@ -79,21 +79,21 @@ exports.modificarPerfilDatosPersonales = async (req, res) => {
       return;
     }
     // Comprobar que la contraseña cumple con los requisitos
-    if (contraseña && !verificarContraseña(contraseña)) {
+    if (nuevaContraseña && !verificarContraseña(nuevaContraseña)) {
       res.status(400).send('La contraseña debe tener al menos 8 caracteres, 1 mayúscula, 1 minúscula, 1 número y 1 caracter especial');
       console.error("La contraseña debe tener al menos 8 caracteres, 1 mayúscula, 1 minúscula, 1 número y 1 caracter especial");
       return;
     }
     // Comprobar que el correo es válido
-    if (correo && !verificarCorreo(correo)) {
+    if (nuevoCorreo && !verificarCorreo(nuevoCorreo)) {
       res.status(400).send('El correo no es válido');
       console.error("El correo no es válido");
       return;
     }
     // Generar hash de la contraseña si se proporciona
     let hashContraseña; // valor undefined (si no se le da valor, no se tendrá en cuenta en el $set)
-    if (contraseña) {
-      hashContraseña = await bcrypt.hash(contraseña, 10); // 10 es el número de saltos de hashing
+    if (nuevaContraseña) {
+      hashContraseña = await bcrypt.hash(nuevaContraseña, 10); // 10 es el número de saltos de hashing
     }
     // Buscar y actualizar el perfil en la base de datos
     const perfilModificado = await Perfil.findOneAndUpdate(
@@ -101,7 +101,7 @@ exports.modificarPerfilDatosPersonales = async (req, res) => {
       {
         $set: {
           contraseña: hashContraseña,
-          correo: correo
+          correo: nuevoCorreo
         }
       },
       { new: true } // Para devolver el documento actualizado
@@ -112,8 +112,8 @@ exports.modificarPerfilDatosPersonales = async (req, res) => {
       res.json(perfilModificado);
       console.log("Perfil modificado con éxito", perfilModificado);
     } else {
-      res.status(404).send('Perfil no encontrado');
-      console.error("Perfil no encontrado");
+      res.status(404).send('Perfil no modificado');
+      console.error("Perfil no modificado");
     }
 
   } catch (error) {
@@ -121,7 +121,6 @@ exports.modificarPerfilDatosPersonales = async (req, res) => {
     console.error("Error al modificar el perfil", error);
   }
 };
-
 
 // Modificar mazo y tablero de un perfil
 exports.modificarPerfilMazoOTablero = async (req, res) => {
@@ -151,8 +150,8 @@ exports.modificarPerfilMazoOTablero = async (req, res) => {
       res.json(perfilModificado);
       console.log("Perfil modificado con éxito", perfilModificado);
     } else {
-      res.status(404).send('Perfil no encontrado');
-      console.error("Perfil no encontrado");
+      res.status(404).send('Perfil no modificado');
+      console.error("Perfil no modificado");
     }
   } catch (error) {
     res.status(500).send('Hubo un error');
@@ -192,8 +191,8 @@ exports.actualizarEstadisticas = async (req, res) => {
       res.json(perfilModificado);
       console.log("Perfil modificado con éxito", perfilModificado);
     } else {
-      res.status(404).send('Perfil no encontrado');
-      console.error("Perfil no encontrado");
+      res.status(404).send('Perfil no actualizado');
+      console.error("Perfil no actualizado");
     }
 
   } catch (error) {
@@ -272,10 +271,9 @@ exports.eliminarPerfil = async (req, res) => {
       res.json({ mensaje: 'Perfil eliminado correctamente' });
       console.log("Perfil eliminado correctamente");
     } else {
-      res.status(404).send('Perfil no encontrado');
-      console.error("Perfil no encontrado");
+      res.status(404).send('Perfil no eliminado');
+      console.error("Perfil no eliminado");
     }
-
   } catch (error) {
     res.status(500).send('Hubo un error');
     console.error("Error al eliminar el perfil", error);
@@ -283,16 +281,10 @@ exports.eliminarPerfil = async (req, res) => {
 };
 
 // Autenticar usuario
-exports.autenticarUsuario = async (req, res) => {
+exports.autenticarUsuario = async (req, res) => { // Requiere nombreId y contraseña
   try {
     // Extraer los parámetros del cuerpo de la solicitud
-    const { nombreId, contraseña } = req.body;
-    // Verificar si alguno de los parámetros está ausente
-    if (!nombreId || !contraseña) {
-      res.status(400).json({ error: 'Falta el nombre del perfil y/o la contraseña' });
-      console.error("Falta el nombre del perfil y/o la contraseña");
-      return;
-    }
+    const { contraseña } = req.body;
     // Buscar el perfil en la base de datos
     const perfil = await obtenerPerfil(req, res);
     if (perfil) {
@@ -304,8 +296,8 @@ exports.autenticarUsuario = async (req, res) => {
         return;
       }
       res.json(perfil);
-      console.log("Perfil obtenido con éxito", perfil);
-      return perfil; // Devolver el perfil si la autenticación es exitosa
+      console.log("Perfil autenticado con éxito", perfil);
+      return perfil;
     }
   } catch (error) {
     res.status(500).send('Hubo un error');
@@ -314,20 +306,9 @@ exports.autenticarUsuario = async (req, res) => {
   }
 };
 
-// Registrar usuario  (? ya existe crearPerfil)
-
-
 // Iniciar sesión
-exports.iniciarSesion = async (req, res) => {
+exports.iniciarSesion = async (req, res) => { // Requiere nombreId y contraseña
   try {
-    // Extraer los parámetros del cuerpo de la solicitud
-    const { nombreId, contraseña } = req.body;
-    // Verificar si alguno de los parámetros está ausente
-    if (!nombreId || !contraseña) {
-      res.status(400).json({ error: 'Falta el nombre del perfil y/o la contraseña' });
-      console.error("Falta el nombre del perfil y/o la contraseña");
-      return;
-    }
     // Buscar el perfil en la base de datos
     const perfil = await autenticarUsuario(req, res);
     if (perfil) {
@@ -337,7 +318,8 @@ exports.iniciarSesion = async (req, res) => {
       // Si el nombre de usuario y la contraseña son válidos, generar un token JWT
       const token = jwt.sign(perfil.toJSON(), clavePrivada);
       // Enviar el token como respuesta al cliente
-      res.json({ token });
+      res.json(token);
+      console.log("Sesión iniciada con éxito", token);
     }
   } catch (error) {
     res.status(500).send('Hubo un error');
@@ -345,9 +327,20 @@ exports.iniciarSesion = async (req, res) => {
   }
 };
 
-
-
-
+// Registrar usuario
+exports.registrarUsuario = async (req, res) => {  // Requiere nombreId, contraseña y correo
+  try {
+    // Crear el perfil
+    const perfil = await crearPerfil(req, res);
+    if (perfil) {
+      await iniciarSesion(req, res);
+      console.log("Usuario registrado con éxito");
+    }
+  } catch (error) {
+    res.status(500).send('Hubo un error');
+    console.error("Error al registrar usuario", error);
+  }
+};
 
 // // SEGURIDAD
 // // RESPUESTA DE LA API:
