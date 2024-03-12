@@ -1,4 +1,7 @@
 const Perfil = require('../models/perfilModel');
+const bcrypt = require('bcrypt'); // Para hash de constraseña
+const jwt = require('jsonwebtoken'); // Para generar tokens JWT
+const crypto = require('crypto'); // Para generar claves secretas
 
 // Crear un perfil
 exports.crearPerfil = async (req, res) => {
@@ -57,7 +60,7 @@ exports.crearPerfil = async (req, res) => {
     // Enviar la respuesta al cliente
     res.json(perfilGuardado);
     console.log("Perfil creado con éxito", doc);
-
+    return perfilGuardado;
   } catch (error) {
     res.status(500).send('Hubo un error');
     console.error("Error al crear el perfil", error);
@@ -226,7 +229,7 @@ function verificarNombreId(nombreId) {
 exports.obtenerPerfil = async (req, res) => {
   try {
     // Extraer el nombreId del parámetro de la solicitud
-    const { nombreId } = req.params;
+    const { nombreId } = req.body;
     // Verificar si alguno de los parámetros está ausente
     if (!nombreId) {
       res.status(400).json({ error: 'Falta el nombre del perfil en la solicitud' });
@@ -239,6 +242,7 @@ exports.obtenerPerfil = async (req, res) => {
     if (perfil) {
       res.json(perfil);
       console.log("Perfil obtenido con éxito", perfil);
+      return perfil;
     } else {
       res.status(404).send('Perfil no encontrado');
       console.error("Perfil no encontrado");
@@ -254,7 +258,7 @@ exports.obtenerPerfil = async (req, res) => {
 exports.eliminarPerfil = async (req, res) => {
   try {
     // Extraer el nombreId del parámetro de la solicitud
-    const { nombreId } = req.params;
+    const { nombreId } = req.body;
     // Comprobar si el nombreId está presente en la solicitud
     if (!nombreId) {
       res.status(400).json({ error: 'Falta el nombre del perfil en la solicitud' });
@@ -278,13 +282,69 @@ exports.eliminarPerfil = async (req, res) => {
   }
 };
 
-// Registrar usuario
+// Autenticar usuario
+exports.autenticarUsuario = async (req, res) => {
+  try {
+    // Extraer los parámetros del cuerpo de la solicitud
+    const { nombreId, contraseña } = req.body;
+    // Verificar si alguno de los parámetros está ausente
+    if (!nombreId || !contraseña) {
+      res.status(400).json({ error: 'Falta el nombre del perfil y/o la contraseña' });
+      console.error("Falta el nombre del perfil y/o la contraseña");
+      return;
+    }
+    // Buscar el perfil en la base de datos
+    const perfil = await obtenerPerfil(req, res);
+    if (perfil) {
+      // Verificar la contraseña
+      const contraseñaValida = await bcrypt.compare(contraseña, perfil.contraseña);
+      if (!contraseñaValida) {
+        res.status(404).json({ error: 'La contraseña no es válida' });
+        console.error("La contraseña no es válida");
+        return;
+      }
+      res.json(perfil);
+      console.log("Perfil obtenido con éxito", perfil);
+      return perfil; // Devolver el perfil si la autenticación es exitosa
+    }
+  } catch (error) {
+    res.status(500).send('Hubo un error');
+    console.error("Error al autenticar al usuario", error);
+    return;
+  }
+};
+
+// Registrar usuario  (? ya existe crearPerfil)
 
 
 // Iniciar sesión
+exports.iniciarSesion = async (req, res) => {
+  try {
+    // Extraer los parámetros del cuerpo de la solicitud
+    const { nombreId, contraseña } = req.body;
+    // Verificar si alguno de los parámetros está ausente
+    if (!nombreId || !contraseña) {
+      res.status(400).json({ error: 'Falta el nombre del perfil y/o la contraseña' });
+      console.error("Falta el nombre del perfil y/o la contraseña");
+      return;
+    }
+    // Buscar el perfil en la base de datos
+    const perfil = await autenticarUsuario(req, res);
+    if (perfil) {
+      // Generar bytes aleatorios para la clave privada
+      const clavePrivadaBuffer = crypto.randomBytes(32);
+      const clavePrivada = clavePrivadaBuffer.toString('hex');
+      // Si el nombre de usuario y la contraseña son válidos, generar un token JWT
+      const token = jwt.sign(perfil.toJSON(), clavePrivada);
+      // Enviar el token como respuesta al cliente
+      res.json({ token });
+    }
+  } catch (error) {
+    res.status(500).send('Hubo un error');
+    console.error("Error al iniciar sesión", error);
+  }
+};
 
-
-// Autenticar usuario
 
 
 
@@ -294,7 +354,7 @@ exports.eliminarPerfil = async (req, res) => {
 
 // app.get('/api/perfiles/:id', async (req, res) => {
 //   try {
-//     const perfil = await Perfil.findById(req.params.id).select('-contraseña');
+//     const perfil = await Perfil.findById(req.body.id).select('-contraseña');
 //     // El método .select('-contraseña') asegura que la contraseña NO se incluya en la respuesta, haciendo ese campo "privado".
 //     if (!perfil) {
 //       return res.status(404).send('Perfil no encontrado');
