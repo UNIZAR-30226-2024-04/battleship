@@ -77,6 +77,6 @@ const perfilSchema = new Schema({
   }
 });
 
-const Perfil = mongoose.model('Perfil', perfilSchema);
+const Perfil = mongoose.model('Perfil', perfilSchema, 'Perfiles');  // Perfiles es la colección de perfiles de BattleshipDB
 
 module.exports = Perfil;

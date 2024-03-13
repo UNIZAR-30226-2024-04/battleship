@@ -8,10 +8,9 @@ exports.crearPerfil = async (req, res) => {
   try {
     // Extracción de parámetros del cuerpo de la solicitud
     const { nombreId, contraseña, correo } = req.body;
-    
     // Verificar si alguno de los parámetros está ausente
     if (!nombreId || !contraseña || !correo) {
-      res.status(400).json({ error: 'Falta el nombre del perfil, la contraseña y/o el correo' });
+      res.status(400).send('Falta el nombre del perfil, la contraseña y/o el correo');
       console.error("Falta el nombre del perfil, la contraseña y/o el correo");
       return;
     }
@@ -39,10 +38,10 @@ exports.crearPerfil = async (req, res) => {
     }
 
     // Crear un tablero aleatorio con un barco de 5 casillas de largo 
-    const tableroInicial = [[[1, 1, false ], [1, 2, false], false ] 
-                            [[7, 1, false ], [8, 1, false],[9, 1, false], false ]   
-                            [[3, 10, false ], [4, 10, false],[5, 10, false], false ]
-                            [[4, 4, false ], [5, 5, false],[6, 6, false], [7, 7, false], false ]
+    const tableroInicial = [[[1, 1, false ], [1, 2, false], false ], 
+                            [[7, 1, false ], [8, 1, false],[9, 1, false], false ], 
+                            [[3, 10, false ], [4, 10, false],[5, 10, false], false ],
+                            [[4, 4, false ], [5, 5, false],[6, 6, false], [7, 7, false], false ],
                             [[10, 6, false ], [10, 7, false],[10, 8, false], [10, 9, false], [10, 10, false], false ]
            ];
       
@@ -50,7 +49,7 @@ exports.crearPerfil = async (req, res) => {
     // Creación del perfil en la base de datos
     const nuevoPerfil = new Perfil({
       nombreId,
-      hashContraseña,
+      contraseña: hashContraseña,
       correo,
       tableroInicial
     });
@@ -59,7 +58,7 @@ exports.crearPerfil = async (req, res) => {
     const perfilGuardado = await nuevoPerfil.save();
     // Enviar la respuesta al cliente
     res.json(perfilGuardado);
-    console.log("Perfil creado con éxito", doc);
+    console.log("Perfil creado con éxito", perfilGuardado);
     return perfilGuardado;
   } catch (error) {
     res.status(500).send('Hubo un error');
@@ -74,7 +73,7 @@ exports.modificarPerfilDatosPersonales = async (req, res) => {
     const { nombreId, nuevaContraseña, nuevoCorreo } = req.body;
     // Verificar si alguno de los parámetros está ausente
     if (!nombreId) {
-      res.status(400).json({ error: 'Falta el nombre del perfil en la solicitud' });
+      res.status(400).send('Falta el nombre del perfil en la solicitud');
       console.error("Falta el nombre del perfil en la solicitud");
       return;
     }
@@ -129,7 +128,7 @@ exports.modificarPerfilMazoOTablero = async (req, res) => {
     const { nombreId, tableroInicial, mazoHabilidadesElegidas } = req.body;
     // Verificar si alguno de los parámetros está ausente
     if (!nombreId) {
-      res.status(400).json({ error: 'Falta el nombre del perfil en la solicitud' });
+      res.status(400).send('Falta el nombre del perfil en la solicitud');
       console.error("Falta el nombre del perfil en la solicitud");
       return;
     }
@@ -167,7 +166,7 @@ exports.actualizarEstadisticas = async (req, res) => {
 
     // Verificar si alguno de los parámetros está ausente
     if (!nombreId) {
-      res.status(400).json({ error: 'Falta el nombre del perfil en la solicitud' });
+      res.status(400).send('Falta el nombre del perfil en la solicitud');
       console.error("Falta el nombre del perfil en la solicitud");
       return;
     }
@@ -210,7 +209,7 @@ function verificarCorreo(correo) {
 
 // Funcion para verificar que la contraseña cumple con los requisitos: 8 caracteres, 1 mayúscula, 1 minúscula, 1 número y 1 caracter especial
 function verificarContraseña(contraseña) {
-  const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[$@$!%*?&])[A-Za-z\d$@$!%*?&]{8,}$/;
+  const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
   return regex.test(contraseña);
 }
 
@@ -231,7 +230,7 @@ exports.obtenerPerfil = async (req, res) => {
     const { nombreId } = req.body;
     // Verificar si alguno de los parámetros está ausente
     if (!nombreId) {
-      res.status(400).json({ error: 'Falta el nombre del perfil en la solicitud' });
+      res.status(400).send('Falta el nombre del perfil en la solicitud');
       console.error("Falta el nombre del perfil en la solicitud");
       return;
     }
@@ -260,7 +259,7 @@ exports.eliminarPerfil = async (req, res) => {
     const { nombreId } = req.body;
     // Comprobar si el nombreId está presente en la solicitud
     if (!nombreId) {
-      res.status(400).json({ error: 'Falta el nombre del perfil en la solicitud' });
+      res.status(400).send('Falta el nombre del perfil en la solicitud');
       console.error("Falta el nombre del perfil en la solicitud");
       return;
     }
@@ -291,7 +290,7 @@ exports.autenticarUsuario = async (req, res) => { // Requiere nombreId y contras
       // Verificar la contraseña
       const contraseñaValida = await bcrypt.compare(contraseña, perfil.contraseña);
       if (!contraseñaValida) {
-        res.status(404).json({ error: 'La contraseña no es válida' });
+        res.status(404).send('La contraseña no es válida');
         console.error("La contraseña no es válida");
         return;
       }
