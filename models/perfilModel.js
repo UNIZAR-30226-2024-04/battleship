@@ -59,11 +59,11 @@ const perfilSchema = new Schema({
     type: Number, 
     default: 0 
   },
-  barcosEnemigosHundidos: {   // Estadísticas de barcos hundidos y perdidos
+  barcosHundidos: {   // Estadísticas de barcos hundidos y perdidos
     type: Number, 
     default: 0 
   },
-  barcosAliadosPerdidos: { 
+  barcosPerdidos: { 
     type: Number, 
     default: 0 
   },

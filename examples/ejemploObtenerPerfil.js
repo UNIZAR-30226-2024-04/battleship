@@ -6,18 +6,17 @@ mongoose.connect('mongodb://localhost/BattleshipDB')
   .then(async () => {
     console.log('Conectado a MongoDB...');
     try {
-      // Lista de perfiles a crear
+
       const perfiles = [
         { nombreId: 'usuario1'},
         { nombreId: 'usuario3'},    // No existente
         { contraseña: 'Passwd1.'},  // Falta nombreId
       ];
 
-      // Itera sobre la lista de perfiles y crea cada uno
       for (const perfil of perfiles) {
         const req = { body: perfil };
         const res = { json: () => {}, status: () => ({ send: () => {} }) }; // No hace nada
-        await obtenerPerfil(req, res); // Espera a que se complete la creación del perfil
+        await obtenerPerfil(req, res);
       }
     } catch (error) {
       console.error('Error en el test de crear perfil:', error);

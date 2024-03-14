@@ -22,7 +22,7 @@ exports.crearPerfil = async (req, res) => {
     }
     // Comprobar que el correo es válido
     if (!verificarCorreo(correo)) {
-      res.status(400).send('El correo no es válido');
+      res.status(400).send('El correo no es válido: ');
       console.error("El correo no es válido");
       return;
     }
@@ -70,7 +70,7 @@ exports.crearPerfil = async (req, res) => {
 exports.modificarPerfilDatosPersonales = async (req, res) => {
   try {
     // Extracción de parámetros del cuerpo de la solicitud
-    const { nombreId, nuevaContraseña, nuevoCorreo } = req.body;
+    const { nombreId, contraseña, correo } = req.body;
     // Verificar si alguno de los parámetros está ausente
     if (!nombreId) {
       res.status(400).send('Falta el nombre del perfil en la solicitud');
@@ -78,21 +78,21 @@ exports.modificarPerfilDatosPersonales = async (req, res) => {
       return;
     }
     // Comprobar que la contraseña cumple con los requisitos
-    if (nuevaContraseña && !verificarContraseña(nuevaContraseña)) {
+    if (contraseña && !verificarContraseña(contraseña)) {
       res.status(400).send('La contraseña debe tener al menos 8 caracteres, 1 mayúscula, 1 minúscula, 1 número y 1 caracter especial');
       console.error("La contraseña debe tener al menos 8 caracteres, 1 mayúscula, 1 minúscula, 1 número y 1 caracter especial");
       return;
     }
     // Comprobar que el correo es válido
-    if (nuevoCorreo && !verificarCorreo(nuevoCorreo)) {
+    if (correo && !verificarCorreo(correo)) {
       res.status(400).send('El correo no es válido');
       console.error("El correo no es válido");
       return;
     }
     // Generar hash de la contraseña si se proporciona
     let hashContraseña; // valor undefined (si no se le da valor, no se tendrá en cuenta en el $set)
-    if (nuevaContraseña) {
-      hashContraseña = await bcrypt.hash(nuevaContraseña, 10); // 10 es el número de saltos de hashing
+    if (contraseña) {
+      hashContraseña = await bcrypt.hash(contraseña, 10); // 10 es el número de saltos de hashing
     }
     // Buscar y actualizar el perfil en la base de datos
     const perfilModificado = await Perfil.findOneAndUpdate(
@@ -100,7 +100,7 @@ exports.modificarPerfilDatosPersonales = async (req, res) => {
       {
         $set: {
           contraseña: hashContraseña,
-          correo: nuevoCorreo
+          correo: correo
         }
       },
       { new: true } // Para devolver el documento actualizado
@@ -111,8 +111,8 @@ exports.modificarPerfilDatosPersonales = async (req, res) => {
       res.json(perfilModificado);
       console.log("Perfil modificado con éxito", perfilModificado);
     } else {
-      res.status(404).send('Perfil no modificado');
-      console.error("Perfil no modificado");
+      res.status(404).send('No se ha encontrado el perfil a modificar');
+      console.error("No se ha encontrado el perfil a modificar");
     }
 
   } catch (error) {
@@ -149,8 +149,8 @@ exports.modificarPerfilMazoOTablero = async (req, res) => {
       res.json(perfilModificado);
       console.log("Perfil modificado con éxito", perfilModificado);
     } else {
-      res.status(404).send('Perfil no modificado');
-      console.error("Perfil no modificado");
+      res.status(404).send('No se ha encontrado el perfil a modificar');
+      console.error("No se ha encontrado el perfil a modificar");
     }
   } catch (error) {
     res.status(500).send('Hubo un error');
@@ -162,7 +162,7 @@ exports.modificarPerfilMazoOTablero = async (req, res) => {
 exports.actualizarEstadisticas = async (req, res) => {
   try {
     // Extracción de parámetros del cuerpo de la solicitud
-    const { nombreId, resultado, nuevosBarcosHundidos, nuevosBarcosAliadosHundidos, nuevosDisparosAcertados, nuevosDisparosFallidos } = req.body;
+    const { nombreId, resultado, nuevosBarcosHundidos, nuevosBarcosPerdidos, nuevosDisparosAcertados, nuevosDisparosFallados } = req.body;
 
     // Verificar si alguno de los parámetros está ausente
     if (!nombreId) {
@@ -170,17 +170,18 @@ exports.actualizarEstadisticas = async (req, res) => {
       console.error("Falta el nombre del perfil en la solicitud");
       return;
     }
+    
     // Buscar y actualizar el perfil en la base de datos
     const perfilModificado = await Perfil.findOneAndUpdate(
       { nombreId: nombreId }, // Filtro para encontrar el perfil a modificar
       {
-        $set: {
-          partidasJugadas : partidasJugadas + 1,
-          partidasGanadas : resultado ? partidasGanadas + 1 : partidasGanadas,
-          barcosEnemigosHundidos : barcosEnemigosHundidos + nuevosBarcosHundidos,
-          barcosAliadosPerdidos : barcosAliadosPerdidos + nuevosBarcosAliadosHundidos,
-          disparosAcertados : disparosAcertados + nuevosDisparosAcertados,
-          disparosFallidos : disparosFallidos + nuevosDisparosFallidos
+        $inc: {
+          partidasJugadas: 1,
+          partidasGanadas: resultado ? 1 : 0,
+          barcosHundidos: nuevosBarcosHundidos,
+          barcosPerdidos: nuevosBarcosPerdidos,
+          disparosAcertados: nuevosDisparosAcertados,
+          disparosFallados: nuevosDisparosFallados,
         }
       },
       { new: true } // Para devolver el documento actualizado
@@ -190,8 +191,8 @@ exports.actualizarEstadisticas = async (req, res) => {
       res.json(perfilModificado);
       console.log("Perfil modificado con éxito", perfilModificado);
     } else {
-      res.status(404).send('Perfil no actualizado');
-      console.error("Perfil no actualizado");
+      res.status(404).send('No se ha encontrado el perfil a actualizar');
+      console.error("No se ha encontrado el perfil a actualizar");
     }
 
   } catch (error) {
@@ -270,8 +271,8 @@ exports.eliminarPerfil = async (req, res) => {
       res.json({ mensaje: 'Perfil eliminado correctamente' });
       console.log("Perfil eliminado correctamente");
     } else {
-      res.status(404).send('Perfil no eliminado');
-      console.error("Perfil no eliminado");
+      res.status(404).send('No se ha encontrado el perfil a eliminar');
+      console.error("No se ha encontrado el perfil a eliminar");
     }
   } catch (error) {
     res.status(500).send('Hubo un error');
