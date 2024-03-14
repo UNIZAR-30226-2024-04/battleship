@@ -13,7 +13,7 @@ export function Navbar() {
             // Cambiar el color de fondo
             style={{backgroundColor: '#1D3461'}}
             // Modificar el ancho del sidebar
-            width="100px"
+            width="auto"
             // Modificar el alto del sidebar
             
             >

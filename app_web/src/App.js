@@ -12,7 +12,6 @@ function App() {
   return (
     <div>
       <Router>
-        <Navbar/>
         <Routes>
           <Route path="/" element={<Home/>}/>
           <Route path="/fleet" element={<Fleet/>}/>
