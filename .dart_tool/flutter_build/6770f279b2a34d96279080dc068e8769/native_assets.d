@@ -1,0 +1,1 @@
+ C:\\Users\\xavie\\OneDrive\\Escritorio\\Proyecto\ Software\\battleship\\.dart_tool\\flutter_build\\6770f279b2a34d96279080dc068e8769\\native_assets.yaml: 

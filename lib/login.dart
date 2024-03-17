@@ -8,23 +8,26 @@ import 'recContrasena.dart';
 import 'botones.dart';
 import 'main.dart';
 import 'authProvider.dart';
+import 'perfil.dart';
 
 
 class InicioSesion extends StatefulWidget {
+  const InicioSesion({super.key});
+
   @override
   _InicioSesionState createState() => _InicioSesionState();
 }
 
 class _InicioSesionState extends State<InicioSesion> {
-  TextEditingController _emailController = TextEditingController();
-  TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
   bool _rememberMe = false;
-  AuthProvider _authProvider = AuthProvider();
+  final AuthProvider _authProvider = AuthProvider();
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         image: DecorationImage(
           image: AssetImage('images/fondo.jpg'),
           fit: BoxFit.cover,
@@ -34,10 +37,10 @@ class _InicioSesionState extends State<InicioSesion> {
         backgroundColor: Colors.transparent,
         body: Column(
           children: [
-            SizedBox(height: 10), // Ajuste de espacio para mover las imágenes más arriba
+            const SizedBox(height: 10), // Ajuste de espacio para mover las imágenes más arriba
             Row(
               children: [
-                Padding(
+                const Padding(
                   padding: EdgeInsets.only(left: 20), // Añade sangría a la izquierda
                   child: Image(
                     image: AssetImage('images/logo.png'),
@@ -46,22 +49,40 @@ class _InicioSesionState extends State<InicioSesion> {
                     alignment: Alignment.topLeft,
                   ),
                 ),
-                Spacer(),
+                const Spacer(),
                 Transform.translate(
-                  offset: Offset(-120, -20),
-                  child: Image(
+                  offset: const Offset(0, -20), // Ajusta la posición vertical de la imagen "battleship"
+                  child: const Image(
                     image: AssetImage('images/battleship.png'),
                     width: 150,
                     height: 150,
                     alignment: Alignment.center,
                   ),
                 ),
+                const Spacer(),
+                Padding(
+                  padding: const EdgeInsets.only(right: 20), // Añade sangría a la derecha
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const Perfil()), // Reemplaza NuevaPantalla() por la pantalla a la que deseas navegar
+                      );
+                    },
+                    child: const Image(
+                      image: AssetImage('images/perfil.png'),
+                      width: 100,
+                      height: 100,
+                      alignment: Alignment.topRight,
+                    ),
+                  ),
+                ),
               ],
-           ),
+          ),
 
 
 
-          Text(
+          const Text(
             'Iniciar Sesión',
             style: TextStyle(
               color: Colors.white,
@@ -80,10 +101,10 @@ class _InicioSesionState extends State<InicioSesion> {
           ),
 
 
-          SizedBox(height: 10.0),
+        const SizedBox(height: 10.0),
           Padding(
-            padding: EdgeInsets.all(10),
-            child: Container(
+            padding: const EdgeInsets.all(10),
+            child: SizedBox(
               width: 300, // Ancho deseado
               child: TextField(
                 controller: _emailController,
@@ -95,15 +116,15 @@ class _InicioSesionState extends State<InicioSesion> {
                   fillColor: Colors.white,
                   labelText: 'Email',
                   hintText: 'Introduzca la dirección de correo',
-                  suffixIcon: Icon(Icons.email),
+                  suffixIcon: const Icon(Icons.email),
                 ),
               ),
             ),
           ),
-          SizedBox(height: 10.0),
+          const SizedBox(height: 10.0),
           Padding(
-            padding: EdgeInsets.all(10),
-            child: Container(
+            padding: const EdgeInsets.all(10),
+            child: SizedBox(
               width: 300, // Ancho deseado
               child: TextField(
                 controller: _passwordController,
@@ -116,7 +137,7 @@ class _InicioSesionState extends State<InicioSesion> {
                   fillColor: Colors.white,
                   labelText: 'Contraseña',
                   hintText: 'Introduzca la contraseña',
-                  suffixIcon: Icon(Icons.lock),
+                  suffixIcon: const Icon(Icons.lock),
                 ),
               ),
             ),
@@ -129,10 +150,10 @@ class _InicioSesionState extends State<InicioSesion> {
               // Navegar a la nueva pantalla cuando se pulsa el texto
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => RecuperacionContrasena()),
+                MaterialPageRoute(builder: (context) => const RecuperacionContrasena()),
               );
             },
-            child: Text(
+            child: const Text(
               'Olvidé la contraseña',
               style: TextStyle(
                 color: Colors.white, // Color del texto
@@ -143,7 +164,7 @@ class _InicioSesionState extends State<InicioSesion> {
 
 
           // Checkbox
-          SizedBox(height: 20.0),
+          const SizedBox(height: 20.0),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
@@ -155,8 +176,8 @@ class _InicioSesionState extends State<InicioSesion> {
                   });
                 },
               ),
-              SizedBox(width: 8.0),
-              Text(
+              const SizedBox(width: 8.0),
+              const Text(
                 'Recordarme',
                 style: TextStyle(color: Colors.white),
               ),
@@ -164,7 +185,7 @@ class _InicioSesionState extends State<InicioSesion> {
           ),
 
 
-          SizedBox(height: 20), // Espacio entre los botones
+          const SizedBox(height: 20), // Espacio entre los botones
             Stack(
               children: [
                 ElevatedButton(
@@ -174,10 +195,10 @@ class _InicioSesionState extends State<InicioSesion> {
                       borderRadius: BorderRadius.circular(15), // Bordes redondeados
                     ),
                     backgroundColor: Colors.orange, // Color del botón
-                    minimumSize: Size(250, 60), // Tamaño del botón
+                    minimumSize: const Size(250, 60), // Tamaño del botón
                     elevation: 8, // Sombras elevadas
                   ),
-                  child: Text('Iniciar Sesión', style: TextStyle(color: Colors.white)),
+                  child: const Text('Iniciar Sesión', style: TextStyle(color: Colors.white)),
                 ),
                 Positioned(
                   bottom: -10.0, // Ajuste para que sobresalga de la pantalla
@@ -196,10 +217,10 @@ class _InicioSesionState extends State<InicioSesion> {
                         borderRadius: BorderRadius.circular(15), // Bordes redondeados
                       ),
                       backgroundColor: Colors.orange,
-                      minimumSize: Size(270, 80), // Aumenta el tamaño para que sobresalga
+                      minimumSize: const Size(270, 80), // Aumenta el tamaño para que sobresalga
                       elevation: 10, // Sombras elevadas más pronunciadas
                     ),
-                    child: Text('Iniciar Sesión', style: TextStyle(color: Colors.white)),
+                    child: const Text('Iniciar Sesión', style: TextStyle(color: Colors.white)),
                   ),
                 ),
               ],
@@ -209,7 +230,7 @@ class _InicioSesionState extends State<InicioSesion> {
 
 
 
-          SizedBox(height: 20), // Espacio entre los botones    
+          const SizedBox(height: 20), // Espacio entre los botones    
           GestureDetector(
             onTap: () {
               // Navegar a la nueva pantalla cuando se pulsa el texto
@@ -218,7 +239,7 @@ class _InicioSesionState extends State<InicioSesion> {
                 MaterialPageRoute(builder: (context) => Registro()),
               );
             },
-            child: Text(
+            child: const Text(
               '¿No tienes una cuenta? Regístrate',
               style: TextStyle(
                 color: Colors.white, // Color del texto
@@ -234,7 +255,7 @@ class _InicioSesionState extends State<InicioSesion> {
 
 
 
-            SizedBox(height: 185), // Ajuste de espacio entre las filas
+            const SizedBox(height: 185), // Ajuste de espacio entre las filas
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
@@ -250,7 +271,7 @@ class _InicioSesionState extends State<InicioSesion> {
                         },
                         child: Image.asset('images/jugar.png', width: 50, height: 50),
                       ),
-                      Text('Jugar', style: TextStyle(color: Colors.white)),
+                      const Text('Jugar', style: TextStyle(color: Colors.white)),
                     ],
                   ),
                 ),
@@ -261,12 +282,12 @@ class _InicioSesionState extends State<InicioSesion> {
                         onTap: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => Habilidades()),
+                            MaterialPageRoute(builder: (context) => const Habilidades()),
                           );
                         },
                         child: Image.asset('images/habilidad.png', width: 50, height: 50),
                       ),
-                      Text('Habilidades', style: TextStyle(color: Colors.white)),
+                      const Text('Habilidades', style: TextStyle(color: Colors.white)),
                     ],
                   ),
                 ),
@@ -277,12 +298,12 @@ class _InicioSesionState extends State<InicioSesion> {
                         onTap: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => Flota()),
+                            MaterialPageRoute(builder: (context) => const Flota()),
                           );
                         },
                         child: Image.asset('images/flota.png', width: 50, height: 50),
                       ),
-                      Text('Flota', style: TextStyle(color: Colors.white)),
+                      const Text('Flota', style: TextStyle(color: Colors.white)),
                     ],
                   ),
                 ),
@@ -293,12 +314,12 @@ class _InicioSesionState extends State<InicioSesion> {
                         onTap: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => Social()),
+                            MaterialPageRoute(builder: (context) => const Social()),
                           );
                         },
                         child: Image.asset('images/social.png', width: 50, height: 50),
                       ),
-                      Text('Social', style: TextStyle(color: Colors.white)),
+                      const Text('Social', style: TextStyle(color: Colors.white)),
                     ],
                   ),
                 ),
@@ -309,12 +330,12 @@ class _InicioSesionState extends State<InicioSesion> {
                         onTap: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => Ajustes()),
+                            MaterialPageRoute(builder: (context) => const Ajustes()),
                           );
                         },
                         child: Image.asset('images/ajustes.png', width: 50, height: 50),
                       ),
-                      Text('Ajustes', style: TextStyle(color: Colors.white)),
+                      const Text('Ajustes', style: TextStyle(color: Colors.white)),
                     ],
                   ),
                 ),

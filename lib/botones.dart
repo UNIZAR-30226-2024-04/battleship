@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 
-
+// Checkbox
 class CustomCheckbox extends StatefulWidget {
   final bool value;
   final ValueChanged<bool>? onChanged;
 
   const CustomCheckbox({
-    Key? key,
+    super.key,
     required this.value,
     this.onChanged,
-  }) : super(key: key);
+  });
 
   @override
   _CustomCheckboxState createState() => _CustomCheckboxState();
@@ -45,7 +45,7 @@ class _CustomCheckboxState extends State<CustomCheckbox> {
           color: Colors.white,
         ),
         child: _value
-            ? Icon(
+            ? const Icon(
                 Icons.check,
                 size: 18.0,
                 color: Colors.black, // Color de la cruz cuando se marca

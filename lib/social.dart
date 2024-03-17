@@ -3,12 +3,15 @@ import 'habilidades.dart';
 import 'flota.dart';
 import 'ajustes.dart';
 import 'main.dart';
+import 'perfil.dart';
 
 class Social extends StatelessWidget {
+  const Social({super.key});
+
 @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         image: DecorationImage(
           image: AssetImage('images/fondo.jpg'),
           fit: BoxFit.cover,
@@ -18,10 +21,10 @@ class Social extends StatelessWidget {
         backgroundColor: Colors.transparent,
         body: Column(
           children: [
-            SizedBox(height: 10), // Ajuste de espacio para mover las imágenes más arriba
+            const SizedBox(height: 10), // Ajuste de espacio para mover las imágenes más arriba
             Row(
               children: [
-                Padding(
+                const Padding(
                   padding: EdgeInsets.only(left: 20), // Añade sangría a la izquierda
                   child: Image(
                     image: AssetImage('images/logo.png'),
@@ -30,31 +33,39 @@ class Social extends StatelessWidget {
                     alignment: Alignment.topLeft,
                   ),
                 ),
-                Spacer(),
+                const Spacer(),
                 Transform.translate(
-                  offset: Offset(0, -20), // Ajusta la posición vertical de la imagen "battleship"
-                  child: Image(
+                  offset: const Offset(0, -20), // Ajusta la posición vertical de la imagen "battleship"
+                  child: const Image(
                     image: AssetImage('images/battleship.png'),
                     width: 150,
                     height: 150,
                     alignment: Alignment.center,
                   ),
                 ),
-                Spacer(),
+                const Spacer(),
                 Padding(
-                  padding: EdgeInsets.only(right: 20), // Añade sangría a la derecha
-                  child: Image(
-                    image: AssetImage('images/perfil.png'),
-                    width: 100,
-                    height: 100,
-                    alignment: Alignment.topRight,
+                  padding: const EdgeInsets.only(right: 20), // Añade sangría a la derecha
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const Perfil()), // Reemplaza NuevaPantalla() por la pantalla a la que deseas navegar
+                      );
+                    },
+                    child: const Image(
+                      image: AssetImage('images/perfil.png'),
+                      width: 100,
+                      height: 100,
+                      alignment: Alignment.topRight,
+                    ),
                   ),
                 ),
               ],
-           ),
+          ),
 
 
-            SizedBox(height: 270), // Ajuste de espacio entre las filas
+            const SizedBox(height: 270), // Ajuste de espacio entre las filas
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
@@ -70,7 +81,7 @@ class Social extends StatelessWidget {
                         },
                         child: Image.asset('images/jugar.png', width: 50, height: 50),
                       ),
-                      Text('Jugar', style: TextStyle(color: Colors.white)),
+                      const Text('Jugar', style: TextStyle(color: Colors.white)),
                     ],
                   ),
                 ),
@@ -81,12 +92,12 @@ class Social extends StatelessWidget {
                         onTap: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => Habilidades()),
+                            MaterialPageRoute(builder: (context) => const Habilidades()),
                           );
                         },
                         child: Image.asset('images/habilidad.png', width: 50, height: 50),
                       ),
-                      Text('Habilidades', style: TextStyle(color: Colors.white)),
+                      const Text('Habilidades', style: TextStyle(color: Colors.white)),
                     ],
                   ),
                 ),
@@ -97,12 +108,12 @@ class Social extends StatelessWidget {
                         onTap: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => Flota()),
+                            MaterialPageRoute(builder: (context) => const Flota()),
                           );
                         },
                         child: Image.asset('images/flota.png', width: 50, height: 50),
                       ),
-                      Text('Flota', style: TextStyle(color: Colors.white)),
+                      const Text('Flota', style: TextStyle(color: Colors.white)),
                     ],
                   ),
                 ),
@@ -113,12 +124,12 @@ class Social extends StatelessWidget {
                         onTap: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => Social()),
+                            MaterialPageRoute(builder: (context) => const Social()),
                           );
                         },
                         child: Image.asset('images/social.png', width: 50, height: 50),
                       ),
-                      Text('Social', style: TextStyle(color: Colors.white)),
+                      const Text('Social', style: TextStyle(color: Colors.white)),
                     ],
                   ),
                 ),
@@ -129,12 +140,12 @@ class Social extends StatelessWidget {
                         onTap: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => Ajustes()),
+                            MaterialPageRoute(builder: (context) => const Ajustes()),
                           );
                         },
                         child: Image.asset('images/ajustes.png', width: 50, height: 50),
                       ),
-                      Text('Ajustes', style: TextStyle(color: Colors.white)),
+                      const Text('Ajustes', style: TextStyle(color: Colors.white)),
                     ],
                   ),
                 ),
