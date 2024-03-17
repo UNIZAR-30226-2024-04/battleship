@@ -86,7 +86,7 @@ Widget buildActions(BuildContext context) {
           _buildActionItem('Ajustes', 'images/ajustes.png', () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => const Ajustes()),
+              MaterialPageRoute(builder: (context) => Ajustes()),
             );
           }),
         ],
@@ -110,6 +110,27 @@ Widget _buildActionItem(String label, String imagePath, void Function()? onTap) 
         Text(
           label,
           style: const TextStyle(color: Colors.white),
+        ),
+      ],
+    ),
+  );
+}
+
+
+Widget buildTitle(String text, int fontSize) {
+  return Text(
+    text,
+    style: TextStyle(
+      color: Colors.white,
+      fontSize: fontSize.toDouble(),
+      decoration: TextDecoration.none,
+      fontWeight: FontWeight.bold,
+      letterSpacing: 1.5,
+      shadows: const [
+        Shadow(
+          blurRadius: 2.0,
+          color: Colors.black,
+          offset: Offset(2.0, 2.0),
         ),
       ],
     ),

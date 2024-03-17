@@ -40,4 +40,9 @@ class AuthProvider with ChangeNotifier {
       return false;
     }
   }
+
+  void logOut() {
+    _isLoggedIn = false;
+    notifyListeners();
+  }
 }

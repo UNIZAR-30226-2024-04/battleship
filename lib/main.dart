@@ -44,6 +44,12 @@ class Principal extends StatelessWidget {
           children: [
             buildHeader(context),
             const Spacer(),
+            Container(
+              width: 300,
+              height: 300,
+              child: const Image(image: AssetImage('images/portada.png')),
+            ),
+            const Spacer(),
             buildActionButton(context, () => _handleOnlinePressed(context, _authProvider), "Jugar Online"),
             const SizedBox(height: 10),
             buildActionButton(context, () => _handleOfflinePressed(context, _authProvider), "Jugar Offline"),

@@ -48,61 +48,12 @@ class _PerfilState extends State<Perfil> {
 }
 
 Widget _buildUserInfo() {
-  return const Column(
+  return Column(
     children: [
-      SizedBox(height: 10.0),
-      Text(
-        'Nombre usuario',
-        style: TextStyle(
-          color: Colors.white,
-          fontSize: 28,
-          decoration: TextDecoration.none,
-          fontWeight: FontWeight.bold,
-          letterSpacing: 1.5,
-          shadows: [
-            Shadow(
-              blurRadius: 2.0,
-              color: Colors.black,
-              offset: Offset(2.0, 2.0),
-            ),
-          ],
-        ),
-      ),
-      Text(
-        'Seguidores',
-        style: TextStyle(
-          color: Colors.white,
-          fontSize: 14,
-          decoration: TextDecoration.none,
-          fontWeight: FontWeight.bold,
-          letterSpacing: 1.5,
-          shadows: [
-            Shadow(
-              blurRadius: 2.0,
-              color: Colors.black,
-              offset: Offset(2.0, 2.0),
-            ),
-          ],
-        ),
-      ),
-      Text(
-        'Siguiendo',
-        style: TextStyle(
-          color: Colors.white,
-          fontSize: 14,
-          decoration: TextDecoration.none,
-          fontWeight: FontWeight.bold,
-          letterSpacing: 1.5,
-          shadows: [
-            Shadow(
-              blurRadius: 2.0,
-              color: Colors.black,
-              offset: Offset(2.0, 2.0),
-            ),
-          ],
-        ),
-      ),
-      SizedBox(height: 10.0),
+      const SizedBox(height: 10.0),
+      buildTitle('Nombre usuario', 28),
+      buildTitle('Seguidores', 14),
+      buildTitle('Siguiendo', 14),
     ],
   );
 }

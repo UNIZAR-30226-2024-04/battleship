@@ -44,110 +44,17 @@ class Registro extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        const Text(
-          'Registrarse',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 28,
-            decoration: TextDecoration.none,
-            fontWeight: FontWeight.bold,
-            letterSpacing: 1.5, // Espaciado entre letras
-            shadows: [
-              Shadow(
-                blurRadius: 2.0,
-                color: Colors.black,
-                offset: Offset(2.0, 2.0),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 10.0),
-        Padding(
-          padding: const EdgeInsets.all(10),
-          child: SizedBox(
-            width: 300, // Ancho deseado
-            child: TextField(
-              controller: _nameController,
-              decoration: InputDecoration(
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(50.0),
-                ),
-                filled: true,
-                fillColor: Colors.white,
-                labelText: 'Nombre',
-                hintText: 'Introduzca el nombre de usuario',
-                suffixIcon: const Icon(Icons.person),
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(height: 10.0),
-        Padding(
-          padding: const EdgeInsets.all(10),
-          child: SizedBox(
-            width: 300, // Ancho deseado
-            child: TextField(
-              controller: _emailController,
-              decoration: InputDecoration(
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(50.0),
-                ),
-                filled: true,
-                fillColor: Colors.white,
-                labelText: 'Email',
-                hintText: 'Introduzca la dirección de correo',
-                suffixIcon: const Icon(Icons.email),
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(height: 10.0),
-        Padding(
-          padding: const EdgeInsets.all(10),
-          child: SizedBox(
-            width: 300, // Ancho deseado
-            child: TextField(
-              controller: _passwordController,
-              obscureText: true,
-              decoration: InputDecoration(
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(50.0),
-                ),
-                filled: true,
-                fillColor: Colors.white,
-                labelText: 'Contraseña',
-                hintText: 'Introduzca la contraseña',
-                suffixIcon: const Icon(Icons.lock),
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(height: 10.0),
-        Padding(
-          padding: const EdgeInsets.all(10),
-          child: SizedBox(
-            width: 300, // Ancho deseado
-            child: TextField(
-              controller: _passwordConfController,
-              obscureText: true,
-              decoration: InputDecoration(
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(50.0),
-                ),
-                filled: true,
-                fillColor: Colors.white,
-                labelText: 'Confirmar contraseña',
-                hintText: 'Repita la contraseña',
-                suffixIcon: const Icon(Icons.lock),
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(height: 20), // Espacio entre los botones
+        buildTitle('Registrarse', 28),
+        buildEntryButton('Nombre', 'Introduzca el nombre de usuario', Icons.person, _nameController),
+        buildEntryButton('Email', 'Introduzca la dirección de correo', Icons.email, _emailController),
+        buildEntryAstButton('Contraseña', 'Introduzca la contraseña', Icons.lock, _passwordController),
+        buildEntryAstButton('Confirmar contraseña', 'Repita la contraseña', Icons.lock, _passwordConfController),
+        
+        const SizedBox(height: 20), 
 
         buildActionButton(context, onPressed, "Confirmar"),
 
-        const SizedBox(height: 20), // Espacio entre los botones    
+        const SizedBox(height: 20),   
 
         buildTextButton(context, () => _handleIniciarSesionPressed(context), '¿Ya tienes una cuenta? Inicia sesión'),
       ],

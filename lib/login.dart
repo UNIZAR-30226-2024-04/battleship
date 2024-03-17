@@ -45,73 +45,17 @@ class _InicioSesionState extends State<InicioSesion> {
   }
 
 
-
-
   Widget _buildLogin(BuildContext context, VoidCallback? onPressed) {
     return Column(
       children: [
-        const Text(
-          'Iniciar Sesión',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 28,
-            decoration: TextDecoration.none,
-            fontWeight: FontWeight.bold,
-            letterSpacing: 1.5, // Espaciado entre letras
-            shadows: [
-              Shadow(
-                blurRadius: 2.0,
-                color: Colors.black,
-                offset: Offset(2.0, 2.0),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 10.0),
-        Padding(
-          padding: const EdgeInsets.all(10),
-          child: SizedBox(
-            width: 300, // Ancho deseado
-            child: TextField(
-              controller: _emailController,
-              decoration: InputDecoration(
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(50.0),
-                ),
-                filled: true,
-                fillColor: Colors.white,
-                labelText: 'Email',
-                hintText: 'Introduzca la dirección de correo',
-                suffixIcon: const Icon(Icons.email),
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(height: 10.0),
-        Padding(
-          padding: const EdgeInsets.all(10),
-          child: SizedBox(
-            width: 300, // Ancho deseado
-            child: TextField(
-              controller: _passwordController,
-              obscureText: true,
-              decoration: InputDecoration(
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(50.0),
-                ),
-                filled: true,
-                fillColor: Colors.white,
-                labelText: 'Contraseña',
-                hintText: 'Introduzca la contraseña',
-                suffixIcon: const Icon(Icons.lock),
-              ),
-            ),
-          ),
-        ),
+        buildTitle('Iniciar Sesión', 28),
 
+        const SizedBox(height: 10.0),
+        buildEntryButton('Email', 'Introduzca la dirección de correo', Icons.email, _emailController),
+        buildEntryAstButton('Contraseña', 'Introduzca la contraseña', Icons.lock, _passwordController),
         buildTextButton(context, () => _handleRecContrasenaPressed(context), 'Olvidé la contraseña'),
+        const SizedBox(height: 10.0),
 
-        const SizedBox(height: 20.0),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
@@ -124,14 +68,15 @@ class _InicioSesionState extends State<InicioSesion> {
               },
             ),
             const SizedBox(width: 8.0),
-            const Text(
-              'Recordarme',
-              style: TextStyle(color: Colors.white),
+            const Text('Recordarme', style: TextStyle(color: Colors.white),
             ),
           ],
         ),
+
         const SizedBox(height: 20), // Espacio entre los botones
+
         buildActionButton(context, onPressed, "Iniciar Sesión"),
+
         const SizedBox(height: 20), // Espacio entre los botones    
 
         buildTextButton(context, () => _handleRegistrarsePressed(context), '¿No tienes una cuenta? Regístrate')

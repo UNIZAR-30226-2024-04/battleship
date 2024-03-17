@@ -19,6 +19,7 @@ class Habilidades extends StatelessWidget {
         body: Column(
           children: [
             buildHeader(context),
+            buildTitle('Habilidades', 28),
             const Spacer(),
             _buildHabilities(context),
             const Spacer(),
@@ -33,25 +34,6 @@ Widget _buildHabilities(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        const SizedBox(height: 50),
-        const Text(
-          'Habilidades',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 28,
-            decoration: TextDecoration.none,
-            fontWeight: FontWeight.bold,
-            letterSpacing: 1.5, // Espaciado entre letras
-            shadows: [
-              Shadow(
-                blurRadius: 2.0,
-                color: Colors.black,
-                offset: Offset(2.0, 2.0),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 60),
         Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -63,7 +45,7 @@ Widget _buildHabilities(BuildContext context) {
                 buildCircledButton('images/sonar.png', 'Sonar'),
               ],
             ),
-            const SizedBox(height: 20), // Espaciado entre las filas
+            const SizedBox(height: 20),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [

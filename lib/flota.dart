@@ -19,6 +19,7 @@ class Flota extends StatelessWidget {
         body: Column(
           children: [
             buildHeader(context),
+            buildTitle('Flota', 28),
             const Spacer(),
             _buildFlota(context),
             const Spacer(),
@@ -36,24 +37,6 @@ class Flota extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        const Text(
-          'Habilidades',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 28,
-            decoration: TextDecoration.none,
-            fontWeight: FontWeight.bold,
-            letterSpacing: 1.5, // Espaciado entre letras
-            shadows: [
-              Shadow(
-                blurRadius: 2.0,
-                color: Colors.black,
-                offset: Offset(2.0, 2.0),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 60),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [

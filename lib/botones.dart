@@ -56,7 +56,7 @@ class _CustomCheckboxState extends State<CustomCheckbox> {
   }
 }
 
-
+// Botones circulares.
 Widget buildCircledButton(String imagePath, String text) {
   return Column(
     children: [
@@ -82,7 +82,7 @@ Widget buildCircledButton(String imagePath, String text) {
   );
 }
 
-
+// Botón amarillo.
 Widget buildActionButton(BuildContext context, VoidCallback? onPressed, String text) {
   return Column(
     children: [
@@ -114,15 +114,95 @@ Widget buildActionButton(BuildContext context, VoidCallback? onPressed, String t
   );
 }
 
-
+// Texto clicable.
 Widget buildTextButton (BuildContext context, VoidCallback onTapAction, String text) {
   return GestureDetector(
     onTap: onTapAction,
     child: Text(
       text,
-      style: TextStyle(
+      style: const TextStyle(
         color: Colors.white, // Color del texto
         fontSize: 16.0, // Tamaño del texto
+      ),
+    ),
+  );
+}
+
+// Entrada de texto blanca con pista e icono.
+Widget buildEntryButton(String text, String hintText, IconData icono, TextEditingController controller) {
+  return Padding(
+    padding: const EdgeInsets.all(10),
+    child: SizedBox(
+      width: 300,
+      child: TextField(
+        controller: controller,
+        decoration: InputDecoration(
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(50.0),
+          ),
+          filled: true,
+          fillColor: Colors.white,
+          labelText: text,
+          hintText: hintText,
+          suffixIcon: Icon(icono),
+        ),
+      ),
+    ),
+  );
+}
+
+// Entrada de texto blanca con pista, icono y escrito con asteriscos.
+Widget buildEntryAstButton(String text, String hintText, IconData icono, TextEditingController controller) {
+  return Padding(
+    padding: const EdgeInsets.all(10),
+    child: SizedBox(
+      width: 300,
+      child: TextField(
+        obscureText: true,
+        controller: controller,
+        decoration: InputDecoration(
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(50.0),
+          ),
+          filled: true,
+          fillColor: Colors.white,
+          labelText: text,
+          hintText: hintText,
+          suffixIcon: Icon(icono),
+        ),
+      ),
+    ),
+  );
+}
+
+// Entrada de texto blanca con texto permanente y desplegable.
+Widget buildDropdownButton(BuildContext context, String text, List<String> items, TextEditingController controller) {
+  String? selectedItem;
+
+  return Padding(
+    padding: const EdgeInsets.all(10),
+    child: SizedBox(
+      width: 300,
+      child: DropdownButtonFormField(
+        decoration: InputDecoration(
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(30.0),
+          ),
+          filled: true,
+          fillColor: Colors.white,
+          labelText: text,
+        ),
+        value: selectedItem,
+        items: items.map((String item) {
+          return DropdownMenuItem(
+            value: item,
+            child: Text(item),
+          );
+        }).toList(),
+        onChanged: (String? newValue) {
+          selectedItem = newValue;
+          controller.text = newValue ?? '';
+        },
       ),
     ),
   );
