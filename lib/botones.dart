@@ -55,3 +55,75 @@ class _CustomCheckboxState extends State<CustomCheckbox> {
     );
   }
 }
+
+
+Widget buildCircledButton(String imagePath, String text) {
+  return Column(
+    children: [
+      ElevatedButton(
+        onPressed: () {},
+        style: ElevatedButton.styleFrom(
+          shape: const CircleBorder(), // Forma totalmente redonda
+          padding: const EdgeInsets.all(20), // Tamaño del botón
+          backgroundColor: Colors.black.withOpacity(0.5), // Fondo oscuro y transparente
+        ),
+        child: Image.asset(
+          imagePath, // Ruta de la imagen
+          width: 50, // Ancho de la imagen
+          height: 50, // Alto de la imagen
+        ),
+      ),
+      const SizedBox(height: 5), // Espaciado entre el botón y el texto
+      Text(
+        text,
+        style: const TextStyle(color: Colors.white),
+      ), // Texto debajo del botón
+    ],
+  );
+}
+
+
+Widget buildActionButton(BuildContext context, VoidCallback? onPressed, String text) {
+  return Column(
+    children: [
+      SizedBox(
+        child: Stack(
+          children: [
+            ElevatedButton(
+              onPressed: onPressed,
+              style: ElevatedButton.styleFrom(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15),
+                ),
+                backgroundColor: Colors.orange,
+                minimumSize: const Size(270, 70),
+                elevation: 8,
+              ),
+              child: Text(
+                text,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 20,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    ],
+  );
+}
+
+
+Widget buildTextButton (BuildContext context, VoidCallback onTapAction, String text) {
+  return GestureDetector(
+    onTap: onTapAction,
+    child: Text(
+      text,
+      style: TextStyle(
+        color: Colors.white, // Color del texto
+        fontSize: 16.0, // Tamaño del texto
+      ),
+    ),
+  );
+}
