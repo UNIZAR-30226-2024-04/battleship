@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Sidebar, Menu, MenuItem } from 'react-pro-sidebar'
 import { useNavigate } from 'react-router-dom';
 import battleshipImage from '../Images/bs_Logo.png';
@@ -7,6 +7,28 @@ import battleshipImage from '../Images/bs_Logo.png';
 
 export function Navbar() {
     const navigate = useNavigate();
+    const [hovered, setHovered] = useState(false);
+
+    const handleMouseEnter = () => {
+        setHovered(true);
+    };
+
+    const handleMouseLeave = () => {
+        setHovered(false);
+    };
+
+    // Estilos CSS para el texto cuando el cursor está encima
+    const textStyleHovered = {
+        color: '#1D3461', // Cambia el color del texto cuando el cursor está encima
+        cursor: 'pointer',
+    };
+
+    // Estilos CSS para el texto cuando el cursor no está encima
+    const textStyle = {
+        color: '#000000', // Color de texto predeterminado
+        cursor: 'pointer',
+    };
+
     return (
         <div style={{ display: "flex", height: "100vh" }}>
             <Sidebar 
@@ -17,8 +39,22 @@ export function Navbar() {
             // Modificar el alto del sidebar
             
             >
-                <img src={battleshipImage} alt="logo" width="100px" height="100px" onClick={() => navigate('/')}></img>
-                <center onClick={() => navigate('/')}>Battleship</center>
+                <img 
+                    src={battleshipImage} 
+                    alt="logo" 
+                    width="100px" 
+                    height="100px" 
+                    onClick={() => navigate('/')}
+                    onMouseEnter={handleMouseEnter}
+                    onMouseLeave={handleMouseLeave}
+                    style={{ filter: hovered ? 'brightness(120%)' : 'brightness(100%)' }}
+                ></img>
+                <center
+                    onClick={() => navigate('/')}
+                    onMouseEnter={handleMouseEnter}
+                    onMouseLeave={handleMouseLeave}
+                    style={hovered ? textStyleHovered : textStyle} // Aplica los estilos correspondientes según el estado del cursor
+                > Battleship </center>
                 <br></br>
                 <Menu
                 menuItemStyles={{
