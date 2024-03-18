@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 
-// TO-DO: Para qué sirve esto? Nota: router tiene más métodos aparte de post
+// TODO: Para qué sirve esto? Nota: router tiene más métodos aparte de post
 
 // Ruta al fichero controlador de perfil
 // const perfilController = require('../controllers/perfilController');

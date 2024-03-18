@@ -158,7 +158,7 @@ exports.modificarPerfilMazoOTablero = async (req, res) => {
   }
 };
 
-// Modificar estadisticas de un perfil
+// Modificar estadisticas de un perfil TODO: EXP Y TROFEOS
 exports.actualizarEstadisticas = async (req, res) => {
   try {
     // Extracción de parámetros del cuerpo de la solicitud

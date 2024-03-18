@@ -120,6 +120,6 @@ const partidaSchema = new mongoose.Schema({
 
 
 const Partida = mongoose.model('Partida', partidaSchema);
-module.exports = Perfil;
+module.exports = Partida;
 
 
