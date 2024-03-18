@@ -1,4 +1,4 @@
-# battleship_app
+# Battleship app
 
 A new Flutter project.
 
