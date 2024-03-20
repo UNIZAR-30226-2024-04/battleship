@@ -10,6 +10,7 @@ mongoose.connect('mongodb://localhost/BattleshipDB')
       const perfiles = [
         { nombreId: 'usuario1', contraseña: 'Passwd1.', correo: 'usuario1@example.com' },
         { nombreId: 'usuario2', contraseña: 'Passwd2.', correo: 'usuario2@example.com' },
+        { nombreId: 'usuario1', contraseña: 'Passwd1.', correo: 'usuario1@example.com', extra: 1 }, // Sobran campos
         { nombreId: 'usuario1', contraseña: 'Passwd3.', correo: 'usuario3@example.com' },  // Ya existente
         { contraseña: 'Passwd1.', correo: 'usuario1@example.com' },                        // Falta un campo
         { nombreId: 'usuario3', contraseña: 'passwd1.', correo: 'usuario1@example.com' }, // Contraseña inválida

@@ -7,11 +7,17 @@ const crypto = require('crypto'); // Para generar claves secretas
 exports.crearPerfil = async (req, res) => {
   try {
     // Extracción de parámetros del cuerpo de la solicitud
-    const { nombreId, contraseña, correo } = req.body;
+    const { nombreId, contraseña, correo, ...extraParam } = req.body;
+    // Verificar si hay algún parámetro extra
+    if (Object.keys(extraParam).length > 0) {
+      res.status(400).send('Sobran parámetros, se espera nombreId, contraseña y correo');
+      console.error("Sobran parámetros, se espera nombreId, contraseña y correo");
+      return;
+    }
     // Verificar si alguno de los parámetros está ausente
     if (!nombreId || !contraseña || !correo) {
-      res.status(400).send('Falta el nombre del perfil, la contraseña y/o el correo');
-      console.error("Falta el nombre del perfil, la contraseña y/o el correo");
+      res.status(400).send('Falta el nombreId, la contraseña y/o el correo');
+      console.error("Falta el nombreId, la contraseña y/o el correo");
       return;
     }
     // Comprobar que la contraseña cumple con los requisitos
@@ -70,11 +76,17 @@ exports.crearPerfil = async (req, res) => {
 exports.modificarPerfilDatosPersonales = async (req, res) => {
   try {
     // Extracción de parámetros del cuerpo de la solicitud
-    const { nombreId, contraseña, correo } = req.body;
+    const { nombreId, contraseña, correo, ...extraParam } = req.body;
+    // Verificar si hay algún parámetro extra
+    if (Object.keys(extraParam).length > 0) {
+      res.status(400).send('Sobran parámetros, se espera nombreId, contraseña y/o correo');
+      console.error("Sobran parámetros, se espera nombreId, contraseña y/o correo");
+      return;
+    }
     // Verificar si alguno de los parámetros está ausente
     if (!nombreId) {
-      res.status(400).send('Falta el nombre del perfil en la solicitud');
-      console.error("Falta el nombre del perfil en la solicitud");
+      res.status(400).send('Falta el nombreId en la solicitud');
+      console.error("Falta el nombreId en la solicitud");
       return;
     }
     // Comprobar que la contraseña cumple con los requisitos
@@ -125,11 +137,17 @@ exports.modificarPerfilDatosPersonales = async (req, res) => {
 exports.modificarPerfilMazoOTablero = async (req, res) => {
   try {
     // Extracción de parámetros del cuerpo de la solicitud
-    const { nombreId, tableroInicial, mazoHabilidadesElegidas } = req.body;
+    const { nombreId, tableroInicial, mazoHabilidadesElegidas, ...extraParam } = req.body;
+    // Verificar si hay algún parámetro extra
+    if (Object.keys(extraParam).length > 0) {
+      res.status(400).send('Sobran parámetros, se espera nombreId, tableroInicial y/o mazoHabilidadesElegidas');
+      console.error("Sobran parámetros, se espera nombreId, tableroInicial y/o mazoHabilidadesElegidas");
+      return;
+    }
     // Verificar si alguno de los parámetros está ausente
     if (!nombreId) {
-      res.status(400).send('Falta el nombre del perfil en la solicitud');
-      console.error("Falta el nombre del perfil en la solicitud");
+      res.status(400).send('Falta el nombreId en la solicitud');
+      console.error("Falta el nombreId en la solicitud");
       return;
     }
     // Buscar y actualizar el perfil en la base de datos
@@ -158,19 +176,30 @@ exports.modificarPerfilMazoOTablero = async (req, res) => {
   }
 };
 
-// Modificar estadisticas de un perfil TODO: EXP Y TROFEOS
+// Modificar estadisticas de un perfil tras partida
 exports.actualizarEstadisticas = async (req, res) => {
   try {
     // Extracción de parámetros del cuerpo de la solicitud
-    const { nombreId, resultado, nuevosBarcosHundidos, nuevosBarcosPerdidos, nuevosDisparosAcertados, nuevosDisparosFallados } = req.body;
-
-    // Verificar si alguno de los parámetros está ausente
-    if (!nombreId) {
-      res.status(400).send('Falta el nombre del perfil en la solicitud');
-      console.error("Falta el nombre del perfil en la solicitud");
+    const { nombreId, resultado, nuevosBarcosHundidos, nuevosBarcosPerdidos, nuevosDisparosAcertados, 
+      nuevosDisparosFallados, nuevosTrofeos = 0, ...extraParam} = req.body; // Por defecto, no hay trofeos en juego
+    // Verificar si hay algún parámetro extra
+    if (Object.keys(extraParam).length > 0) {
+      res.status(400).send('Sobran parámetros, se espera nombreId, resultado, nuevosBarcosHundidos, nuevosBarcosPerdidos, nuevosDisparosAcertados, nuevosDisparosFallados y nuevosTrofeos');
+      console.error("Sobran parámetros, se espera nombreId, resultado, nuevosBarcosHundidos, nuevosBarcosPerdidos, nuevosDisparosAcertados, nuevosDisparosFallados y nuevosTrofeos");
       return;
     }
-    
+    // Verificar si alguno de los parámetros está ausente
+    if (!nombreId) {
+      res.status(400).send('Falta el nombreId en la solicitud');
+      console.error("Falta el nombreId en la solicitud");
+      return;
+    }
+    if (!esNumero(resultado) || !esNumero(nuevosBarcosHundidos) || !esNumero(nuevosBarcosPerdidos) || 
+      !esNumero(nuevosDisparosAcertados) || !esNumero(nuevosDisparosFallados) || !esNumero(nuevosTrofeos)) {
+        res.status(400).send('Las estadísticas deben ser numéricas');
+        console.error("Las estadísticas deben ser numéricas");
+        return;
+    }
     // Buscar y actualizar el perfil en la base de datos
     const perfilModificado = await Perfil.findOneAndUpdate(
       { nombreId: nombreId }, // Filtro para encontrar el perfil a modificar
@@ -182,6 +211,7 @@ exports.actualizarEstadisticas = async (req, res) => {
           barcosPerdidos: nuevosBarcosPerdidos,
           disparosAcertados: nuevosDisparosAcertados,
           disparosFallados: nuevosDisparosFallados,
+          trofeos: resultado ? nuevosTrofeos : -nuevosTrofeos
         }
       },
       { new: true } // Para devolver el documento actualizado
@@ -197,10 +227,56 @@ exports.actualizarEstadisticas = async (req, res) => {
 
   } catch (error) {
     res.status(500).send('Hubo un error');
-    console.error("Error al modificar el perfil", error);
+    console.error("Error al actualizar el perfil", error);
   }
 };
 
+// Modificar puntos de experiencia de un perfil
+exports.actualizarPuntosExperiencia = async (req, res) => {
+  try {
+    // Extracción de parámetros del cuerpo de la solicitud
+    const { nombreId, nuevosPuntosExperiencia, ...extraParam } = req.body;
+    // Verificar si hay algún parámetro extra
+    if (Object.keys(extraParam).length > 0) {
+      res.status(400).send('Sobran parámetros, se espera nombreId y nuevosPuntosExperiencia');
+      console.error("Sobran parámetros, se espera nombreId y nuevosPuntosExperiencia");
+      return;
+    }
+    // Verificar si alguno de los parámetros está ausente
+    if (!nombreId) {
+      res.status(400).send('Falta el nombreId en la solicitud');
+      console.error("Falta el nombreId en la solicitud");
+      return;
+    }
+    if (!esNumero(nuevosPuntosExperiencia)) {
+        res.status(400).send('Los puntos de experiencia deben ser numéricos');
+        console.error("Los puntos de experiencia deben ser numéricos");
+        return;
+    }
+    // Buscar y actualizar el perfil en la base de datos
+    const perfilModificado = await Perfil.findOneAndUpdate(
+      { nombreId: nombreId }, // Filtro para encontrar el perfil a modificar
+      {
+        $inc: {
+          puntosExperiencia: nuevosPuntosExperiencia
+        }
+      },
+      { new: true } // Para devolver el documento actualizado
+    );
+    // Verificar si el perfil existe y enviar la respuesta al cliente
+    if (perfilModificado) {
+      res.json(perfilModificado);
+      console.log("Perfil modificado con éxito", perfilModificado);
+    } else {
+      res.status(404).send('No se ha encontrado el perfil a actualizar');
+      console.error("No se ha encontrado el perfil a actualizar");
+    }
+
+  } catch (error) {
+    res.status(500).send('Hubo un error');
+    console.error("Error al actualizar el perfil", error);
+  }
+};
 
 // Funcion para comprobar que un parametro es un correo electronico
 function verificarCorreo(correo) {
@@ -219,20 +295,21 @@ function esNumero(numero) {
   return !isNaN(numero);
 }
 
-// Funcion para comprobar que nombreID tiene longtud mayor que 5
-function verificarNombreId(nombreId) {
-  return nombreId.length > 5;
-}
-
 // Obtener un perfil
 exports.obtenerPerfil = async (req, res) => {
   try {
     // Extraer el nombreId del parámetro de la solicitud
-    const { nombreId } = req.body;
+    const { nombreId, ...extraParam } = req.body;
+    // Verificar si hay algún parámetro extra
+    if (Object.keys(extraParam).length > 0) {
+      res.status(400).send('Sobran parámetros, se espera nombreId');
+      console.error("Sobran parámetros, se espera nombreId");
+      return;
+    }
     // Verificar si alguno de los parámetros está ausente
     if (!nombreId) {
-      res.status(400).send('Falta el nombre del perfil en la solicitud');
-      console.error("Falta el nombre del perfil en la solicitud");
+      res.status(400).send('Falta el nombreId en la solicitud');
+      console.error("Falta el nombreId en la solicitud");
       return;
     }
     // Buscar el perfil en la base de datos
@@ -257,11 +334,17 @@ exports.obtenerPerfil = async (req, res) => {
 exports.eliminarPerfil = async (req, res) => {
   try {
     // Extraer el nombreId del parámetro de la solicitud
-    const { nombreId } = req.body;
+    const { nombreId, ...extraParam } = req.body;
+    // Verificar si hay algún parámetro extra
+    if (Object.keys(extraParam).length > 0) {
+      res.status(400).send('Sobran parámetros, se espera nombreId');
+      console.error("Sobran parámetros, se espera nombreId");
+      return;
+    }
     // Comprobar si el nombreId está presente en la solicitud
     if (!nombreId) {
-      res.status(400).send('Falta el nombre del perfil en la solicitud');
-      console.error("Falta el nombre del perfil en la solicitud");
+      res.status(400).send('Falta el nombreId en la solicitud');
+      console.error("Falta el nombreId en la solicitud");
       return;
     }
     // Buscar y eliminar el perfil de la base de datos
@@ -284,9 +367,16 @@ exports.eliminarPerfil = async (req, res) => {
 exports.autenticarUsuario = async (req, res) => { // Requiere nombreId y contraseña
   try {
     // Extraer los parámetros del cuerpo de la solicitud
-    const { contraseña } = req.body;
+    const { nombreId, contraseña, ...extraParam } = req.body;
+    // Verificar si hay algún parámetro extra
+    if (Object.keys(extraParam).length > 0) {
+      res.status(400).send('Sobran parámetros, se espera nombreId y contraseña');
+      console.error("Sobran parámetros, se espera nombreId y contraseña");
+      return;
+    }
+    const newReq = { body: {nombreId: nombreId} };  // Nuevo req con sólo nombreId en body
     // Buscar el perfil en la base de datos
-    const perfil = await obtenerPerfil(req, res);
+    const perfil = await obtenerPerfil(newReq, res);
     if (perfil) {
       // Verificar la contraseña
       const contraseñaValida = await bcrypt.compare(contraseña, perfil.contraseña);
@@ -333,7 +423,9 @@ exports.registrarUsuario = async (req, res) => {  // Requiere nombreId, contrase
     // Crear el perfil
     const perfil = await crearPerfil(req, res);
     if (perfil) {
-      await iniciarSesion(req, res);
+      const { nombreId, contraseña } = req.body;
+      const newReq = { body: {nombreId: nombreId, contraseña: contraseña} };  // Nuevo req con sólo nombreId y contraseña en body
+      await iniciarSesion(newReq, res);
       console.log("Usuario registrado con éxito");
     }
   } catch (error) {

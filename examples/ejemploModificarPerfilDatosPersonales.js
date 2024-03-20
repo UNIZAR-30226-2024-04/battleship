@@ -6,10 +6,10 @@ mongoose.connect('mongodb://localhost/BattleshipDB')
   .then(async () => {
     console.log('Conectado a MongoDB...');
     try {
-      // Lista de perfiles a crear
       const perfiles = [
-        { nombreId: 'usuario1', contraseña: 'Passwd1.', correo: 'MODIFICADOusuario1@example.com' }, // Correo modificado
-        { nombreId: 'usuario1', contraseña: 'MODIFICADAPasswd1.', correo: 'MODIFICADOusuario1@example.com' }, // Contraseña modificada
+        { nombreId: 'usuario1', correo: 'MODIFICADOusuario1@example.com' }, // Correo modificado
+        { nombreId: 'usuario1', contraseña: 'MODIFICADAPasswd1.' }, // Contraseña modificada
+        { nombreId: 'usuario3', contraseña: 'Passwd3.', correo: 'usuario3@example.com', extra: 1},  // Sobran campos
         { nombreId: 'usuario3', contraseña: 'Passwd3.', correo: 'usuario3@example.com' },  // No existente
         { contraseña: 'Passwd1.', correo: 'usuario1@example.com' },                        // Falta un campo
         { nombreId: 'usuario1', contraseña: 'Passwd12', correo: 'usuario1@example.com' }, // Contraseña inválida

@@ -1,23 +1,24 @@
 const mongoose = require('mongoose');
-const { obtenerPerfil } = require('../controllers/perfilController');
+const { actualizarPuntosExperiencia } = require('../controllers/perfilController');
 
 // Conexión a la base de datos
 mongoose.connect('mongodb://localhost/BattleshipDB')
   .then(async () => {
     console.log('Conectado a MongoDB...');
     try {
-
       const perfiles = [
-        { nombreId: 'usuario1'},
-        { nombreId: 'usuario1', extra: 1},  // Sobran campos
-        { nombreId: 'usuario3'},    // No existente
-        { },  // Falta nombreId
+        { nombreId: 'usuario1', nuevosPuntosExperiencia: 10},
+        { nombreId: 'usuario3', nuevosPuntosExperiencia: 10, extra: 1}, // Sobran campos
+        { nombreId: 'usuario1', nuevosPuntosExperiencia: 'a' }, // Campos no numéricos
+        { nombreId: 'usuario3', nuevosPuntosExperiencia: 10 },  // No existente
+        { nuevosPuntosExperiencia: 10 }, // Falta nombreId
+
       ];
 
       for (const perfil of perfiles) {
         const req = { body: perfil };
         const res = { json: () => {}, status: () => ({ send: () => {} }) }; // No hace nada
-        await obtenerPerfil(req, res);
+        await actualizarPuntosExperiencia(req, res);
       }
     } catch (error) {
       console.error('Error en el test de crear perfil:', error);
