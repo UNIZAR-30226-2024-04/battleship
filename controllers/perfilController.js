@@ -2,6 +2,7 @@ const Perfil = require('../models/perfilModel');
 const bcrypt = require('bcrypt'); // Para hash de constraseña
 const jwt = require('jsonwebtoken'); // Para generar tokens JWT
 const crypto = require('crypto'); // Para generar claves secretas
+const habilidadesDisponibles = require('../data/habilidades')
 
 // Crear un perfil
 exports.crearPerfil = async (req, res) => {
@@ -134,14 +135,14 @@ exports.modificarPerfilDatosPersonales = async (req, res) => {
 };
 
 // Modificar mazo y tablero de un perfil
-exports.modificarPerfilMazoOTablero = async (req, res) => {
+exports.modificarMazo = async (req, res) => {
   try {
     // Extracción de parámetros del cuerpo de la solicitud
-    const { nombreId, tableroInicial, mazoHabilidadesElegidas, ...extraParam } = req.body;
+    const { nombreId, mazoHabilidades = [], ...extraParam } = req.body;
     // Verificar si hay algún parámetro extra
     if (Object.keys(extraParam).length > 0) {
-      res.status(400).send('Sobran parámetros, se espera nombreId, tableroInicial y/o mazoHabilidadesElegidas');
-      console.error("Sobran parámetros, se espera nombreId, tableroInicial y/o mazoHabilidadesElegidas");
+      res.status(400).send('Sobran parámetros, se espera nombreId y mazoHabilidades');
+      console.error("Sobran parámetros, se espera nombreId y mazoHabilidades");
       return;
     }
     // Verificar si alguno de los parámetros está ausente
@@ -150,13 +151,25 @@ exports.modificarPerfilMazoOTablero = async (req, res) => {
       console.error("Falta el nombreId en la solicitud");
       return;
     }
+    // Verificar si mazoHabilidades es un array y tiene como máximo 3 elementos
+    if (!Array.isArray(mazoHabilidades) || mazoHabilidades.length > 3) {
+      res.status(400).send('El mazo debe tener como máximo 3 habilidades');
+      console.error("El mazo debe tener como máximo 3 habilidades");
+      return;
+    }
+    // Verificar si todas las habilidades elegidas están en la lista de habilidades disponibles
+    const habilidadesNoDisponibles = mazoHabilidades.filter(habilidad => !habilidadesDisponibles.includes(habilidad));
+    if (habilidadesNoDisponibles.length > 0) {
+      res.status(400).send('Las habilidades deben ser Rafaga, Recargado, Sonar, Mina o Teledirigido');
+      console.error("Las habilidades deben ser Rafaga, Recargado, Sonar, Mina o Teledirigido");
+      return;
+    }
     // Buscar y actualizar el perfil en la base de datos
     const perfilModificado = await Perfil.findOneAndUpdate(
       { nombreId: nombreId }, // Filtro para encontrar el perfil a modificar
       {
         $set: {
-          tableroInicial: tableroInicial,
-          mazoHabilidadesElegidas: mazoHabilidadesElegidas,
+          mazoHabilidades: mazoHabilidades
         }
       },
       { new: true } // Para devolver el documento actualizado
@@ -165,14 +178,14 @@ exports.modificarPerfilMazoOTablero = async (req, res) => {
     // Verificar si el perfil existe y enviar la respuesta al cliente
     if (perfilModificado) {
       res.json(perfilModificado);
-      console.log("Perfil modificado con éxito", perfilModificado);
+      console.log("Mazo modificado con éxito", perfilModificado);
     } else {
       res.status(404).send('No se ha encontrado el perfil a modificar');
       console.error("No se ha encontrado el perfil a modificar");
     }
   } catch (error) {
     res.status(500).send('Hubo un error');
-    console.error("Error al modificar el perfil", error);
+    console.error("Error al modificar el mazo", error);
   }
 };
 

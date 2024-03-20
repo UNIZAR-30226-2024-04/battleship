@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 // La privacidad de los datos la manejamos en el servidor/API
 
 const Schema = mongoose.Schema;
-
+const habilidadesDisponibles = require('../data/habilidades')
 // Perfil Schema
 const perfilSchema = new Schema({
   nombreId: {                // IDENTIFICADOR OBLIGATORIO: Nombre de usuario
@@ -41,10 +41,10 @@ const perfilSchema = new Schema({
     }],
     required: true
   },
-  mazoHabilidadesElegidas: {  // Habilidades(enteros) elegidas de una lista fija
+  mazoHabilidades: {  // Habilidades(enteros) elegidas de una lista fija
     type: [{
       type: String,
-      enum: ['Rafaga', 'Recargado', 'Sonar', 'Mina', 'Teledirigido']}], 
+      enum: habilidadesDisponibles}], 
     default: [] 
   },
   correo: {                  // OBLIGATORIO: Correo electrónico del usuario
