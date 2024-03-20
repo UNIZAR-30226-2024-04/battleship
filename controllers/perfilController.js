@@ -45,12 +45,13 @@ exports.crearPerfil = async (req, res) => {
     }
 
     // Crear un tablero aleatorio con un barco de 5 casillas de largo 
-    const tableroInicial = [[[1, 1, false ], [1, 2, false], false ], 
-                            [[7, 1, false ], [8, 1, false],[9, 1, false], false ], 
-                            [[3, 10, false ], [4, 10, false],[5, 10, false], false ],
-                            [[4, 4, false ], [5, 5, false],[6, 6, false], [7, 7, false], false ],
-                            [[10, 6, false ], [10, 7, false],[10, 8, false], [10, 9, false], [10, 10, false], false ]
-           ];
+    const tableroInicial = [
+      [{ x: 1, y: 1 }, { x: 1, y: 2 }],
+      [{ x: 7, y: 1 }, { x: 8, y: 1 }, { x: 9, y: 1 }],
+      [{ x: 3, y: 10 }, { x: 4, y: 10 }, { x: 5, y: 10 }],
+      [{ x: 4, y: 4 }, { x: 5, y: 5 }, { x: 6, y: 6 }, { x: 7, y: 7 }],
+      [{ x: 10, y: 6 }, { x: 10, y: 7 }, { x: 10, y: 8 }, { x: 10, y: 9 }, { x: 10, y: 10 }]
+    ];
       
     
     // Creación del perfil en la base de datos
@@ -134,7 +135,7 @@ exports.modificarPerfilDatosPersonales = async (req, res) => {
   }
 };
 
-// Modificar mazo y tablero de un perfil
+// Modificar mazo de un perfil
 exports.modificarMazo = async (req, res) => {
   try {
     // Extracción de parámetros del cuerpo de la solicitud
@@ -186,6 +187,49 @@ exports.modificarMazo = async (req, res) => {
   } catch (error) {
     res.status(500).send('Hubo un error');
     console.error("Error al modificar el mazo", error);
+  }
+};
+
+// Modificar tablero de un perfil
+exports.modificarTablero = async (req, res) => {
+  try {
+    // Extracción de parámetros del cuerpo de la solicitud
+    const { nombreId, tableroInicial = [], ...extraParam } = req.body;
+    // Verificar si hay algún parámetro extra
+    if (Object.keys(extraParam).length > 0) {
+      res.status(400).send('Sobran parámetros, se espera nombreId y mazoHabilidades');
+      console.error("Sobran parámetros, se espera nombreId y mazoHabilidades");
+      return;
+    }
+    // Verificar si alguno de los parámetros está ausente
+    if (!nombreId) {
+      res.status(400).send('Falta el nombreId en la solicitud');
+      console.error("Falta el nombreId en la solicitud");
+      return;
+    }
+
+    // Buscar y actualizar el perfil en la base de datos
+    const perfilModificado = await Perfil.findOneAndUpdate(
+      { nombreId: nombreId }, // Filtro para encontrar el perfil a modificar
+      {
+        $set: {
+          tableroInicial: tableroInicial
+        }
+      },
+      { new: true } // Para devolver el documento actualizado
+    );
+
+    // Verificar si el perfil existe y enviar la respuesta al cliente
+    if (perfilModificado) {
+      res.json(perfilModificado);
+      console.log("Tablero inicial modificado con éxito", perfilModificado);
+    } else {
+      res.status(404).send('No se ha encontrado el perfil a modificar');
+      console.error("No se ha encontrado el perfil a modificar");
+    }
+  } catch (error) {
+    res.status(500).send('Hubo un error');
+    console.error("Error al modificar el tablero inicial", error);
   }
 };
 

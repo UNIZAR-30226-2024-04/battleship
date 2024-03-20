@@ -3,7 +3,8 @@ const mongoose = require('mongoose');
 // La privacidad de los datos la manejamos en el servidor/API
 
 const Schema = mongoose.Schema;
-const habilidadesDisponibles = require('../data/habilidades')
+const habilidadesDisponibles = require('../data/habilidades');
+const Tablero = require('../data/tablero');
 // Perfil Schema
 const perfilSchema = new Schema({
   nombreId: {                // IDENTIFICADOR OBLIGATORIO: Nombre de usuario
@@ -23,22 +24,7 @@ const perfilSchema = new Schema({
     default: 0 
   },
   tableroInicial: {           // Lista barcos del jugador 
-    type: [{
-      // Barco = lista de coordenadas y estado
-      coordenadas: [{        
-        type: [{             // Cada coordenada es un par (x, y) con un booleano de tocada
-          x: { type: Number, required: true, min: 1, max: 10 },
-          y: { type: Number, required: true, min: 1, max: 10 },
-          tocada: { type: Boolean, default: false}
-        }],
-        required: true        // Cada barco debe tener al menos una coordenada
-      }],
-      // Estado del barco
-      barcoHundido: {         
-        type: Boolean,
-        default: false        // Por defecto no esta hundido
-      }
-    }],
+    type: Tablero,
     required: true
   },
   mazoHabilidades: {  // Habilidades(enteros) elegidas de una lista fija
