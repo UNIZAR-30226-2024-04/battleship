@@ -376,7 +376,7 @@ exports.autenticarUsuario = async (req, res) => { // Requiere nombreId y contras
     }
     const newReq = { body: {nombreId: nombreId} };  // Nuevo req con sólo nombreId en body
     // Buscar el perfil en la base de datos
-    const perfil = await obtenerPerfil(newReq, res);
+    const perfil = await exports.obtenerPerfil(newReq, res);
     if (perfil) {
       // Verificar la contraseña
       const contraseñaValida = await bcrypt.compare(contraseña, perfil.contraseña);
@@ -385,9 +385,8 @@ exports.autenticarUsuario = async (req, res) => { // Requiere nombreId y contras
         console.error("La contraseña no es válida");
         return;
       }
-      res.json(perfil);
-      console.log("Perfil autenticado con éxito", perfil);
-      return perfil;
+      console.log("Perfil autenticado con éxito");
+      return perfil
     }
   } catch (error) {
     res.status(500).send('Hubo un error');
@@ -396,17 +395,23 @@ exports.autenticarUsuario = async (req, res) => { // Requiere nombreId y contras
   }
 };
 
+// Funcion para crear un token de sesión
+function crearToken(perfil) {
+  // Generar bytes aleatorios para la clave privada
+  const clavePrivadaBuffer = crypto.randomBytes(32);
+  const clavePrivada = clavePrivadaBuffer.toString('hex');
+  // Si el nombre de usuario y la contraseña son válidos, generar un token JWT
+  const token = jwt.sign(perfil.toJSON(), clavePrivada);
+  return token;
+}
+
 // Iniciar sesión
 exports.iniciarSesion = async (req, res) => { // Requiere nombreId y contraseña
   try {
     // Buscar el perfil en la base de datos
-    const perfil = await autenticarUsuario(req, res);
+    const perfil = await exports.autenticarUsuario(req, res);
     if (perfil) {
-      // Generar bytes aleatorios para la clave privada
-      const clavePrivadaBuffer = crypto.randomBytes(32);
-      const clavePrivada = clavePrivadaBuffer.toString('hex');
-      // Si el nombre de usuario y la contraseña son válidos, generar un token JWT
-      const token = jwt.sign(perfil.toJSON(), clavePrivada);
+      const token = crearToken(perfil);
       // Enviar el token como respuesta al cliente
       res.json(token);
       console.log("Sesión iniciada con éxito", token);
@@ -421,11 +426,11 @@ exports.iniciarSesion = async (req, res) => { // Requiere nombreId y contraseña
 exports.registrarUsuario = async (req, res) => {  // Requiere nombreId, contraseña y correo
   try {
     // Crear el perfil
-    const perfil = await crearPerfil(req, res);
+    const perfil = await exports.crearPerfil(req, res);
     if (perfil) {
-      const { nombreId, contraseña } = req.body;
-      const newReq = { body: {nombreId: nombreId, contraseña: contraseña} };  // Nuevo req con sólo nombreId y contraseña en body
-      await iniciarSesion(newReq, res);
+      const token = crearToken(perfil);
+      // Enviar el token como respuesta al cliente
+      res.json(token);
       console.log("Usuario registrado con éxito");
     }
   } catch (error) {
