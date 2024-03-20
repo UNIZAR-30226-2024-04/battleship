@@ -3,9 +3,11 @@ const mongoose = require('mongoose');
 // La privacidad de los datos la manejamos en el servidor/API
 
 const Schema = mongoose.Schema;
+const biomasDisponibles = require('../data/biomas')
+const climasDisponibles = require('../data/climas')
 
 // Partida Schema
-const partidaSchema = new mongoose.Schema({
+const partidaSchema = new Schema({
   chat: {
     type: [{ mensaje: String, autor: mongoose.Schema.Types.ObjectId, timestamp: Date }],
     default: []
@@ -81,7 +83,7 @@ const partidaSchema = new mongoose.Schema({
   },
   clima: {  // Clima actual Calma/Viento/Tormenta/Niebla
     type: String,
-    enum: ['Calma', 'Viento', 'Tormenta', 'Niebla'],
+    enum: climasDisponibles,
     required: true
   },
   usosHab1: { // Total de usos restantes de habilidades del J1
@@ -108,7 +110,7 @@ const partidaSchema = new mongoose.Schema({
   },
   bioma: {  // Bioma en el que se va a jugar la partida y que se caracteriza por una mayor probabilidad de clima
     type: String,
-    enum: ['Mediterraneo', 'Cantabrico', 'Norte', 'Bermudas'],
+    enum: biomasDisponibles,
     required: true
   },
   ganador: {  // Perfil del jugador ganador
