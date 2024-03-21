@@ -7,21 +7,21 @@ mongoose.connect('mongodb://localhost/BattleshipDB')
     console.log('Conectado a MongoDB...');
     try {
       const perfiles = [
-        { nombreId: 'usuario1', resultado: 1, nuevosBarcosHundidos: 1, nuevosBarcosPerdidos:1, 
+        { nombreId: 'usuario1', victoria: 1, nuevosBarcosHundidos: 1, nuevosBarcosPerdidos:1, 
             nuevosDisparosAcertados: 1, nuevosDisparosFallados: 1 },   // Victoria no competitiva
-        { nombreId: 'usuario1', resultado: 0, nuevosBarcosHundidos: 1, nuevosBarcosPerdidos:1, 
+        { nombreId: 'usuario1', victoria: 0, nuevosBarcosHundidos: 1, nuevosBarcosPerdidos:1, 
             nuevosDisparosAcertados: 1, nuevosDisparosFallados: 1 },   // Derrota no competitiva
-        { nombreId: 'usuario1', resultado: 1, nuevosBarcosHundidos: 1, nuevosBarcosPerdidos:1, 
+        { nombreId: 'usuario1', victoria: 1, nuevosBarcosHundidos: 1, nuevosBarcosPerdidos:1, 
             nuevosDisparosAcertados: 1, nuevosDisparosFallados: 1, nuevosTrofeos: 30},   // Victoria competitiva
-        { nombreId: 'usuario1', resultado: 0, nuevosBarcosHundidos: 1, nuevosBarcosPerdidos:1, 
+        { nombreId: 'usuario1', victoria: 0, nuevosBarcosHundidos: 1, nuevosBarcosPerdidos:1, 
             nuevosDisparosAcertados: 1, nuevosDisparosFallados: 1, nuevosTrofeos: 20},   // Derrota competitiva
-        { nombreId: 'usuario3', resultado: 1, nuevosBarcosHundidos: 1, nuevosBarcosPerdidos:1, 
+        { nombreId: 'usuario3', victoria: 1, nuevosBarcosHundidos: 1, nuevosBarcosPerdidos:1, 
             nuevosDisparosAcertados: 1, nuevosDisparosFallados: 1, extra: 1}, // Sobran campos
-        { nombreId: 'usuario1', resultado: 1, nuevosBarcosHundidos: 1, nuevosBarcosPerdidos:1, 
+        { nombreId: 'usuario1', victoria: 1, nuevosBarcosHundidos: 1, nuevosBarcosPerdidos:1, 
             nuevosDisparosAcertados: 1, nuevosDisparosFallados: 'a' }, // Campos no numéricos
-        { nombreId: 'usuario3', resultado: 1, nuevosBarcosHundidos: 1, nuevosBarcosPerdidos:1, 
+        { nombreId: 'usuario3', victoria: 1, nuevosBarcosHundidos: 1, nuevosBarcosPerdidos:1, 
             nuevosDisparosAcertados: 1, nuevosDisparosFallados: 1 },  // No existente
-        { resultado: 1, nuevosBarcosHundidos: 1, nuevosBarcosPerdidos:1, 
+        { victoria: 1, nuevosBarcosHundidos: 1, nuevosBarcosPerdidos:1, 
             nuevosDisparosAcertados: 1, nuevosDisparosFallados: 1 }, // Falta nombreId
 
       ];
