@@ -3,8 +3,10 @@ const bcrypt = require('bcrypt'); // Para hash de constraseña
 const jwt = require('jsonwebtoken'); // Para generar tokens JWT
 const crypto = require('crypto'); // Para generar claves secretas
 const habilidadesDisponibles = require('../data/habilidades')
-// const Barco = require('../data/barco')
-const Tablero = require('../data/tablero')
+const Coordenada = require('../data/coordenada')
+
+const tableroDim = Coordenada.x.max;  // Dimensiones del tablerp
+
 // Crear un perfil
 exports.crearPerfil = async (req, res) => {
   try {
@@ -46,11 +48,12 @@ exports.crearPerfil = async (req, res) => {
     }
 
     // Crear un tablero aleatorio con un barco de 5 casillas de largo. Coordenadas de izda a derecha o de arriba a abajo.
+    // Notación matricial
     const tableroInicial = [
       [{ x: 1, y: 1 }, { x: 1, y: 2 }],
       [{ x: 7, y: 1 }, { x: 8, y: 1 }, { x: 9, y: 1 }],
       [{ x: 3, y: 10 }, { x: 4, y: 10 }, { x: 5, y: 10 }],
-      [{ x: 4, y: 4 }, { x: 5, y: 5 }, { x: 6, y: 6 }, { x: 7, y: 7 }],
+      [{ x: 3, y: 6 }, { x: 4, y: 6 }, { x: 5, y: 6 }, { x: 6, y: 6 }],
       [{ x: 10, y: 6 }, { x: 10, y: 7 }, { x: 10, y: 8 }, { x: 10, y: 9 }, { x: 10, y: 10 }]
     ];
       
@@ -193,61 +196,59 @@ exports.modificarMazo = async (req, res) => {
 
 // Función para verificar si un barco es horizontal
 function esBarcoHorizontal(barco) {
-  return barco.length > 1 && barco[0].y == barco[1].y;
+  return barco[0].x == barco[1].x;
 }
 
-// Función para devolver un barco trasladado y/o rotado dentro del tablero
+// Función para trasladar y/o rotar un barco dentro del tablero
 function moverBarco(barco, nuevaXProa, nuevaYProa, rotar) {
-  nuevoBarco = barco;
   // Definir traslación y mover proa
   if (nuevaXProa) {
-    nuevoBarco[0].x = nuevaXProa;
-    difX = nuevaXProa - barco[0].x;
-  } else difX = 0;
+    var difX = nuevaXProa - barco[0].x;
+    barco[0].x = nuevaXProa;
+  } else var difX = 0;
   if (nuevaYProa) {
-    nuevoBarco[0].y = nuevaYProa;
-    difY = nuevaYProa - barco[0].y;
-  } else difY = 0;
+    var difY = nuevaYProa - barco[0].y;
+    barco[0].y = nuevaYProa;
+  } else var difY = 0;
   // Mover resto del barco
   if (rotar) {  // Rotar y trasladar
     if (esBarcoHorizontal(barco)) {
       for (let i = 1; i < barco.length; i++) {
-        nuevaX = nuevoBarco[i].x - i + difX;
-        if (1 <= nuevaX && nuevaX <= 10) nuevoBarco[i].x = nuevaX;
-        else return null;
-        nuevaY = nuevoBarco[i].y - i + difY;
-        if (1 <= nuevaY && nuevaY <= 10) nuevoBarco[i].y = nuevaY;
-        else return null;
+        var nuevaX = barco[i].x + i + difX;
+        if (1 <= nuevaX && nuevaX <= tableroDim) barco[i].x = nuevaX;
+        else return false;
+        var nuevaY = barco[i].y - i + difY;
+        if (1 <= nuevaY && nuevaY <= tableroDim) barco[i].y = nuevaY;
+        else return false;
       }
     } else {  // Barco vertical
       for (let i = 1; i < barco.length; i++) {
-        nuevaX = nuevoBarco[i].x + i + difX;
-        if (1 <= nuevaX && nuevaX <= 10) nuevoBarco[i].x = nuevaX;
-        else return null;
-        nuevaY = nuevoBarco[i].y + i + difY;
-        if (1 <= nuevaY && nuevaY <= 10) nuevoBarco[i].y = nuevaY;
-        else return null;
+        var nuevaX = barco[i].x - i + difX;
+        if (1 <= nuevaX && nuevaX <= tableroDim) barco[i].x = nuevaX;
+        else return false;
+        var nuevaY = barco[i].y + i + difY;
+        if (1 <= nuevaY && nuevaY <= tableroDim) barco[i].y = nuevaY;
+        else return false;
       }
     }
   } else {  // Solo trasladar
     for (let i = 1; i < barco.length; i++) {
-      nuevaX = nuevoBarco[i].x + difX;
-      if (1 <= nuevaX && nuevaX <= 10) nuevoBarco[i].x = nuevaX;
-      else return null;
-      nuevaY = nuevoBarco[i].y + difY;
-      if (1 <= nuevaY && nuevaY <= 10) nuevoBarco[i].y = nuevaY;
-      else return null;
+      var nuevaX = barco[i].x + difX;
+      if (1 <= nuevaX && nuevaX <= tableroDim) barco[i].x = nuevaX;
+      else return false;
+      var nuevaY = barco[i].y + difY;
+      if (1 <= nuevaY && nuevaY <= tableroDim) barco[i].y = nuevaY;
+      else return false;
     }
   }
-  // El movimiento está en rango del tablero
-  return nuevoBarco;
+  return true;
 }
 
 // Función para verificar si el barco que irá en la posición barcoId colisiona con otros barcos
-function barcoColisiona(tablero, nuevoBarco, barcoId) {
+function barcoColisiona(tablero, barco, barcoId) {
   for (let i = 0; i < barcoId; i++) { // Recorrer los otros barcos
     for (const coordenada of tablero[i]) {
-      for (const nuevaCoordenada of nuevoBarco) {
+      for (const nuevaCoordenada of barco) {
         if (coordenada.x === nuevaCoordenada.x && coordenada.y === nuevaCoordenada.y) {
           return true; // Hay colisión
         }
@@ -256,7 +257,7 @@ function barcoColisiona(tablero, nuevoBarco, barcoId) {
   }
   for (let i = barcoId + 1; i < tablero.length; i++) {
     for (const coordenada of tablero[i]) { // Recorrer los otros barcos
-      for (const nuevaCoordenada of nuevoBarco) {
+      for (const nuevaCoordenada of barco) {
         if (coordenada.x === nuevaCoordenada.x && coordenada.y === nuevaCoordenada.y) {
           return true; // Hay colisión
         }
@@ -266,8 +267,8 @@ function barcoColisiona(tablero, nuevoBarco, barcoId) {
   return false; // No hay colisión
 }
 
-// Modificar tablero de un perfil
-exports.modificarTablero = async (req, res) => {
+// Modificar un barco del tablero inicial de un perfil
+exports.modificarBarcoInicial = async (req, res) => {
   try {
     // Extracción de parámetros del cuerpo de la solicitud
     const { nombreId, barcoId = 0, nuevaXProa, nuevaYProa, rotar, ...extraParam } = req.body;  // Consideramos proa la coordenada más izda/arriba si barco horizontal/vertical
@@ -290,16 +291,10 @@ exports.modificarTablero = async (req, res) => {
       console.error("Los parámetros del movimiento deben ser numéricos");
       return;
     }
-    // Verificar que barcoId es un índice válido de tableroInicial
-    if (barcoId < 0 || barcoId >= tableroInicial.length) {
-      res.status(400).send('barcoId debe estar entre 0 y ${tableroInicial.length - 1}');
-      console.error("barcoId debe estar entre 0 y ${tableroInicial.length - 1}");
-      return;
-    }
     // Verificar que la nueva coordenada de proa está en el rango correcto
-    if (nuevaXProa < 1 || nuevaXProa > 10 || nuevaYProa < 1 || nuevaYProa > 10) {
-      res.status(400).send('Las coordenadas de la nueva proa deben estar entre 1 y 10');
-      console.error('Las coordenadas de la nueva proa deben estar entre 1 y 10');
+    if (nuevaXProa < 1 || nuevaXProa > tableroDim || nuevaYProa < 1 || nuevaYProa > tableroDim) {
+      res.status(400).send("Las coordenadas de la nueva proa deben estar entre 1 y " + (tableroDim));
+      console.error("Las coordenadas de la nueva proa deben estar entre 1 y " + (tableroDim));
       return;
     }
     // Buscar el perfil en la base de datos y obtener su tableroInicial
@@ -309,13 +304,18 @@ exports.modificarTablero = async (req, res) => {
       console.error("No se ha encontrado el perfil a modificar");
       return;
     } 
-    tableroInicial = perfil.tableroInicial;
+    tableroInicial = perfil.tableroInicial; // No es una copia, es otro puntero
+    // Verificar que barcoId es un índice válido de tableroInicial
+    if (barcoId < 0 || barcoId >= tableroInicial.length) {
+      res.status(400).send("barcoId debe estar entre 0 y "+(tableroInicial.length - 1));
+      console.error("barcoId debe estar entre 0 y "+(tableroInicial.length - 1));
+      return;
+    }
     barco = tableroInicial[barcoId];
     // Verificar que la nueva posición del barco está en el rango correcto
-    nuevoBarco = moverBarco(barco, nuevaXProa, nuevaYProa, rotar);
-    if (nuevoBarco) {
+    if (moverBarco(barco, nuevaXProa, nuevaYProa, rotar)) {
       // Verificar que la nueva posición del barco no colisiona con otros barcos
-      if (barcoColisiona(tableroInicial, nuevoBarco, barcoId)) {
+      if (barcoColisiona(tableroInicial, barco, barcoId)) {
         res.status(404).send('El movimiento del barco colisiona con otros barcos');
         console.error("El movimiento del barco colisiona con otros barcos");
         return;
@@ -338,7 +338,7 @@ exports.modificarTablero = async (req, res) => {
     // Verificar si el perfil existe y enviar la respuesta al cliente
     if (perfilModificado) {
       res.json(perfilModificado);
-      console.log("Tablero inicial modificado con éxito", perfilModificado);
+      console.log("Tablero inicial modificado con éxito");
     } else {
       res.status(404).send('No se ha encontrado el perfil a modificar');
       console.error("No se ha encontrado el perfil a modificar");
