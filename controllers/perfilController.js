@@ -5,7 +5,7 @@ const crypto = require('crypto'); // Para generar claves secretas
 const habilidadesDisponibles = require('../data/habilidades')
 const Coordenada = require('../data/coordenada')
 
-const tableroDim = Coordenada.x.max;  // Dimensiones del tablerp
+const tableroDim = Coordenada.i.max;  // Dimensiones del tablerp
 
 // Crear un perfil
 exports.crearPerfil = async (req, res) => {
@@ -196,48 +196,48 @@ exports.modificarMazo = async (req, res) => {
 
 // Función para verificar si un barco es horizontal
 function esBarcoHorizontal(barco) {
-  return barco[0].x == barco[1].x;
+  return barco[0].i == barco[1].i;
 }
 
 // Función para trasladar y/o rotar un barco dentro del tablero
 function moverBarco(barco, nuevaXProa, nuevaYProa, rotar) {
   // Definir traslación y mover proa
   if (nuevaXProa) {
-    var difX = nuevaXProa - barco[0].x;
-    barco[0].x = nuevaXProa;
+    var difX = nuevaXProa - barco[0].i;
+    barco[0].i = nuevaXProa;
   } else var difX = 0;
   if (nuevaYProa) {
-    var difY = nuevaYProa - barco[0].y;
-    barco[0].y = nuevaYProa;
+    var difY = nuevaYProa - barco[0].j;
+    barco[0].j = nuevaYProa;
   } else var difY = 0;
   // Mover resto del barco
   if (rotar) {  // Rotar y trasladar
     if (esBarcoHorizontal(barco)) {
       for (let i = 1; i < barco.length; i++) {
-        var nuevaX = barco[i].x + i + difX;
-        if (1 <= nuevaX && nuevaX <= tableroDim) barco[i].x = nuevaX;
+        var nuevaX = barco[i].i + i + difX;
+        if (1 <= nuevaX && nuevaX <= tableroDim) barco[i].i = nuevaX;
         else return false;
-        var nuevaY = barco[i].y - i + difY;
-        if (1 <= nuevaY && nuevaY <= tableroDim) barco[i].y = nuevaY;
+        var nuevaY = barco[i].j - i + difY;
+        if (1 <= nuevaY && nuevaY <= tableroDim) barco[i].j = nuevaY;
         else return false;
       }
     } else {  // Barco vertical
       for (let i = 1; i < barco.length; i++) {
-        var nuevaX = barco[i].x - i + difX;
-        if (1 <= nuevaX && nuevaX <= tableroDim) barco[i].x = nuevaX;
+        var nuevaX = barco[i].i - i + difX;
+        if (1 <= nuevaX && nuevaX <= tableroDim) barco[i].i = nuevaX;
         else return false;
-        var nuevaY = barco[i].y + i + difY;
-        if (1 <= nuevaY && nuevaY <= tableroDim) barco[i].y = nuevaY;
+        var nuevaY = barco[i].j + i + difY;
+        if (1 <= nuevaY && nuevaY <= tableroDim) barco[i].j = nuevaY;
         else return false;
       }
     }
   } else {  // Solo trasladar
     for (let i = 1; i < barco.length; i++) {
-      var nuevaX = barco[i].x + difX;
-      if (1 <= nuevaX && nuevaX <= tableroDim) barco[i].x = nuevaX;
+      var nuevaX = barco[i].i + difX;
+      if (1 <= nuevaX && nuevaX <= tableroDim) barco[i].i = nuevaX;
       else return false;
-      var nuevaY = barco[i].y + difY;
-      if (1 <= nuevaY && nuevaY <= tableroDim) barco[i].y = nuevaY;
+      var nuevaY = barco[i].j + difY;
+      if (1 <= nuevaY && nuevaY <= tableroDim) barco[i].j = nuevaY;
       else return false;
     }
   }
@@ -249,7 +249,7 @@ function barcoColisiona(tablero, barco, barcoId) {
   for (let i = 0; i < barcoId; i++) { // Recorrer los otros barcos
     for (const coordenada of tablero[i]) {
       for (const nuevaCoordenada of barco) {
-        if (coordenada.x === nuevaCoordenada.x && coordenada.y === nuevaCoordenada.y) {
+        if (coordenada.i === nuevaCoordenada.i && coordenada.j === nuevaCoordenada.j) {
           return true; // Hay colisión
         }
       }
@@ -258,7 +258,7 @@ function barcoColisiona(tablero, barco, barcoId) {
   for (let i = barcoId + 1; i < tablero.length; i++) {
     for (const coordenada of tablero[i]) { // Recorrer los otros barcos
       for (const nuevaCoordenada of barco) {
-        if (coordenada.x === nuevaCoordenada.x && coordenada.y === nuevaCoordenada.y) {
+        if (coordenada.i === nuevaCoordenada.i && coordenada.j === nuevaCoordenada.j) {
           return true; // Hay colisión
         }
       }
