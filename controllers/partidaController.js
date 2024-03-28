@@ -22,18 +22,36 @@ function generarIdPartida() {
 
 // Iniciar una partida
 exports.iniciarPartida = async (req, res) => {
+  console.log("Iniciar partida");
   try {
     const { jugador1, jugador2, bioma, ...extraParam } = req.body;
     // Verificar si hay algún parámetro extra
     if (Object.keys(extraParam).length > 0) {
-      res.status(400).send('Sobran parámetros, se espera jugador1 y jugador2');
-      console.error("Sobran parámetros, se espera jugador1 y jugador2");
+      res.status(400).send('Sobran parámetros, se espera jugador1, jugador2 y bioma');
+      console.error("Sobran parámetros, se espera jugador1, jugador2 y bioma");
       return;
     }
+
+    // Obtenemos los tableros de barcos de los jugadores
+    // y generamos un id de partida único
+    const tableroBarcos1 = jugador1.tableroBarcos;
+    const tableroBarcos2 = jugador2.tableroBarcos;
     const idPartida = generarIdPartida();
-    const partida = new Partida({ idPartida, jugador1, jugador2, bioma, ...extraParam });
+    const partida = new Partida({ 
+      idPartida, 
+      jugador1, 
+      jugador2, 
+      tableroBarcos1,
+      tableroBarcos2,
+      bioma,
+    });
+
+    console.log("2");
     const partidaGuardada = await partida.save();
-    res.json(partidaGuardada);
+    console.log("3");
+    res.json(partidaGuardada); 
+    console.log("Partida iniciada con éxito", partidaGuardada);
+    return partidaGuardada;
   } catch (error) {
     res.status(500).send('Hubo un error');
   }
@@ -133,6 +151,11 @@ function dispararCoordenada(tablero, i, j) {
 exports.realizarDisparo = async (req, res) => {
   try {
     const { idPartida, jugador, i, j, ...extraParam } = req.body;
+    // Verificar si recibimos una coordenada (vector) en vez de dos enteros
+    if (Array.isArray(i) && i.length === 3) {
+      i = i[0];
+      j = i[1];
+    }
     // Verificar si hay algún parámetro extra
     if (Object.keys(extraParam).length > 0) {
       res.status(400).send('Sobran parámetros, se espera idPartida, jugador, i, j');

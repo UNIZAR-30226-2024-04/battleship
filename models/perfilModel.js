@@ -9,7 +9,8 @@ const Tablero = require('../data/tablero');
 const perfilSchema = new Schema({
   nombreId: {                // IDENTIFICADOR OBLIGATORIO: Nombre de usuario
     type: String, 
-    required: true 
+    required: true,
+    unique: true
   },
   contraseña: {              // OBLIGATORIA: Contraseña usuario
     type: String, 

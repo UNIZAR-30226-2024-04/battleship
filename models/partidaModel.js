@@ -49,7 +49,7 @@ const partidaSchema = new Schema({
   clima: {  // Clima actual Calma/Viento/Tormenta/Niebla
     type: String,
     enum: climasDisponibles,
-    required: true
+    default: 'Calma'
   },
   usosHab1: { // Total de usos restantes de habilidades del J1
     type: Number, 

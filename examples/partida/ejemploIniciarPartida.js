@@ -6,6 +6,7 @@ mongoose.connect('mongodb://localhost/BattleshipDB')
   .then(async () => {
     console.log('Conectado a MongoDB...');
     try {
+
       // Lista de partidas a crear
       const partidas = [
         {
@@ -20,7 +21,6 @@ mongoose.connect('mongodb://localhost/BattleshipDB')
         }
 
       ];
-
       // Itera sobre la lista de partidas y crea cada una
       for (const partida of partidas) {
         const req = { body: partida };
