@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const { crearPerfil } = require('../controllers/perfilController');
+const { crearPerfil } = require('../../controllers/perfilController');
 
 // Conexión a la base de datos
 mongoose.connect('mongodb://localhost/BattleshipDB')

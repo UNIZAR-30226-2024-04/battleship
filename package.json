@@ -21,5 +21,8 @@
     "mocha": "^10.3.0",
     "supertest": "^6.3.3"
   },
-  "keywords": []
+  "keywords": [],
+  "directories": {
+    "example": "examples"
+  }
 }

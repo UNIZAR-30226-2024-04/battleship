@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const { modificarMazo } = require('../controllers/perfilController');
+const { modificarMazo } = require('../../controllers/perfilController');
 
 // Conexión a la base de datos
 mongoose.connect('mongodb://localhost/BattleshipDB')

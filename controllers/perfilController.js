@@ -5,7 +5,7 @@ const crypto = require('crypto'); // Para generar claves secretas
 const habilidadesDisponibles = require('../data/habilidades')
 const Coordenada = require('../data/coordenada')
 
-const tableroDim = Coordenada.i.max;  // Dimensiones del tablerp
+const tableroDim = Coordenada.i.max;  // Dimensiones del tablero
 
 // Crear un perfil
 exports.crearPerfil = async (req, res) => {
@@ -50,11 +50,11 @@ exports.crearPerfil = async (req, res) => {
     // Crear un tablero aleatorio con un barco de 5 casillas de largo. Coordenadas de izda a derecha o de arriba a abajo.
     // Notación matricial
     const tableroInicial = [
-      [{ x: 1, y: 1 }, { x: 1, y: 2 }],
-      [{ x: 7, y: 1 }, { x: 8, y: 1 }, { x: 9, y: 1 }],
-      [{ x: 3, y: 10 }, { x: 4, y: 10 }, { x: 5, y: 10 }],
-      [{ x: 3, y: 6 }, { x: 4, y: 6 }, { x: 5, y: 6 }, { x: 6, y: 6 }],
-      [{ x: 10, y: 6 }, { x: 10, y: 7 }, { x: 10, y: 8 }, { x: 10, y: 9 }, { x: 10, y: 10 }]
+      [{ i: 1, j: 1 }, { i: 1, j: 2 }],
+      [{ i: 7, j: 1 }, { i: 8, j: 1 }, { i: 9, j: 1 }],
+      [{ i: 3, j: 10 }, { i: 4, j: 10 }, { i: 5, j: 10 }],
+      [{ i: 3, j: 6 }, { i: 4, j: 6 }, { i: 5, j: 6 }, { i: 6, j: 6 }],
+      [{ i: 10, j: 6 }, { i: 10, j: 7 }, { i: 10, j: 8 }, { i: 10, j: 9 }, { i: 10, j: 10 }]
     ];
       
     

@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const { modificarPerfilDatosPersonales } = require('../controllers/perfilController');
+const { modificarPerfilDatosPersonales } = require('../../controllers/perfilController');
 
 // Conexión a la base de datos
 mongoose.connect('mongodb://localhost/BattleshipDB')

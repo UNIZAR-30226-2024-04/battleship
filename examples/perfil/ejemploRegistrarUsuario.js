@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const { registrarUsuario } = require('../controllers/perfilController');
+const { registrarUsuario } = require('../../controllers/perfilController');
 
 // Conexión a la base de datos
 mongoose.connect('mongodb://localhost/BattleshipDB')

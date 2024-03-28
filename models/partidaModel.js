@@ -10,6 +10,11 @@ const Coordenada = require('../data/coordenada');
 
 // Partida Schema
 const partidaSchema = new Schema({
+  idPartida: { // Identificador de la partida
+    type: Number,
+    required: true,
+    unique: true
+  },
   chat: {
     type: [{ mensaje: String, autor: mongoose.Schema.Types.ObjectId, timestamp: Date }],
     default: []
@@ -75,7 +80,7 @@ const partidaSchema = new Schema({
 }, { timestamps: true }); // timestamps añade automáticamente campos para 'createdAt' y 'updatedAt'
 
 
-const Partida = mongoose.model('Partida', partidaSchema);
+const Partida = mongoose.model('Partida', partidaSchema, 'Partidas');
 module.exports = Partida;
 
 

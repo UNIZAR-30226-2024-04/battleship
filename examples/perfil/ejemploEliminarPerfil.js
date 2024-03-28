@@ -1,23 +1,22 @@
 const mongoose = require('mongoose');
-const { iniciarSesion } = require('../controllers/perfilController');
+const { eliminarPerfil } = require('../../controllers/perfilController');
 
 // Conexión a la base de datos
 mongoose.connect('mongodb://localhost/BattleshipDB')
   .then(async () => {
     console.log('Conectado a MongoDB...');
     try {
-
       const perfiles = [
-        { nombreId: 'usuario1', contraseña: 'Passwd1.'},
-        { nombreId: 'usuario1', contraseña: 'Passwd1.', extra: 1},  // Sobran campos
-        { nombreId: 'usuario3'},    // No existente
-        { nombreId: 'usuario1', contraseña: 'Passwd2.'},    // Contraseña inválida
+        { nombreId: 'usuario2'},
+        { nombreId: 'usuario2', extra: 1},  // Sobran campos
+        { nombreId: 'usuario2'},    // No existente
+        { contraseña: 'Passwd1.'},  // Falta nombreId
       ];
 
       for (const perfil of perfiles) {
         const req = { body: perfil };
         const res = { json: () => {}, status: () => ({ send: () => {} }) }; // No hace nada
-        await iniciarSesion(req, res);
+        await eliminarPerfil(req, res);
       }
     } catch (error) {
       console.error('Error en el test de crear perfil:', error);
