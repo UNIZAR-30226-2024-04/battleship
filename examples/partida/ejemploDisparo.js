@@ -7,52 +7,56 @@ mongoose.connect('mongodb://localhost/BattleshipDB')
     console.log('Conectado a MongoDB...');
     try {
       id = 0;
-      const partida =
+      const datosPartida =
         {
           jugador1: '60b9f1f2f9d1c5b9b4f9b8c1',
           jugador2: '60b9f1f2f9d1c5b9b4f9b8c2',
           bioma: 'Cantabrico'
         };
 
-      const req = { body: partida };
+      const req = { body: datosPartida };
       const res = { json: () => {}, status: () => ({ send: () => {} }) }; // No hace nada
-      await iniciarPartida(req, res); // Espera a que se complete la creación del partida
-      id = res.idPartida;
+      partida = await iniciarPartida(req, res); // Espera a que se complete la creación del partida
+      // Obtiene el id de la partida creada
 
-      console.log('Partida creada con id:', id);
+      console.log('Partida creada con id:', partida.idPartida);
       // Lista de disparos realizados a crear
       const disparosJ1 = [
         {
-          idPartida: id,
+          idPartida: partida.idPartida,
           jugador: 1,
-          i: 1, j: 1
+          i: 1, 
+          j: 1
         },
         {
-          idPartida: id,
+          idPartida: partida.idPartida,
           jugador: 1,
           coordenada: { i: 3, j: 3 }
         },
         {
-          idPartida: id,
+          idPartida: partida.idPartida,
           jugador: 1,
-          i: 5, j: 5
+          i: 5, 
+          j: 5
         }
       ];
       const disparosJ2 = [
         {
-          idPartida: id,
+          idPartida: partida.idPartida,
           jugador: 2,
-          i: 2, j: 2
+          i: 2,
+          j: 2
         },
         {
-          idPartida: id,
+          idPartida: partida.idPartida,
           jugador: 2,
           coordenada: { i: 4, j: 4 }
         },
         {
-          idPartida: id,
+          idPartida: partida.idPartida,
           jugador: 2,
-          i: 6, j: 6
+          i: 6, 
+          j: 6
         }
       ];
 

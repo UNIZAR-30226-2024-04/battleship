@@ -7,7 +7,7 @@ const habilidadesDisponibles = require('../data/habilidades');
 const Tablero = require('../data/tablero');
 // Perfil Schema
 const perfilSchema = new Schema({
-  nombreId: {                // IDENTIFICADOR OBLIGATORIO: Nombre de usuario
+  _id: {                     // IDENTIFICADOR OBLIGATORIO: Nombre de usuario
     type: String, 
     required: true,
     unique: true
@@ -62,6 +62,11 @@ const perfilSchema = new Schema({
     type: Number, 
     default: 0 
   }
+});
+
+// Virtual para obtener el id del perfil
+partidaSchema.virtual('nombreId').get(function() {
+  return this._id;
 });
 
 const Perfil = mongoose.model('Perfil', perfilSchema, 'Perfiles');  // Perfiles es la colección de perfiles de BattleshipDB

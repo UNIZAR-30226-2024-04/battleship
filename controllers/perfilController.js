@@ -40,7 +40,7 @@ exports.crearPerfil = async (req, res) => {
     const hashContraseña = await bcrypt.hash(contraseña, 10); // 10 es el número de saltos de hashing
 
     // Comprobar que no existe perfil con ese id
-    const doc = await Perfil.findOne({ nombreId: nombreId });
+    const doc = await Perfil.findOne({ _id: nombreId });
     if (doc) {
       res.status(400).send('Ya existe un perfil con ese nombre de usuario');
       console.error("Ya existe un perfil con ese nombre de usuario");
@@ -114,7 +114,7 @@ exports.modificarPerfilDatosPersonales = async (req, res) => {
     }
     // Buscar y actualizar el perfil en la base de datos
     const perfilModificado = await Perfil.findOneAndUpdate(
-      { nombreId: nombreId }, // Filtro para encontrar el perfil a modificar
+      { _id: nombreId }, // Filtro para encontrar el perfil a modificar
       {
         $set: {
           contraseña: hashContraseña,
@@ -171,7 +171,7 @@ exports.modificarMazo = async (req, res) => {
     }
     // Buscar y actualizar el perfil en la base de datos
     const perfilModificado = await Perfil.findOneAndUpdate(
-      { nombreId: nombreId }, // Filtro para encontrar el perfil a modificar
+      { _id: nombreId }, // Filtro para encontrar el perfil a modificar
       {
         $set: {
           mazoHabilidades: mazoHabilidades
@@ -298,7 +298,7 @@ exports.modificarBarcoInicial = async (req, res) => {
       return;
     }
     // Buscar el perfil en la base de datos y obtener su tableroInicial
-    const perfil = await Perfil.findOne({ nombreId: nombreId });
+    const perfil = await Perfil.findOne({ _id: nombreId });
     if (!perfil) {
       res.status(404).send('No se ha encontrado el perfil a modificar');
       console.error("No se ha encontrado el perfil a modificar");
@@ -327,7 +327,7 @@ exports.modificarBarcoInicial = async (req, res) => {
     }
     // Buscar y actualizar el perfil en la base de datos
     const perfilModificado = await Perfil.findOneAndUpdate(
-      { nombreId: nombreId }, // Filtro para encontrar el perfil a modificar
+      { _id: nombreId }, // Filtro para encontrar el perfil a modificar
       {
         $set: {
           tableroInicial: tableroInicial
@@ -376,7 +376,7 @@ exports.actualizarEstadisticas = async (req, res) => {
     }
     // Buscar y actualizar el perfil en la base de datos
     const perfilModificado = await Perfil.findOneAndUpdate(
-      { nombreId: nombreId }, // Filtro para encontrar el perfil a modificar
+      { _id: nombreId }, // Filtro para encontrar el perfil a modificar
       {
         $inc: {
           partidasJugadas: 1,
@@ -430,7 +430,7 @@ exports.actualizarPuntosExperiencia = async (req, res) => {
     }
     // Buscar y actualizar el perfil en la base de datos
     const perfilModificado = await Perfil.findOneAndUpdate(
-      { nombreId: nombreId }, // Filtro para encontrar el perfil a modificar
+      { _id: nombreId }, // Filtro para encontrar el perfil a modificar
       {
         $inc: {
           puntosExperiencia: nuevosPuntosExperiencia
@@ -488,7 +488,7 @@ exports.obtenerPerfil = async (req, res) => {
       return;
     }
     // Buscar el perfil en la base de datos
-    const perfil = await Perfil.findOne({ nombreId: nombreId });
+    const perfil = await Perfil.findOne({ _id: nombreId });
     // Verificar si el perfil existe y enviar la respuesta al cliente
     if (perfil) {
       res.json(perfil);
@@ -523,7 +523,7 @@ exports.eliminarPerfil = async (req, res) => {
       return;
     }
     // Buscar y eliminar el perfil de la base de datos
-    const resultado = await Perfil.deleteOne({ nombreId: nombreId });
+    const resultado = await Perfil.deleteOne({ _id: nombreId });
     // Verificar si se eliminó el perfil y enviar la respuesta al cliente
     if (resultado.deletedCount > 0) {
       res.json({ mensaje: 'Perfil eliminado correctamente' });
@@ -556,7 +556,7 @@ exports.autenticarUsuario = async (req, res) => { // Requiere nombreId y contras
       return;
     }
     // Buscar el perfil en la base de datos
-    const perfil = await Perfil.findOne({ nombreId: nombreId });
+    const perfil = await Perfil.findOne({ _id: nombreId });
     if (perfil) {
       // Verificar la contraseña
       const contraseñaValida = await bcrypt.compare(contraseña, perfil.contraseña);

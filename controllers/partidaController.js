@@ -38,7 +38,7 @@ exports.iniciarPartida = async (req, res) => {
     const tableroBarcos2 = jugador2.tableroBarcos;
     const idPartida = generarIdPartida();
     const partida = new Partida({ 
-      idPartida, 
+      _id: idPartida, 
       jugador1, 
       jugador2, 
       tableroBarcos1,
@@ -46,9 +46,7 @@ exports.iniciarPartida = async (req, res) => {
       bioma,
     });
 
-    console.log("2");
     const partidaGuardada = await partida.save();
-    console.log("3");
     res.json(partidaGuardada); 
     console.log("Partida iniciada con éxito", partidaGuardada);
     return partidaGuardada;
@@ -73,7 +71,7 @@ exports.mostrarMiTableroBarcos = async (req, res) => {
       console.error("Falta el idPartida y/o jugador");
       return;
     }
-    if (jugador !== '1' || jugador !== '2') {
+    if (jugador !== 1 || jugador !== 2) {
       res.status(400).send('El jugador debe ser 1 o 2');
       console.error("El jugador debe ser 1 o 2");
       return;
@@ -81,7 +79,7 @@ exports.mostrarMiTableroBarcos = async (req, res) => {
     const partida = await Partida.findById(idPartida);
     if (partida) {
       const tablero = {
-        tableroBarcos: jugador === '1' ? partida.tableroBarcos1 : partida.tableroBarcos2
+        tableroBarcos: jugador === 1 ? partida.tableroBarcos1 : partida.tableroBarcos2
       };
       res.json(tablero);
     } else {
@@ -108,7 +106,7 @@ exports.mostrarTableroEnemigo = async (req, res) => {
       console.error("Falta el idPartida y/o jugador");
       return;
     }
-    if (jugador !== '1' || jugador !== '2') {
+    if (jugador !== 1 || jugador !== 2) {
       res.status(400).send('El jugador debe ser 1 o 2');
       console.error("El jugador debe ser 1 o 2");
       return;
@@ -116,8 +114,8 @@ exports.mostrarTableroEnemigo = async (req, res) => {
     const partida = await Partida.findById(idPartida);
     if (partida) {
       const tablero = {
-        tableroBarcos: jugador === '1' ? partida.tableroBarcos2 : partida.tableroBarcos1,
-        disparosRealizados: jugador === '1' ? partida.disparosRealizados1 : partida.disparosRealizados2
+        tableroBarcos: jugador === 1 ? partida.tableroBarcos2 : partida.tableroBarcos1,
+        disparosRealizados: jugador === 1 ? partida.disparosRealizados1 : partida.disparosRealizados2
     };
       res.json(tablero);
     } else {
@@ -150,53 +148,62 @@ function dispararCoordenada(tablero, i, j) {
 // Realizar un disparo
 exports.realizarDisparo = async (req, res) => {
   try {
-    const { idPartida, jugador, i, j, ...extraParam } = req.body;
-    // Verificar si recibimos una coordenada (vector) en vez de dos enteros
-    if (Array.isArray(i) && i.length === 3) {
-      i = i[0];
-      j = i[1];
+    console.log("Realizar disparo con body", req.body);
+    let { idPartida, jugador, i, j, ...extraParam } = req.body;
+
+    // Verificar si recibimos una coordenada en vez de dos enteros
+    if (extraParam.coordenada && esNumero(extraParam.coordenada.i) && esNumero(extraParam.coordenada.j)){
+      i = extraParam.coordenada.i;
+      j = extraParam.coordenada.j;
+      extraParam = {};
     }
-    // Verificar si hay algún parámetro extra
+
+    // Verificar si hay algún parámetro extra que no se espera
     if (Object.keys(extraParam).length > 0) {
       res.status(400).send('Sobran parámetros, se espera idPartida, jugador, i, j');
       console.error("Sobran parámetros, se espera idPartida, jugador, i, j");
       return;
     }
+
     // Verificar si alguno de los parámetros está ausente
     if (!idPartida || !jugador || !i || !j) {
       res.status(400).send('Falta alguno de los siguientes parámetros: idPartida, jugador, i o j');
       console.error("Falta alguno de los siguientes parámetros: idPartida, jugador, i o j");
       return;
     }
-    if (jugador !== '1' || jugador !== '2') {
+
+    // Verificar si el numero de jugador es correcto
+    if (jugador !== 1 && jugador !== 2) {
       res.status(400).send('El jugador debe ser 1 o 2');
       console.error("El jugador debe ser 1 o 2");
       return;
     }
-    if (!esNumero(i) || !esNumero(j)) {
-      res.status(400).send('Las coordenadas i, j deben ser numéricas');
-      console.error("Las coordenadas i, j deben ser numéricas");
-      return;
-    }
+    
     // Comprobar si i, j son casillas válidas
     if (i < 1 || i > tableroDim || j < 1 || j > tableroDim) {
       res.status(400).send('Las coordenadas i, j deben estar entre 1 y 10');
       console.error("Las coordenadas i, j deben estar entre 1 y 10");
       return;
     }
+
+    // Buscar la partida
     let partida = await Partida.findById(idPartida);
+    console.log("Partida encontrada", partida);
     if (partida) {
+
       // Comprobar si la casilla ya fue disparada
-      let disparosRealizados = jugador === '1' ? partida.disparosRealizados1 : partida.disparosRealizados2;
+      let disparosRealizados = jugador === 1 ? partida.disparosRealizados1 : partida.disparosRealizados2;
       const disparoRepetido = disparosRealizados.find(disparo => disparo.i === i && disparo.j === j);
       if (disparoRepetido) {
         res.status(400).send('Casilla ya disparada');
         console.error("Casilla ya disparada");
         return;
       }
+
       // Realizar disparo
-      let barcoTocado = jugador === '1' ? dispararCoordenada(partida.tableroBarcos2, i, j) :
+      let barcoTocado = jugador === 1 ? dispararCoordenada(partida.tableroBarcos2, i, j) :
         dispararCoordenada(partida.tableroBarcos1, i, j);
+      
       // Actualizar disparosRealizados y tableroBarcos
       let disparo = { i, j, resultado: 'Agua' };
       if (barcoTocado) { 
@@ -205,15 +212,18 @@ exports.realizarDisparo = async (req, res) => {
         disparo.resultado = 'Tocado'; // Los disparos solo son Agua o Tocado
       }
       disparosRealizados.push(disparo);
+
       // Actualizar la partida
       const partidaModificada = await Partida.findOneAndUpdate(
-        { idPartida: idPartida }, // Filtrar
+        { _id: idPartida }, // Filtrar
         partida, // Actualizar (partida contiene los cambios)
         { new: true } // Para devolver el documento actualizado
       );
+
       if (partidaModificada) {
         res.json(partidaModificada );
         console.log("Partida modificada con éxito", partidaModificada);
+        return partidaModificada;
       } else {
         res.status(404).send('No se ha encontrado la partida a actualizar');
         console.error("No se ha encontrado la partida a actualizar");
@@ -233,7 +243,7 @@ exports.actualizarEstadoPartida = async (req, res) => {
     const { idPartida, jugador, tablero, disparos } = req.body;
     const partida = await Partida.findById(idPartida);
     if (partida) {
-      if (jugador === '1') {
+      if (jugador === 1) {
         partida.tableroBarcos1 = tablero;
         partida.disparosRealizados1 = disparos;
       } else {
