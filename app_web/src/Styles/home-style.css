@@ -1,4 +1,4 @@
-.main-page-container {
+.home-page-container {
     display: flex;
 }
 
@@ -8,7 +8,6 @@
     align-items: center;
     justify-content: center;
     width: 100%;
-    
 }
 
 .home-main-content-container {

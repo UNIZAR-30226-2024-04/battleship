@@ -5,7 +5,6 @@ import { Fleet } from './Pages/fleet';
 import { Profile } from './Pages/profile';
 import { Settings } from './Pages/settings';
 import { Social } from './Pages/social';
-import { Navbar } from "./Components/Navbar";
 
 
 function App() {

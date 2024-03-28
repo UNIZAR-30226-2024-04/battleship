@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Sidebar, Menu, MenuItem } from 'react-pro-sidebar'
 import { useNavigate } from 'react-router-dom';
@@ -32,12 +31,11 @@ export function Navbar() {
     return (
         <div style={{ display: "flex", height: "100vh" }}>
             <Sidebar 
-            // Cambiar el color de fondo
-            style={{backgroundColor: '#1D3461'}}
-            // Modificar el ancho del sidebar
-            width="auto"
-            // Modificar el alto del sidebar
-            
+                // Cambiar el color de fondo
+                backgroundColor='#1D3461'
+                // Modificar el ancho del sidebar
+                width="auto"
+                // Modificar el alto del sidebar
             >
                 <img 
                     src={battleshipImage} 
@@ -63,6 +61,10 @@ export function Navbar() {
                     if (level === 0)
                         return {
                             color: disabled ? undefined : '#ffffff',
+                            backgroundColor: active ? undefined : '#1D3461',
+                            '&:hover': {
+                                backgroundColor: '#3C6EB1',
+                            },
                         };
                     },
                 }}>
