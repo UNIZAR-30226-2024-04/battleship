@@ -82,7 +82,7 @@ exports.crearPartida = async (req, res) => {
   }
 };
 
-// Mostrar tablero de barcos de un jugador 
+// Mostrar tablero de barcos de un jugador y los disparos del enemigo
 exports.mostrarMiTablero = async (req, res) => {
   try {
     const { _id, codigo, jugador, ...extraParam } = req.body;
@@ -109,7 +109,8 @@ exports.mostrarMiTablero = async (req, res) => {
     const partida = await Partida.findOne(filtro);
     if (partida) {
       const tablero = {
-        tableroBarcos: jugador === 1 ? partida.tableroBarcos1 : partida.tableroBarcos2
+        tableroBarcos: jugador === 1 ? partida.tableroBarcos1 : partida.tableroBarcos2,
+        disparosRealizados: jugador === 1 ? partida.disparosRealizados2 : partida.disparosRealizados1
       };
       console.log('Mi tablero obtenido con éxito');
       res.json(tablero);
@@ -124,7 +125,7 @@ exports.mostrarMiTablero = async (req, res) => {
   }
 };
 
-// Mostrar tablero de barcos del jugador enemigo junto a mis disparos
+// Mostrar tablero de barcos del jugador enemigo
 exports.mostrarTableroEnemigo = async (req, res) => {
   try {
     const { _id, codigo, jugador, ...extraParam } = req.body;
@@ -151,8 +152,7 @@ exports.mostrarTableroEnemigo = async (req, res) => {
     const partida = await Partida.findOne(filtro);
     if (partida) {
       const tablero = {
-        tableroBarcos: jugador === 1 ? partida.tableroBarcos2 : partida.tableroBarcos1,
-        disparosRealizados: jugador === 1 ? partida.disparosRealizados1 : partida.disparosRealizados2
+        tableroBarcos: jugador === 1 ? partida.tableroBarcos2 : partida.tableroBarcos1
       };
       console.log('Tablero enemigo obtenido con éxito');
       res.json(tablero);
@@ -258,9 +258,10 @@ exports.realizarDisparo = async (req, res) => {
 };
 
 // Actualizar estado de la partida tras un disparo o habilidad del adversario
+// Devuelve mi tablero y los disparos realizados
 exports.actualizarEstadoPartida = async (req, res) => {
   try {
-    const { codigo, jugador, tablero, disparos } = req.body;
+    const { codigo, jugador } = req.body;
     const partida = await Partida.findById(codigo);
     if (partida) {
       if (jugador === 1) {
