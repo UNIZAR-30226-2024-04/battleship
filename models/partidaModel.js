@@ -10,7 +10,7 @@ const Coordenada = require('../data/coordenada');
 
 // Partida Schema
 const partidaSchema = new Schema({
-  _id: { // Identificador de la partida
+  codigo: { // Identificador de la partida
     type: Number,
     required: true,
     unique: true
@@ -78,11 +78,6 @@ const partidaSchema = new Schema({
     default: null // Valor predeterminado como null
   }
 }, { timestamps: true }); // timestamps añade automáticamente campos para 'createdAt' y 'updatedAt'
-
-// Virtual para obtener el id de la partida
-partidaSchema.virtual('idPartida').get(function() {
-  return this._id;
-});
 
 const Partida = mongoose.model('Partida', partidaSchema, 'Partidas');
 module.exports = Partida;

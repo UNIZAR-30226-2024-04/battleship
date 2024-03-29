@@ -39,8 +39,8 @@ exports.crearPerfil = async (req, res) => {
     // Generar hash de la contraseña
     const hashContraseña = await bcrypt.hash(contraseña, 10); // 10 es el número de saltos de hashing
 
-    // Comprobar que no existe perfil con ese id
-    const doc = await Perfil.findOne({ _id: nombreId });
+    // Comprobar que no existe perfil con ese nombre
+    const doc = await Perfil.findOne({ nombreId: nombreId });
     if (doc) {
       res.status(400).send('Ya existe un perfil con ese nombre de usuario');
       console.error("Ya existe un perfil con ese nombre de usuario");
@@ -82,17 +82,17 @@ exports.crearPerfil = async (req, res) => {
 exports.modificarPerfilDatosPersonales = async (req, res) => {
   try {
     // Extracción de parámetros del cuerpo de la solicitud
-    const { nombreId, contraseña, correo, ...extraParam } = req.body;
+    const { _id, nombreId, contraseña, correo, ...extraParam } = req.body;
     // Verificar si hay algún parámetro extra
     if (Object.keys(extraParam).length > 0) {
-      res.status(400).send('Sobran parámetros, se espera nombreId, contraseña y/o correo');
-      console.error("Sobran parámetros, se espera nombreId, contraseña y/o correo");
+      res.status(400).send('Sobran parámetros, se espera nombreId (o _id), contraseña y/o correo');
+      console.error("Sobran parámetros, se espera nombreId (o _id), contraseña y/o correo");
       return;
     }
     // Verificar si alguno de los parámetros está ausente
-    if (!nombreId) {
-      res.status(400).send('Falta el nombreId en la solicitud');
-      console.error("Falta el nombreId en la solicitud");
+    if (!nombreId && !_id) {
+      res.status(400).send('Falta el nombreId o _id en la solicitud');
+      console.error("Falta el nombreId o _id en la solicitud");
       return;
     }
     // Comprobar que la contraseña cumple con los requisitos
@@ -113,8 +113,9 @@ exports.modificarPerfilDatosPersonales = async (req, res) => {
       hashContraseña = await bcrypt.hash(contraseña, 10); // 10 es el número de saltos de hashing
     }
     // Buscar y actualizar el perfil en la base de datos
+    const filtro = _id ? { _id: _id } : { nombreId: nombreId };
     const perfilModificado = await Perfil.findOneAndUpdate(
-      { _id: nombreId }, // Filtro para encontrar el perfil a modificar
+      filtro, // Filtro para encontrar el perfil a modificar
       {
         $set: {
           contraseña: hashContraseña,
@@ -143,17 +144,17 @@ exports.modificarPerfilDatosPersonales = async (req, res) => {
 exports.modificarMazo = async (req, res) => {
   try {
     // Extracción de parámetros del cuerpo de la solicitud
-    const { nombreId, mazoHabilidades = [], ...extraParam } = req.body;
+    const { _id, nombreId, mazoHabilidades = [], ...extraParam } = req.body;
     // Verificar si hay algún parámetro extra
     if (Object.keys(extraParam).length > 0) {
-      res.status(400).send('Sobran parámetros, se espera nombreId y mazoHabilidades');
-      console.error("Sobran parámetros, se espera nombreId y mazoHabilidades");
+      res.status(400).send('Sobran parámetros, se espera nombreId (o _id) y mazoHabilidades');
+      console.error("Sobran parámetros, se espera nombreId (o _id) y mazoHabilidades");
       return;
     }
     // Verificar si alguno de los parámetros está ausente
-    if (!nombreId) {
-      res.status(400).send('Falta el nombreId en la solicitud');
-      console.error("Falta el nombreId en la solicitud");
+    if (!nombreId && !_id) {
+      res.status(400).send('Falta el nombreId o _id en la solicitud');
+      console.error("Falta el nombreId o _id en la solicitud");
       return;
     }
     // Verificar si mazoHabilidades es un array y tiene como máximo 3 elementos
@@ -170,8 +171,9 @@ exports.modificarMazo = async (req, res) => {
       return;
     }
     // Buscar y actualizar el perfil en la base de datos
+    const filtro = _id ? { _id: _id } : { nombreId: nombreId };
     const perfilModificado = await Perfil.findOneAndUpdate(
-      { _id: nombreId }, // Filtro para encontrar el perfil a modificar
+      filtro, // Filtro para encontrar el perfil a modificar
       {
         $set: {
           mazoHabilidades: mazoHabilidades
@@ -271,17 +273,17 @@ function barcoColisiona(tablero, barco, barcoId) {
 exports.modificarBarcoInicial = async (req, res) => {
   try {
     // Extracción de parámetros del cuerpo de la solicitud
-    const { nombreId, barcoId = 0, nuevaXProa, nuevaYProa, rotar, ...extraParam } = req.body;  // Consideramos proa la coordenada más izda/arriba si barco horizontal/vertical
+    const { _id, nombreId, barcoId = 0, nuevaXProa, nuevaYProa, rotar, ...extraParam } = req.body;  // Consideramos proa la coordenada más izda/arriba si barco horizontal/vertical
     // Verificar si hay algún parámetro extra
     if (Object.keys(extraParam).length > 0) {
-      res.status(400).send('Sobran parámetros, se espera nombreId, barcoId, nuevaXProa, nuevaYProa y/o rotar');
-      console.error("Sobran parámetros, se espera nombreId, barcoId, nuevaXProa, nuevaYProa y/o rotar");
+      res.status(400).send('Sobran parámetros, se espera nombreId (o _id), barcoId, nuevaXProa, nuevaYProa y/o rotar');
+      console.error("Sobran parámetros, se espera nombreId (o _id), barcoId, nuevaXProa, nuevaYProa y/o rotar");
       return;
     }
     // Verificar si alguno de los parámetros está ausente
-    if (!nombreId) {
-      res.status(400).send('Falta el nombreId en la solicitud');
-      console.error("Falta el nombreId en la solicitud");
+    if (!nombreId && !_id) {
+      res.status(400).send('Falta el nombreId o _id en la solicitud');
+      console.error("Falta el nombreId o _id en la solicitud");
       return;
     }
     // Verificar que los parámetros del movimiento son numéricos
@@ -298,7 +300,8 @@ exports.modificarBarcoInicial = async (req, res) => {
       return;
     }
     // Buscar el perfil en la base de datos y obtener su tableroInicial
-    const perfil = await Perfil.findOne({ _id: nombreId });
+    const filtro = _id ? { _id: _id } : { nombreId: nombreId };
+    const perfil = await Perfil.findOne(filtro);
     if (!perfil) {
       res.status(404).send('No se ha encontrado el perfil a modificar');
       console.error("No se ha encontrado el perfil a modificar");
@@ -327,7 +330,7 @@ exports.modificarBarcoInicial = async (req, res) => {
     }
     // Buscar y actualizar el perfil en la base de datos
     const perfilModificado = await Perfil.findOneAndUpdate(
-      { _id: nombreId }, // Filtro para encontrar el perfil a modificar
+      filtro, // Filtro para encontrar el perfil a modificar
       {
         $set: {
           tableroInicial: tableroInicial
@@ -353,18 +356,18 @@ exports.modificarBarcoInicial = async (req, res) => {
 exports.actualizarEstadisticas = async (req, res) => {
   try {
     // Extracción de parámetros del cuerpo de la solicitud
-    const { nombreId, victoria, nuevosBarcosHundidos, nuevosBarcosPerdidos, nuevosDisparosAcertados, 
+    const { _id, nombreId, victoria, nuevosBarcosHundidos, nuevosBarcosPerdidos, nuevosDisparosAcertados, 
       nuevosDisparosFallados, nuevosTrofeos = 0, ...extraParam} = req.body; // Por defecto, no hay trofeos en juego
     // Verificar si hay algún parámetro extra
     if (Object.keys(extraParam).length > 0) {
-      res.status(400).send('Sobran parámetros, se espera nombreId, victoria, nuevosBarcosHundidos, nuevosBarcosPerdidos, nuevosDisparosAcertados, nuevosDisparosFallados y nuevosTrofeos');
-      console.error("Sobran parámetros, se espera nombreId, victoria, nuevosBarcosHundidos, nuevosBarcosPerdidos, nuevosDisparosAcertados, nuevosDisparosFallados y nuevosTrofeos");
+      res.status(400).send('Sobran parámetros, se espera nombreId (o _id), victoria, nuevosBarcosHundidos, nuevosBarcosPerdidos, nuevosDisparosAcertados, nuevosDisparosFallados y nuevosTrofeos');
+      console.error("Sobran parámetros, se espera nombreId (o _id), victoria, nuevosBarcosHundidos, nuevosBarcosPerdidos, nuevosDisparosAcertados, nuevosDisparosFallados y nuevosTrofeos");
       return;
     }
     // Verificar si alguno de los parámetros está ausente
-    if (!nombreId) {
-      res.status(400).send('Falta el nombreId en la solicitud');
-      console.error("Falta el nombreId en la solicitud");
+    if (!nombreId && !_id) {
+      res.status(400).send('Falta el nombreId o _id en la solicitud');
+      console.error("Falta el nombreId o _id en la solicitud");
       return;
     }
     // Verificar que las estadísticas son numéricas
@@ -375,8 +378,9 @@ exports.actualizarEstadisticas = async (req, res) => {
         return;
     }
     // Buscar y actualizar el perfil en la base de datos
+    const filtro = _id ? { _id: _id } : { nombreId: nombreId };
     const perfilModificado = await Perfil.findOneAndUpdate(
-      { _id: nombreId }, // Filtro para encontrar el perfil a modificar
+      filtro, // Filtro para encontrar el perfil a modificar
       {
         $inc: {
           partidasJugadas: 1,
@@ -409,17 +413,17 @@ exports.actualizarEstadisticas = async (req, res) => {
 exports.actualizarPuntosExperiencia = async (req, res) => {
   try {
     // Extracción de parámetros del cuerpo de la solicitud
-    const { nombreId, nuevosPuntosExperiencia, ...extraParam } = req.body;
+    const { _id, nombreId, nuevosPuntosExperiencia, ...extraParam } = req.body;
     // Verificar si hay algún parámetro extra
     if (Object.keys(extraParam).length > 0) {
-      res.status(400).send('Sobran parámetros, se espera nombreId y nuevosPuntosExperiencia');
-      console.error("Sobran parámetros, se espera nombreId y nuevosPuntosExperiencia");
+      res.status(400).send('Sobran parámetros, se espera nombreId (o _id) y nuevosPuntosExperiencia');
+      console.error("Sobran parámetros, se espera nombreId (o _id) y nuevosPuntosExperiencia");
       return;
     }
     // Verificar si alguno de los parámetros está ausente
-    if (!nombreId) {
-      res.status(400).send('Falta el nombreId en la solicitud');
-      console.error("Falta el nombreId en la solicitud");
+    if (!nombreId && !_id) {
+      res.status(400).send('Falta el nombreId o _id en la solicitud');
+      console.error("Falta el nombreId o _id en la solicitud");
       return;
     }
     // Verificar que la experiencia es numérica
@@ -429,8 +433,9 @@ exports.actualizarPuntosExperiencia = async (req, res) => {
         return;
     }
     // Buscar y actualizar el perfil en la base de datos
+    const filtro = _id ? { _id: _id } : { nombreId: nombreId };
     const perfilModificado = await Perfil.findOneAndUpdate(
-      { _id: nombreId }, // Filtro para encontrar el perfil a modificar
+      filtro, // Filtro para encontrar el perfil a modificar
       {
         $inc: {
           puntosExperiencia: nuevosPuntosExperiencia
@@ -474,21 +479,22 @@ function esNumero(numero) {
 exports.obtenerPerfil = async (req, res) => {
   try {
     // Extraer el nombreId del parámetro de la solicitud
-    const { nombreId, ...extraParam } = req.body;
+    const { _id, nombreId, ...extraParam } = req.body;
     // Verificar si hay algún parámetro extra
     if (Object.keys(extraParam).length > 0) {
-      res.status(400).send('Sobran parámetros, se espera nombreId');
-      console.error("Sobran parámetros, se espera nombreId");
+      res.status(400).send('Sobran parámetros, se espera nombreId (o _id)');
+      console.error("Sobran parámetros, se espera nombreId (o _id)");
       return;
     }
     // Verificar si alguno de los parámetros está ausente
-    if (!nombreId) {
-      res.status(400).send('Falta el nombreId en la solicitud');
-      console.error("Falta el nombreId en la solicitud");
+    if (!nombreId && !_id) {
+      res.status(400).send('Falta el nombreId o _id en la solicitud');
+      console.error("Falta el nombreId o _id en la solicitud");
       return;
     }
     // Buscar el perfil en la base de datos
-    const perfil = await Perfil.findOne({ _id: nombreId });
+    const filtro = _id ? { _id: _id } : { nombreId: nombreId };
+    const perfil = await Perfil.findOne(filtro);
     // Verificar si el perfil existe y enviar la respuesta al cliente
     if (perfil) {
       res.json(perfil);
@@ -509,21 +515,22 @@ exports.obtenerPerfil = async (req, res) => {
 exports.eliminarPerfil = async (req, res) => {
   try {
     // Extraer el nombreId del parámetro de la solicitud
-    const { nombreId, ...extraParam } = req.body;
+    const { _id, nombreId, ...extraParam } = req.body;
     // Verificar si hay algún parámetro extra
     if (Object.keys(extraParam).length > 0) {
-      res.status(400).send('Sobran parámetros, se espera nombreId');
-      console.error("Sobran parámetros, se espera nombreId");
+      res.status(400).send('Sobran parámetros, se espera nombreId (o _id)');
+      console.error("Sobran parámetros, se espera nombreId (o _id)");
       return;
     }
-    // Comprobar si el nombreId está presente en la solicitud
-    if (!nombreId) {
-      res.status(400).send('Falta el nombreId en la solicitud');
-      console.error("Falta el nombreId en la solicitud");
+    // Verificar si alguno de los parámetros está ausente
+    if (!nombreId && !_id) {
+      res.status(400).send('Falta el nombreId o _id en la solicitud');
+      console.error("Falta el nombreId o _id en la solicitud");
       return;
     }
     // Buscar y eliminar el perfil de la base de datos
-    const resultado = await Perfil.deleteOne({ _id: nombreId });
+    const filtro = _id ? { _id: _id } : { nombreId: nombreId };
+    const resultado = await Perfil.deleteOne(filtro);
     // Verificar si se eliminó el perfil y enviar la respuesta al cliente
     if (resultado.deletedCount > 0) {
       res.json({ mensaje: 'Perfil eliminado correctamente' });
@@ -542,21 +549,22 @@ exports.eliminarPerfil = async (req, res) => {
 exports.autenticarUsuario = async (req, res) => { // Requiere nombreId y contraseña
   try {
     // Extraer los parámetros del cuerpo de la solicitud
-    const { nombreId, contraseña, ...extraParam } = req.body;
+    const { _id, nombreId, contraseña, ...extraParam } = req.body;
     // Verificar si hay algún parámetro extra
     if (Object.keys(extraParam).length > 0) {
-      res.status(400).send('Sobran parámetros, se espera nombreId y contraseña');
-      console.error("Sobran parámetros, se espera nombreId y contraseña");
+      res.status(400).send('Sobran parámetros, se espera nombreId (o _id) y contraseña');
+      console.error("Sobran parámetros, se espera nombreId (o _id) y contraseña");
       return;
     }
     // Verificar si alguno de los parámetros está ausente
-    if (!nombreId || !contraseña) {
-      res.status(400).send('Falta el nombreId y la contraseña en la solicitud');
-      console.error("Falta el nombreId y la contraseña en la solicitud");
+    if (!nombreId && !_id || !contraseña) {
+      res.status(400).send('Falta el nombreId (o _id) o la contraseña en la solicitud');
+      console.error("Falta el nombreId (o _id) y la contraseña en la solicitud");
       return;
     }
     // Buscar el perfil en la base de datos
-    const perfil = await Perfil.findOne({ _id: nombreId });
+    const filtro = _id ? { _id: _id } : { nombreId: nombreId };
+    const perfil = await Perfil.findOne(filtro);
     if (perfil) {
       // Verificar la contraseña
       const contraseñaValida = await bcrypt.compare(contraseña, perfil.contraseña);
@@ -590,7 +598,7 @@ function crearToken(perfil) {
 }
 
 // Iniciar sesión
-exports.iniciarSesion = async (req, res) => { // Requiere nombreId y contraseña
+exports.iniciarSesion = async (req, res) => { // Requiere nombreId (o _id) y contraseña
   try {
     // Buscar el perfil en la base de datos
     const perfil = await exports.autenticarUsuario(req, res);
@@ -607,7 +615,7 @@ exports.iniciarSesion = async (req, res) => { // Requiere nombreId y contraseña
 };
 
 // Registrar usuario
-exports.registrarUsuario = async (req, res) => {  // Requiere nombreId, contraseña y correo
+exports.registrarUsuario = async (req, res) => {  // Requiere nombreId (o _id), contraseña y correo
   try {
     // Crear el perfil
     const perfil = await exports.crearPerfil(req, res);
