@@ -1,4 +1,32 @@
-const Perfil = require('../models/perfilModel');
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: perfilController.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: perfilController.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>const Perfil = require('../models/perfilModel');
 const bcrypt = require('bcrypt'); // Para hash de constraseña
 const jwt = require('jsonwebtoken'); // Para generar tokens JWT
 const crypto = require('crypto'); // Para generar claves secretas
@@ -115,19 +143,19 @@ exports.modificarDatosPersonales = async (req, res) => {
       return;
     }
     // Verificar si alguno de los parámetros está ausente
-    if (!nombreId && !_id) {
+    if (!nombreId &amp;&amp; !_id) {
       res.status(400).send('Falta el nombreId o _id en la solicitud');
       console.error("Falta el nombreId o _id en la solicitud");
       return;
     }
     // Comprobar que la contraseña cumple con los requisitos
-    if (contraseña && !verificarContraseña(contraseña)) {
+    if (contraseña &amp;&amp; !verificarContraseña(contraseña)) {
       res.status(400).send('La contraseña debe tener al menos 8 caracteres, 1 mayúscula, 1 minúscula, 1 número y 1 caracter especial');
       console.error("La contraseña debe tener al menos 8 caracteres, 1 mayúscula, 1 minúscula, 1 número y 1 caracter especial");
       return;
     }
     // Comprobar que el correo es válido
-    if (correo && !verificarCorreo(correo)) {
+    if (correo &amp;&amp; !verificarCorreo(correo)) {
       res.status(400).send('El correo no es válido');
       console.error("El correo no es válido");
       return;
@@ -189,7 +217,7 @@ exports.modificarMazo = async (req, res) => {
       return;
     }
     // Verificar si alguno de los parámetros está ausente
-    if (!nombreId && !_id) {
+    if (!nombreId &amp;&amp; !_id) {
       res.status(400).send('Falta el nombreId o _id en la solicitud');
       console.error("Falta el nombreId o _id en la solicitud");
       return;
@@ -253,31 +281,31 @@ function moverBarco(barco, iProaNueva, jProaNueva, rotar) {
   // Mover resto del barco
   if (rotar) {  // Rotar y trasladar
     if (esBarcoHorizontal(barco)) {
-      for (let i = 1; i < barco.length; i++) {
+      for (let i = 1; i &lt; barco.length; i++) {
         var nuevaX = barco[i].i + i + difX;
-        if (1 <= nuevaX && nuevaX <= tableroDim) barco[i].i = nuevaX;
+        if (1 &lt;= nuevaX &amp;&amp; nuevaX &lt;= tableroDim) barco[i].i = nuevaX;
         else return false;
         var nuevaY = barco[i].j - i + difY;
-        if (1 <= nuevaY && nuevaY <= tableroDim) barco[i].j = nuevaY;
+        if (1 &lt;= nuevaY &amp;&amp; nuevaY &lt;= tableroDim) barco[i].j = nuevaY;
         else return false;
       }
     } else {  // Barco vertical
-      for (let i = 1; i < barco.length; i++) {
+      for (let i = 1; i &lt; barco.length; i++) {
         var nuevaX = barco[i].i - i + difX;
-        if (1 <= nuevaX && nuevaX <= tableroDim) barco[i].i = nuevaX;
+        if (1 &lt;= nuevaX &amp;&amp; nuevaX &lt;= tableroDim) barco[i].i = nuevaX;
         else return false;
         var nuevaY = barco[i].j + i + difY;
-        if (1 <= nuevaY && nuevaY <= tableroDim) barco[i].j = nuevaY;
+        if (1 &lt;= nuevaY &amp;&amp; nuevaY &lt;= tableroDim) barco[i].j = nuevaY;
         else return false;
       }
     }
   } else {  // Solo trasladar
-    for (let i = 1; i < barco.length; i++) {
+    for (let i = 1; i &lt; barco.length; i++) {
       var nuevaX = barco[i].i + difX;
-      if (1 <= nuevaX && nuevaX <= tableroDim) barco[i].i = nuevaX;
+      if (1 &lt;= nuevaX &amp;&amp; nuevaX &lt;= tableroDim) barco[i].i = nuevaX;
       else return false;
       var nuevaY = barco[i].j + difY;
-      if (1 <= nuevaY && nuevaY <= tableroDim) barco[i].j = nuevaY;
+      if (1 &lt;= nuevaY &amp;&amp; nuevaY &lt;= tableroDim) barco[i].j = nuevaY;
       else return false;
     }
   }
@@ -286,19 +314,19 @@ function moverBarco(barco, iProaNueva, jProaNueva, rotar) {
 
 // Función para verificar si el barco que irá en la posición barcoId colisiona con otros barcos
 function barcoColisiona(tablero, barco, barcoId) {
-  for (let i = 0; i < barcoId; i++) { // Recorrer los otros barcos
+  for (let i = 0; i &lt; barcoId; i++) { // Recorrer los otros barcos
     for (const coordenada of tablero[i]) {
       for (const nuevaCoordenada of barco) {
-        if (coordenada.i === nuevaCoordenada.i && coordenada.j === nuevaCoordenada.j) {
+        if (coordenada.i === nuevaCoordenada.i &amp;&amp; coordenada.j === nuevaCoordenada.j) {
           return true; // Hay colisión
         }
       }
     }
   }
-  for (let i = barcoId + 1; i < tablero.length; i++) {
+  for (let i = barcoId + 1; i &lt; tablero.length; i++) {
     for (const coordenada of tablero[i]) { // Recorrer los otros barcos
       for (const nuevaCoordenada of barco) {
-        if (coordenada.i === nuevaCoordenada.i && coordenada.j === nuevaCoordenada.j) {
+        if (coordenada.i === nuevaCoordenada.i &amp;&amp; coordenada.j === nuevaCoordenada.j) {
           return true; // Hay colisión
         }
       }
@@ -336,20 +364,20 @@ exports.moverBarcoInicial = async (req, res) => {
       return;
     }
     // Verificar si alguno de los parámetros está ausente
-    if (!nombreId && !_id) {
+    if (!nombreId &amp;&amp; !_id) {
       res.status(400).send('Falta el nombreId o _id en la solicitud');
       console.error("Falta el nombreId o _id en la solicitud");
       return;
     }
     // Verificar que los parámetros del movimiento son numéricos
-    if (!esNumero(barcoId) || (iProaNueva && !esNumero(iProaNueva)) || (jProaNueva && !esNumero(jProaNueva)) 
-      || (rotar && !esNumero(rotar))) {
+    if (!esNumero(barcoId) || (iProaNueva &amp;&amp; !esNumero(iProaNueva)) || (jProaNueva &amp;&amp; !esNumero(jProaNueva)) 
+      || (rotar &amp;&amp; !esNumero(rotar))) {
       res.status(400).send('Los parámetros del movimiento deben ser numéricos');
       console.error("Los parámetros del movimiento deben ser numéricos");
       return;
     }
     // Verificar que la nueva coordenada de proa está en el rango correcto
-    if (iProaNueva < 1 || iProaNueva > tableroDim || jProaNueva < 1 || jProaNueva > tableroDim) {
+    if (iProaNueva &lt; 1 || iProaNueva > tableroDim || jProaNueva &lt; 1 || jProaNueva > tableroDim) {
       res.status(400).send("Las coordenadas de la nueva proa deben estar entre 1 y " + (tableroDim));
       console.error("Las coordenadas de la nueva proa deben estar entre 1 y " + (tableroDim));
       return;
@@ -364,7 +392,7 @@ exports.moverBarcoInicial = async (req, res) => {
     } 
     tableroInicial = perfil.tableroInicial; // No es una copia, es otro puntero
     // Verificar que barcoId es un índice válido de tableroInicial
-    if (barcoId < 0 || barcoId >= tableroInicial.length) {
+    if (barcoId &lt; 0 || barcoId >= tableroInicial.length) {
       res.status(400).send("barcoId debe estar entre 0 y "+(tableroInicial.length - 1));
       console.error("barcoId debe estar entre 0 y "+(tableroInicial.length - 1));
       return;
@@ -439,7 +467,7 @@ exports.actualizarEstadisticas = async (req, res) => {
       return;
     }
     // Verificar si alguno de los parámetros está ausente
-    if (!nombreId && !_id) {
+    if (!nombreId &amp;&amp; !_id) {
       res.status(400).send('Falta el nombreId o _id en la solicitud');
       console.error("Falta el nombreId o _id en la solicitud");
       return;
@@ -508,7 +536,7 @@ exports.actualizarPuntosExperiencia = async (req, res) => {
       return;
     }
     // Verificar si alguno de los parámetros está ausente
-    if (!nombreId && !_id) {
+    if (!nombreId &amp;&amp; !_id) {
       res.status(400).send('Falta el nombreId o _id en la solicitud');
       console.error("Falta el nombreId o _id en la solicitud");
       return;
@@ -585,7 +613,7 @@ exports.obtenerPerfil = async (req, res) => {
       return;
     }
     // Verificar si alguno de los parámetros está ausente
-    if (!nombreId && !_id) {
+    if (!nombreId &amp;&amp; !_id) {
       res.status(400).send('Falta el nombreId o _id en la solicitud');
       console.error("Falta el nombreId o _id en la solicitud");
       return;
@@ -632,7 +660,7 @@ exports.eliminarPerfil = async (req, res) => {
       return;
     }
     // Verificar si alguno de los parámetros está ausente
-    if (!nombreId && !_id) {
+    if (!nombreId &amp;&amp; !_id) {
       res.status(400).send('Falta el nombreId o _id en la solicitud');
       console.error("Falta el nombreId o _id en la solicitud");
       return;
@@ -678,7 +706,7 @@ exports.autenticarUsuario = async (req, res) => { // Requiere nombreId y contras
       return;
     }
     // Verificar si alguno de los parámetros está ausente
-    if (!nombreId && !_id || !contraseña) {
+    if (!nombreId &amp;&amp; !_id || !contraseña) {
       res.status(400).send('Falta el nombreId (o _id) o la contraseña en la solicitud');
       console.error("Falta el nombreId (o _id) y la contraseña en la solicitud");
       return;
@@ -801,4 +829,26 @@ exports.registrarUsuario = async (req, res) => {  // Requiere nombreId (o _id), 
 //   if (!this.isModified('contraseña')) return next();
 //   this.contraseña = await bcrypt.hash(this.contraseña, 12);
 //   next();
-// });
+// });</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#actualizarEstadisticas">actualizarEstadisticas</a></li><li><a href="global.html#actualizarPuntosExperiencia">actualizarPuntosExperiencia</a></li><li><a href="global.html#autenticarUsuario">autenticarUsuario</a></li><li><a href="global.html#crearPerfil">crearPerfil</a></li><li><a href="global.html#eliminarPerfil">eliminarPerfil</a></li><li><a href="global.html#iniciarSesion">iniciarSesion</a></li><li><a href="global.html#modificarDatosPersonales">modificarDatosPersonales</a></li><li><a href="global.html#modificarMazo">modificarMazo</a></li><li><a href="global.html#moverBarcoInicial">moverBarcoInicial</a></li><li><a href="global.html#obtenerPerfil">obtenerPerfil</a></li><li><a href="global.html#registrarUsuario">registrarUsuario</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.2</a> on Fri Mar 29 2024 14:01:42 GMT+0100 (hora estándar de Europa central)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
