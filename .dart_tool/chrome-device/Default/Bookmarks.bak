@@ -1,5 +1,5 @@
 {
-   "checksum": "89c06bacfc886ef537b124f494355b15",
+   "checksum": "cf42abd355c0372535ae3a3da38a54d0",
    "roots": {
       "bookmark_bar": {
          "children": [ {
@@ -8,8 +8,6 @@
             "guid": "839d6c0f-05dc-4eb4-89f8-82bbb1073cfe",
             "id": "7",
             "name": "MatInf - Google Drive",
-            "show_icon": false,
-            "source": "sync",
             "type": "url",
             "url": "https://drive.google.com/drive/folders/1BWwn8d6p130VaQ6W4_OP7XpweBhsd0ka"
          }, {
@@ -18,18 +16,14 @@
             "guid": "c018f264-2eed-46ae-bbcb-2c908cc06eb4",
             "id": "8",
             "name": "Área personal",
-            "show_icon": false,
-            "source": "sync",
             "type": "url",
             "url": "https://moodle.unizar.es/add/my/"
          }, {
             "date_added": "13317672008210044",
-            "date_last_used": "13351722282122574",
+            "date_last_used": "13355061915055501",
             "guid": "de46bd74-8353-4159-a207-51f5c18d9ce9",
             "id": "9",
             "name": "Yahoo Mail",
-            "show_icon": false,
-            "source": "sync",
             "type": "url",
             "url": "https://mail.yahoo.com/d/folders/1?.intl=es&.lang=es-ES"
          }, {
@@ -38,8 +32,6 @@
             "guid": "a48d9b15-e793-4353-8735-4edf53a81385",
             "id": "10",
             "name": "Correo de Universidad de Zaragoza",
-            "show_icon": false,
-            "source": "sync",
             "type": "url",
             "url": "https://mail.google.com/mail/u/0/#inbox"
          }, {
@@ -48,8 +40,6 @@
             "guid": "e3f5740d-6a90-4241-a63e-a3880b9d381e",
             "id": "11",
             "name": "JupyterUnizar",
-            "show_icon": false,
-            "source": "sync",
             "type": "url",
             "url": "https://loginnip.unizar.es/cas/login?service=https%3A%2F%2Fjupyter.unizar.es%2Flogin"
          }, {
@@ -58,8 +48,6 @@
             "guid": "edf7e481-27a7-4417-9321-94672811c4a1",
             "id": "12",
             "name": "GitHub",
-            "show_icon": false,
-            "source": "sync",
             "type": "url",
             "url": "https://github.com/"
          }, {
@@ -68,8 +56,6 @@
             "guid": "99f0da58-de4e-4160-8c35-3e9a4f5c43c7",
             "id": "13",
             "name": "Netflix",
-            "show_icon": false,
-            "source": "sync",
             "type": "url",
             "url": "https://www.netflix.com/browse"
          }, {
@@ -78,8 +64,6 @@
             "guid": "936ded6b-1c91-4bdb-b80c-0eeddcb91c6c",
             "id": "14",
             "name": "AEOL Cloud-Tests de Autoescuela y DGT",
-            "show_icon": false,
-            "source": "sync",
             "type": "url",
             "url": "https://cloud.aeolservice.es/"
          }, {
@@ -91,8 +75,6 @@
                "power_bookmark_meta": ""
             },
             "name": "TFG_info_tutorias",
-            "show_icon": false,
-            "source": "sync",
             "type": "url",
             "url": "https://calendar.google.com/calendar/u/0/selfsched?sstoken=UUd2MVFKVno1T0dLfGRlZmF1bHR8Nzk3YjllZDY0OWFiYzI1ZjM0YTVjZjYwNzlkYWM4ZTM"
          }, {
@@ -104,8 +86,6 @@
                "power_bookmark_meta": ""
             },
             "name": "DEEP LEARNING · Deep Learning",
-            "show_icon": false,
-            "source": "sync",
             "type": "url",
             "url": "https://atcold.github.io/NYU-DLFL22/"
          }, {
@@ -117,8 +97,6 @@
                "power_bookmark_meta": ""
             },
             "name": "Library Genesis",
-            "show_icon": false,
-            "source": "sync",
             "type": "url",
             "url": "https://libgen.li/"
          }, {
@@ -130,8 +108,6 @@
                "power_bookmark_meta": ""
             },
             "name": "Team project – Figma",
-            "show_icon": false,
-            "source": "sync",
             "type": "url",
             "url": "https://www.figma.com/files/project/206319521/Team-project?fuid=1341088986117912649"
          }, {
@@ -143,8 +119,6 @@
                "power_bookmark_meta": ""
             },
             "name": "Sonar Icons, Logos, Symbols – Free Download PNG, SVG",
-            "show_icon": false,
-            "source": "sync",
             "type": "url",
             "url": "https://icons8.com/icons/set/sonar"
          }, {
@@ -156,8 +130,6 @@
                "power_bookmark_meta": ""
             },
             "name": "Google Académico",
-            "show_icon": false,
-            "source": "sync",
             "type": "url",
             "url": "https://scholar.google.com/"
          }, {
@@ -169,8 +141,6 @@
                "power_bookmark_meta": ""
             },
             "name": "cbobed/links_clustering: Implementation of the Links Online Clustering algorithm: https://arxiv.org/abs/1801.10123",
-            "show_icon": false,
-            "source": "sync",
             "type": "url",
             "url": "https://github.com/cbobed/links_clustering"
          } ],
@@ -179,8 +149,7 @@
          "date_modified": "13353765375360427",
          "guid": "0bc5d13f-2cba-5d74-951f-3f233fe6c908",
          "id": "1",
-         "name": "Favourites bar",
-         "source": "unknown",
+         "name": "Bookmarks bar",
          "type": "folder"
       },
       "other": {
@@ -190,8 +159,7 @@
          "date_modified": "0",
          "guid": "82b081ec-3dd3-529c-8475-ab6c344590dd",
          "id": "2",
-         "name": "Other favourites",
-         "source": "unknown",
+         "name": "Other bookmarks",
          "type": "folder"
       },
       "synced": {
@@ -201,11 +169,9 @@
          "date_modified": "0",
          "guid": "4cf2e351-0e85-532b-bb37-df045d8f8d0f",
          "id": "3",
-         "name": "Mobile favourites",
-         "source": "unknown",
+         "name": "Mobile bookmarks",
          "type": "folder"
       }
    },
-   "sync_metadata": "CjEKDgiIgQISCKNqfz2OAQAAEgAqGHNNV0h3V3JDSFVJTUQyazB4dnVDdHc9PUgDoAYMEqkBCBUSpAEKHDY1bXQ4QUxnVTlWQkVsYStZTW9EN3FicmNQWT0SJDRjNTA0ZmNjLWIwMzEtNGIzNS05NzRiLTQ4NTViMDliMmQwYhgAIAAoADCn7enN3zE4qO7pzd8xQKju6c3fMUocQXRwbnNheitUQ2I5VWFKU0FocE9CNnJDSGdRPVogIh7//WxUTmZxWC90WW95SkVRY0NLNlZSbFdKVktZYz1lwKUouhKpAQgUEqQBChxUYTFwb0pwNG5hbi83enB2QXBWQnFIOXlZYnc9EiQxYzI5MjE2Zi1lMjAwLTQyMDYtYTYxOC1hYTQzNDI0OWY4ZDUYACAAKAAwgeagy98xOMPnoMvfMUDD56DL3zFKHE5UazhuWDU3SXErYzd1TGJ0TDg1cVNFZ0pCYz1aICIe//tJS1VQOUppK2ljNW5BNVZ4QkNhRWkwa3QrUXc9ZQZyUqgSqQEIExKkAQocWmg5U1RQNXZEV1VYeHhyRGZpd2FTMlNLc1dzPRIkNTczODRlYTktZDRkMS00NGYwLWFjNDUtMWY0NGM2ZTFhMWJlGAAgACgAMMyR8YnfMTiek/GJ3zFAnpPxid8xShxNUVNUZ2l3TitLRWlvbkxOVUxFN1JNLzEwR1U9WiAiHv/3V0FWOU1YNDY3Z0ljSldnUXBVbkRTeWJwNjNZPWVLC+2zEqkBCBISpAEKHFZhR2dJQTBTbVNnSXJTWkpaaStXejJqTW9PYz0SJGFiYjQwNmVhLTQwYzEtNDg2OC04MWVhLTA1YmVmOTVjNWQ1MxgAIAAoADCG1Nf+3jE4h9bX/t4xQIfW1/7eMUocN2hLbzNwRU5zOEhxU0hSQ0s2YkNDVkowaDdRPVogIh7/7lU2R3ZRaWg3WmFXYnc3NnBhN2dVWDRUWkt2ST1l7wCOhxKpAQgREqQBChxQcm1CT3JDbEUwL0xvVm1ONWYwUW5pMzM4Rnc9EiRhNTdlMjI0ZS05ZjdhLTQwNDctOWY0Zi0zMDlhNmI2YzZjNDEYACAAKAAw4/bG+tgxOLP5xvrYMUCz+cb62DFKHGt4d1ZLOTRmRUx3LzMrYjdzVjdvUXh1WlUxZz1aICIe/91HNzdjb1hqbVREamxwOFBONTVQSWRJd2NZNms9ZUt6ZRsSqAEIDhKjAQocbWIvWHRMWXJrQTREY0lab1NvMlZUcmR4bTJRPRIkOTM2ZGVkNmItMWM5MS00YmRiLWI4MGMtMGVlZGRjYjkxYzZjGAAgAigCML7L/evjMTicweTsozFA74H96+MxShxkN2hCd2dEOFkySEZLQ0lrdyt4czh0WXVHd3c9Wh8iHf42RXBnWEtCNFQ0NEc2S1pxWUlmUitXdkhYUkU9ZRHbEmcSqAEIDRKjAQocaEM4MTFidlhMZXFwNFlUMEplRG1xZEZtL21BPRIkOTlmMGRhNTgtZGU0ZS00MTYwLThjMzUtM2U5YTRmNWM0M2M3GAAgAigCML3L/evjMTjO5b3iozFA74H96+MxShwwK1lGdUNyTlFoL0JSSVFCU2FSYzVucm9tUDg9Wh8iHf15aUZkM1dOZ0NsSERwT1pjdGFoYkpBcmhGa2c9ZUJj48MSqAEIDBKjAQocOVJ3bXJ2YnBYUncxamRsdWlqNzM3WHJVVTdRPRIkZWRmN2U0ODEtMjdhNy00NDE3LTkzMjEtOTQ2NzI4MTFjNGExGAAgAigCMLzL/evjMTjAueqQ5TBA7oH96+MxShxucmlBZTZHRDZoVDZvSFR0a0VSYWpCdWpodUU9Wh8iHftsWDRRSTJNL1lBV2lTS2loRTJUQy83cFB6S0U9ZcClKLoSiQEIARKEAQoceXhKLzZmdmtlY3I3a3A1RVF6QjR0V0xwZGJFPRIkN2U1MDJjZmQtYTU4Yy01MTcyLWJiNmYtZDRkZjVmZGJiMWE2GAAgACgAMLLkutDNMDiX5rrQzTBAl+a60M0wShxhUkNXTGdoRjliNUlucUtJRHZ1Si9qdlFrRmM9WgBlAAAAABKoAQgLEqMBChxmZlJML0s0enlLd1dZVFptd0wvU2FsbTJKVjA9EiRlM2Y1NzQwZC02YTkwLTQyNDEtYTYzZS1hMzg4MGI5ZDM4MWUYACACKAIwusv96+MxOPPn4rDlMEDugf3r4zFKHHFsbTdhVnRISzl2MmNPMWh1NlBqWVYrTlZTRT1aHyId+Xp3MExWcUZrVzdsMGhCemxKbnIydHNLdWFaUT1lnsrx2RKpAQgQEqQBChw0bWtTK2VKaXN0ODY0eGtYUEhHdkwxSkgvUFU9EiRlZDNlNGRlOS04NTAyLTQwOWYtYjIyOS1jZWQ2ODllYzAyYTEYACAAKAAw+dPg6NgxOM7V4OjYMUDO1eDo2DFKHGZIWXRSUFNLU1dGU0N3ejRkRWFVTFk3SGFxTT1aICIe/7owbDNiMnU5eDQveVZlaTVGOXliKzFSVmlDV0k9ZXHrlWUSiQEIAhKEAQocWWNTVG9udkVTUHdxQ3M0TDJjclZodjY4TDk4PRIkYTNiNzg3N2MtYzYwYi01NzM3LWEzN2QtZmE0OTZhODU3ZTg1GAAgACgAMLLkutDNMDi25rrQzTBAtua60M0wShxvUFZraHdCUmJWNjVLQ1dSMitJT05IV29PdTg9WgBlAAAAABKoAQgJEqMBChwydWtMem1aWkV3cHlRQ05URVhnRDMrZExWVjA9EiRkZTQ2YmQ3NC04MzUzLTQxNTktYTIwNy01MWY1YzE4ZDljZTkYACACKAIwu8v96+MxOKKklpPZMEDtgf3r4zFKHDU0Vk9rZVJNdFRkdFhxbDFPUks2cXVWYmpEND1aHyId7mNkYU9GMnMxengyUVlQMmg0WnVvV0h1RWp1VT1llhWoHBKoAQgIEqMBChxFQUZMWkovY3lBVHNtWUVwalJKZ1VSVDF2ZFU9EiRjMDE4ZjI2NC0yZWVkLTQ2YWUtYmJjYi0yYzkwOGNjMDZlYjQYACACKAIwucv96+MxOL355+XXMEDsgf3r4zFKHEZuRjZ4S2J6WHZOWDVrbm9KQ3V3YnREblNKWT1aHyId3Fl5RnUyNEZoWERqRFI2OXVuT2VMYlN0N0RTST1l55kTdBKnAQgHEqIBChxra1VKTVRMQnNmdEZ0QWRGY3pMRkkxOFhrLzg9EiQ4MzlkNmMwZi0wNWRjLTRlYjQtODlmOC04MmJiYjEwNzNjZmUYACACKAIwuMv96+MxONrDipnWMEDsgf3r4zFKHFJsRmlaN25obXkxUkZDbUQvSjVqMHViT3dBND1aHiIcclNCZ3RJVzBRY2FxQkgrcnVTZ1BVVHFCWnZNPWX6kd7bEqgBCAoSowEKHGVDcmhFY3dBREVpakhBOHBYdlo5eVZQNVFUOD0SJGE0OGQ5YjE1LWU3OTMtNDM1My04NzM1LTRlZGY1M2E4MTM4NRgAIAIoAjC3y/3r4zE4ve+Wk9kwQO6B/evjMUocNDZ3emZEZ0lZU1BMYmtRNFVJWEdDSFR3VTBZPVofIh33R253M0JPczA4TjBTSGt3R1orMGY3bVYzdFNjPWWbPYW2EqgBCA8SowEKHGhoVHh6TysxbWRLVjR1RjNldnpoWE1WeVdvYz0SJDk4ODU4NmVlLWNlOWMtNDU0MS1hYTVjLTBkNTljZmFkZjRjMxgAIAAoADC+/LnG2DE42Ze5xtgxQNmXucbYMUocNEJnVXM0RGVXc0ZoR3V3MG9wVzN0dTJzZ2hBPVofIh3/dTlFM1NjemQ2UkRmcmJUdSt3dCtKNTA5K21VPWUAAAAAEokBCAMShAEKHG5qZ0R1ODhlQ3J2WHA4NnBEN2ZIR2NxRnA4OD0SJGI2ZDlkNTkyLTYzNjUtNWZmNS1hOGIzLTZhYjdlM2ExMDkzZhgAIAAoADCy5LrQzTA4lOe60M0wQJTnutDNMEoceXpOQjAxY241NEE3Y1JVMHVUKy9QZ21UdFVvPVoAZQAAAAAwADgA",
    "version": 1
 }

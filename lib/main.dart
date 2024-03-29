@@ -44,10 +44,10 @@ class Principal extends StatelessWidget {
           children: [
             buildHeader(context),
             const Spacer(),
-            Container(
+            const SizedBox(
               width: 300,
               height: 300,
-              child: const Image(image: AssetImage('images/portada.png')),
+              child: Image(image: AssetImage('images/portada.png')),
             ),
             const Spacer(),
             buildActionButton(context, () => _handleOnlinePressed(context, _authProvider), "Jugar Online"),

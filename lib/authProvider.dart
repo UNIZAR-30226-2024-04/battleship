@@ -21,7 +21,7 @@ class AuthProvider with ChangeNotifier {
 
   // TO-DO :)
   bool authenticate(String email, String password) {
-    if (email == 'usuario@example.com' && password == 'contrasena') {
+    if (email == '1' && password == '1') {
       _isLoggedIn = true;
       notifyListeners(); // Notifica a los listeners que la variable ha cambiado
       return true;
@@ -32,7 +32,7 @@ class AuthProvider with ChangeNotifier {
 
   // TO-DO :)
   bool signUp(String email, String password, String name) {
-    if (email == 'usuario@example.com' && password == 'contrasena' && name == 'pepillo') {
+    if (email == '1' && password == '1' && name == 'pepillo') {
       _isLoggedIn = true;
       notifyListeners(); // Notifica a los listeners que la variable ha cambiado
       return true;
