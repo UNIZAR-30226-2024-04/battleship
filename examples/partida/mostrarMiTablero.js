@@ -20,7 +20,7 @@ mongoose.connect('mongodb://localhost/BattleshipDB')
         await mostrarMiTablero(req, res);
       }
     } catch (error) {
-      console.error('Error en el test de crear partida:', error);
+      console.error('Error en el test de mostrar+ mi Tablero:', error);
     } finally {
       // Cierra la conexión a la base de datos al finalizar
       mongoose.disconnect();

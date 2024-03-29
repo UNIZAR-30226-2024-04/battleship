@@ -18,11 +18,29 @@ function generarCodigo() {
   return parseInt(codigo.substring(0, 10), 16); // Convierte los primeros 10 caracteres del hash en un número
 }
 
+
+// Funcion que devuelve el barco (si existe) disparado en esa coordenada. En caso contrario devuelve null
+function dispararCoordenada(tablero, i, j) {
+  for (let barco of tablero) {
+      for (let coordenada of barco) {
+          if (coordenada.i === i && coordenada.j === j) {
+              // Marcar la coordenada como disparada
+              coordenada.estado = 'Tocado';
+              return barco; // Se encontró un barco en estas coordenadas
+          }
+      }
+  }
+  return null; // No se encontró ningún barco en estas coordenadas
+}
+
+
 // -------------------------------------------- //
 // ----------- FUNCIONES EXPORTADAS ----------- //
 // -------------------------------------------- //
 
-// Crear una partida
+// Crea una partida con dos jugadores (_id, nombreId) y un bioma
+// Guarda la partida en la base de datos
+// Devuelve la partida creada
 exports.crearPartida = async (req, res) => {
   try {
     const { _id1, _id2, nombreId1, nombreId2, bioma = 'Mediterraneo', ...extraParam } = req.body;
@@ -82,7 +100,7 @@ exports.crearPartida = async (req, res) => {
   }
 };
 
-// Mostrar tablero de barcos de un jugador y los disparos del enemigo
+// Devuelve el tablero de barcos y los disparos realizados
 exports.mostrarMiTablero = async (req, res) => {
   try {
     const { _id, codigo, jugador, ...extraParam } = req.body;
@@ -108,20 +126,23 @@ exports.mostrarMiTablero = async (req, res) => {
     const filtro = _id ? { _id: _id } : { codigo: codigo };
     const partida = await Partida.findOne(filtro);
     if (partida) {
-      const tablero = {
+      const tableroDisparos = {
         tableroBarcos: jugador === 1 ? partida.tableroBarcos1 : partida.tableroBarcos2,
         disparosRealizados: jugador === 1 ? partida.disparosRealizados2 : partida.disparosRealizados1
       };
       console.log('Mi tablero obtenido con éxito');
-      res.json(tablero);
-      console.log(tablero);
+      res.json(tableroDisparos);
+      console.log(tableroDisparos);
+      return tableroDisparos;
     } else {
       res.status(404).send('Partida no encontrada');
       console.error('Partida no encontrada');
+      return;
     }
   } catch (error) {
     res.status(500).send('Hubo un error');
     console.error('Hubo un error');
+    return;
   }
 };
 
@@ -157,29 +178,60 @@ exports.mostrarTableroEnemigo = async (req, res) => {
       console.log('Tablero enemigo obtenido con éxito');
       res.json(tablero);
       console.log(tablero);
+      return tablero;
     } else {
       res.status(404).send('Partida no encontrada');
       console.error('Partida no encontrada');
+      return;
     }
   } catch (error) {
     res.status(500).send('Hubo un error');
     console.error('Hubo un error');
+    return;
   }
 };
 
-// Funcion que devuelve el barco (si existe) disparado en esa coordenada. En caso contrario devuelve null
-function dispararCoordenada(tablero, i, j) {
-  for (let barco of tablero) {
-      for (let coordenada of barco) {
-          if (coordenada.i === i && coordenada.j === j) {
-              // Marcar la coordenada como disparada
-              coordenada.estado = 'Tocado';
-              return barco; // Se encontró un barco en estas coordenadas
-          }
-      }
+// Devuelve los tableros y disparos realizados de ambos jugadores 
+exports.mostrarTableros = async (req, res) => {
+  try {
+    const { _id, codigo, ...extraParam } = req.body;
+    // Verificar si hay algún parámetro extra
+    if (Object.keys(extraParam).length > 0) {
+      res.status(400).send('Sobran parámetros, se espera codigo (o _id)');
+      console.error("Sobran parámetros, se espera codigo (o _id)");
+      return;
+    }
+    // Verificar si alguno de los parámetros está ausente
+    if (!codigo && !_id) {
+      res.status(400).send('Falta el codigo (o _id)');
+      console.error("Falta el codigo (o _id)");
+      return;
+    }
+    // Verificar que existe la partida
+    const filtro = _id ? { _id: _id } : { codigo: codigo };
+    const partida = await Partida.findOne(filtro);
+    if (partida) {
+      const tableros = {
+        tableroBarcos1: partida.tableroBarcos1,
+        tableroBarcos2: partida.tableroBarcos2,
+        disparosRealizados1: partida.disparosRealizados1,
+        disparosRealizados2: partida.disparosRealizados2
+      };
+      console.log('Tableros obtenidos con éxito');
+      res.json(tableros);
+      console.log(tableros);
+      return tableros;
+    } else {
+      res.status(404).send('Partida no encontrada');
+      console.error('Partida no encontrada');
+      return;
+    }
+  } catch (error) {
+    res.status(500).send('Hubo un error');
+    console.error('Hubo un error');
+    return;
   }
-  return null; // No se encontró ningún barco en estas coordenadas
-}
+};
 
 // Realizar un disparo en la coordenada (i, j) del enemigo
 exports.realizarDisparo = async (req, res) => {

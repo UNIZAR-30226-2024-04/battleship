@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const { mostrarTableroEnemigo } = require('../../controllers/partidaController');
+const { mostrarTableros } = require('../../controllers/partidaController');
 
 // Conexión a la base de datos
 mongoose.connect('mongodb://localhost/BattleshipDB')
@@ -8,19 +8,18 @@ mongoose.connect('mongodb://localhost/BattleshipDB')
     try {
       // Lista de partidas a crear
       const partidas = [
-        {codigo: 591028408640, jugador: 1}, // (Escribir el código de una partida existente)
-        {codigo: 591028408640, jugador: 1, extra: 1},  // Sobran campos
-        {codigo: 591028408640, jugador: 3}, // Jugador inválido
-        {codigo: 1, jugador: 1} // No existe la partida
+        {codigo: 591028408640},             // (Escribir el código de una partida existente)
+        {codigo: 591028408640, extra: 1},   // Sobran campos
+        {codigo: 1}                         // No existe la partida
       ];
       // Itera sobre la lista de partidas y crea cada una
       for (const partida of partidas) {
         const req = { body: partida };
         const res = { json: () => {}, status: () => ({ send: () => {} }) }; // No hace nada
-        await mostrarTableroEnemigo(req, res);
+        await mostrarTableros(req, res);
       }
     } catch (error) {
-      console.error('Error en el test de mostrar tablero enemigo:', error);
+      console.error('Error en el test de mostrar Tableros:', error);
     } finally {
       // Cierra la conexión a la base de datos al finalizar
       mongoose.disconnect();
