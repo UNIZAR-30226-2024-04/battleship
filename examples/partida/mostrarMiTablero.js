@@ -11,7 +11,7 @@ mongoose.connect('mongodb://localhost/BattleshipDB')
         {codigo: 591028408640, jugador: 1}, // (Escribir el código de una partida existente)
         {codigo: 591028408640, jugador: 1, extra: 1},  // Sobran campos
         {codigo: 591028408640, jugador: 3}, // Jugador inválido
-        {codigo: 0, jugador: 1} // No existe la partida
+        {codigo: 1, jugador: 1} // No existe la partida
       ];
       // Itera sobre la lista de partidas y crea cada una
       for (const partida of partidas) {
