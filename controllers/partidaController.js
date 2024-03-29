@@ -61,8 +61,8 @@ exports.crearPartida = async (req, res) => {
       return;
     } 
     // Obtenemos los tableros de barcos de los jugadores y generamos un código único
-    const tableroBarcos1 = jugador1.tableroBarcos;
-    const tableroBarcos2 = jugador2.tableroBarcos;
+    const tableroBarcos1 = jugador1.tableroInicial;
+    const tableroBarcos2 = jugador2.tableroInicial;
     const codigo = generarCodigo();
     const partida = new Partida({ 
       codigo, 
@@ -82,32 +82,36 @@ exports.crearPartida = async (req, res) => {
 };
 
 // Mostrar tablero de barcos de un jugador 
-exports.mostrarMiTableroBarcos = async (req, res) => {
+exports.mostrarMiTablero = async (req, res) => {
   try {
-    const { codigo, jugador, ...extraParam } = req.params;
+    const { _id, codigo, jugador, ...extraParam } = req.body;
     // Verificar si hay algún parámetro extra
     if (Object.keys(extraParam).length > 0) {
-      res.status(400).send('Sobran parámetros, se espera codigo e jugador');
-      console.error("Sobran parámetros, se espera codigo e jugador");
+      res.status(400).send('Sobran parámetros, se espera codigo (o _id) y jugador');
+      console.error("Sobran parámetros, se espera codigo (o _id) y jugador");
       return;
     }
     // Verificar si alguno de los parámetros está ausente
-    if (!codigo || !jugador) {
-      res.status(400).send('Falta el codigo y/o jugador');
-      console.error("Falta el codigo y/o jugador");
+    if (!codigo && !_id || !jugador) {
+      res.status(400).send('Falta el codigo (o _id) y/o jugador');
+      console.error("Falta el codigo (o _id) y/o jugador");
       return;
     }
-    if (jugador !== 1 || jugador !== 2) {
+    // Verificar que jugador es 1 o 2
+    if (jugador !== 1 && jugador !== 2) {
       res.status(400).send('El jugador debe ser 1 o 2');
       console.error("El jugador debe ser 1 o 2");
       return;
     }
-    const partida = await Partida.findById(codigo);
+    const filtro = _id ? { _id: _id } : { codigo: codigo };
+    const partida = await Partida.findOne(filtro);
     if (partida) {
       const tablero = {
         tableroBarcos: jugador === 1 ? partida.tableroBarcos1 : partida.tableroBarcos2
       };
+      console.log('Mi tablero obtenido con éxito');
       res.json(tablero);
+      console.log(tablero);
     } else {
       res.status(404).send('Partida no encontrada');
     }
@@ -116,34 +120,38 @@ exports.mostrarMiTableroBarcos = async (req, res) => {
   }
 };
 
-// Mostrar tablero de barcos del jugador enemigo
+// Mostrar tablero de barcos del jugador enemigo junto a mis disparos
 exports.mostrarTableroEnemigo = async (req, res) => {
   try {
-    const { codigo, jugador, ...extraParam } = req.params;
+    const { _id, codigo, jugador, ...extraParam } = req.body;
     // Verificar si hay algún parámetro extra
     if (Object.keys(extraParam).length > 0) {
-      res.status(400).send('Sobran parámetros, se espera codigo e jugador');
-      console.error("Sobran parámetros, se espera codigo e jugador");
+      res.status(400).send('Sobran parámetros, se espera codigo (o _id) y jugador');
+      console.error("Sobran parámetros, se espera codigo (o _id) y jugador");
       return;
     }
     // Verificar si alguno de los parámetros está ausente
-    if (!codigo || !jugador) {
-      res.status(400).send('Falta el codigo y/o jugador');
-      console.error("Falta el codigo y/o jugador");
+    if (!codigo && !_id || !jugador) {
+      res.status(400).send('Falta el codigo (o _id) y/o jugador');
+      console.error("Falta el codigo (o _id) y/o jugador");
       return;
     }
-    if (jugador !== 1 || jugador !== 2) {
+    // Verificar que jugador es 1 o 2
+    if (jugador !== 1 && jugador !== 2) {
       res.status(400).send('El jugador debe ser 1 o 2');
       console.error("El jugador debe ser 1 o 2");
       return;
     }
-    const partida = await Partida.findById(codigo);
+    const filtro = _id ? { _id: _id } : { codigo: codigo };
+    const partida = await Partida.findOne(filtro);
     if (partida) {
       const tablero = {
         tableroBarcos: jugador === 1 ? partida.tableroBarcos2 : partida.tableroBarcos1,
         disparosRealizados: jugador === 1 ? partida.disparosRealizados1 : partida.disparosRealizados2
-    };
+      };
+      console.log('Tablero enemigo obtenido con éxito');
       res.json(tablero);
+      console.log(tablero);
     } else {
       res.status(404).send('Partida no encontrada');
     }
