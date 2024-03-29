@@ -79,7 +79,7 @@ exports.crearPerfil = async (req, res) => {
 };
 
 // Modificar datos personales de un perfil
-exports.modificarPerfilDatosPersonales = async (req, res) => {
+exports.modificarDatosPersonales = async (req, res) => {
   try {
     // Extracción de parámetros del cuerpo de la solicitud
     const { _id, nombreId, contraseña, correo, ...extraParam } = req.body;
@@ -166,8 +166,9 @@ exports.modificarMazo = async (req, res) => {
     // Verificar si todas las habilidades elegidas están en la lista de habilidades disponibles
     const habilidadesNoDisponibles = mazoHabilidades.filter(habilidad => !habilidadesDisponibles.includes(habilidad));
     if (habilidadesNoDisponibles.length > 0) {
-      res.status(400).send('Las habilidades deben ser Rafaga, Recargado, Sonar, Mina o Teledirigido');
-      console.error("Las habilidades deben ser Rafaga, Recargado, Sonar, Mina o Teledirigido");
+      const habilidadesMensaje = habilidadesDisponibles.join(', '); // Convierte la lista de habilidades en un string separado por comas
+      res.status(400).send('Las habilidades deben estar entre:', habilidadesMensaje);
+      console.error('Las habilidades deben estar entre:', habilidadesMensaje);
       return;
     }
     // Buscar y actualizar el perfil en la base de datos

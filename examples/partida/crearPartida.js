@@ -1,31 +1,24 @@
 const mongoose = require('mongoose');
-const { iniciarPartida } = require('../../controllers/partidaController');
+const { crearPartida } = require('../../controllers/partidaController');
 
 // Conexión a la base de datos
 mongoose.connect('mongodb://localhost/BattleshipDB')
   .then(async () => {
     console.log('Conectado a MongoDB...');
     try {
-
       // Lista de partidas a crear
       const partidas = [
-        {
-          jugador1: '60b9f1f2f9d1c5b9b4f9b8c1',
-          jugador2: '60b9f1f2f9d1c5b9b4f9b8c2',
-          bioma: 'Norte'
-        },
-        {
-          jugador1: '60b9f1f2f9d1c5b9b4f9b8c3',
-          jugador2: '60b9f1f2f9d1c5b9b4f9b8c4',
-          bioma: 'Mediterraneo'
-        }
-
+        {nombreId1: 'usuario1', nombreId2: 'usuario2', bioma: 'Norte'}, 
+        {nombreId1: 'usuario1', nombreId2: 'usuario2', bioma: 'Norte', extra: 1},  // Sobran campos
+        {nombreId1: 'usuario1', bioma: 'Norte'}, // Falta un jugador
+        {nombreId1: 'usuario1', nombreId2: 'usuario2', bioma: 'Murcia'},  // Bioma no disponible
+        {nombreId1: 'usuario1', nombreId2: 'usuario5', bioma: 'Norte'} // No existe un jugador
       ];
       // Itera sobre la lista de partidas y crea cada una
       for (const partida of partidas) {
         const req = { body: partida };
         const res = { json: () => {}, status: () => ({ send: () => {} }) }; // No hace nada
-        await iniciarPartida(req, res); // Espera a que se complete la creación del partida
+        await crearPartida(req, res); // Espera a que se complete la creación del partida
       }
     } catch (error) {
       console.error('Error en el test de crear partida:', error);

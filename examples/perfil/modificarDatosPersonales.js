@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const { modificarPerfilDatosPersonales } = require('../../controllers/perfilController');
+const { modificarDatosPersonales } = require('../../controllers/perfilController');
 
 // Conexión a la base de datos
 mongoose.connect('mongodb://localhost/BattleshipDB')
@@ -20,7 +20,7 @@ mongoose.connect('mongodb://localhost/BattleshipDB')
       for (const perfil of perfiles) {
         const req = { body: perfil };
         const res = { json: () => {}, status: () => ({ send: () => {} }) }; // No hace nada
-        await modificarPerfilDatosPersonales(req, res);
+        await modificarDatosPersonales(req, res);
       }
     } catch (error) {
       console.error('Error en el test de crear perfil:', error);

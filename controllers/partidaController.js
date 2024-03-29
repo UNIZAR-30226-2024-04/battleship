@@ -1,4 +1,5 @@
 const Partida = require('../models/partidaModel');
+const Perfil = require('../models/perfilModel');
 const Coordenada = require('../data/coordenada')
 const biomasDisponibles = require('../data/biomas');
 const tableroDim = Coordenada.i.max;  // Dimensiones del tablero
@@ -21,24 +22,44 @@ function generarCodigo() {
 // ----------- FUNCIONES EXPORTADAS ----------- //
 // -------------------------------------------- //
 
-// Iniciar una partida
-exports.iniciarPartida = async (req, res) => {
-  console.log("Iniciar partida");
+// Crear una partida
+exports.crearPartida = async (req, res) => {
   try {
-    const { jugador1, jugador2, bioma, ...extraParam } = req.body;
+    const { _id1, _id2, nombreId1, nombreId2, bioma = 'Mediterraneo', ...extraParam } = req.body;
     // Verificar si hay algún parámetro extra
     if (Object.keys(extraParam).length > 0) {
-      res.status(400).send('Sobran parámetros, se espera jugador1, jugador2 y bioma');
-      console.error("Sobran parámetros, se espera jugador1, jugador2 y bioma");
+      res.status(400).send('Sobran parámetros, se espera nombreId1 (o _id1), nombreId2 (o _id2) y bioma');
+      console.error("Sobran parámetros, se espera nombreId1 (o _id1), nombreId2 (o _id2) y bioma");
       return;
     }
-
+    // Verificar si alguno de los jugadores está ausente en la solicitud
+    if (!nombreId1 && !_id1 || !nombreId2 && !_id2) {
+      res.status(400).send('Falta el nombreId1 (o _id1) o nombreId2 (o _id2) en la solicitud');
+      console.error("Falta el nombreId1 (o _id1) o nombreId2 (o _id2) en la solicitud");
+      return;
+    }
     // Verificar si el bioma elegido está en la lista de biomas disponibles
-    if (bioma not in biomasDisponibles) {
-      res.status(400).send('Las habilidades deben ser Rafaga, Recargado, Sonar, Mina o Teledirigido');
-      console.error("Las habilidades deben ser Rafaga, Recargado, Sonar, Mina o Teledirigido");
+    if (!biomasDisponibles.includes(bioma)) {
+      const biomasMensaje = biomasDisponibles.join(', '); // Convierte la lista de biomas en un string separado por comas
+      res.status(400).send('El bioma debe ser alguno de:', biomasMensaje);
+      console.error("El bioma debe ser alguno de:", biomasMensaje);
       return;
     }
+    // Verificar que existen los perfiles
+    const filtro1 = _id1 ? { _id: _id1 } : { nombreId: nombreId1 };
+    const jugador1 = await Perfil.findOne(filtro1);
+    if (!jugador1) {
+      res.status(404).send('No se ha encontrado el jugador 1');
+      console.error("No se ha encontrado el jugador 1");
+      return;
+    } 
+    const filtro2 = _id2 ? { _id: _id2 } : { nombreId: nombreId2 };
+    const jugador2 = await Perfil.findOne(filtro2);
+    if (!jugador2) {
+      res.status(404).send('No se ha encontrado el jugador 2');
+      console.error("No se ha encontrado el jugador 2");
+      return;
+    } 
     // Obtenemos los tableros de barcos de los jugadores y generamos un código único
     const tableroBarcos1 = jugador1.tableroBarcos;
     const tableroBarcos2 = jugador2.tableroBarcos;
@@ -51,10 +72,9 @@ exports.iniciarPartida = async (req, res) => {
       tableroBarcos2,
       bioma
     });
-
     const partidaGuardada = await partida.save();
     res.json(partidaGuardada); 
-    console.log("Partida iniciada con éxito", partidaGuardada);
+    console.log("Partida creada con éxito", partidaGuardada);
     return partidaGuardada;
   } catch (error) {
     res.status(500).send('Hubo un error');
