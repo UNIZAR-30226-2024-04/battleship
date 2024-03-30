@@ -18,7 +18,7 @@ export function Navbar() {
 
     // Estilos CSS para el texto cuando el cursor está encima
     const textStyleHovered = {
-        color: '#1D3461', // Cambia el color del texto cuando el cursor está encima
+        color: '#FFFFFF', // Cambia el color del texto cuando el cursor está encima
         cursor: 'pointer',
     };
 
@@ -29,7 +29,7 @@ export function Navbar() {
     };
 
     return (
-        <div style={{ display: "flex", height: "100vh" }}>
+        <div style={{ display: "flex", height: "100vh"}}>
             <Sidebar 
                 // Cambiar el color de fondo
                 backgroundColor='#1D3461'

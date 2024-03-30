@@ -1,9 +1,8 @@
 import { Navbar } from "../Components/Navbar";
-import '../Styles/style.css';
 
 export function Settings() {
     return (
-        <div className="main-page-container">
+        <div className="home-page-container">
         <Navbar/>
         <div className="settings-main-container">
             <h1 className="settings-banner-container">

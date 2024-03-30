@@ -1,9 +1,8 @@
 import { Navbar } from "../Components/Navbar";
-import '../Styles/style.css';
 
 export function Profile() {
     return (
-        <div className="main-page-container">
+        <div className="home-page-container">
             <Navbar/>
             <div className="profile-main-container">
                 <h1 className="profile-banner-container">

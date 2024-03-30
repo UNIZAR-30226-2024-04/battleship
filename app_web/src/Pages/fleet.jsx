@@ -1,20 +1,22 @@
 import { useEffect, useState } from 'react';
 import { Navbar } from "../Components/Navbar";
 import { GridStack } from 'gridstack';
-import '../Styles/style.css';
+import '../Styles/fleet-style.css';
 import 'gridstack/dist/gridstack.min.css';
 import 'gridstack/dist/gridstack-extra.min.css';
 import aircraftImg from '../Images/aircraft.png';
+import destroyImg from '../Images/destroyer.png';
+import patrolImg from '../Images/patrol.png';
 
 
 export function Fleet() {    
     // Contiene el tamaño y nombre de los barcos a usar
     const shipInfo = {
-        'Aircraft': { size: 5, name: "Portaviones"},
+        'Aircraft': { size: 5, name: "Portaviones", img: aircraftImg},
         'Bship': { size: 4, name: "Acorazado"},
         'Sub': { size: 3, name: "Submarino"},
-        'Destroy': { size: 3, name: "Destructor"},
-        'Patrol': { size: 2, name: "Patrullero"},
+        'Destroy': { size: 3, name: "Destructor", img: destroyImg},
+        'Patrol': { size: 2, name: "Patrullero", img: patrolImg},
     };
 
     const boardDimension = 10;
@@ -33,8 +35,7 @@ export function Fleet() {
             removable: true,            // eliminar widgets si se sacan del tablero
             acceptWidgets: true,        // acepta widgets de otros tableros
             disableResize: true,        // quita icono de resize en cada widget
-            //cellHeight: "10em",
-            //cellWidth: "10em",
+            cellHeight: "80px", // Establecer la altura de cada celda en 50px
         });
         setBoard(board); // Almacenar la instancia de GridStack en el estado
     }, []);
@@ -48,7 +49,8 @@ export function Fleet() {
             locked: true,           // inmutable por otros widgets
             //content: `<div onClick={handleItemClick}>${shipName}</div>`,
             //content: '<img src={aircraftImg} />',
-            content: shipInfo[ship].name,
+            // content: shipInfo[ship].name,
+            content: `<img src="${shipInfo[ship].img}" alt="${shipInfo[ship].name}" />`, // Mostrar imagen del barco
             //sizeToContent: true,
             x: Math.round((boardDimension - 1) * Math.random()),
             y: Math.round((boardDimension - 1) * Math.random()),
@@ -106,19 +108,29 @@ export function Fleet() {
             <Navbar/>
             <div className="fleet-container">
                 <h1 className="fleet-banner-container">
-                    Mis flotas
+                    Mi flota
                 </h1>
                 <div className="fleet-main-content-container">
-                    <div className="ship-buttons">
-                        <button onClick={() => addNewWidget("Aircraft")}>Añadir portaviones</button>
-                        <button onClick={() => addNewWidget("Bship")}>Añadir acorazado</button>
-                        <button onClick={() => addNewWidget("Sub")}>Añadir submarino</button>
-                        <button onClick={() => addNewWidget("Destroy")}>Añadir destructor</button>
-                        <button onClick={() => addNewWidget("Patrol")}>Añadir patrullera</button>
-                    </div>
                     <div className="grid-stack fleet-board" onClick={handleItemClick}></div>
                 </div>
             </div>
+            <div className="ship-buttons-container">
+                    <div className="ship-buttons">
+                        <button onClick={() => addNewWidget("Aircraft")}>Añadir portaviones</button>
+                    </div>
+                    <div className="ship-buttons">
+                        <button onClick={() => addNewWidget("Bship")}>Añadir acorazado</button>
+                    </div>
+                    <div className="ship-buttons">
+                        <button onClick={() => addNewWidget("Sub")}>Añadir submarino</button>
+                    </div>
+                    <div className="ship-buttons">
+                        <button onClick={() => addNewWidget("Destroy")}>Añadir destructor</button>
+                    </div>
+                    <div className="ship-buttons">
+                        <button onClick={() => addNewWidget("Patrol")}>Añadir patrullera</button>
+                    </div>
+                </div>
         </div>
     );
 }

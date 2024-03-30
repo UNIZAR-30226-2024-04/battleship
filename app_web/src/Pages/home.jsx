@@ -1,11 +1,10 @@
 import { Navbar } from "../Components/Navbar";
-import '../Styles/style.css';
 import '../Styles/home-style.css';
 import GameDemoImg from '../Images/home-game-demo.png';
 
 export function Home() {
     return (
-        <div className="main-page-container">
+        <div className="home-page-container">
             <Navbar/>
             <div className="home-container">
                 <div className="home-main-content-container">
