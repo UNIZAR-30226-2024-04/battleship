@@ -4,6 +4,7 @@ import 'authProvider.dart';
 import 'jugar.dart';
 import 'comun.dart';
 import 'botones.dart';
+import 'destino.dart';
 
 
 void main() {
@@ -63,6 +64,7 @@ class Principal extends StatelessWidget {
 }
 
 void _handleOnlinePressed(BuildContext context, AuthProvider authProvider) {
+  DestinoManager.setDestino(const Jugar());
   if (!authProvider.isLoggedIn) {
     Navigator.push(
       context,
@@ -77,6 +79,7 @@ void _handleOnlinePressed(BuildContext context, AuthProvider authProvider) {
 }
 
 void _handleOfflinePressed(BuildContext context, AuthProvider authProvider) {
+  DestinoManager.setDestino(const Jugar());
   if (!authProvider.isLoggedIn) {
     Navigator.push(
       context,

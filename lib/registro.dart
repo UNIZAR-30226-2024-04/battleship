@@ -4,6 +4,7 @@ import 'main.dart';
 import 'authProvider.dart';
 import 'comun.dart';
 import 'botones.dart';
+import 'destino.dart';
 
 
 class Registro extends StatelessWidget {
@@ -83,7 +84,7 @@ class Registro extends StatelessWidget {
     else if(_authProvider.signUp(_emailController.text, _passwordController.text, _nameController.text)) {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => Principal()),
+        MaterialPageRoute(builder: (context) => DestinoManager.getDestino()),
       );
     }
   }

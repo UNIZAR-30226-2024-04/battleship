@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'destino.dart';
 import 'registro.dart';
 import 'recContrasena.dart';
 import 'botones.dart';
@@ -102,7 +103,7 @@ class _InicioSesionState extends State<InicioSesion> {
     if(_authProvider.authenticate(_emailController.text, _passwordController.text)) {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => Principal()),
+        MaterialPageRoute(builder: (context) => DestinoManager.getDestino()),
       );
     }
   }
