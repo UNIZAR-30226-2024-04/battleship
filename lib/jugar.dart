@@ -11,20 +11,29 @@ class Jugar extends StatefulWidget {
 }
 
 class _JugarState extends State<Jugar> {
-  static const int _numFilas = 10;
-  static const int _numColumnas = 10;
-  bool _isDragging = false;
+  static int _numFilas = 0;
+  static int _numColumnas = 0;
+  Map<Barco, bool> _draggingStates = {};
   static double _casillaSize = 0.0;
-  static double _boardSize = 360.0;
+  static double _boardSize = 0.0;
   List<Barco> barcos = [];
 
   @override
   void initState() {
     super.initState();
+    _numFilas = 10;
+    _numColumnas = 10;
+    _boardSize = 360.0;
     _casillaSize = _boardSize / _numFilas;
-    Barco barco1 = Barco('barco1', Offset(0, 0), 3, 3*_casillaSize);
-    Barco barco2 = Barco('barco2', Offset(2, 2), 2, 2*_casillaSize);
-    barcos = [barco1, barco2];
+    //Barco barco1 = Barco('acorazado', Offset(0, 0), 3, 3*_casillaSize, false);
+    Barco barco2 = Barco('destructor_rotado', Offset(2.0, 2.0), 3, 3*_casillaSize, true);
+    //Barco barco3 = Barco('patrullero', Offset(3, 2), 2, 2*_casillaSize, false);
+    //Barco barco4 = Barco('portaaviones', Offset(5, 5), 2, 2*_casillaSize, false);
+    //Barco barco5 = Barco('submarino_rotado', Offset(6, 6), 2, 2*_casillaSize, true);
+    barcos = [barco2];
+    _draggingStates = {
+      for (var barco in barcos) barco: false,
+    };
   }
 
 
@@ -43,49 +52,7 @@ class _JugarState extends State<Jugar> {
             buildHeader(context),
             buildTitle('¡Coloca tu flota!', 28),
             const Spacer(),
-            Stack(
-              children: [
-                SizedBox(
-                  width: _boardSize, // Ancho del tablero
-                  height: _boardSize, // Altura del tablero
-                  child: Column(
-                    children: _buildTablero(),
-                  ),
-                ),
-                for (Barco barco in barcos)
-                  Positioned(
-                    top: barco.barcoPosition.dy,
-                    left: barco.barcoPosition.dx,
-                    child: GestureDetector(
-                      onPanStart: (details) {
-                        setState(() {
-                          _isDragging = true;
-                        });
-                      },
-                      onPanUpdate: (details) {
-                        setState(() {
-                          barco.barcoPosition += details.delta;
-                          barco.barcoPosition = _boundPosition(barco.barcoPosition, barco.barcoSize);
-                        });
-                      },
-                      onPanEnd: (details) {
-                        setState(() {
-                          _isDragging = false;
-                        });
-                      },
-                      child: Opacity(
-                        opacity: _isDragging ? 0.5 : 1.0,
-                        child: Image.asset(
-                          'images/'+barco.nombreBaseBarco+'.png',
-                            width: barco.barcoSize,
-                          height: _casillaSize,
-                        ),
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-
+            _construirTableroConBarcos(),
             const Spacer(),
             buildActions(context),
           ],
@@ -94,6 +61,51 @@ class _JugarState extends State<Jugar> {
     );
   }
 
+
+  Widget _construirTableroConBarcos() {
+    return Stack(
+      children: [
+        SizedBox(
+          width: _boardSize, // Ancho del tablero
+          height: _boardSize, // Altura del tablero
+          child: Column(
+            children: _buildTablero(),
+          ),
+        ),
+        for (Barco barco in barcos)
+          Positioned(
+            top: barco.barcoPosition.dy*_casillaSize,
+            left: barco.barcoPosition.dx*_casillaSize,
+            child: GestureDetector(
+              onPanStart: (details) {
+                setState(() {
+                  _draggingStates[barco] = true;
+                });
+              },
+              onPanUpdate: (details) {
+                setState(() {
+                  barco.barcoPosition += details.delta;
+                  barco.barcoPosition = _boundPosition(barco.barcoPosition, barco.barcoSize, barco.esRotado);
+                });
+              },
+              onPanEnd: (details) {
+                setState(() {
+                  _draggingStates[barco] = false;
+                });
+              },
+              child: Opacity(
+                opacity: _draggingStates[barco] ?? false ? 0.5 : 1.0,
+                child: Image.asset(
+                  'images/'+barco.nombre+'.png',
+                  width: barco.getWidth(_casillaSize),
+                  height: barco.getHeight(_casillaSize),
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
 
   List<Widget> _buildTablero() {
     List<Widget> filas = [];
@@ -120,12 +132,16 @@ class _JugarState extends State<Jugar> {
     return Row(children: casillas);
   }
 
-  Offset _boundPosition(Offset newPosition, double barcoSize) {
-    double x = (newPosition.dx / _casillaSize).round() * _casillaSize;
-    double y = (newPosition.dy / _casillaSize).round() * _casillaSize;
+  Offset _boundPosition(Offset newPosition, double barcoSize, bool esRotado) {
+    double x, y;
 
-    x = x.clamp(0.0, _boardSize - barcoSize);
-    y = y.clamp(0.0, _boardSize - _casillaSize);
+    if (!esRotado) {
+      x = newPosition.dx.clamp(0.0, _boardSize - barcoSize);
+      y = newPosition.dy.clamp(0.0, _boardSize - _casillaSize);
+    } else {
+      x = newPosition.dx.clamp(0.0, _boardSize - _casillaSize);
+      y = newPosition.dy.clamp(0.0, _boardSize - barcoSize);
+    }
 
     return Offset(x, y);
   }
