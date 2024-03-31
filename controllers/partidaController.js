@@ -333,62 +333,45 @@ exports.actualizarEstadoPartida = async (req, res) => {
   }
 };
 
+// Necesitamos alterar las estadisticas almacenadas en el perfil de los jugadores
+const { actualizarEstadisticas } = require('./perfilController')
 
-// Funcion para actualizar las estadisticas de cada jugador al finalizar la partida
+// Funcion para guardar las estadisticas de cada jugador al finalizar la partida
+// Devuelve las estadisticas de la partida de ambos jugadores
 exports.actualizarEstadisticasFinales = async (req, res) => {
   try {
     const { codigo } = req.body;
     const partida = await Partida.findById(codigo);
     if (partida) {
-      const jugador1 = partida.jugador1;
-      const jugador2 = partida.jugador2;
-      const ganador = partida.ganador;
+      // Actualizar estadisticas de los jugadores
+      const estadisticasJ1 = {
+        nombreId: partida.jugador1,                             // Nombre del jugador 1
+        victoria: partida.ganador === partida.jugador1 ? 1 : 0, // 1 si ganó, 0 si perdió. 
+        nuevosBarcosHundidos: partida.tableroBarcos2.filter(barco => barco.barcoHundido).length,
+        nuevosBarcosPerdidos: partida.tableroBarcos1.filter(barco => barco.barcoHundido).length,
+        nuevosDisparosAcertados: partida.disparosRealizados1.filter(disparo => disparo.resultado === 'Tocado' || disparo.resultado === 'Hundido').length,
+        nuevosDisparosFallados: partida.disparosRealizados1.filter(disparo => disparo.resultado === 'Agua').length,
+        nuevosTrofeos: 20 // Place holder === TODO ELO
+      };
+      const estadisticasJ2 = {
+        nombreId: partida.jugador2,                             // Nombre del jugador 1
+        victoria: partida.ganador === partida.jugador2 ? 1 : 0, // 1 si ganó, 0 si perdió. 
+        nuevosBarcosHundidos: partida.tableroBarcos1.filter(barco => barco.barcoHundido).length,
+        nuevosBarcosPerdidos: partida.tableroBarcos2.filter(barco => barco.barcoHundido).length,
+        nuevosDisparosAcertados: partida.disparosRealizados2.filter(disparo => disparo.resultado === 'Tocado' || disparo.resultado === 'Hundido').length,
+        nuevosDisparosFallados: partida.disparosRealizados2.filter(disparo => disparo.resultado === 'Agua').length,
+        nuevosTrofeos: 20 // Place holder === TODO ELO
+      };
 
-      // Actualizar estadisticas de partidas jugadas de ambos jugadores
-      jugador1.partidasJugadas++;
-      jugador2.partidasJugadas++;
-      
-      // Actualizar estadisticas de partidas ganadas del ganador
-      if (jugador1.nombreId === ganador.nombreId) {
-        jugador1.partidasGanadas++;
-      } else {
-        jugador2.partidasGanadas++;
-      }
-
-      // Actualizar estadisticas de barcos hundidos del jugador 1 y barcos perdidos del jugador 2
-      // Recorro partida.tableroBarcos2 para contar los barcos hundidos
-      barcosHundidos1 = 0;
-      for (let i = 0; i < partida.tableroBarcos2.length; i++) {
-        if (partida.tableroBarcos2[i].barcoHundido) {
-          barcosHundidos1++;
-        }
-      }
-      jugador1.barcosEnemigosHundidos += barcosHundidos1;
-      jugador1.barcosAliadosPerdidos += barcosHundidos1;
-
-      // Actualizar estadisticas de barcos hundidos del jugador 2 y barcos perdidos del jugador 1
-      // Recorro partida.tableroBarcos1 para contar los barcos hundidos
-      barcosHundidos2 = 0;
-      for (let i = 0; i < partida.tableroBarcos1.length; i++) {
-        if (partida.tableroBarcos1[i].barcoHundido) {
-          barcosHundidos2++;
-        }
-      }
-      jugador2.barcosEnemigosHundidos += barcosHundidos2;
-      jugador2.barcosAliadosPerdidos += barcosHundidos2;
-
-      // Actualizar estadisticas de disparos acertados y fallados del jugador 1
-      jugador1.disparosAcertados += partida.disparosRealizados1.filter(disparo => disparo.resultado === 'Tocado' || disparo.resultado === 'Hundido').length;
-      jugador1.disparosFallados += partida.disparosRealizados1.filter(disparo => disparo.resultado === 'Agua').length;
-
-      // Actualizar estadisticas de disparos acertados y fallados del jugador 2
-      jugador2.disparosAcertados += partida.disparosRealizados2.filter(disparo => disparo.resultado === 'Tocado' || disparo.resultado === 'Hundido').length;
-      jugador2.disparosFallados += partida.disparosRealizados2.filter(disparo => disparo.resultado === 'Agua').length;
-
-      // Guardar los cambios en la base de datos
-      const jugador1Guardado = await jugador1.save();
-      const jugador2Guardado = await jugador2.save();
-      res.json({ jugador1: jugador1Guardado, jugador2: jugador2Guardado }); // Devuelvo los jugadores actualizados
+      // Llamar a la función de perfilController para actualizar las estadísticas
+      const req1 = { body: estadisticasJ1 };
+      const req2 = { body: estadisticasJ2 };
+      const res1 = { json: () => {}, status: () => ({ send: () => {} }) }; // No hace nada
+      const res2 = { json: () => {}, status: () => ({ send: () => {} }) }; // No hace nada
+      await actualizarEstadisticas(req1, res1);
+      await actualizarEstadisticas(req2, res2);
+      res.json({ estadisticasJ1, estadisticasJ2 });
+      return { estadisticasJ1, estadisticasJ2 };
     } else {
       res.status(404).send('Partida no encontrada');
     }

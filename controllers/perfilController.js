@@ -410,6 +410,7 @@ exports.moverBarcoInicial = async (req, res) => {
 /**
  * @description Actualiza las estadísticas de un perfil identificado por _id o nombreId. Las nuevas estadísticas indicadas 
  * incrementan a las existentes en la base de datos. Los nuevos trofeos se suman si victoria es 1 y se restan si victoria es 0.
+ * Normalmente, se llama con una funcion similar que pertenece al modulo de partida.
  * @param {Object} req - El objeto de solicitud HTTP.
  * @param {string} [req.body._id] - El perfil debe existir en la base de datos.
  * @param {string} [req.body.nombreId] - El perfil debe existir en la base de datos.
