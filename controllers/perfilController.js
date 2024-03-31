@@ -315,9 +315,9 @@ function barcoColisiona(tablero, barco, barcoId) {
  * @param {string} [req.body._id] - El perfil debe existir en la base de datos.
  * @param {string} [req.body.nombreId] - El perfil debe existir en la base de datos.
  * @param {number} [req.body.barcoId = 0] - Debe estar entre 0 y el número de barcos - 1 (entre 0 y 4 en el juego base).
- * @param {number} [iProaNueva] - Debe estar entre 1 y 10.
- * @param {number} [jProaNueva] - Debe estar entre 1 y 10.
- * @param {number} [rotar] - Debe ser 0 (equivalente a omitirlo) o 1.
+ * @param {number} [req.body.iProaNueva] - Debe estar entre 1 y 10.
+ * @param {number} [req.body.jProaNueva] - Debe estar entre 1 y 10.
+ * @param {number} [req.body.rotar] - Debe ser 0 (equivalente a omitirlo) o 1.
  * @param {Object} res - El objeto de respuesta HTTP.
  * @example
  * perfil = { nombreId: 'usuario1', barcoId: 3, iProaNueva: 1, jProaNueva: 6, rotar: 1 };
@@ -413,12 +413,12 @@ exports.moverBarcoInicial = async (req, res) => {
  * @param {Object} req - El objeto de solicitud HTTP.
  * @param {string} [req.body._id] - El perfil debe existir en la base de datos.
  * @param {string} [req.body.nombreId] - El perfil debe existir en la base de datos.
- * @param {number} victoria - Debe ser 0 o 1.
- * @param {number} nuevosBarcosHundidos
- * @param {number} nuevosBarcosPerdidos
- * @param {number} nuevosDisparosAcertados
- * @param {number} nuevosDisparosFallados
- * @param {number} [nuevosTrofeos = 0]
+ * @param {number} req.body.victoria - Debe ser 0 o 1.
+ * @param {number} req.body.nuevosBarcosHundidos
+ * @param {number} req.body.nuevosBarcosPerdidos
+ * @param {number} req.body.nuevosDisparosAcertados
+ * @param {number} req.body.nuevosDisparosFallados
+ * @param {number} [req.body.nuevosTrofeos = 0]
  * @param {Object} res - El objeto de respuesta HTTP.
  * @example
  * perfil = { nombreId: 'usuario1', victoria: 1, nuevosBarcosHundidos: 1, nuevosBarcosPerdidos:1, 
@@ -489,7 +489,7 @@ exports.actualizarEstadisticas = async (req, res) => {
  * @param {Object} req - El objeto de solicitud HTTP.
  * @param {string} [req.body._id] - El perfil debe existir en la base de datos.
  * @param {string} [req.body.nombreId] - El perfil debe existir en la base de datos.
- * @param {number} nuevosPuntosExperiencia
+ * @param {number} req.body.nuevosPuntosExperiencia
  * @param {Object} res - El objeto de respuesta HTTP.
  * @example
  * perfil = { nombreId: 'usuario1', nuevosPuntosExperiencia: 10};
@@ -659,7 +659,7 @@ exports.eliminarPerfil = async (req, res) => {
  * @param {Object} req - El objeto de solicitud HTTP.
  * @param {string} [req.body._id] - El perfil debe existir en la base de datos.
  * @param {string} [req.body.nombreId] - El perfil debe existir en la base de datos.
- * @param {string} contraseña
+ * @param {string} req.body.contraseña
  * @param {Object} res - El objeto de respuesta HTTP.
  * @example
  * perfil = { nombreId: 'usuario1', contraseña: 'Passwd1.'};
@@ -723,7 +723,7 @@ function crearToken(perfil) {
  * @param {Object} req - El objeto de solicitud HTTP.
  * @param {string} [req.body._id] - El perfil debe existir en la base de datos.
  * @param {string} [req.body.nombreId] - El perfil debe existir en la base de datos.
- * @param {string} contraseña
+ * @param {string} req.body.contraseña
  * @param {Object} res - El objeto de respuesta HTTP.
  * @example
  * perfil = { nombreId: 'usuario1', contraseña: 'Passwd1.'};
