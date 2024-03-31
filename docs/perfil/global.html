@@ -104,7 +104,7 @@
     
 
     
-    <h4 class="name" id="actualizarEstadisticas"><span class="type-signature"></span>actualizarEstadisticas<span class="signature">(req, victoria, nuevosBarcosHundidos, nuevosBarcosPerdidos, nuevosDisparosAcertados, nuevosDisparosFallados, nuevosTrofeos<span class="signature-attributes">opt</span>, res)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="actualizarEstadisticas"><span class="type-signature"></span>actualizarEstadisticas<span class="signature">(req, res)</span><span class="type-signature"></span></h4>
     
 
     
@@ -136,11 +136,7 @@
         <th>Type</th>
 
         
-        <th>Attributes</th>
-        
 
-        
-        <th>Default</th>
         
 
         <th class="last">Description</th>
@@ -165,19 +161,7 @@
             </td>
 
             
-                <td class="attributes">
-                
 
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                </td>
             
 
             <td class="description last">El objeto de solicitud HTTP.
@@ -197,6 +181,8 @@
         <th>Attributes</th>
         
 
+        
+        <th>Default</th>
         
 
         <th class="last">Description</th>
@@ -233,6 +219,10 @@
             
 
             
+                <td class="default">
+                
+                </td>
+            
 
             <td class="description last">El perfil debe existir en la base de datos.</td>
         </tr>
@@ -266,22 +256,19 @@
             
 
             
+                <td class="default">
+                
+                </td>
+            
 
             <td class="description last">El perfil debe existir en la base de datos.</td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-            </td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>victoria</code></td>
+                <td class="name"><code>body.victoria</code></td>
             
 
             <td class="type">
@@ -316,7 +303,7 @@
 
         <tr>
             
-                <td class="name"><code>nuevosBarcosHundidos</code></td>
+                <td class="name"><code>body.nuevosBarcosHundidos</code></td>
             
 
             <td class="type">
@@ -351,7 +338,7 @@
 
         <tr>
             
-                <td class="name"><code>nuevosBarcosPerdidos</code></td>
+                <td class="name"><code>body.nuevosBarcosPerdidos</code></td>
             
 
             <td class="type">
@@ -386,7 +373,7 @@
 
         <tr>
             
-                <td class="name"><code>nuevosDisparosAcertados</code></td>
+                <td class="name"><code>body.nuevosDisparosAcertados</code></td>
             
 
             <td class="type">
@@ -421,7 +408,7 @@
 
         <tr>
             
-                <td class="name"><code>nuevosDisparosFallados</code></td>
+                <td class="name"><code>body.nuevosDisparosFallados</code></td>
             
 
             <td class="type">
@@ -456,7 +443,7 @@
 
         <tr>
             
-                <td class="name"><code>nuevosTrofeos</code></td>
+                <td class="name"><code>body.nuevosTrofeos</code></td>
             
 
             <td class="type">
@@ -492,6 +479,13 @@
         </tr>
 
     
+    </tbody>
+</table>
+
+            </td>
+        </tr>
+
+    
 
         <tr>
             
@@ -508,19 +502,7 @@
             </td>
 
             
-                <td class="attributes">
-                
 
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                </td>
             
 
             <td class="description last">El objeto de respuesta HTTP.</td>
@@ -606,7 +588,7 @@
     
 
     
-    <h4 class="name" id="actualizarPuntosExperiencia"><span class="type-signature"></span>actualizarPuntosExperiencia<span class="signature">(req, nuevosPuntosExperiencia, res)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="actualizarPuntosExperiencia"><span class="type-signature"></span>actualizarPuntosExperiencia<span class="signature">(req, res)</span><span class="type-signature"></span></h4>
     
 
     
@@ -757,17 +739,10 @@
         </tr>
 
     
-    </tbody>
-</table>
-
-            </td>
-        </tr>
-
-    
 
         <tr>
             
-                <td class="name"><code>nuevosPuntosExperiencia</code></td>
+                <td class="name"><code>body.nuevosPuntosExperiencia</code></td>
             
 
             <td class="type">
@@ -780,10 +755,25 @@
             </td>
 
             
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
 
             
 
             <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
         </tr>
 
     
@@ -888,7 +878,7 @@
     
 
     
-    <h4 class="name" id="autenticarUsuario"><span class="type-signature"></span>autenticarUsuario<span class="signature">(req, contraseña, res)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="autenticarUsuario"><span class="type-signature"></span>autenticarUsuario<span class="signature">(req, res)</span><span class="type-signature"></span></h4>
     
 
     
@@ -1039,17 +1029,10 @@
         </tr>
 
     
-    </tbody>
-</table>
-
-            </td>
-        </tr>
-
-    
 
         <tr>
             
-                <td class="name"><code>contraseña</code></td>
+                <td class="name"><code>body.contraseña</code></td>
             
 
             <td class="type">
@@ -1062,10 +1045,25 @@
             </td>
 
             
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
 
             
 
             <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
         </tr>
 
     
@@ -1689,7 +1687,7 @@
     
 
     
-    <h4 class="name" id="iniciarSesion"><span class="type-signature"></span>iniciarSesion<span class="signature">(req, contraseña, res)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="iniciarSesion"><span class="type-signature"></span>iniciarSesion<span class="signature">(req, res)</span><span class="type-signature"></span></h4>
     
 
     
@@ -1840,17 +1838,10 @@
         </tr>
 
     
-    </tbody>
-</table>
-
-            </td>
-        </tr>
-
-    
 
         <tr>
             
-                <td class="name"><code>contraseña</code></td>
+                <td class="name"><code>body.contraseña</code></td>
             
 
             <td class="type">
@@ -1863,10 +1854,25 @@
             </td>
 
             
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
 
             
 
             <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
         </tr>
 
     
@@ -2604,7 +2610,7 @@
     
 
     
-    <h4 class="name" id="moverBarcoInicial"><span class="type-signature"></span>moverBarcoInicial<span class="signature">(req, iProaNueva<span class="signature-attributes">opt</span>, jProaNueva<span class="signature-attributes">opt</span>, rotar<span class="signature-attributes">opt</span>, res)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="moverBarcoInicial"><span class="type-signature"></span>moverBarcoInicial<span class="signature">(req, res)</span><span class="type-signature"></span></h4>
     
 
     
@@ -2636,8 +2642,6 @@
         <th>Type</th>
 
         
-        <th>Attributes</th>
-        
 
         
 
@@ -2662,14 +2666,6 @@
             
             </td>
 
-            
-                <td class="attributes">
-                
-
-                
-
-                
-                </td>
             
 
             
@@ -2814,109 +2810,121 @@
         </tr>
 
     
+
+        <tr>
+            
+                <td class="name"><code>body.iProaNueva</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">Debe estar entre 1 y 10.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>body.jProaNueva</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">Debe estar entre 1 y 10.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>body.rotar</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last">Debe ser 0 (equivalente a omitirlo) o 1.</td>
+        </tr>
+
+    
     </tbody>
 </table>
 
             </td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>iProaNueva</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">number</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last">Debe estar entre 1 y 10.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>jProaNueva</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">number</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last">Debe estar entre 1 y 10.</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>rotar</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">number</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last">Debe ser 0 (equivalente a omitirlo) o 1.</td>
         </tr>
 
     
@@ -2935,14 +2943,6 @@
             
             </td>
 
-            
-                <td class="attributes">
-                
-
-                
-
-                
-                </td>
             
 
             
@@ -3625,7 +3625,7 @@
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.2</a> on Fri Mar 29 2024 14:01:42 GMT+0100 (hora estándar de Europa central)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.2</a> on Sun Mar 31 2024 10:15:43 GMT+0200 (hora de verano de Europa central)
 </footer>
 
 <script> prettyPrint(); </script>
