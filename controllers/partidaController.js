@@ -265,6 +265,12 @@ exports.realizarDisparo = async (req, res) => {
     const filtro = _id ? { _id: _id } : { codigo: codigo };
     const partida = await Partida.findOne(filtro);
     if (partida) {
+      // Verificar si el numero de jugador es el turno correcto
+      if (partida.contadorTurno % 2 !== jugador % 2) {
+        res.status(400).send('No es el turno de ese jugador');
+        console.error("No es el turno de ese jugador");
+        return;
+      }
       // Comprobar si la casilla ya fue disparada
       let disparosRealizados = jugador === 1 ? partida.disparosRealizados1 : partida.disparosRealizados2;
       const disparoRepetido = disparosRealizados.find(disparo => disparo.i === i && disparo.j === j);
@@ -284,6 +290,10 @@ exports.realizarDisparo = async (req, res) => {
         disparo.estado = 'Tocado'; // Los disparos solo son Agua o Tocado
       }
       disparosRealizados.push(disparo);
+      
+      // Actualizar el contador de turnos
+      partida.contadorTurno++;
+
       // Actualizar la partida
       const partidaModificada = await Partida.findOneAndUpdate(
         filtro, // Filtrar
@@ -376,6 +386,78 @@ exports.actualizarEstadisticasFinales = async (req, res) => {
       res.status(404).send('Partida no encontrada');
     }
   } catch (error) {
+    res.status(500).send('Hubo un error');
+  }
+};
+
+
+// Funcion para obtener el chat de una partida
+exports.obtenerChat = async (req, res) => {
+  try {
+    const { codigo } = req.body;
+    const partida = await Partida.findById(codigo);
+    if (partida) {
+      res.json(partida.chat);
+      return partida.chat;
+    } else {
+      res.status(404).send('Partida no encontrada');
+    }
+  } catch (error) {
+    res.status(500).send('Hubo un error');
+  }
+};
+
+// Funcion para enviar un mensaje al chat de una partida
+exports.enviarMensaje = async (req, res) => {
+  try {
+    const { _id, codigo, autor, mensaje, ...extraParam } = req.body;
+    // Verificar si hay algún parámetro extra que no se espera
+    if (Object.keys(extraParam).length > 0) {
+      res.status(400).send('Sobran parámetros, se espera codigo (o _id), autor, mensaje');
+      console.error("Sobran parámetros, se espera codigo (o _id), autor, mensaje");
+      return;
+    }
+    // Verificar si alguno de los parámetros está ausente
+    if (!codigo && !_id || !autor || !mensaje) {
+      res.status(400).send('Falta alguno de los siguientes parámetros: codigo (o _id), autor o mensaje');
+      console.error("Falta alguno de los siguientes parámetros: codigo (o _id), autor o mensaje");
+      return;
+    }
+    // Verificar si el numero de jugador es correcto
+    if (autor !== 1 && autor !== 2) {
+      res.status(400).send('El jugador debe ser 1 o 2');
+      console.error("El jugador debe ser 1 o 2");
+      return;
+    }
+    // Verificar que existe la partida
+    const filtro = _id ? { _id: _id } : { codigo: codigo };
+    const partida = await Partida.findOne(filtro);
+    if (partida) {
+      let chat = partida.chat;
+      chat.push({ mensaje, autor, timestamp: new Date() });
+
+      // Actualizar la partida
+      const partidaModificada = await Partida.findOneAndUpdate(
+        filtro, // Filtrar
+        partida, // Actualizar (partida contiene los cambios)
+        { new: true } // Para devolver el documento actualizado
+      );
+      if (partidaModificada) {
+        res.json(partidaModificada );
+        console.log("Partida modificada con éxito");
+        return partidaModificada;
+      } else {
+        res.status(404).send('No se ha encontrado la partida a actualizar');
+        console.error("No se ha encontrado la partida a actualizar");
+      }
+      res.json(resultado);
+
+    } else {
+      console.error('Partida no encontrada');
+      res.status(404).send('Partida no encontrada');
+    }
+  } catch (error) {
+    console.error('Hubo un error', error);
     res.status(500).send('Hubo un error');
   }
 };
