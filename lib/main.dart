@@ -1,7 +1,7 @@
+import 'package:battleship/colocarBarcos.dart';
 import 'package:flutter/material.dart';
 import 'login.dart';
 import 'authProvider.dart';
-import 'jugar.dart';
 import 'comun.dart';
 import 'botones.dart';
 import 'destino.dart';
@@ -44,10 +44,9 @@ class Principal extends StatelessWidget {
         body: Column(
           children: [
             buildHeader(context),
-            const Spacer(),
             const SizedBox(
-              width: 300,
-              height: 300,
+              width: 250,
+              height: 250,
               child: Image(image: AssetImage('images/portada.png')),
             ),
             const Spacer(),
@@ -64,7 +63,7 @@ class Principal extends StatelessWidget {
 }
 
 void _handleOnlinePressed(BuildContext context, AuthProvider authProvider) {
-  DestinoManager.setDestino(const Jugar());
+  DestinoManager.setDestino(const ColocarBarcos());
   if (!authProvider.isLoggedIn) {
     Navigator.push(
       context,
@@ -73,13 +72,13 @@ void _handleOnlinePressed(BuildContext context, AuthProvider authProvider) {
   } else {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => const Jugar()),
+      MaterialPageRoute(builder: (context) => const ColocarBarcos()),
     );
   }
 }
 
 void _handleOfflinePressed(BuildContext context, AuthProvider authProvider) {
-  DestinoManager.setDestino(const Jugar());
+  DestinoManager.setDestino(const ColocarBarcos());
   if (!authProvider.isLoggedIn) {
     Navigator.push(
       context,
@@ -88,7 +87,7 @@ void _handleOfflinePressed(BuildContext context, AuthProvider authProvider) {
   } else {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => const Jugar()),
+      MaterialPageRoute(builder: (context) => const ColocarBarcos()),
     );
   }
 }

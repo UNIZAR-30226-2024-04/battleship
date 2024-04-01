@@ -1,7 +1,14 @@
-2024/03/31-16:47:07.149 36ec Reusing MANIFEST C:\Users\xavie\AppData\Local\Temp\flutter_tools.e7e75237\flutter_tools_chrome_device.f25b11a1\Default\shared_proto_db/MANIFEST-000001
-2024/03/31-16:47:07.150 36ec Recovering log #13
-2024/03/31-16:47:07.150 36ec Reusing old log C:\Users\xavie\AppData\Local\Temp\flutter_tools.e7e75237\flutter_tools_chrome_device.f25b11a1\Default\shared_proto_db/000013.log 
-2024/03/31-16:47:07.150 36ec Delete type=0 #3
-2024/03/31-16:47:07.150 36ec Delete type=0 #4
-2024/03/31-16:47:07.150 36ec Delete type=0 #7
-2024/03/31-16:47:07.150 36ec Delete type=0 #10
+2024/04/01-21:01:43.895 1060 Reusing MANIFEST C:\Users\xavie\AppData\Local\Temp\flutter_tools.6a04325\flutter_tools_chrome_device.a9da579c\Default\shared_proto_db/MANIFEST-000001
+2024/04/01-21:01:43.895 1060 Recovering log #23
+2024/04/01-21:01:43.895 1060 Reusing old log C:\Users\xavie\AppData\Local\Temp\flutter_tools.6a04325\flutter_tools_chrome_device.a9da579c\Default\shared_proto_db/000023.log 
+2024/04/01-21:01:43.896 1060 Delete type=0 #3
+2024/04/01-21:01:43.896 1060 Delete type=0 #4
+2024/04/01-21:01:43.896 1060 Delete type=0 #7
+2024/04/01-21:01:43.896 1060 Delete type=2 #8
+2024/04/01-21:01:43.896 1060 Delete type=0 #10
+2024/04/01-21:01:43.896 1060 Delete type=2 #11
+2024/04/01-21:01:43.896 1060 Delete type=0 #13
+2024/04/01-21:01:43.896 1060 Delete type=2 #14
+2024/04/01-21:01:43.896 1060 Delete type=0 #16
+2024/04/01-21:01:43.896 1060 Delete type=2 #17
+2024/04/01-21:01:43.896 1060 Delete type=0 #19

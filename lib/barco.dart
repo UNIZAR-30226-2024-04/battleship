@@ -6,7 +6,7 @@ class Barco {
   double _barcoSize = 0.0;
   bool _esRotado = false;
   int _longitud = 0;
-  bool error = false;
+  Offset _barcoPositionCached = Offset(0.0, 0.0);
 
   Barco(String nombre, Offset barcoPosition, int longitud, double barcoSize, bool esRotado) {
     _nombre = nombre;
@@ -14,40 +14,81 @@ class Barco {
     _longitud = longitud;
     _barcoSize = barcoSize;
     _esRotado = esRotado;
+    _barcoPositionCached = barcoPosition;
   }
+
+  void _catchPosition() {
+    _barcoPositionCached = _barcoPosition;
+  }
+
+  void _resetPosition() {
+    _barcoPosition = _barcoPositionCached;
+  }
+
+  List<List<int>> _getCasillasOcupadas(Offset position) {
+    List<List<int>> casillasOcupadas = [];
+
+    if (_esRotado) {
+      for (int i = 0; i < _longitud; i++) {
+        casillasOcupadas.add([position.dx.toInt(), (position.dy + i).toInt()]);
+      }
+    }
+    else {
+      for (int i = 0; i < _longitud; i++) {
+        casillasOcupadas.add([(position.dx + i).toInt(), position.dy.toInt()]);
+      }
+    }
+
+    return casillasOcupadas;
+  }
+
+  bool casillaOcupadaPorMiBarco(int fila, int columna) {
+    List<List<int>> casillasOcupadas = _getCasillasOcupadas(_barcoPositionCached);
+    for (int i = 0; i < casillasOcupadas.length; i++) {
+      if (casillasOcupadas[i][0] == fila && casillasOcupadas[i][1] == columna) {
+        return true;
+      }
+    }
+    return false;
+  }
+
 
   // Método que devuelve una matriz de casillas ocupadas por el barco. Si una de las casillas que
   // ocupa el barco está ocupada por otro barco, se considera que el barco no puede ser colocado
-  // en esa posición y devuelve null.
-  List<List<bool>>? getOcupadas(int numFilas, int numColumnas, List<List<bool>> ocupadas) {
-    List<List<bool>> nuevaOcupadas = List.generate(numFilas, (_) => List.generate(numColumnas, (_) => false));
+  // en esa posición y devuelve la matriz sin modificar, devolviendo el estado interno del barco al cacheado.
+void updateOcupadas(List<List<bool>> casillasOcupadas) {
+  List<List<int>> casillasOcupadasNuevas = _getCasillasOcupadas(_barcoPosition);
 
-    for (int i = 0; i < _longitud; i++) {
-      int x, y;
-      if (_esRotado) {
-        x = _barcoPosition.dx.toInt();
-        y = (_barcoPosition.dy + i).toInt();
-      } else {
-        x = (_barcoPosition.dx + i).toInt();
-        y = _barcoPosition.dy.toInt();
-      }
+  // Buscar conflictos con el resto de barcos.
+  for (int i = 0; i < casillasOcupadasNuevas.length; i++) {
+    int fila = casillasOcupadasNuevas[i][0];
+    int columna = casillasOcupadasNuevas[i][1];
 
-      // Comprueba si la posición está dentro del tablero
-      if (x < 0 || x >= numFilas || y < 0 || y >= numColumnas) {
-        return null;
-      }
-
-      // Comprueba si la posición ya está ocupada
-      if (ocupadas[x][y]) {
-        return null;
-      }
-
-      nuevaOcupadas[x][y] = true;
+    // Si la casilla está ocupada por otro barco distinto de mí.
+    if (casillasOcupadas[fila][columna] && !casillaOcupadaPorMiBarco(fila, columna)) {
+      _resetPosition();
+      return;
     }
-
-    return nuevaOcupadas;
   }
 
+  // Liberar las casillas ocupadas por el barco en la posición anterior.
+  List<List<int>> casillasOcupadasAntiguas = _getCasillasOcupadas(_barcoPositionCached);
+  for (int i = 0; i < casillasOcupadasAntiguas.length; i++) {
+    int fila = casillasOcupadasAntiguas[i][0];
+    int columna = casillasOcupadasAntiguas[i][1];
+    casillasOcupadas[fila][columna] = false;
+  }
+
+  // Inserción correcta del barco. Reservar las casillas.
+  for (int i = 0; i < casillasOcupadasNuevas.length; i++) {
+    int fila = casillasOcupadasNuevas[i][0];
+    int columna = casillasOcupadasNuevas[i][1];
+    casillasOcupadas[fila][columna] = true;
+  }
+
+  // Actualizar la posición cacheada del barco.
+  _catchPosition();
+}
 
   // Getters
   String get nombre => _nombre;
