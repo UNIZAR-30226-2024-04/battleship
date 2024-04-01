@@ -6,6 +6,7 @@ class Barco {
   double _barcoSize = 0.0;
   bool _esRotado = false;
   int _longitud = 0;
+  bool error = false;
 
   Barco(String nombre, Offset barcoPosition, int longitud, double barcoSize, bool esRotado) {
     _nombre = nombre;
@@ -14,6 +15,39 @@ class Barco {
     _barcoSize = barcoSize;
     _esRotado = esRotado;
   }
+
+  // Método que devuelve una matriz de casillas ocupadas por el barco. Si una de las casillas que
+  // ocupa el barco está ocupada por otro barco, se considera que el barco no puede ser colocado
+  // en esa posición y devuelve null.
+  List<List<bool>>? getOcupadas(int numFilas, int numColumnas, List<List<bool>> ocupadas) {
+    List<List<bool>> nuevaOcupadas = List.generate(numFilas, (_) => List.generate(numColumnas, (_) => false));
+
+    for (int i = 0; i < _longitud; i++) {
+      int x, y;
+      if (_esRotado) {
+        x = _barcoPosition.dx.toInt();
+        y = (_barcoPosition.dy + i).toInt();
+      } else {
+        x = (_barcoPosition.dx + i).toInt();
+        y = _barcoPosition.dy.toInt();
+      }
+
+      // Comprueba si la posición está dentro del tablero
+      if (x < 0 || x >= numFilas || y < 0 || y >= numColumnas) {
+        return null;
+      }
+
+      // Comprueba si la posición ya está ocupada
+      if (ocupadas[x][y]) {
+        return null;
+      }
+
+      nuevaOcupadas[x][y] = true;
+    }
+
+    return nuevaOcupadas;
+  }
+
 
   // Getters
   String get nombre => _nombre;

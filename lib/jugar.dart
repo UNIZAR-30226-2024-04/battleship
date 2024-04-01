@@ -16,6 +16,8 @@ class _JugarState extends State<Jugar> {
   static double _casillaSize = 0.0;
   static double _boardSize = 0.0;
   static List<Barco> barcos = [];
+  // Matriz de casillas ocupadas por los barcos
+  static List<List<bool>> _casillasOcupadas = List.generate(_numFilas, (_) => List.filled(_numColumnas, false));
 
   @override
   void initState() {
@@ -31,6 +33,10 @@ class _JugarState extends State<Jugar> {
     _draggingStates = {
       for (var barco in barcos) barco: false,
     };
+    // Actualizar la matriz de casillas ocupadas
+    for (var barco in barcos) {
+      _casillasOcupadas = barco.getOcupadas(_numFilas - 1, _numColumnas - 1, _casillasOcupadas)!;
+    }
   }
 
   Widget build(BuildContext context) {
@@ -60,8 +66,8 @@ class _JugarState extends State<Jugar> {
     return Stack(
       children: [
         SizedBox(
-          width: _boardSize + _casillaSize, // Ancho del tablero con espacio adicional para la columna de coordenadas
-          height: _boardSize + _casillaSize, // Altura del tablero con espacio adicional para la fila de coordenadas
+          width: _boardSize + _casillaSize,
+          height: _boardSize + _casillaSize,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: _buildTablero(),
@@ -78,22 +84,37 @@ class _JugarState extends State<Jugar> {
                     setState(() {
                       _draggingStates[barco] = true;
                     });
+                    _casillasOcupadas = barco.getOcupadas(_numFilas - 1, _numColumnas - 1, _casillasOcupadas)!;
                   },
                   onPanUpdate: (details) {
                     setState(() {
-                      barco.barcoPosition += details.delta;
-                      barco.barcoPosition = _boundPosition(barco.barcoPosition, barco.getHeight(_casillaSize), barco.getWidth(_casillaSize));
+                      var newDx = (barco.barcoPosition.dx + details.delta.dx / _casillaSize);
+                      var newDy = (barco.barcoPosition.dy + details.delta.dy / _casillaSize);
+
+                      barco.barcoPosition = Offset(newDx, newDy);
+                      barco.barcoPosition = _boundPosition(barco.barcoPosition, barco.getHeight(_casillaSize), barco.getWidth(_casillaSize), barco.esRotado);
                     });
                   },
                   onPanEnd: (details) {
                     setState(() {
+                      barco.barcoPosition = Offset(barco.barcoPosition.dx.roundToDouble(), barco.barcoPosition.dy.roundToDouble());
                       _draggingStates[barco] = false;
+
+                      List<List<bool>>? nuevaOcupadas = barco.getOcupadas(_numFilas - 1, _numColumnas - 1, _casillasOcupadas);
+                      if (nuevaOcupadas == null) {
+                        print('Error: el barco no puede ser colocado en esa posición');
+                        barco.error = true; // Indicador de error
+                      }
+                      else {
+                        _casillasOcupadas = nuevaOcupadas;
+                        barco.error = false; // No hay error
+                      }
                     });
                   },
                   child: Opacity(
                     opacity: _draggingStates[barco] ?? false ? 0.5 : 1.0,
                     child: Image.asset(
-                      'images/' + barco.nombre + '.png',
+                      'images/' + (barco.error ? barco.nombre + '_rojo' : barco.nombre) + '.png', // Si hay un error, muestra la versión roja del barco
                       width: barco.getWidth(_casillaSize),
                       height: barco.getHeight(_casillaSize),
                     ),
@@ -105,6 +126,7 @@ class _JugarState extends State<Jugar> {
       ],
     );
   }
+
 
   List<Widget> _buildTablero() {
     List<Widget> filas = [];
@@ -168,13 +190,25 @@ class _JugarState extends State<Jugar> {
     return Row(children: casillas);
   }
 
-  Offset _boundPosition(Offset newPosition, double altoBarco, double anchoBarco) {
-    double x = (newPosition.dx / _casillaSize).round() * _casillaSize;
-    double y = (newPosition.dy / _casillaSize).round() * _casillaSize;
+  Offset _boundPosition(Offset position, double height, double width, bool isRotated) {
+    double dx = position.dx;
+    double dy = position.dy;
 
-    x = x.clamp(0.0, _boardSize - anchoBarco);
-    y = y.clamp(0.0, _boardSize - altoBarco);
+    // Si el barco está rotado, intercambiamos el alto y el ancho
+    if (isRotated) {
+      double temp = width;
+      width = height;
+      height = temp;
+    }
 
-    return Offset(x + _casillaSize, y + _casillaSize);
+    // Aseguramos que el barco no se salga por la izquierda o la parte superior del tablero
+    dx = dx < 1 ? 1 : dx;
+    dy = dy < 1 ? 1 : dy;
+
+    // Aseguramos que el barco no se salga por la derecha o la parte inferior del tablero
+    dx = dx + width / _casillaSize > _numColumnas + 1 ? _numColumnas + 1 - width / _casillaSize : dx;
+    dy = dy + height / _casillaSize > _numFilas ? _numFilas - height / _casillaSize : dy;
+    
+    return Offset(dx, dy);
   }
 }
