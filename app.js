@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const app = express();
 
 // Reemplaza 'myDatabase' con el nombre de tu base de datos
-const mongoURI = "mongodb://developer:password@localhost:27017/myDatabase";
+const mongoURI = "mongodb://developer:password@localhost:27017/BattleshipDB";
 
 app.connectDatabase = async () => {
     try {
@@ -19,28 +19,12 @@ app.connectDatabase();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.get("/", (req, res) => {
-    res.status(200).json({ message: "Hola Mundo!" });
-});
+// Definir models
+// const Persona = require('./models/Persona');
+// const Partida = require('./models/Partida');
 
-// Define un esquema para la colección 'personas'
-const personaSchema = new mongoose.Schema({
-    nombre: String,
-    edad: Number,
-    // Agrega más campos según sea necesario
-});
 
-// Crea un modelo de Mongoose basado en el esquema definido
-const Persona = mongoose.model("Persona", personaSchema);
 
-app.get("/personas", async (req, res) => {
-    try {
-        const personas = await Persona.find(); // Encuentra todas las personas
-        res.status(200).json({ message: personas });
-    } catch (err) {
-        res.status(500).json({ message: err.message });
-    }
-});
 
 module.exports = app;
 

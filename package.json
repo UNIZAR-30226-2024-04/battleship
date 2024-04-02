@@ -5,7 +5,7 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "test": "jest app.test.js"
+    "test": "jest perfilController.test.js --coverage"
   },
   "author": "rubejar",
   "license": "None",

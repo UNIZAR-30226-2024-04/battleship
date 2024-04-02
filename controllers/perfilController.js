@@ -118,6 +118,7 @@ crearPerfil = async (req, res) => {
     const perfilGuardado = await nuevoPerfil.save();
     // Enviar la respuesta al cliente
     res.json(perfilGuardado);
+    res.status(200).send('Perfil creado con éxito');
     console.log("Perfil creado con éxito", perfilGuardado);
     return perfilGuardado;
   } catch (error) {
@@ -189,6 +190,7 @@ exports.modificarDatosPersonales = async (req, res) => {
     // Verificar si el perfil existe y enviar la respuesta al cliente
     if (perfilModificado) {
       res.json(perfilModificado);
+      res.status(200).send('Perfil modificado con éxito');
       console.log("Perfil modificado con éxito", perfilModificado);
     } else {
       res.status(404).send('No se ha encontrado el perfil a modificar');
@@ -203,7 +205,7 @@ exports.modificarDatosPersonales = async (req, res) => {
 
 
 /**
- * @description Elimina un perfil identificado por _id o nombreId.
+ * @description Elimina un perfil de usuario identificado por _id o nombreId.
  * @param {Object} req - El objeto de solicitud HTTP.
  * @param {string} [req.body._id] - El perfil debe existir en la base de datos.
  * @param {string} [req.body.nombreId] - El perfil debe existir en la base de datos.
@@ -212,9 +214,9 @@ exports.modificarDatosPersonales = async (req, res) => {
  * perfil = { nombreId: 'usuario1'};
  * const req = { body: perfil };
  * const res = { json: () => {}, status: () => ({ send: () => {} }) }; // No hace nada
- * await eliminarPerfil(req, res);
+ * await eliminarUsuario(req, res);
  */
-exports.eliminarPerfil = async (req, res) => {
+exports.eliminarUsuario = async (req, res) => {
   try {
     // Extraer el nombreId del parámetro de la solicitud
     const { _id, nombreId, ...extraParam } = req.body;
@@ -236,6 +238,7 @@ exports.eliminarPerfil = async (req, res) => {
     // Verificar si se eliminó el perfil y enviar la respuesta al cliente
     if (resultado.deletedCount > 0) {
       res.json({ mensaje: 'Perfil eliminado correctamente' });
+      res.status(200).send('Perfil eliminado correctamente');
       console.log("Perfil eliminado correctamente");
     } else {
       res.status(404).send('No se ha encontrado el perfil a eliminar');
@@ -274,6 +277,7 @@ exports.registrarUsuario = async (req, res) => {  // Requiere nombreId (o _id), 
       const token = crearToken(perfil);
       // Enviar el token como respuesta al cliente
       res.json(token);
+      res.status(200).send('Usuario registrado con éxito');
       console.log("Usuario registrado con éxito", token);
     }
   } catch (error) {
@@ -304,7 +308,11 @@ exports.iniciarSesion = async (req, res) => { // Requiere nombreId (o _id) y con
       const token = crearToken(perfil);
       // Enviar el token como respuesta al cliente
       res.json(token);
+      res.status(200).send('Sesión iniciada con éxito');
       console.log("Sesión iniciada con éxito", token);
+    } else {
+      res.status(404).send('No se ha encontrado el perfil a iniciar sesión');
+      console.error("No se ha encontrado el perfil a iniciar sesión");
     }
   } catch (error) {
     res.status(500).send('Hubo un error');
@@ -355,10 +363,12 @@ exports.autenticarUsuario = async (req, res) => { // Requiere nombreId y contras
       }
       res.json(perfil);
       console.log("Perfil autenticado con éxito", perfil);
+      res.status(200).send('Perfil autenticado con éxito');
       return perfil
     } else {
       res.status(404).send('No se ha encontrado el perfil a autenticar');
       console.error("No se ha encontrado el perfil a autenticar");
+      return;
     }
   } catch (error) {
     res.status(500).send('Hubo un error');
@@ -414,6 +424,13 @@ exports.modificarMazo = async (req, res) => {
       console.error('Las habilidades deben estar entre:', habilidadesMensaje);
       return;
     }
+    // Verificar que no haya habilidades repetidas en el mazo
+    const habilidadesRepetidas = mazoHabilidades.filter((habilidad, index) => mazoHabilidades.indexOf(habilidad) !== index);
+    if (habilidadesRepetidas.length > 0) {
+      res.status(400).send('No puede haber habilidades repetidas en el mazo');
+      console.error("No puede haber habilidades repetidas en el mazo");
+      return;
+    }
     // Buscar y actualizar el perfil en la base de datos
     const filtro = _id ? { _id: _id } : { nombreId: nombreId };
     const perfilModificado = await Perfil.findOneAndUpdate(
@@ -430,6 +447,7 @@ exports.modificarMazo = async (req, res) => {
     if (perfilModificado) {
       res.json(perfilModificado);
       console.log("Mazo modificado con éxito", perfilModificado);
+      res.status(200).send('Mazo modificado con éxito');
     } else {
       res.status(404).send('No se ha encontrado el perfil a modificar');
       console.error("No se ha encontrado el perfil a modificar");
@@ -603,6 +621,7 @@ exports.moverBarcoInicial = async (req, res) => {
     if (perfilModificado) {
       res.json(perfilModificado);
       console.log("Tablero inicial modificado con éxito");
+      res.status(200).send('Tablero inicial modificado con éxito');
     } else {
       res.status(404).send('No se ha encontrado el perfil a modificar');
       console.error("No se ha encontrado el perfil a modificar");
@@ -683,6 +702,7 @@ exports.actualizarEstadisticas = async (req, res) => {
     if (perfilModificado) {
       res.json(perfilModificado);
       console.log("Perfil modificado con éxito", perfilModificado);
+      res.status(200).send('Perfil modificado con éxito');
     } else {
       res.status(404).send('No se ha encontrado el perfil a actualizar');
       console.error("No se ha encontrado el perfil a actualizar");
@@ -691,6 +711,7 @@ exports.actualizarEstadisticas = async (req, res) => {
   } catch (error) {
     res.status(500).send('Hubo un error');
     console.error("Error al actualizar el perfil", error);
+    console.log("Error al actualizar el perfil", error);
   }
 };
 
@@ -745,6 +766,7 @@ exports.actualizarPuntosExperiencia = async (req, res) => {
     if (perfilModificado) {
       res.json(perfilModificado);
       console.log("Perfil modificado con éxito", perfilModificado);
+      res.status(200).send('Puntos de experiencia actualizados con éxito');
     } else {
       res.status(404).send('No se ha encontrado el perfil a actualizar');
       console.error("No se ha encontrado el perfil a actualizar");
@@ -768,9 +790,9 @@ exports.actualizarPuntosExperiencia = async (req, res) => {
  * perfil = { nombreId: 'usuario1'};
  * const req = { body: perfil };
  * const res = { json: () => {}, status: () => ({ send: () => {} }) }; // No hace nada
- * await obtenerPerfil(req, res);
+ * await obtenerUsuario(req, res);
  */
-exports.obtenerPerfil = async (req, res) => {
+exports.obtenerUsuario = async (req, res) => {
   try {
     // Extraer el nombreId del parámetro de la solicitud
     const { _id, nombreId, ...extraParam } = req.body;
@@ -793,6 +815,7 @@ exports.obtenerPerfil = async (req, res) => {
     if (perfil) {
       res.json(perfil);
       console.log("Perfil obtenido con éxito", perfil);
+      res.status(200).send('Perfil obtenido con éxito');
       // MODIFICACIÓN: NO SE DEVUELVEN TODOS LOS CAMPOS DEL PERFIL: CONTRASEÑA,... ############################################################################################
       return perfil;
     } else {
@@ -825,8 +848,9 @@ exports.obtenerPerfil = async (req, res) => {
  * perfil = { nombreId: 'usuario1', nombreIdAmigo: 'usuario2'};
  * const req = { body: perfil };
  * const res = { json: () => {}, status: () => ({ send: () => {} }) }; // No hace nada
+ * await agnadirAmigo(req, res);
  */
-exports.añadirAmigo = async (req, res) => {
+exports.agnadirAmigo = async (req, res) => {
   try {
     // Extraer los parámetros del cuerpo de la solicitud
     const {_id, nombreId, nombreIdAmigo, ...extraParam} = req.body;
@@ -889,9 +913,10 @@ exports.añadirAmigo = async (req, res) => {
     if (perfilModificado && amigoModificado) {
       res.json(perfilModificado);
       console.log("Amigo añadido con éxito", perfilModificado);
+      res.status(200).send('Amigo añadido con éxito');
     } else {
-      res.status(404).send('No se ha encontrado el perfil a modificar');
-      console.error("No se ha encontrado el perfil a modificar");
+      res.status(404).send('No se ha podido añaadir el amigo');
+      console.error("No se ha podido añadir el amigo");
     }
   }
   catch (error) {
@@ -950,12 +975,7 @@ exports.eliminarAmigo = async (req, res) => {
       return;
     }
     // Verificar si el amigo está en la lista de amigos
-    if (!perfil.listaAmigos.includes(nombreIdAmigo)) {
-      res.status(404).send('El amigo no estaba en la lista de amigos');
-      console.error("El amigo no estaba en la lista de amigos");
-      return;
-    }
-    if (!amigo.listaAmigos.includes(nombreId)) {
+    if (!perfil.listaAmigos.includes(nombreIdAmigo) || !amigo.listaAmigos.includes(nombreId)) {
       res.status(404).send('El amigo no estaba en la lista de amigos');
       console.error("El amigo no estaba en la lista de amigos");
       return;
@@ -970,6 +990,7 @@ exports.eliminarAmigo = async (req, res) => {
     if (perfilModificado && amigoModificado) {
       res.json(perfilModificado);
       console.log("Amigo eliminado con éxito", perfilModificado);
+      res.status(200).send('Amigo eliminado con éxito');
     } else {
       res.status(404).send('No se ha encontrado el perfil a modificar');
       console.error("No se ha encontrado el perfil a modificar");
@@ -1061,9 +1082,10 @@ exports.enviarSolicitudAmistad = async (req, res) => {
     if (perfilModificado) {
       res.json(perfilModificado);
       console.log("Solicitud de amistad enviada con éxito", perfilModificado);
+      res.status(200).send('Solicitud de amistad enviada con éxito');
     } else {
-      res.status(404).send('No se ha encontrado el perfil a modificar');
-      console.error("No se ha encontrado el perfil a modificar");
+      res.status(404).send('No se ha podido enviar la solicitud de amistad');
+      console.error("No se ha podido enviar la solicitud de amistad");
     }
   }
   catch (error) {
@@ -1118,13 +1140,13 @@ exports.eliminarSolicitudAmistad = async (req, res) => {
       console.error("No se ha encontrado el amigo a eliminar");
       return;
     }
-    // Verificar si el amigo está en la lista de amigos
+    // Verificar si el amigo está en la lista de solicitudes
     if (!perfil.listaSolicitudes.includes(nombreIdAmigo)) {
       res.status(404).send('No se ha encontrado la solicitud de amistad');
       console.error("No se ha encontrado la solicitud de amistad");
       return;
     }
-    // Eliminar el amigo de la lista de amigos
+    // Eliminar el amigo de la lista de solicitudes
     perfil.listaSolicitudes.pull(nombreIdAmigo);
     // Guardar el perfil modificado en la base de datos
     const perfilModificado = await perfil.save();
@@ -1132,9 +1154,10 @@ exports.eliminarSolicitudAmistad = async (req, res) => {
     if (perfilModificado) {
       res.json(perfilModificado);
       console.log("Solicitud de amistad eliminada con éxito", perfilModificado);
+      res.status(200).send('Solicitud de amistad eliminada con éxito');
     } else {
-      res.status(404).send('No se ha encontrado el perfil a modificar');
-      console.error("No se ha encontrado el perfil a modificar");
+      res.status(404).send('No se ha podido eliminar la solicitud de amistad');
+      console.error("No se ha podido eliminar la solicitud de amistad");
     }
   }
   catch (error) {
