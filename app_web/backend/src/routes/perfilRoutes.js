@@ -13,7 +13,7 @@ router.post('/moverBarcoInicial', perfilController.moverBarcoInicial);
 // router.post('/perfiles', perfilController.eliminarPerfil);
 // // Ruta para obtener perfil
 // router.get('/perfil', perfilController.obtenerUsuario);
-router.post('/obtenerUsuario', perfilController.obtenerPerfil);
+router.post('/obtenerUsuario', perfilController.obtenerUsuario);
 // // Ruta para iniciar sesión
 // router.post('/perfiles', perfilController.iniciarSesion);
 // // Ruta para registrar usuario

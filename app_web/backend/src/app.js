@@ -4,7 +4,7 @@ const perfilRoutes = require('./routes/perfilRoutes');
 
 const app = express();
 
-const mongoURI = "mongodb://developer:password@localhost:27017/BattleshipDB";
+const mongoURI = 'mongodb://localhost/BattleshipDB';
 
 app.connectDatabase = async () => {
     try {

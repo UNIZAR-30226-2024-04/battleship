@@ -25,52 +25,6 @@ const mongoose = require('mongoose');
 
 
 export function Fleet() {    
-    // // Conectarse a la base de datos para obtener el tablero inicial del perfil
-    // mongoose.connect('mongodb://localhost/BattleshipDB')
-    // .then(async () => {
-    // console.log('Conectado a MongoDB...');
-    try {
-        fetch('/obtenerUsuario', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ nombreId: 'usuario1' })
-          })
-          .then(response => {
-            if (!response.ok) {
-              throw new Error('La solicitud ha fallado');
-            }
-            return response.json();
-          })
-          .then(data => {
-            const tableroInicial = data.tableroInicial;
-            // const tableroInicial = [
-            //     [{ i: 1, j: 1 }, { i: 1, j: 2 }],
-            //     [{ i: 7, j: 1 }, { i: 8, j: 1 }, { i: 9, j: 1 }],
-            //     [{ i: 3, j: 10 }, { i: 4, j: 10 }, { i: 5, j: 10 }],
-            //     [{ i: 3, j: 6 }, { i: 4, j: 6 }, { i: 5, j: 6 }, { i: 6, j: 6 }],
-            //     [{ i: 10, j: 6 }, { i: 10, j: 7 }, { i: 10, j: 8 }, { i: 10, j: 9 }, { i: 10, j: 10 }]
-            //   ];
-            console.log('TABLERO OBTENIDO');
-            for (let barco in tableroInicial) {
-                console.log(barco);
-            }
-
-
-
-
-
-
-
-          })
-          .catch(error => {
-            console.error('Error:', error);
-          });
-    } catch (error) {
-        console.error('Error al obtener el usuario:', error);
-    }
-
     // Contiene el tamaño y nombre de los barcos a usar
     const shipInfo = {
         'Aircraft': { size: 5, name: "Aircraft", img: aircraftImg, imgRotated: aircraftImgRotated},
@@ -99,6 +53,7 @@ export function Fleet() {
             cellHeight: "80px", // Establecer la altura de cada celda en 50px
         });
         setBoard(board); // Almacenar la instancia de GridStack en el estado
+        addNewWidget("Patrol");
     }, []);
 
 
@@ -140,8 +95,8 @@ export function Fleet() {
             // content: shipInfo[ship].name,
             // content: `<img src="${shipInfo[ship].img}" alt="${shipInfo[ship].name}" style="width: 100%; height: 100%;" />`, // Mostrar imagen del barco con tamaño personalizado
             //sizeToContent: true,
-            x: Math.round((boardDimension - 1) * Math.random()),
-            y: Math.round((boardDimension - 1) * Math.random()),
+            x: x,
+            y: y,
             // w: shipInfo[ship].size,
             w: 2,
             h: 1,
@@ -156,6 +111,58 @@ export function Fleet() {
             //console.log(board['engine']['nodes'])
         }
     };
+
+
+
+
+
+
+    // // Conectarse a la base de datos para obtener el tablero inicial del perfil
+    // mongoose.connect('mongodb://localhost/BattleshipDB')
+    // .then(async () => {
+    // console.log('Conectado a MongoDB...');
+    try {
+        fetch('/obtenerUsuario', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ nombreId: 'usuario1' })
+          })
+          .then(response => {
+            if (!response.ok) {
+              throw new Error('La solicitud ha fallado');
+            }
+            return response.json();
+          })
+          .then(data => {
+            // const tableroInicial = data.tableroInicial;
+            // const tableroInicial = [
+            //     [{ i: 1, j: 1 }, { i: 1, j: 2 }],
+            //     [{ i: 7, j: 1 }, { i: 8, j: 1 }, { i: 9, j: 1 }],
+            //     [{ i: 3, j: 10 }, { i: 4, j: 10 }, { i: 5, j: 10 }],
+            //     [{ i: 3, j: 6 }, { i: 4, j: 6 }, { i: 5, j: 6 }, { i: 6, j: 6 }],
+            //     [{ i: 10, j: 6 }, { i: 10, j: 7 }, { i: 10, j: 8 }, { i: 10, j: 9 }, { i: 10, j: 10 }]
+            //   ];
+            
+            // Añadir barcos al tablero
+            addNewWidget("Patrol");
+
+
+
+
+
+          })
+          .catch(error => {
+            console.error('Error:', error);
+          });
+    } catch (error) {
+        console.error('Error al obtener el usuario:', error);
+    }
+
+
+
+
 
     // Función para manejar el clic izquierdo en los widgets del tablero
     const handleItemClick = (event) => {
