@@ -1,17 +1,30 @@
 import 'package:battleship/tablero.dart';
 import 'package:flutter/material.dart';
+import 'barco.dart';
 
 class Juego {
-  Tablero tablero_jugador = Tablero();
-  Tablero tablero_rival = Tablero();
+  Tablero tablero_jugador1 = Tablero();
+  Tablero tablero_jugador2 = Tablero();
+  int numBarcos = 5;  // Número de barcos que tiene cada jugador
+  int barcosRestantesJugador1 = 0;  // Número de barcos que tiene el jugador 1
+  int barcosRestantesJugador2 = 0;  // Número de barcos que tiene el jugador 2
+  int turno = 1;  // 1: Jugador 1, 2: Jugador 2
+  List<bool> barcosJugador1 = [];  // Barcos que tiene el jugador 1
+  List<bool> barcosJugador2 = [];  // Barcos que tiene el jugador 2
 
   // Instancia privada y estática del singleton
   static final Juego _singleton = Juego._internal();
 
   // Constructor privado
   Juego._internal() {
-    tablero_jugador = Tablero();
-    tablero_rival = Tablero();
+    tablero_jugador1 = Tablero();
+    tablero_jugador2 = Tablero();
+    numBarcos = 5;
+    barcosRestantesJugador1 = numBarcos;
+    barcosRestantesJugador2 = numBarcos;
+    turno = 1;
+    barcosJugador1 = List.filled(numBarcos, true);
+    barcosJugador2 = List.filled(numBarcos, true);
   }
 
   // Constructor de fábrica
@@ -19,110 +32,66 @@ class Juego {
     return _singleton;
   }
 
-  List<Widget> buildTablero() {
-    List<Widget> filas = [];
-    // Añade una fila adicional para las etiquetas de las coordenadas
-    filas.add(buildFilaCoordenadas());
-    for (int i = 0; i < Juego().tablero_jugador.numFilas - 1; i++) {
-      filas.add(buildFilaCasillas(i));
-    }
-    return filas;
+  Tablero get tablero_jugador {
+    return turno == 1 ? tablero_jugador1 : tablero_jugador2;
   }
 
-
-  List<Widget> buildTableroClicable(Function(int, int) onTap) {
-    List<Widget> filas = [];
-    // Añade una fila adicional para las etiquetas de las coordenadas
-    filas.add(buildFilaCoordenadas());
-    for (int i = 0; i < Juego().tablero_jugador.numFilas - 1; i++) {
-      filas.add(buildFilaCasillasClicables(i, onTap));
-    }
-    return filas;
+  Tablero get tablero_oponente {
+    return turno == 1 ? tablero_jugador2 : tablero_jugador1;
   }
 
-  Widget buildFilaCoordenadas() {
-    List<Widget> coordenadas = [];
-    // Etiqueta de columna vacía para compensar la columna de coordenadas
-    coordenadas.add(Container(
-      width: Juego().tablero_jugador.casillaSize,
-      height: Juego().tablero_jugador.casillaSize,
-    ));
-    // Etiquetas de columna
-    for (int j = 1; j < Juego().tablero_jugador.numColumnas; j++) {
-      coordenadas.add(
-        Container(
-          width: Juego().tablero_jugador.casillaSize,
-          height: Juego().tablero_jugador.casillaSize,
-          alignment: Alignment.center,
-          child: Text(
-            String.fromCharCode(65 + j - 1),
-            style: TextStyle(color: Colors.white),
-          ),
-        ),
-      );
-    }
-    return Row(children: coordenadas);
+  List<bool> get barcosRestantes_jugador {
+    return turno == 1 ? barcosJugador1 : barcosJugador2;
   }
 
-  Widget buildFilaCasillas(int rowIndex) {
-    List<Widget> casillas = [];
-    // Etiqueta de fila
-    casillas.add(
-      Container(
-        width: Juego().tablero_jugador.casillaSize,
-        height: Juego().tablero_jugador.casillaSize,
-        alignment: Alignment.center,
-        child: Text(
-          (rowIndex + 1).toString(),
-          style: TextStyle(color: Colors.white),
-        ),
-      ),
-    );
-    // Casillas del tablero
-    for (int j = 0; j < Juego().tablero_jugador.numColumnas - 1; j++) {
-      casillas.add(Container(
-        width: Juego().tablero_jugador.casillaSize,
-        height: Juego().tablero_jugador.casillaSize,
-        decoration: BoxDecoration(
-          color: const Color.fromARGB(128, 116, 181, 213),
-          border: Border.all(color: Colors.black, width: 1),
-        ),
-      ));
-    }
-    return Row(children: casillas);
+  List<bool> get barcosRestantes_oponente {
+    return turno == 1 ? barcosJugador2 : barcosJugador1;
   }
 
-  Widget buildFilaCasillasClicables(int rowIndex, Function(int, int) onTap) {
-    List<Widget> casillas = [];
-    // Etiqueta de fila
-    casillas.add(
-      Container(
-        width: tablero_jugador.casillaSize,
-        height: tablero_jugador.casillaSize,
-        alignment: Alignment.center,
-        child: Text(
-          (rowIndex + 1).toString(),
-          style: TextStyle(color: Colors.white),
-        ),
-      ),
-    );
+  List<Barco> get barcos_jugador {
+    return turno == 1 ? tablero_jugador1.barcos : tablero_jugador2.barcos;
+  }
 
-    for (int j = 0; j < tablero_jugador.numColumnas - 1; j++) {
-      casillas.add(
-        GestureDetector(
-          onTap: () => onTap(rowIndex, j),
-          child: Container(
-            width: tablero_jugador.casillaSize,
-            height: tablero_jugador.casillaSize,
-            decoration: BoxDecoration(
-              color: const Color.fromARGB(128, 116, 181, 213),
-              border: Border.all(color: Colors.black, width: 1),
-            ),
-          ),
-        ),
-      );
+  List<Barco> get barcos_oponente {
+    return turno == 1 ? tablero_jugador2.barcos : tablero_jugador1.barcos;
+  }
+
+  void cambiarTurno() {
+    turno = turno == 1 ? 2 : 1;
+  }
+
+  bool barcoHundido(Barco barco, Tablero tablero) {
+    List<List<int>> casillasOcupadas = barco.getCasillasOcupadas(barco.barcoPosition);
+    for (int i = 0; i < casillasOcupadas.length; i++) {
+      if (!tablero.casillasAtacadas[casillasOcupadas[i][0]][casillasOcupadas[i][1]]) {
+        return false;
+      }
     }
-    return Row(children: casillas);
+    return true;
+  }
+
+  void actualizarBarcosRestantes() {
+    // Actualiza el número de barcos restantes del jugador 1
+    for (int i = 0; i < barcosJugador1.length; i++) {
+      if (barcosJugador1[i]) {
+        Barco barco = tablero_jugador1.barcos[i];
+        if (barcoHundido(barco, tablero_jugador1)) {
+          barcosJugador1[i] = false;
+          barcosRestantesJugador1--;
+        }
+      }
+    }
+
+    // Actualiza el número de barcos restantes del jugador 2
+    for (int i = 0; i < barcosJugador2.length; i++) {
+      if (barcosJugador2[i]) {
+        Barco barco = tablero_jugador2.barcos[i];
+        if (barcoHundido(barco, tablero_jugador2)) {
+          barcosJugador2[i] = false;
+          barcosRestantesJugador2--;
+        }
+      }
+    }
   }
 
   Offset boundPosition(Offset position, double height, double width) {

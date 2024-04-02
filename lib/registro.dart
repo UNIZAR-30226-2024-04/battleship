@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'login.dart';
-import 'main.dart';
 import 'authProvider.dart';
 import 'comun.dart';
 import 'botones.dart';

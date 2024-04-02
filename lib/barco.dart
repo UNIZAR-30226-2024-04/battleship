@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 
 class Barco {
   String _nombre = "barco";
-  Offset _barcoPosition = Offset(0.0, 0.0);
+  Offset _barcoPosition = const Offset(0.0, 0.0);
   double _barcoSize = 0.0;
   bool _esRotado = false;
   int _longitud = 0;
-  Offset _barcoPositionCached = Offset(0.0, 0.0);
+  Offset _barcoPositionCached = const Offset(0.0, 0.0);
 
   Barco(String nombre, Offset barcoPosition, int longitud, double barcoSize, bool esRotado) {
     _nombre = nombre;
@@ -25,7 +25,7 @@ class Barco {
     _barcoPosition = _barcoPositionCached;
   }
 
-  List<List<int>> _getCasillasOcupadas(Offset position) {
+  List<List<int>> getCasillasOcupadas(Offset position) {
     List<List<int>> casillasOcupadas = [];
 
     if (_esRotado) {
@@ -43,7 +43,7 @@ class Barco {
   }
 
   bool casillaOcupadaPorMiBarco(int fila, int columna) {
-    List<List<int>> casillasOcupadas = _getCasillasOcupadas(_barcoPositionCached);
+    List<List<int>> casillasOcupadas = getCasillasOcupadas(_barcoPositionCached);
     for (int i = 0; i < casillasOcupadas.length; i++) {
       if (casillasOcupadas[i][0] == fila && casillasOcupadas[i][1] == columna) {
         return true;
@@ -57,7 +57,7 @@ class Barco {
   // ocupa el barco está ocupada por otro barco, se considera que el barco no puede ser colocado
   // en esa posición y devuelve la matriz sin modificar, devolviendo el estado interno del barco al cacheado.
 void updateOcupadas(List<List<bool>> casillasOcupadas) {
-  List<List<int>> casillasOcupadasNuevas = _getCasillasOcupadas(_barcoPosition);
+  List<List<int>> casillasOcupadasNuevas = getCasillasOcupadas(_barcoPosition);
 
   // Buscar conflictos con el resto de barcos.
   for (int i = 0; i < casillasOcupadasNuevas.length; i++) {
@@ -72,7 +72,7 @@ void updateOcupadas(List<List<bool>> casillasOcupadas) {
   }
 
   // Liberar las casillas ocupadas por el barco en la posición anterior.
-  List<List<int>> casillasOcupadasAntiguas = _getCasillasOcupadas(_barcoPositionCached);
+  List<List<int>> casillasOcupadasAntiguas = getCasillasOcupadas(_barcoPositionCached);
   for (int i = 0; i < casillasOcupadasAntiguas.length; i++) {
     int fila = casillasOcupadasAntiguas[i][0];
     int columna = casillasOcupadasAntiguas[i][1];
@@ -96,8 +96,8 @@ void updateOcupadas(List<List<bool>> casillasOcupadas) {
   int get longitud => _longitud;
   double get barcoSize => _barcoSize;
   bool get esRotado => _esRotado;
-  double getWidth(double _casillaSize) => esRotado ? _casillaSize : _longitud * _casillaSize;
-  double getHeight(double _casillaSize) => esRotado ? _longitud * _casillaSize : _casillaSize;
+  double getWidth(double casillaSize) => esRotado ? casillaSize : _longitud * casillaSize;
+  double getHeight(double casillaSize) => esRotado ? _longitud * casillaSize : casillaSize;
 
   //Setters
   set barcoPosition(Offset barcoPosition) {

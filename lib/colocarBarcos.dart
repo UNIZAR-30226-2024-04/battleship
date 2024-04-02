@@ -7,7 +7,7 @@ import 'barco.dart';
 import 'atacar.dart';
 
 class ColocarBarcos extends StatefulWidget {
-  const ColocarBarcos({Key? key}) : super(key: key);
+  const ColocarBarcos({super.key});
 
   @override
   _ColocarBarcosState createState() => _ColocarBarcosState();
@@ -26,6 +26,7 @@ class _ColocarBarcosState extends State<ColocarBarcos> {
     };
   }
 
+  @override
   Widget build(BuildContext context) {
     return Container(
       decoration: const BoxDecoration(
@@ -59,7 +60,7 @@ class _ColocarBarcosState extends State<ColocarBarcos> {
           height: Juego().tablero_jugador.boardSize + Juego().tablero_jugador.casillaSize,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: Juego().buildTablero(),
+            children: buildTablero(),
           ),
         ),
         for (var barco in Juego().tablero_jugador.barcos)
@@ -94,7 +95,7 @@ class _ColocarBarcosState extends State<ColocarBarcos> {
                   child: Opacity(
                     opacity: _draggingStates[barco] ?? false ? 0.5 : 1.0,
                     child: Image.asset(
-                      'images/' + barco.nombre + '.png',
+                      'images/${barco.nombre}.png',
                       width: barco.getWidth(Juego().tablero_jugador.casillaSize),
                       height: barco.getHeight(Juego().tablero_jugador.casillaSize),
                     ),
@@ -105,6 +106,68 @@ class _ColocarBarcosState extends State<ColocarBarcos> {
           ),
       ],
     );
+  }
+
+  List<Widget> buildTablero() {
+    List<Widget> filas = [];
+    // Añade una fila adicional para las etiquetas de las coordenadas
+    filas.add(buildFilaCoordenadas());
+    for (int i = 0; i < Juego().tablero_jugador.numFilas - 1; i++) {
+      filas.add(buildFilaCasillas(i));
+    }
+    return filas;
+  }
+
+    Widget buildFilaCoordenadas() {
+    List<Widget> coordenadas = [];
+    // Etiqueta de columna vacía para compensar la columna de coordenadas
+    coordenadas.add(SizedBox(
+      width: Juego().tablero_jugador.casillaSize,
+      height: Juego().tablero_jugador.casillaSize,
+    ));
+    // Etiquetas de columna
+    for (int j = 1; j < Juego().tablero_jugador.numColumnas; j++) {
+      coordenadas.add(
+        Container(
+          width: Juego().tablero_jugador.casillaSize,
+          height: Juego().tablero_jugador.casillaSize,
+          alignment: Alignment.center,
+          child: Text(
+            String.fromCharCode(65 + j - 1),
+            style: const TextStyle(color: Colors.white),
+          ),
+        ),
+      );
+    }
+    return Row(children: coordenadas);
+  }
+
+  Widget buildFilaCasillas(int rowIndex) {
+    List<Widget> casillas = [];
+    // Etiqueta de fila
+    casillas.add(
+      Container(
+        width: Juego().tablero_jugador.casillaSize,
+        height: Juego().tablero_jugador.casillaSize,
+        alignment: Alignment.center,
+        child: Text(
+          (rowIndex + 1).toString(),
+          style: const TextStyle(color: Colors.white),
+        ),
+      ),
+    );
+    // Casillas del tablero
+    for (int j = 0; j < Juego().tablero_jugador.numColumnas - 1; j++) {
+      casillas.add(Container(
+        width: Juego().tablero_jugador.casillaSize,
+        height: Juego().tablero_jugador.casillaSize,
+        decoration: BoxDecoration(
+          color: const Color.fromARGB(128, 116, 181, 213),
+          border: Border.all(color: Colors.black, width: 1),
+        ),
+      ));
+    }
+    return Row(children: casillas);
   }
 
   void _handlePressed(BuildContext context) {

@@ -3,7 +3,6 @@ import 'destino.dart';
 import 'registro.dart';
 import 'recContrasena.dart';
 import 'botones.dart';
-import 'main.dart';
 import 'authProvider.dart';
 import 'comun.dart';
 

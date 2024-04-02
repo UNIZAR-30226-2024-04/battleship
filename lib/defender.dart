@@ -1,27 +1,41 @@
-import 'package:battleship/atacar.dart';
+import 'dart:async';
+
 import 'package:battleship/juego.dart';
 import 'package:flutter/material.dart';
-import 'botones.dart';
 import 'comun.dart';
+import 'barco.dart';
+import 'atacar.dart';
+import 'destino.dart';
 
 class Defender extends StatefulWidget {
-  const Defender({Key? key}) : super(key: key);
+  const Defender({super.key});
 
   @override
   _DefenderState createState() => _DefenderState();
 }
 
 class _DefenderState extends State<Defender> {
-  late List<List<bool>> _ataques;
 
   @override
   void initState() {
     super.initState();
-
-    var barcos = Juego().tablero_jugador.barcos;
-    _ataques = List.generate(Juego().tablero_jugador.boardSize.toInt(), (_) => List.filled(Juego().tablero_jugador.boardSize.toInt(), false));
+    iniciarTransicionAutomatica();
   }
 
+  void iniciarTransicionAutomatica() {
+    Timer(const Duration(seconds: 2), () {
+      setState(() {
+        Juego().cambiarTurno();
+      });
+      DestinoManager.setDestino(const Atacar());
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const Atacar()),
+      );
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Container(
       decoration: const BoxDecoration(
@@ -35,8 +49,8 @@ class _DefenderState extends State<Defender> {
         body: Column(
           children: [
             buildHeader(context),
-            buildTitle('¡Ataca a tu rival!', 28),
-            _construirTableroConBarcosAtacable(),
+            buildTitle('¡Defiéndete!', 28),
+            _construirTableroConBarcosDefensa(),
             const Spacer(),
             buildActions(context),
           ],
@@ -45,47 +59,117 @@ class _DefenderState extends State<Defender> {
     );
   }
 
-Widget _construirTableroConBarcosAtacable() {
+  Widget _construirTableroConBarcosDefensa() {
+    List<bool> barcosRestantesOponente = Juego().barcosRestantes_oponente;
+    List<Barco> barcosOponente = Juego().barcos_oponente;
+
+    // Construir una lista con las posiciones de los barcos hundidos para poner una cruz.
+    List<List<int>> casillasConCruz = [];
+    for(int i = 0; i < Juego().numBarcos; i++) {
+      if(!barcosRestantesOponente[i]) {
+        casillasConCruz += barcosOponente[i].getCasillasOcupadas(barcosOponente[i].barcoPosition);
+      }
+    }
+
     return Stack(
       children: [
         SizedBox(
-          width: Juego().tablero_jugador.boardSize + Juego().tablero_jugador.casillaSize,
-          height: Juego().tablero_jugador.boardSize + Juego().tablero_jugador.casillaSize,
+          width: Juego().tablero_oponente.boardSize + Juego().tablero_oponente.casillaSize,
+          height: Juego().tablero_oponente.boardSize + Juego().tablero_oponente.casillaSize,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: Juego().buildTablero(),
+            children: buildTablero(),
           ),
         ),
-        for (var i = 0; i < Juego().tablero_jugador.boardSize; i++)
-          for (var j = 0; j < Juego().tablero_jugador.boardSize; j++)
-            Positioned(
-              top: i * Juego().tablero_jugador.casillaSize,
-              left: j * Juego().tablero_jugador.casillaSize,
-              child: GestureDetector(
-                onTap: () => _handleTap(i, j),
-                child: Container(
-                  width: Juego().tablero_jugador.casillaSize,
-                  height: Juego().tablero_jugador.casillaSize,
-                  color: Colors.transparent,
-                  child: _ataques[i][j]
-                      ? Icon(Juego().tablero_jugador.barcos.any((barco) => barco.barcoPosition.dx == j && barco.barcoPosition.dy == i) ? Icons.close : Icons.circle, color: Colors.white)
-                      : null,
+        for(int i = 0; i < casillasConCruz.length; i++)
+          Positioned(
+            top: casillasConCruz[i][1] * Juego().tablero_oponente.casillaSize,
+            left: casillasConCruz[i][0] * Juego().tablero_oponente.casillaSize,
+            child: Column(
+              children: [
+                Image.asset(
+                  'images/redCross.png',
+                  width: Juego().tablero_oponente.casillaSize,
+                  height: Juego().tablero_oponente.casillaSize,
                 ),
+              ],
+            ),
+          ),
+
+        for (int i = 0; i < Juego().numBarcos; i++)
+          if (!contiene(casillasConCruz, barcosOponente[i].barcoPosition))
+            Positioned(
+              top: barcosOponente[i].barcoPosition.dy * Juego().tablero_oponente.casillaSize,
+              left: barcosOponente[i].barcoPosition.dx * Juego().tablero_oponente.casillaSize,
+              child: Image.asset(
+                'images/${barcosOponente[i].nombre}.png',
+                width: barcosOponente[i].getWidth(Juego().tablero_oponente.casillaSize),
+                height: barcosOponente[i].getHeight(Juego().tablero_oponente.casillaSize),
               ),
             ),
       ],
     );
   }
 
-  void _handleTap(int i, int j) {
-    setState(() {
-      _ataques[i][j] = true;
-    });
+  List<Widget> buildTablero() {
+    List<Widget> filas = [];
+    // Añade una fila adicional para las etiquetas de las coordenadas
+    filas.add(buildFilaCoordenadas());
+    for (int i = 0; i < Juego().tablero_oponente.numFilas - 1; i++) {
+      filas.add(buildFilaCasillas(i));
+    }
+    return filas;
+  }
 
-    // Navegar a la pantalla "Defender"
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const Atacar()),
+  Widget buildFilaCoordenadas() {
+    List<Widget> coordenadas = [];
+    // Etiqueta de columna vacía para compensar la columna de coordenadas
+    coordenadas.add(SizedBox(
+      width: Juego().tablero_oponente.casillaSize,
+      height: Juego().tablero_oponente.casillaSize,
+    ));
+    // Etiquetas de columna
+    for (int j = 1; j < Juego().tablero_oponente.numColumnas; j++) {
+      coordenadas.add(
+        Container(
+          width: Juego().tablero_oponente.casillaSize,
+          height: Juego().tablero_oponente.casillaSize,
+          alignment: Alignment.center,
+          child: Text(
+            String.fromCharCode(65 + j - 1),
+            style: const TextStyle(color: Colors.white),
+          ),
+        ),
+      );
+    }
+    return Row(children: coordenadas);
+  }
+
+  Widget buildFilaCasillas(int rowIndex) {
+    List<Widget> casillas = [];
+    // Etiqueta de fila
+    casillas.add(
+      Container(
+        width: Juego().tablero_oponente.casillaSize,
+        height: Juego().tablero_oponente.casillaSize,
+        alignment: Alignment.center,
+        child: Text(
+          (rowIndex + 1).toString(),
+          style: const TextStyle(color: Colors.white),
+        ),
+      ),
     );
+    // Casillas del tablero
+    for (int j = 0; j < Juego().tablero_oponente.numColumnas - 1; j++) {
+      casillas.add(Container(
+        width: Juego().tablero_oponente.casillaSize,
+        height: Juego().tablero_oponente.casillaSize,
+        decoration: BoxDecoration(
+          color: const Color.fromARGB(128, 116, 181, 213),
+          border: Border.all(color: Colors.black, width: 1),
+        ),
+      ));
+    }
+    return Row(children: casillas);
   }
 }
