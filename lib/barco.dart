@@ -17,6 +17,15 @@ class Barco {
     _barcoPositionCached = barcoPosition;
   }
 
+  // MOstrar información del barco
+  void showInfo() {
+    print("Nombre: $_nombre");
+    print("Posición: $_barcoPosition");
+    print("Longitud: $_longitud");
+    print("Tamaño: $_barcoSize");
+    print("Rotado: $_esRotado");
+  }
+
   void _catchPosition() {
     _barcoPositionCached = _barcoPosition;
   }
@@ -30,12 +39,12 @@ class Barco {
 
     if (_esRotado) {
       for (int i = 0; i < _longitud; i++) {
-        casillasOcupadas.add([position.dx.toInt(), (position.dy + i).toInt()]);
+        casillasOcupadas.add([(position.dx + i).toInt(), position.dy.toInt()]);
       }
     }
     else {
       for (int i = 0; i < _longitud; i++) {
-        casillasOcupadas.add([(position.dx + i).toInt(), position.dy.toInt()]);
+        casillasOcupadas.add([position.dx.toInt(), (position.dy + i).toInt()]);
       }
     }
 

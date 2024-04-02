@@ -11,6 +11,7 @@ class Juego {
   int turno = 1;  // 1: Jugador 1, 2: Jugador 2
   List<bool> barcosJugador1 = [];  // Barcos que tiene el jugador 1
   List<bool> barcosJugador2 = [];  // Barcos que tiene el jugador 2
+  int ganador = 0;  // 0: No hay ganador, 1: Jugador 1, 2: Jugador 2
 
   // Instancia privada y estática del singleton
   static final Juego _singleton = Juego._internal();
@@ -70,28 +71,62 @@ class Juego {
     return true;
   }
 
-  void actualizarBarcosRestantes() {
-    // Actualiza el número de barcos restantes del jugador 1
-    for (int i = 0; i < barcosJugador1.length; i++) {
-      if (barcosJugador1[i]) {
-        Barco barco = tablero_jugador1.barcos[i];
-        if (barcoHundido(barco, tablero_jugador1)) {
-          barcosJugador1[i] = false;
-          barcosRestantesJugador1--;
-        }
-      }
+  void decrementarBarcosRestantesOponente() {
+    if (turno == 1) {
+      barcosRestantesJugador2--;
+    } else {
+      barcosRestantesJugador1--;
     }
+  }
 
-    // Actualiza el número de barcos restantes del jugador 2
-    for (int i = 0; i < barcosJugador2.length; i++) {
-      if (barcosJugador2[i]) {
-        Barco barco = tablero_jugador2.barcos[i];
-        if (barcoHundido(barco, tablero_jugador2)) {
-          barcosJugador2[i] = false;
-          barcosRestantesJugador2--;
+  int getBarcosRestantesOponente() {
+    return turno == 1 ? barcosRestantesJugador2 : barcosRestantesJugador1;
+  }
+
+  int getBarcosRestantesJugador() {
+    return turno == 1 ? barcosRestantesJugador1 : barcosRestantesJugador2;
+  }
+
+  void actualizarBarcosRestantes() {
+    for (int i = 0; i < barcosRestantes_oponente.length; i++) {
+      if (barcosRestantes_oponente[i]) {
+        Barco barco = tablero_oponente.barcos[i];
+        if (barcoHundido(barco, tablero_oponente)) {
+          barcosRestantes_oponente[i] = false;
+          decrementarBarcosRestantesOponente();
         }
       }
     }
+  }
+
+  // Devuelve true si el juego ha terminado y actualiza el ganador
+  bool juegoTerminado() {
+    if (barcosRestantesJugador1 == 0) {
+      ganador = 2;
+      return true;
+    }
+    if (barcosRestantesJugador2 == 0) {
+      ganador = 1;
+      return true;
+    }
+    return false;
+  }
+
+  // Devolver el ganador del juego
+  int getGanador() {
+    return ganador;
+  }
+
+  void reiniciarPartida() {
+    tablero_jugador1 = Tablero();
+    tablero_jugador2 = Tablero();
+    numBarcos = 5;
+    barcosRestantesJugador1 = numBarcos;
+    barcosRestantesJugador2 = numBarcos;
+    turno = 1;
+    barcosJugador1 = List.filled(numBarcos, true);
+    barcosJugador2 = List.filled(numBarcos, true);
+    ganador = 0;
   }
 
   Offset boundPosition(Offset position, double height, double width) {

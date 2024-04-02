@@ -137,12 +137,12 @@ Widget buildTitle(String text, int fontSize) {
   );
 }
 
-  // Método que comprueba si una posicion pertenece a una matriz de posiciones
-  bool contiene(List<List<int>> lista, Offset posicion) {
-    for (int i = 0; i < lista.length; i++) {
-      if (lista[i][0] == posicion.dx && lista[i][1] == posicion.dy) {
-        return true;
-      }
+// Método que comprueba si una posicion pertenece a una matriz de posiciones
+bool contiene(List<List<int>> lista, Offset posicion) {
+  for (int i = 0; i < lista.length; i++) {
+    if (lista[i][0] == posicion.dx && lista[i][1] == posicion.dy) {
+      return true;
     }
-    return false;
   }
+  return false;
+}

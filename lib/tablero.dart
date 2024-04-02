@@ -17,9 +17,9 @@ class Tablero {
     _casillasAtacadas = List.generate(_numFilas + 1, (_) => List.filled(_numColumnas + 1, false));
     _boardSize = 363.0;
     _casillaSize = _boardSize / _numFilas;
-    Barco barco1 = Barco('acorazado', const Offset(1, 1), 3, 3*_casillaSize, false);
-    Barco barco2 = Barco('destructor_rotado', const Offset(3, 3), 3, 3*_casillaSize, true);
-    Barco barco3 = Barco('patrullero', const Offset(3, 2), 2, 2*_casillaSize, false);
+    Barco barco1 = Barco('acorazado', const Offset(1, 2), 3, 3*_casillaSize, false);
+    Barco barco2 = Barco('destructor_rotado', const Offset(7, 3), 3, 3*_casillaSize, true);
+    Barco barco3 = Barco('patrullero', const Offset(2, 3), 2, 2*_casillaSize, false);
     Barco barco4 = Barco('portaaviones', const Offset(5, 5), 2, 2*_casillaSize, false);
     Barco barco5 = Barco('submarino_rotado', const Offset(6, 6), 2, 2*_casillaSize, true);
     _barcos = [barco1, barco2, barco3, barco4, barco5];

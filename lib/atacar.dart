@@ -1,5 +1,6 @@
 import 'package:battleship/destino.dart';
 import 'package:battleship/juego.dart';
+import 'package:battleship/main.dart';
 import 'package:flutter/material.dart';
 import 'comun.dart';
 import 'defender.dart';
@@ -32,7 +33,7 @@ class _AtacarState extends State<Atacar> {
         body: Column(
           children: [
             buildHeader(context),
-            buildTitle('¡Ataca a tu rival!', 28),
+            _construirBarcosRestantes(),
             _construirTableroConBarcosAtacable(),
             const Spacer(),
             buildActions(context),
@@ -56,15 +57,57 @@ class _AtacarState extends State<Atacar> {
       ),
     );  
 
-
-
     return Stack(children: children);
   }
 
+  Widget _construirBarcosRestantes() {
+    return Container(
+      padding: EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: Colors.blue.shade900.withOpacity(0.6),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          buildTitle('Barcos restantes del rival: ${Juego().getBarcosRestantesOponente()}', 16),
+          SizedBox(height: 10),
+          Wrap(
+            alignment: WrapAlignment.center,
+            children: [
+              for (int i = 0; i < Juego().tablero_oponente.barcos.length; i++) 
+                if (Juego().barcosRestantes_oponente[i]) 
+                  Column(
+                    children: [
+                      Padding(
+                        padding: EdgeInsets.all(5),
+                        child: Image.asset(
+                          'images/${Juego().tablero_oponente.barcos[i].nombre}.png', 
+                          width: 50, 
+                          height: 50,
+                        ),
+                      ),
+                      Padding(
+                        padding: EdgeInsets.all(5), 
+                        child: Text(
+                          Juego().tablero_oponente.barcos[i].longitud.toString(),
+                          style: TextStyle(
+                            fontSize: 15,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
 
   List<Widget> buildTableroClicable(Function(int, int) onTap) {
     List<Widget> filas = [];
-    // Añade una fila adicional para las etiquetas de las coordenadas
     filas.add(buildFilaCoordenadas());
     for (int i = 1; i < Juego().tablero_oponente.numFilas; i++) {
       filas.add(buildFilaCasillasClicables(i, onTap));
@@ -74,7 +117,6 @@ class _AtacarState extends State<Atacar> {
 
   Widget buildFilaCoordenadas() {
     List<Widget> coordenadas = [];
-    // Etiqueta de columna vacía para compensar la columna de coordenadas
     coordenadas.add(SizedBox(
       width: Juego().tablero_oponente.casillaSize,
       height: Juego().tablero_oponente.casillaSize,
@@ -128,7 +170,7 @@ class _AtacarState extends State<Atacar> {
               color: const Color.fromARGB(128, 116, 181, 213),
               border: Border.all(color: Colors.black, width: 1),
             ),
-            child: Juego().tablero_oponente.casillasAtacadas[rowIndex][j] ? Image.asset('images/redCross.png', fit: BoxFit.cover) : Image.asset('images/dot.png', fit: BoxFit.cover),
+            child: Juego().tablero_oponente.casillasAtacadas[rowIndex][j] && Juego().tablero_oponente.casillasOcupadas[rowIndex][j] ? Image.asset('images/redCross.png', fit: BoxFit.cover) : Image.asset('images/dot.png', fit: BoxFit.cover),
           ),
         ),
       );
@@ -142,13 +184,20 @@ class _AtacarState extends State<Atacar> {
 
     // Si la casilla tiene un barco.
     if(Juego().tablero_oponente.casillasOcupadas[i][j]) {
-      print("¡Hay un barco!");
       setState(() {
         Juego().actualizarBarcosRestantes();
       });
+      if(Juego().juegoTerminado()) {
+        print("¡Juego terminado!");
+        print("¡Ganador: ${Juego().getGanador()}!");
+        Juego().reiniciarPartida();
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => Principal()),
+        );
+      }
     }
     else {
-      print("¡No hay un barco!");
       setState(() {
         Juego().cambiarTurno();
       });

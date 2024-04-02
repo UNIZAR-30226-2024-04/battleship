@@ -65,8 +65,8 @@ class _ColocarBarcosState extends State<ColocarBarcos> {
         ),
         for (var barco in Juego().tablero_jugador.barcos)
           Positioned(
-            top: barco.barcoPosition.dy * Juego().tablero_jugador.casillaSize,
-            left: barco.barcoPosition.dx * Juego().tablero_jugador.casillaSize,
+            top: barco.barcoPosition.dx * Juego().tablero_jugador.casillaSize,
+            left: barco.barcoPosition.dy * Juego().tablero_jugador.casillaSize,
             child: Column(
               children: [
                 GestureDetector(
@@ -171,7 +171,6 @@ class _ColocarBarcosState extends State<ColocarBarcos> {
   }
 
   void _handlePressed(BuildContext context) {
-    print('Comenzar button pressed');
     DestinoManager.setDestino(const Atacar());
     Navigator.push(
       context,
