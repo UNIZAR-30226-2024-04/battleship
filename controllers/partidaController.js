@@ -93,6 +93,7 @@ exports.crearPartida = async (req, res) => {
     const partidaGuardada = await partida.save();
     res.json(partidaGuardada); 
     console.log("Partida creada con éxito", partidaGuardada);
+    res.status(200).send('Partida creada con éxito');
     return partidaGuardada;
   } catch (error) {
     res.status(500).send('Hubo un error');
@@ -132,6 +133,7 @@ exports.mostrarMiTablero = async (req, res) => {
       };
       console.log('Mi tablero obtenido con éxito');
       res.json(tableroDisparos);
+      res.status(200).send('Mi tablero obtenido con éxito');
       console.log(tableroDisparos);
       return tableroDisparos;
     } else {
@@ -177,6 +179,7 @@ exports.mostrarTableroEnemigo = async (req, res) => {
       };
       console.log('Tablero enemigo obtenido con éxito');
       res.json(tablero);
+      res.status(200).send('Tablero enemigo obtenido con éxito');
       console.log(tablero);
       return tablero;
     } else {
@@ -219,6 +222,7 @@ exports.mostrarTableros = async (req, res) => {
       };
       console.log('Tableros obtenidos con éxito');
       res.json(tableros);
+      res.status(200).send('Tableros obtenidos con éxito');
       console.log(tableros);
       return tableros;
     } else {
@@ -302,6 +306,7 @@ exports.realizarDisparo = async (req, res) => {
       );
       if (partidaModificada) {
         res.json(partidaModificada );
+        res.status(200).send('Disparo realizado con éxito');
         console.log("Partida modificada con éxito");
         return partidaModificada;
       } else {
@@ -394,16 +399,30 @@ exports.actualizarEstadisticasFinales = async (req, res) => {
 // Funcion para obtener el chat de una partida
 exports.obtenerChat = async (req, res) => {
   try {
-    const { codigo } = req.body;
-    const partida = await Partida.findById(codigo);
+    const { _id, codigo, ...extraParam  } = req.body;
+    if (Object.keys(extraParam).length > 0) {
+      res.status(400).send('Sobran parámetros, se espera codigo (o _id), autor, mensaje');
+      console.error("Sobran parámetros, se espera codigo (o _id), autor, mensaje");
+      return;
+    }
+    if (!codigo && !_id) {
+      res.status(400).send('Falta el codigo de partida');
+      console.error("Falta el codigo de partida");
+      return;
+    }
+    const filtro = _id ? { _id: _id } : { codigo: codigo };
+    const partida = await Partida.findOne(filtro);
     if (partida) {
       res.json(partida.chat);
+      res.status(200).send('Chat obtenido con éxito');
       return partida.chat;
     } else {
       res.status(404).send('Partida no encontrada');
+      console.error('Partida no encontrada');
     }
   } catch (error) {
     res.status(500).send('Hubo un error');
+    console.error('Hubo un error');
   }
 };
 
@@ -444,6 +463,7 @@ exports.enviarMensaje = async (req, res) => {
       );
       if (partidaModificada) {
         res.json(partidaModificada );
+        res.status(200).send('Mensaje enviado con éxito');
         console.log("Partida modificada con éxito");
         return partidaModificada;
       } else {

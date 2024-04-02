@@ -247,7 +247,7 @@ describe('Iniciar sesión', () => {
         expect(res.statusCode).toBe(404);
     });
     it('Debería fallar al iniciar sesión con un nombreId no existente', async () => {
-        const req = { body: { nombreId: 'usuario1', contraseña: 'Passwd1.' } };
+        const req = { body: { nombreId: 'usuario9', contraseña: 'Passwd1.' } };
         const res = { json: () => {}, status: function(s) { 
           this.statusCode = s; return this; }, send: () => {} };
         try {
