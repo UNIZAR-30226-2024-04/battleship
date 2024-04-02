@@ -7,6 +7,42 @@ const Coordenada = require('../data/coordenada')
 
 const tableroDim = Coordenada.i.max;  // Dimensiones del tablero
 
+/*--------------------------------------------------------------------------------------------------------------------*/
+/*-------------------------------------------- FUNCIONES AUXILIARES  -------------------------------------------------*/
+/*--------------------------------------------------------------------------------------------------------------------*/
+
+// Funcion para comprobar que un parametro es un correo electronico
+function verificarCorreo(correo) {
+  const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return regex.test(correo);
+}
+
+// Funcion para verificar que la contraseña cumple con los requisitos: 8 caracteres, 1 mayúscula, 1 minúscula, 1 número y 1 caracter especial
+function verificarContraseña(contraseña) {
+  const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
+  return regex.test(contraseña);
+}
+
+// Funcion para comprobar que un dato es un numero
+function esNumero(numero) {
+  return !isNaN(numero);
+}
+
+// Funcion para crear un token de sesión
+function crearToken(perfil) {
+  // Generar bytes aleatorios para la clave privada
+  const clavePrivadaBuffer = crypto.randomBytes(32);
+  const clavePrivada = clavePrivadaBuffer.toString('hex');
+  // Si el nombre de usuario y la contraseña son válidos, generar un token JWT
+  const token = jwt.sign(perfil.toJSON(), clavePrivada);
+  return token;
+}
+
+
+/*--------------------------------------------------------------------------------------------------------------------*/
+/*------------------------------------------------ PERFIL BÁSICO  ----------------------------------------------------*/
+/*--------------------------------------------------------------------------------------------------------------------*/
+
 /**
  * @description Crea un nuevo perfil con el nombre, la contraseña hasheada y el correo.
  * @param {Object} req - El objeto de solicitud HTTP.
@@ -20,7 +56,7 @@ const tableroDim = Coordenada.i.max;  // Dimensiones del tablero
  * const res = { json: () => {}, status: () => ({ send: () => {} }) }; // No hace nada
  * await crearPerfil(req, res);
  */
-exports.crearPerfil = async (req, res) => {
+crearPerfil = async (req, res) => {
   try {
     // Extracción de parámetros del cuerpo de la solicitud
     const { nombreId, contraseña, correo, ...extraParam } = req.body;
@@ -164,6 +200,176 @@ exports.modificarDatosPersonales = async (req, res) => {
     console.error("Error al modificar el perfil", error);
   }
 };
+
+
+/**
+ * @description Elimina un perfil identificado por _id o nombreId.
+ * @param {Object} req - El objeto de solicitud HTTP.
+ * @param {string} [req.body._id] - El perfil debe existir en la base de datos.
+ * @param {string} [req.body.nombreId] - El perfil debe existir en la base de datos.
+ * @param {Object} res - El objeto de respuesta HTTP.
+ * @example
+ * perfil = { nombreId: 'usuario1'};
+ * const req = { body: perfil };
+ * const res = { json: () => {}, status: () => ({ send: () => {} }) }; // No hace nada
+ * await eliminarPerfil(req, res);
+ */
+exports.eliminarPerfil = async (req, res) => {
+  try {
+    // Extraer el nombreId del parámetro de la solicitud
+    const { _id, nombreId, ...extraParam } = req.body;
+    // Verificar si hay algún parámetro extra
+    if (Object.keys(extraParam).length > 0) {
+      res.status(400).send('Sobran parámetros, se espera nombreId (o _id)');
+      console.error("Sobran parámetros, se espera nombreId (o _id)");
+      return;
+    }
+    // Verificar si alguno de los parámetros está ausente
+    if (!nombreId && !_id) {
+      res.status(400).send('Falta el nombreId o _id en la solicitud');
+      console.error("Falta el nombreId o _id en la solicitud");
+      return;
+    }
+    // Buscar y eliminar el perfil de la base de datos
+    const filtro = _id ? { _id: _id } : { nombreId: nombreId };
+    const resultado = await Perfil.deleteOne(filtro);
+    // Verificar si se eliminó el perfil y enviar la respuesta al cliente
+    if (resultado.deletedCount > 0) {
+      res.json({ mensaje: 'Perfil eliminado correctamente' });
+      console.log("Perfil eliminado correctamente");
+    } else {
+      res.status(404).send('No se ha encontrado el perfil a eliminar');
+      console.error("No se ha encontrado el perfil a eliminar");
+    }
+  } catch (error) {
+    res.status(500).send('Hubo un error');
+    console.error("Error al eliminar el perfil", error);
+  }
+};
+
+
+/*--------------------------------------------------------------------------------------------------------------------*/
+/*----------------------------------------- REGISTRO E INICIO DE SESIÓN  ---------------------------------------------*/
+/*--------------------------------------------------------------------------------------------------------------------*/
+
+/**
+ * @description Devuelve un token de sesión del perfil identificado por _id o nombreId si es creado con éxito.
+ * @param {Object} req - El objeto de solicitud HTTP.
+ * @param {string} [req.body._id] - El perfil debe existir en la base de datos.
+ * @param {string} [req.body.nombreId] - El perfil debe existir en la base de datos.
+ * @param {string} req.body.contraseña - La contraseña debe tener al menos 8 caracteres, 1 minúsucla, 1 mayúscula, 1 dígito y un caracter especial.
+ * @param {string} req.body.correo - El correo debe tener un formato válido.
+ * @param {Object} res - El objeto de respuesta HTTP.
+ * @example
+ * perfil = { nombreId: 'usuario4', contraseña: 'Passwd4.', correo: 'usuario4@example.com' };
+ * const req = { body: perfil };
+ * const res = { json: () => {}, status: () => ({ send: () => {} }) }; // No hace nada
+ * await registrarUsuario(req, res);
+ */
+exports.registrarUsuario = async (req, res) => {  // Requiere nombreId (o _id), contraseña y correo
+  try {
+    // Crear el perfil
+    const perfil = await crearPerfil(req, res);
+    if (perfil) {
+      const token = crearToken(perfil);
+      // Enviar el token como respuesta al cliente
+      res.json(token);
+      console.log("Usuario registrado con éxito", token);
+    }
+  } catch (error) {
+    res.status(500).send('Hubo un error');
+    console.error("Error al registrar usuario", error);
+  }
+};
+
+
+/**
+ * @description Devuelve un token de sesión del perfil identificado por _id o nombreId si la contraseña es correcta.
+ * @param {Object} req - El objeto de solicitud HTTP.
+ * @param {string} [req.body._id] - El perfil debe existir en la base de datos.
+ * @param {string} [req.body.nombreId] - El perfil debe existir en la base de datos.
+ * @param {string} req.body.contraseña
+ * @param {Object} res - El objeto de respuesta HTTP.
+ * @example
+ * perfil = { nombreId: 'usuario1', contraseña: 'Passwd1.'};
+ * const req = { body: perfil };
+ * const res = { json: () => {}, status: () => ({ send: () => {} }) }; // No hace nada
+ * await iniciarSesion(req, res);
+ */
+exports.iniciarSesion = async (req, res) => { // Requiere nombreId (o _id) y contraseña
+  try {
+    // Buscar el perfil en la base de datos
+    const perfil = await exports.autenticarUsuario(req, res);
+    if (perfil) {
+      const token = crearToken(perfil);
+      // Enviar el token como respuesta al cliente
+      res.json(token);
+      console.log("Sesión iniciada con éxito", token);
+    }
+  } catch (error) {
+    res.status(500).send('Hubo un error');
+    console.error("Error al iniciar sesión", error);
+  }
+};
+
+
+/**
+ * @description Devuelve un perfil identificado por _id o nombreId si la contraseña es correcta. Devuelve null en caso contrario.
+ * @param {Object} req - El objeto de solicitud HTTP.
+ * @param {string} [req.body._id] - El perfil debe existir en la base de datos.
+ * @param {string} [req.body.nombreId] - El perfil debe existir en la base de datos.
+ * @param {string} req.body.contraseña
+ * @param {Object} res - El objeto de respuesta HTTP.
+ * @example
+ * perfil = { nombreId: 'usuario1', contraseña: 'Passwd1.'};
+ * const req = { body: perfil };
+ * const res = { json: () => {}, status: () => ({ send: () => {} }) }; // No hace nada
+ * await autenticarUsuario(req, res);
+ */
+exports.autenticarUsuario = async (req, res) => { // Requiere nombreId y contraseña
+  try {
+    // Extraer los parámetros del cuerpo de la solicitud
+    const { _id, nombreId, contraseña, ...extraParam } = req.body;
+    // Verificar si hay algún parámetro extra
+    if (Object.keys(extraParam).length > 0) {
+      res.status(400).send('Sobran parámetros, se espera nombreId (o _id) y contraseña');
+      console.error("Sobran parámetros, se espera nombreId (o _id) y contraseña");
+      return;
+    }
+    // Verificar si alguno de los parámetros está ausente
+    if (!nombreId && !_id || !contraseña) {
+      res.status(400).send('Falta el nombreId (o _id) o la contraseña en la solicitud');
+      console.error("Falta el nombreId (o _id) y la contraseña en la solicitud");
+      return;
+    }
+    // Buscar el perfil en la base de datos
+    const filtro = _id ? { _id: _id } : { nombreId: nombreId };
+    const perfil = await Perfil.findOne(filtro);
+    if (perfil) {
+      // Verificar la contraseña
+      const contraseñaValida = await bcrypt.compare(contraseña, perfil.contraseña);
+      if (!contraseñaValida) {
+        res.status(404).send('La contraseña no es válida');
+        console.error("La contraseña no es válida");
+        return;
+      }
+      res.json(perfil);
+      console.log("Perfil autenticado con éxito", perfil);
+      return perfil
+    } else {
+      res.status(404).send('No se ha encontrado el perfil a autenticar');
+      console.error("No se ha encontrado el perfil a autenticar");
+    }
+  } catch (error) {
+    res.status(500).send('Hubo un error');
+    console.error("Error al autenticar al usuario", error);
+    return;
+  }
+};
+
+/*--------------------------------------------------------------------------------------------------------------------*/
+/*------------------------------------------- ASPECTOS PARA PARTIDAS  ------------------------------------------------*/
+/*--------------------------------------------------------------------------------------------------------------------*/
 
 /**
  * @description Modifica el mazo de un perfil identificado por _id o nombreId.
@@ -407,6 +613,10 @@ exports.moverBarcoInicial = async (req, res) => {
   }
 };
 
+/*--------------------------------------------------------------------------------------------------------------------*/
+/*--------------------------------------------- PERFIL POST PARTIDA  -------------------------------------------------*/
+/*--------------------------------------------------------------------------------------------------------------------*/
+
 /**
  * @description Actualiza las estadísticas de un perfil identificado por _id o nombreId. Las nuevas estadísticas indicadas 
  * incrementan a las existentes en la base de datos. Los nuevos trofeos se suman si victoria es 1 y se restan si victoria es 0.
@@ -546,22 +756,7 @@ exports.actualizarPuntosExperiencia = async (req, res) => {
   }
 };
 
-// Funcion para comprobar que un parametro es un correo electronico
-function verificarCorreo(correo) {
-  const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return regex.test(correo);
-}
 
-// Funcion para verificar que la contraseña cumple con los requisitos: 8 caracteres, 1 mayúscula, 1 minúscula, 1 número y 1 caracter especial
-function verificarContraseña(contraseña) {
-  const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
-  return regex.test(contraseña);
-}
-
-// Funcion para comprobar que un dato es un numero
-function esNumero(numero) {
-  return !isNaN(numero);
-}
 
 /**
  * @description Obtiene un perfil identificado por _id o nombreId.
@@ -598,6 +793,7 @@ exports.obtenerPerfil = async (req, res) => {
     if (perfil) {
       res.json(perfil);
       console.log("Perfil obtenido con éxito", perfil);
+      // MODIFICACIÓN: NO SE DEVUELVEN TODOS LOS CAMPOS DEL PERFIL: CONTRASEÑA,... ############################################################################################
       return perfil;
     } else {
       res.status(404).send('No se ha encontrado el perfil a obtener');
@@ -610,173 +806,344 @@ exports.obtenerPerfil = async (req, res) => {
   }
 };
 
-/**
- * @description Elimina un perfil identificado por _id o nombreId.
- * @param {Object} req - El objeto de solicitud HTTP.
- * @param {string} [req.body._id] - El perfil debe existir en la base de datos.
- * @param {string} [req.body.nombreId] - El perfil debe existir en la base de datos.
- * @param {Object} res - El objeto de respuesta HTTP.
- * @example
- * perfil = { nombreId: 'usuario1'};
- * const req = { body: perfil };
- * const res = { json: () => {}, status: () => ({ send: () => {} }) }; // No hace nada
- * await eliminarPerfil(req, res);
- */
-exports.eliminarPerfil = async (req, res) => {
-  try {
-    // Extraer el nombreId del parámetro de la solicitud
-    const { _id, nombreId, ...extraParam } = req.body;
-    // Verificar si hay algún parámetro extra
-    if (Object.keys(extraParam).length > 0) {
-      res.status(400).send('Sobran parámetros, se espera nombreId (o _id)');
-      console.error("Sobran parámetros, se espera nombreId (o _id)");
-      return;
-    }
-    // Verificar si alguno de los parámetros está ausente
-    if (!nombreId && !_id) {
-      res.status(400).send('Falta el nombreId o _id en la solicitud');
-      console.error("Falta el nombreId o _id en la solicitud");
-      return;
-    }
-    // Buscar y eliminar el perfil de la base de datos
-    const filtro = _id ? { _id: _id } : { nombreId: nombreId };
-    const resultado = await Perfil.deleteOne(filtro);
-    // Verificar si se eliminó el perfil y enviar la respuesta al cliente
-    if (resultado.deletedCount > 0) {
-      res.json({ mensaje: 'Perfil eliminado correctamente' });
-      console.log("Perfil eliminado correctamente");
-    } else {
-      res.status(404).send('No se ha encontrado el perfil a eliminar');
-      console.error("No se ha encontrado el perfil a eliminar");
-    }
-  } catch (error) {
-    res.status(500).send('Hubo un error');
-    console.error("Error al eliminar el perfil", error);
-  }
-};
+
+
+
+
+
+
 
 /**
- * @description Devuelve un perfil identificado por _id o nombreId si la contraseña es correcta. Devuelve null en caso contrario.
+ * @description Acepta una solicitud de amistad de un perfil identificado por nombreIdAmigo en el perfil identificado por _id o nombreId.
+ * Añade el nombreIdAmigo a la lista de amigos del perfil y viceversa.
  * @param {Object} req - El objeto de solicitud HTTP.
  * @param {string} [req.body._id] - El perfil debe existir en la base de datos.
  * @param {string} [req.body.nombreId] - El perfil debe existir en la base de datos.
- * @param {string} req.body.contraseña
+ * @param {string} req.body.nombreIdAmigo - El amigo debe existir en la base de datos.
  * @param {Object} res - El objeto de respuesta HTTP.
  * @example
- * perfil = { nombreId: 'usuario1', contraseña: 'Passwd1.'};
+ * perfil = { nombreId: 'usuario1', nombreIdAmigo: 'usuario2'};
  * const req = { body: perfil };
  * const res = { json: () => {}, status: () => ({ send: () => {} }) }; // No hace nada
- * await autenticarUsuario(req, res);
  */
-exports.autenticarUsuario = async (req, res) => { // Requiere nombreId y contraseña
+exports.añadirAmigo = async (req, res) => {
   try {
     // Extraer los parámetros del cuerpo de la solicitud
-    const { _id, nombreId, contraseña, ...extraParam } = req.body;
+    const {_id, nombreId, nombreIdAmigo, ...extraParam} = req.body;
     // Verificar si hay algún parámetro extra
     if (Object.keys(extraParam).length > 0) {
-      res.status(400).send('Sobran parámetros, se espera nombreId (o _id) y contraseña');
-      console.error("Sobran parámetros, se espera nombreId (o _id) y contraseña");
+      res.status(400).send('Sobran parámetros, se espera _id (o nombreId) y nombreIdAmigo');
+      console.error("Sobran parámetros, se espera _id (o nombreId) y nombreIdAmigo");
       return;
     }
     // Verificar si alguno de los parámetros está ausente
-    if (!nombreId && !_id || !contraseña) {
-      res.status(400).send('Falta el nombreId (o _id) o la contraseña en la solicitud');
-      console.error("Falta el nombreId (o _id) y la contraseña en la solicitud");
+    if (!nombreId && !_id || !nombreIdAmigo) {
+      res.status(400).send('Falta el nombreId (o _id) o el nombreIdAmigo en la solicitud');
+      console.error("Falta el nombreId (o _id) o el nombreIdAmigo en la solicitud");
       return;
     }
     // Buscar el perfil en la base de datos
     const filtro = _id ? { _id: _id } : { nombreId: nombreId };
     const perfil = await Perfil.findOne(filtro);
-    if (perfil) {
-      // Verificar la contraseña
-      const contraseñaValida = await bcrypt.compare(contraseña, perfil.contraseña);
-      if (!contraseñaValida) {
-        res.status(404).send('La contraseña no es válida');
-        console.error("La contraseña no es válida");
-        return;
-      }
-      res.json(perfil);
-      console.log("Perfil autenticado con éxito", perfil);
-      return perfil
-    } else {
-      res.status(404).send('No se ha encontrado el perfil a autenticar');
-      console.error("No se ha encontrado el perfil a autenticar");
+    if (!perfil) {
+      res.status(404).send('No se ha encontrado el perfil a modificar');
+      console.error("No se ha encontrado el perfil a modificar");
+      return;
     }
-  } catch (error) {
+    if (!nombreId) { // Si no se proporciona nombreId, lo cargamos del perfil
+      nombreId = perfil.nombreId;
+    }
+    // Buscar el amigo en la base de datos
+    const amigo = await Perfil.findOne({ nombreId: nombreIdAmigo });
+    if (!amigo) {
+      res.status(404).send('No se ha encontrado el amigo a añadir');
+      console.error("No se ha encontrado el amigo a añadir");
+      return;
+    }
+    // Verificar si el amigo ya está en la lista de amigos
+    if (perfil.listaAmigos.includes(nombreIdAmigo)) {
+      res.status(404).send('El amigo ya estaba en la lista de amigos');
+      console.error("El amigo ya estaba en la lista de amigos");
+      return;
+    }
+    if (amigo.listaAmigos.includes(nombreId)) {
+      res.status(404).send('El amigo ya estaba en la lista de amigos');
+      console.error("El amigo ya estaba en la lista de amigos");
+      return;
+    }
+    // Verificar si el amigo está en la lista de solicitudes
+    if (!perfil.listaSolicitudes.includes(nombreIdAmigo)) {
+      res.status(404).send('El amigo no estaba en la lista de solicitudes');
+      console.error("El amigo no estaba en la lista de solicitudes");
+      return;
+    }
+    // Añadir el amigo a la lista de amigos
+    perfil.listaAmigos.push(nombreIdAmigo);
+    amigo.listaAmigos.push(nombreId);
+    // Eliminar la solicitud de amistad
+    perfil.listaSolicitudes.pull(nombreIdAmigo);
+    // Guardar el perfil modificado en la base de datos
+    const perfilModificado = await perfil.save();
+    const amigoModificado = await amigo.save();
+    // Verificar si el perfil existe y enviar la respuesta al cliente
+    if (perfilModificado && amigoModificado) {
+      res.json(perfilModificado);
+      console.log("Amigo añadido con éxito", perfilModificado);
+    } else {
+      res.status(404).send('No se ha encontrado el perfil a modificar');
+      console.error("No se ha encontrado el perfil a modificar");
+    }
+  }
+  catch (error) {
     res.status(500).send('Hubo un error');
-    console.error("Error al autenticar al usuario", error);
-    return;
+    console.error("Error al añadir amigo", error);
   }
 };
 
-// Funcion para crear un token de sesión
-function crearToken(perfil) {
-  // Generar bytes aleatorios para la clave privada
-  const clavePrivadaBuffer = crypto.randomBytes(32);
-  const clavePrivada = clavePrivadaBuffer.toString('hex');
-  // Si el nombre de usuario y la contraseña son válidos, generar un token JWT
-  const token = jwt.sign(perfil.toJSON(), clavePrivada);
-  return token;
+
+/**
+ * @description Elimina un amigo del perfil identificado por _id o nombreId.
+ * @param {Object} req - El objeto de solicitud HTTP.
+ * @param {string} [req.body._id] - El perfil debe existir en la base de datos.
+ * @param {string} [req.body.nombreId] - El perfil debe existir en la base de datos.
+ * @param {string} req.body.nombreIdAmigo - El amigo debe existir en la base de datos.
+ * @param {Object} res - El objeto de respuesta HTTP.
+ * @example
+ * perfil = { nombreId: 'usuario1', nombreIdAmigo: 'usuario2'};
+ * const req = { body: perfil };
+ * const res = { json: () => {}, status: () => ({ send: () => {} }) }; // No hace nada
+ * await eliminarAmigo(req, res);
+ */
+exports.eliminarAmigo = async (req, res) => {
+  try {
+    // Extraer los parámetros del cuerpo de la solicitud
+    const { _id, nombreId, nombreIdAmigo, ...extraParam } = req.body;
+    // Verificar si hay algún parámetro extra
+    if (Object.keys(extraParam).length > 0) {
+      res.status(400).send('Sobran parámetros, se espera _id (o nombreId) y nombreIdAmigo');
+      console.error("Sobran parámetros, se espera _id (o nombreId) y nombreIdAmigo");
+      return;
+    }
+    // Verificar si alguno de los parámetros está ausente
+    if (!nombreId && !_id || !nombreIdAmigo) {
+      res.status(400).send('Falta el nombreId (o _id) o el nombreIdAmigo en la solicitud');
+      console.error("Falta el nombreId (o _id) o el nombreIdAmigo en la solicitud");
+      return;
+    }
+    // Buscar el perfil en la base de datos
+    const filtro = _id ? { _id: _id } : { nombreId: nombreId };
+
+    const perfil = await Perfil.findOne(filtro);
+    if (!perfil) {
+      res.status(404).send('No se ha encontrado el perfil a modificar');
+      console.error("No se ha encontrado el perfil a modificar");
+      return;
+    }
+    if (!nombreId) { // Si no se proporciona nombreId, lo cargamos del perfil
+      nombreId = perfil.nombreId;
+    }
+    // Buscar el amigo en la base de datos
+    const amigo = await Perfil.findOne({ nombreId: nombreIdAmigo });
+    if (!amigo) {
+      res.status(404).send('No se ha encontrado el amigo a eliminar');
+      console.error("No se ha encontrado el amigo a eliminar");
+      return;
+    }
+    // Verificar si el amigo está en la lista de amigos
+    if (!perfil.listaAmigos.includes(nombreIdAmigo)) {
+      res.status(404).send('El amigo no estaba en la lista de amigos');
+      console.error("El amigo no estaba en la lista de amigos");
+      return;
+    }
+    if (!amigo.listaAmigos.includes(nombreId)) {
+      res.status(404).send('El amigo no estaba en la lista de amigos');
+      console.error("El amigo no estaba en la lista de amigos");
+      return;
+    }
+    // Eliminar el amigo de la lista de amigos
+    perfil.listaAmigos.pull(nombreIdAmigo);
+    amigo.listaAmigos.pull(nombreId);
+    // Guardar el perfil modificado en la base de datos
+    const perfilModificado = await perfil.save();
+    const amigoModificado = await amigo.save();
+    // Verificar si el perfil existe y enviar la respuesta al cliente
+    if (perfilModificado && amigoModificado) {
+      res.json(perfilModificado);
+      console.log("Amigo eliminado con éxito", perfilModificado);
+    } else {
+      res.status(404).send('No se ha encontrado el perfil a modificar');
+      console.error("No se ha encontrado el perfil a modificar");
+    }
+  }
+  catch (error) {
+    res.status(500).send('Hubo un error');
+    console.error("Error al eliminar amigo", error);
+  }
 }
 
 /**
- * @description Devuelve un token de sesión del perfil identificado por _id o nombreId si la contraseña es correcta.
+ * @description Envia una solicitud de amistad a un perfil identificado por nombreIdAmigo desde el perfil identificado por _id o nombreId.
+ * Añade el nombreId a la lista de solicitudes del perfil.
  * @param {Object} req - El objeto de solicitud HTTP.
  * @param {string} [req.body._id] - El perfil debe existir en la base de datos.
  * @param {string} [req.body.nombreId] - El perfil debe existir en la base de datos.
- * @param {string} req.body.contraseña
+ * @param {string} req.body.nombreIdAmigo - El amigo debe existir en la base de datos.
  * @param {Object} res - El objeto de respuesta HTTP.
  * @example
- * perfil = { nombreId: 'usuario1', contraseña: 'Passwd1.'};
+ * perfil = { nombreId: 'usuario1', nombreIdAmigo: 'usuario2'};
  * const req = { body: perfil };
  * const res = { json: () => {}, status: () => ({ send: () => {} }) }; // No hace nada
- * await iniciarSesion(req, res);
+ * await enviarSolicitudAmistad(req, res);
  */
-exports.iniciarSesion = async (req, res) => { // Requiere nombreId (o _id) y contraseña
+exports.enviarSolicitudAmistad = async (req, res) => {
   try {
-    // Buscar el perfil en la base de datos
-    const perfil = await exports.autenticarUsuario(req, res);
-    if (perfil) {
-      const token = crearToken(perfil);
-      // Enviar el token como respuesta al cliente
-      res.json(token);
-      console.log("Sesión iniciada con éxito", token);
+    // Extraer los parámetros del cuerpo de la solicitud
+    const { _id, nombreId, nombreIdAmigo, ...extraParam } = req.body;
+    // Verificar si hay algún parámetro extra
+    if (Object.keys(extraParam).length > 0) {
+      res.status(400).send('Sobran parámetros, se espera _id (o nombreId) y nombreIdAmigo');
+      console.error("Sobran parámetros, se espera _id (o nombreId) y nombreIdAmigo");
+      return;
     }
-  } catch (error) {
-    res.status(500).send('Hubo un error');
-    console.error("Error al iniciar sesión", error);
+    // Verificar si alguno de los parámetros está ausente
+    if (!nombreId && !_id || !nombreIdAmigo) {
+      res.status(400).send('Falta el nombreId (o _id) o el nombreIdAmigo en la solicitud');
+      console.error("Falta el nombreId (o _id) o el nombreIdAmigo en la solicitud");
+      return;
+    }
+    // Verificar si el perfil y el amigo son el mismo
+    if (nombreId === nombreIdAmigo) {
+      res.status(404).send('No puedes añadirte a ti mismo como amigo');
+      console.error("No puedes añadirte a ti mismo como amigo");
+      return;
+    }
+    // Buscar el perfil en la base de datos
+    const filtro = _id ? { _id: _id } : { nombreId: nombreId };
+    const perfil = await Perfil.findOne(filtro);
+    if (!perfil) {
+      res.status(404).send('No se ha encontrado el perfil a modificar');
+      console.error("No se ha encontrado el perfil a modificar");
+      return;
+    }
+    if (!nombreId) { // Si no se proporciona nombreId, lo cargamos del perfil
+      nombreId = perfil.nombreId;
+    }
+    // Buscar el amigo en la base de datos
+    const amigo = await Perfil.findOne({ nombreId: nombreIdAmigo });
+    if (!amigo) {
+      res.status(404).send('No se ha encontrado el amigo');
+      console.error("No se ha encontrado el amigo");
+      return;
+    }
+    // Verificar si ya se ha enviado una solicitud de amistad
+    if (amigo.listaSolicitudes.includes(nombreId)) {
+      res.status(404).send('Ya se ha enviado una solicitud de amistad a este usuario');
+      console.error("Ya se ha enviado una solicitud de amistad a este usuario");
+      return;
+    }
+    // Verificar si el otro usuario ya ha enviado una solicitud de amistad
+    if (perfil.listaSolicitudes.includes(nombreIdAmigo)) {
+      res.status(404).send('Ya se ha recibido una solicitud de amistad de este usuario');
+      console.error("Ya se ha recibido una solicitud de amistad de este usuario");
+      return;
+    }
+    // Verificar si ya son amigos
+    if (perfil.listaAmigos.includes(nombreIdAmigo) || amigo.listaAmigos.includes(nombreId)) {
+      res.status(404).send('El usuario ya está en la lista de amigos');
+      console.error("El usuario ya está en la lista de amigos");
+      return;
+    }
+    // Enviar solicitud de amistad
+    amigo.listaSolicitudes.push(nombreId);
+    // Guardar el perfil modificado en la base de datos
+    const perfilModificado = await amigo.save();
+    // Verificar si el perfil existe y enviar la respuesta al cliente
+    if (perfilModificado) {
+      res.json(perfilModificado);
+      console.log("Solicitud de amistad enviada con éxito", perfilModificado);
+    } else {
+      res.status(404).send('No se ha encontrado el perfil a modificar');
+      console.error("No se ha encontrado el perfil a modificar");
+    }
   }
-};
+  catch (error) {
+    res.status(500).send('Hubo un error');
+    console.error("Error al enviar solicitud de amistad", error);
+  }
+}
 
 /**
- * @description Devuelve un token de sesión del perfil identificado por _id o nombreId si es creado con éxito.
+ * @description Elimina una solicitud de amistad de un perfil identificado por nombreIdAmigo en el perfil identificado por _id o nombreId.
+ * Elimina el nombreIdAmigo de la lista de solicitudes del perfil.
  * @param {Object} req - El objeto de solicitud HTTP.
  * @param {string} [req.body._id] - El perfil debe existir en la base de datos.
  * @param {string} [req.body.nombreId] - El perfil debe existir en la base de datos.
- * @param {string} req.body.contraseña - La contraseña debe tener al menos 8 caracteres, 1 minúsucla, 1 mayúscula, 1 dígito y un caracter especial.
- * @param {string} req.body.correo - El correo debe tener un formato válido.
+ * @param {string} req.body.nombreIdAmigo - El amigo debe existir en la base de datos.
  * @param {Object} res - El objeto de respuesta HTTP.
  * @example
- * perfil = { nombreId: 'usuario4', contraseña: 'Passwd4.', correo: 'usuario4@example.com' };
+ * perfil = { nombreId: 'usuario1', nombreIdAmigo: 'usuario2'};
  * const req = { body: perfil };
  * const res = { json: () => {}, status: () => ({ send: () => {} }) }; // No hace nada
- * await registrarUsuario(req, res);
+ * await eliminarSolicitudAmistad(req, res);
  */
-exports.registrarUsuario = async (req, res) => {  // Requiere nombreId (o _id), contraseña y correo
+exports.eliminarSolicitudAmistad = async (req, res) => {
   try {
-    // Crear el perfil
-    const perfil = await exports.crearPerfil(req, res);
-    if (perfil) {
-      const token = crearToken(perfil);
-      // Enviar el token como respuesta al cliente
-      res.json(token);
-      console.log("Usuario registrado con éxito", token);
+    // Extraer los parámetros del cuerpo de la solicitud
+    const { _id, nombreId, nombreIdAmigo, ...extraParam } = req.body;
+    // Verificar si hay algún parámetro extra
+    if (Object.keys(extraParam).length > 0) {
+      res.status(400).send('Sobran parámetros, se espera _id (o nombreId) y nombreIdAmigo');
+      console.error("Sobran parámetros, se espera _id (o nombreId) y nombreIdAmigo");
+      return;
     }
-  } catch (error) {
-    res.status(500).send('Hubo un error');
-    console.error("Error al registrar usuario", error);
+    // Verificar si alguno de los parámetros está ausente
+    if (!nombreId && !_id || !nombreIdAmigo) {
+      res.status(400).send('Falta el nombreId (o _id) o el nombreIdAmigo en la solicitud');
+      console.error("Falta el nombreId (o _id) o el nombreIdAmigo en la solicitud");
+      return;
+    }
+    // Buscar el perfil en la base de datos
+    const filtro = _id ? { _id: _id } : { nombreId: nombreId };
+
+    const perfil = await Perfil.findOne(filtro);
+    if (!perfil) {
+      res.status(404).send('No se ha encontrado el perfil a modificar');
+      console.error("No se ha encontrado el perfil a modificar");
+      return;
+    }
+    // Buscar el amigo en la base de datos
+    const amigo = await Perfil.findOne({ nombreId: nombreIdAmigo });
+    if (!amigo) {
+      res.status(404).send('No se ha encontrado el amigo a eliminar');
+      console.error("No se ha encontrado el amigo a eliminar");
+      return;
+    }
+    // Verificar si el amigo está en la lista de amigos
+    if (!perfil.listaSolicitudes.includes(nombreIdAmigo)) {
+      res.status(404).send('No se ha encontrado la solicitud de amistad');
+      console.error("No se ha encontrado la solicitud de amistad");
+      return;
+    }
+    // Eliminar el amigo de la lista de amigos
+    perfil.listaSolicitudes.pull(nombreIdAmigo);
+    // Guardar el perfil modificado en la base de datos
+    const perfilModificado = await perfil.save();
+    // Verificar si el perfil existe y enviar la respuesta al cliente
+    if (perfilModificado) {
+      res.json(perfilModificado);
+      console.log("Solicitud de amistad eliminada con éxito", perfilModificado);
+    } else {
+      res.status(404).send('No se ha encontrado el perfil a modificar');
+      console.error("No se ha encontrado el perfil a modificar");
+    }
   }
-};
+  catch (error) {
+    res.status(500).send('Hubo un error');
+    console.error("Error al eliminar solicitud de amistad", error);
+  }
+}
+    
+
 
 // // SEGURIDAD
 // // RESPUESTA DE LA API:

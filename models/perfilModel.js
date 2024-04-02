@@ -16,6 +16,14 @@ const perfilSchema = new Schema({
     type: String, 
     required: true 
   },
+  listaAmigos: {             // Lista de amigos del usuario
+    type: [String],          // Lista de nombreId
+    default: [] 
+  },
+  listaSolicitudes: {        // Lista de solicitudes de amistad
+    type: [String],          // Lista de nombreId
+    default: []
+  },
   trofeos: {                 // Trofeos del usuario (ELO)
     type: Number, 
     default: 0 
