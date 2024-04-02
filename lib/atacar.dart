@@ -117,7 +117,9 @@ class _AtacarState extends State<Atacar> {
       casillas.add(
         GestureDetector(
           onTap: () {
-            onTap(j, rowIndex);
+            setState(() {
+              onTap(rowIndex, j);
+            });
           },
           child: Container(
             width: Juego().tablero_oponente.casillaSize,
@@ -136,17 +138,17 @@ class _AtacarState extends State<Atacar> {
 
 
   void _handleTap(int i, int j) {
-    setState(() {
-      Juego().tablero_oponente.casillasAtacadas[i][j] = true;
-    });
+    Juego().tablero_oponente.casillasAtacadas[i][j] = true;
 
     // Si la casilla tiene un barco.
     if(Juego().tablero_oponente.casillasOcupadas[i][j]) {
+      print("¡Hay un barco!");
       setState(() {
         Juego().actualizarBarcosRestantes();
       });
     }
     else {
+      print("¡No hay un barco!");
       setState(() {
         Juego().cambiarTurno();
       });
