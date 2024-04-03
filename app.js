@@ -1,9 +1,10 @@
-const express = require("express");
+const express = require('express');
 const mongoose = require("mongoose");
+const perfilRoutes = require('./routes/perfilRoutes');
+
 const app = express();
 
-// Reemplaza 'myDatabase' con el nombre de tu base de datos
-const mongoURI = "mongodb://developer:password@localhost:27017/BattleshipDB";
+const mongoURI = 'mongodb://localhost/BattleshipDB';
 
 app.connectDatabase = async () => {
     try {
@@ -16,15 +17,17 @@ app.connectDatabase = async () => {
 
 app.connectDatabase();
 
+app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', 'http://localhost:3000');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
+    res.header('Access-Control-Allow-Headers', 'Content-Type');
+    next();
+});
+
+// Middleware para parsear el body de las peticiones
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 
-// Definir models
-// const Persona = require('./models/Persona');
-// const Partida = require('./models/Partida');
-
-
-
+// Rutas
+app.use('/perfil', perfilRoutes);
 
 module.exports = app;
-

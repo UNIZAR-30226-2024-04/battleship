@@ -118,7 +118,6 @@ crearPerfil = async (req, res) => {
     const perfilGuardado = await nuevoPerfil.save();
     // Enviar la respuesta al cliente
     res.json(perfilGuardado);
-    res.status(200).send('Perfil creado con éxito');
     console.log("Perfil creado con éxito", perfilGuardado);
     return perfilGuardado;
   } catch (error) {
@@ -190,7 +189,6 @@ exports.modificarDatosPersonales = async (req, res) => {
     // Verificar si el perfil existe y enviar la respuesta al cliente
     if (perfilModificado) {
       res.json(perfilModificado);
-      res.status(200).send('Perfil modificado con éxito');
       console.log("Perfil modificado con éxito", perfilModificado);
     } else {
       res.status(404).send('No se ha encontrado el perfil a modificar');
@@ -238,7 +236,6 @@ exports.eliminarUsuario = async (req, res) => {
     // Verificar si se eliminó el perfil y enviar la respuesta al cliente
     if (resultado.deletedCount > 0) {
       res.json({ mensaje: 'Perfil eliminado correctamente' });
-      res.status(200).send('Perfil eliminado correctamente');
       console.log("Perfil eliminado correctamente");
     } else {
       res.status(404).send('No se ha encontrado el perfil a eliminar');
@@ -277,7 +274,6 @@ exports.registrarUsuario = async (req, res) => {  // Requiere nombreId (o _id), 
       const token = crearToken(perfil);
       // Enviar el token como respuesta al cliente
       res.json(token);
-      res.status(200).send('Usuario registrado con éxito');
       console.log("Usuario registrado con éxito", token);
     }
   } catch (error) {
@@ -308,7 +304,6 @@ exports.iniciarSesion = async (req, res) => { // Requiere nombreId (o _id) y con
       const token = crearToken(perfil);
       // Enviar el token como respuesta al cliente
       res.json(token);
-      res.status(200).send('Sesión iniciada con éxito');
       console.log("Sesión iniciada con éxito", token);
     } else {
       res.status(404).send('No se ha encontrado el perfil a iniciar sesión');
@@ -363,7 +358,6 @@ exports.autenticarUsuario = async (req, res) => { // Requiere nombreId y contras
       }
       res.json(perfil);
       console.log("Perfil autenticado con éxito", perfil);
-      res.status(200).send('Perfil autenticado con éxito');
       return perfil
     } else {
       res.status(404).send('No se ha encontrado el perfil a autenticar');
@@ -447,7 +441,6 @@ exports.modificarMazo = async (req, res) => {
     if (perfilModificado) {
       res.json(perfilModificado);
       console.log("Mazo modificado con éxito", perfilModificado);
-      res.status(200).send('Mazo modificado con éxito');
     } else {
       res.status(404).send('No se ha encontrado el perfil a modificar');
       console.error("No se ha encontrado el perfil a modificar");
@@ -621,7 +614,6 @@ exports.moverBarcoInicial = async (req, res) => {
     if (perfilModificado) {
       res.json(perfilModificado);
       console.log("Tablero inicial modificado con éxito");
-      res.status(200).send('Tablero inicial modificado con éxito');
     } else {
       res.status(404).send('No se ha encontrado el perfil a modificar');
       console.error("No se ha encontrado el perfil a modificar");
@@ -702,7 +694,6 @@ exports.actualizarEstadisticas = async (req, res) => {
     if (perfilModificado) {
       res.json(perfilModificado);
       console.log("Perfil modificado con éxito", perfilModificado);
-      res.status(200).send('Perfil modificado con éxito');
     } else {
       res.status(404).send('No se ha encontrado el perfil a actualizar');
       console.error("No se ha encontrado el perfil a actualizar");
@@ -766,7 +757,6 @@ exports.actualizarPuntosExperiencia = async (req, res) => {
     if (perfilModificado) {
       res.json(perfilModificado);
       console.log("Perfil modificado con éxito", perfilModificado);
-      res.status(200).send('Puntos de experiencia actualizados con éxito');
     } else {
       res.status(404).send('No se ha encontrado el perfil a actualizar');
       console.error("No se ha encontrado el perfil a actualizar");
@@ -815,7 +805,6 @@ exports.obtenerUsuario = async (req, res) => {
     if (perfil) {
       res.json(perfil);
       console.log("Perfil obtenido con éxito", perfil);
-      res.status(200).send('Perfil obtenido con éxito');
       // MODIFICACIÓN: NO SE DEVUELVEN TODOS LOS CAMPOS DEL PERFIL: CONTRASEÑA,... ############################################################################################
       return perfil;
     } else {
@@ -913,7 +902,6 @@ exports.agnadirAmigo = async (req, res) => {
     if (perfilModificado && amigoModificado) {
       res.json(perfilModificado);
       console.log("Amigo añadido con éxito", perfilModificado);
-      res.status(200).send('Amigo añadido con éxito');
     } else {
       res.status(404).send('No se ha podido añaadir el amigo');
       console.error("No se ha podido añadir el amigo");
@@ -990,7 +978,6 @@ exports.eliminarAmigo = async (req, res) => {
     if (perfilModificado && amigoModificado) {
       res.json(perfilModificado);
       console.log("Amigo eliminado con éxito", perfilModificado);
-      res.status(200).send('Amigo eliminado con éxito');
     } else {
       res.status(404).send('No se ha encontrado el perfil a modificar');
       console.error("No se ha encontrado el perfil a modificar");
@@ -1082,7 +1069,6 @@ exports.enviarSolicitudAmistad = async (req, res) => {
     if (perfilModificado) {
       res.json(perfilModificado);
       console.log("Solicitud de amistad enviada con éxito", perfilModificado);
-      res.status(200).send('Solicitud de amistad enviada con éxito');
     } else {
       res.status(404).send('No se ha podido enviar la solicitud de amistad');
       console.error("No se ha podido enviar la solicitud de amistad");
@@ -1154,7 +1140,6 @@ exports.eliminarSolicitudAmistad = async (req, res) => {
     if (perfilModificado) {
       res.json(perfilModificado);
       console.log("Solicitud de amistad eliminada con éxito", perfilModificado);
-      res.status(200).send('Solicitud de amistad eliminada con éxito');
     } else {
       res.status(404).send('No se ha podido eliminar la solicitud de amistad');
       console.error("No se ha podido eliminar la solicitud de amistad");
