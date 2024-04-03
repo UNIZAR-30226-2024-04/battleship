@@ -93,7 +93,6 @@ exports.crearPartida = async (req, res) => {
     const partidaGuardada = await partida.save();
     res.json(partidaGuardada); 
     console.log("Partida creada con éxito", partidaGuardada);
-    res.status(200).send('Partida creada con éxito');
     return partidaGuardada;
   } catch (error) {
     res.status(500).send('Hubo un error');
@@ -133,7 +132,6 @@ exports.mostrarMiTablero = async (req, res) => {
       };
       console.log('Mi tablero obtenido con éxito');
       res.json(tableroDisparos);
-      res.status(200).send('Mi tablero obtenido con éxito');
       console.log(tableroDisparos);
       return tableroDisparos;
     } else {
@@ -179,7 +177,6 @@ exports.mostrarTableroEnemigo = async (req, res) => {
       };
       console.log('Tablero enemigo obtenido con éxito');
       res.json(tablero);
-      res.status(200).send('Tablero enemigo obtenido con éxito');
       console.log(tablero);
       return tablero;
     } else {
@@ -222,7 +219,6 @@ exports.mostrarTableros = async (req, res) => {
       };
       console.log('Tableros obtenidos con éxito');
       res.json(tableros);
-      res.status(200).send('Tableros obtenidos con éxito');
       console.log(tableros);
       return tableros;
     } else {
@@ -306,14 +302,12 @@ exports.realizarDisparo = async (req, res) => {
       );
       if (partidaModificada) {
         res.json(partidaModificada );
-        res.status(200).send('Disparo realizado con éxito');
         console.log("Partida modificada con éxito");
         return partidaModificada;
       } else {
         res.status(404).send('No se ha encontrado la partida a actualizar');
         console.error("No se ha encontrado la partida a actualizar");
       }
-      res.json(resultado);
     } else {
       res.status(404).send('Partida no encontrada');
       console.error("Partida no encontrada");
@@ -414,7 +408,6 @@ exports.obtenerChat = async (req, res) => {
     const partida = await Partida.findOne(filtro);
     if (partida) {
       res.json(partida.chat);
-      res.status(200).send('Chat obtenido con éxito');
       return partida.chat;
     } else {
       res.status(404).send('Partida no encontrada');
@@ -463,15 +456,12 @@ exports.enviarMensaje = async (req, res) => {
       );
       if (partidaModificada) {
         res.json(partidaModificada );
-        res.status(200).send('Mensaje enviado con éxito');
         console.log("Partida modificada con éxito");
         return partidaModificada;
       } else {
         res.status(404).send('No se ha encontrado la partida a actualizar');
         console.error("No se ha encontrado la partida a actualizar");
       }
-      res.json(resultado);
-
     } else {
       console.error('Partida no encontrada');
       res.status(404).send('Partida no encontrada');

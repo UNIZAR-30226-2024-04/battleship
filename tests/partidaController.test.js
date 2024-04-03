@@ -7,7 +7,8 @@ const {registrarUsuario, autenticarUsuario, eliminarUsuario, iniciarSesion,
     enviarSolicitudAmistad, eliminarSolicitudAmistad, agnadirAmigo, eliminarAmigo} = require('../controllers/perfilController');
   
 const mongoURI = 'mongodb://localhost/BattleshipDB';
-mongoose.connect(mongoURI);
+mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true, 
+  useCreateIndex: true, useFindAndModify: false});
 
 // redirect console.log and console.error to /dev/null
 console.error = function() {};
@@ -25,7 +26,7 @@ describe("Crear partida", () => {
         try {
           await registrarUsuario(req, res);
         } catch (error) {}
-        expect(res.statusCode).toBe(200);
+        expect(res.statusCode).toBe(undefined);
         const req2 = { body: { nombreId: 'usuario2', contraseña: 'Passwd2.',
         correo: 'usuario2@example.com' } };
         const res2 = { json: () => {}, status: function(s) { 
@@ -33,7 +34,7 @@ describe("Crear partida", () => {
         try {
           await registrarUsuario(req2, res2);
         } catch (error) {}
-        expect(res2.statusCode).toBe(200);
+        expect(res2.statusCode).toBe(undefined);
     });
     it("Debería crear una partida correctamente", async () => {
         const req = { body: { nombreId1: 'usuario1', nombreId2: 'usuario2', bioma: 'Norte' } };
@@ -43,7 +44,7 @@ describe("Crear partida", () => {
             await crearPartida(req, res);
             }
         catch (error) {}
-        expect(res.statusCode).toBe(200);
+        expect(res.statusCode).toBe(undefined);
     });
     it("Debería fallar al crear una partida con demasiados campos", async () => {
         const req = { body: { nombreId1: 'usuario1', nombreId2: 'usuario2', bioma: 'Norte', extra: 1 } };
@@ -114,7 +115,7 @@ describe("Mostrar mi tablero", () => {
         try {
           await registrarUsuario(req, res);
         } catch (error) {}
-        expect(res.statusCode).toBe(200);
+        expect(res.statusCode).toBe(undefined);
         const req2 = { body: { nombreId: 'usuario2', contraseña: 'Passwd2.',
         correo: 'usuario2@example.com' } };
         const res2 = { json: () => {}, status: function(s) { 
@@ -122,14 +123,14 @@ describe("Mostrar mi tablero", () => {
         try {
           await registrarUsuario(req2, res2);
         } catch (error) {}
-        expect(res2.statusCode).toBe(200);
+        expect(res2.statusCode).toBe(undefined);
         const req3 = { body: { nombreId1: 'usuario1', nombreId2: 'usuario2', bioma: 'Norte' } };
         const res3 = { json: function(_json) {this._json = _json; return this;}, status: function(s) { 
             this.statusCode = s; return this; }, send: () => {} };
         try {
             await crearPartida(req3, res3);
         } catch (error) {}
-        expect(res3.statusCode).toBe(200);
+        expect(res3.statusCode).toBe(undefined);
         _codigo = res3._json.codigo;
     });
     it("Debería mostrar mi tablero correctamente", async () => {
@@ -140,7 +141,7 @@ describe("Mostrar mi tablero", () => {
             await mostrarMiTablero(req, res);
             }
         catch (error) {}
-        expect(res.statusCode).toBe(200);
+        expect(res.statusCode).toBe(undefined);
     });
     it("Debería fallar al mostrar mi tablero con demasiados campos", async () => {
         const req = { body: { codigo: _codigo, jugador: 1, extra: 1 } };
@@ -193,7 +194,7 @@ describe("Mostrar tablero enemigo", () => {
         try {
           await registrarUsuario(req, res);
         } catch (error) {}
-        expect(res.statusCode).toBe(200);
+        expect(res.statusCode).toBe(undefined);
         const req2 = { body: { nombreId: 'usuario2', contraseña: 'Passwd2.',
         correo: 'usuario2@example.com' } };
         const res2 = { json: () => {}, status: function(s) { 
@@ -201,14 +202,14 @@ describe("Mostrar tablero enemigo", () => {
         try {
           await registrarUsuario(req2, res2);
         } catch (error) {}
-        expect(res2.statusCode).toBe(200);
+        expect(res2.statusCode).toBe(undefined);
         const req3 = { body: { nombreId1: 'usuario1', nombreId2: 'usuario2', bioma: 'Norte' } };
         const res3 = { json: function(_json) {this._json = _json; return this;}, status: function(s) { 
             this.statusCode = s; return this; }, send: () => {} };
         try {
             await crearPartida(req3, res3);
         } catch (error) {}
-        expect(res3.statusCode).toBe(200);
+        expect(res3.statusCode).toBe(undefined);
         _codigo = res3._json.codigo;
     });
     it("Debería mostrar el tablero enemigo correctamente", async () => {
@@ -219,7 +220,7 @@ describe("Mostrar tablero enemigo", () => {
             await mostrarTableroEnemigo(req, res);
             }
         catch (error) {}
-        expect(res.statusCode).toBe(200);
+        expect(res.statusCode).toBe(undefined);
     });
     it("Debería fallar al mostrar el tablero enemigo con demasiados campos", async () => {
         const req = { body: { codigo: _codigo, jugador: 1, extra: 1 } };
@@ -271,7 +272,7 @@ describe("Mostrar tableros", () => {
         try {
           await registrarUsuario(req, res);
         } catch (error) {}
-        expect(res.statusCode).toBe(200);
+        expect(res.statusCode).toBe(undefined);
         const req2 = { body: { nombreId: 'usuario2', contraseña: 'Passwd2.',
         correo: 'usuario2@example.com' } };
         const res2 = { json: () => {}, status: function(s) { 
@@ -279,14 +280,14 @@ describe("Mostrar tableros", () => {
         try {
           await registrarUsuario(req2, res2);
         } catch (error) {}
-        expect(res2.statusCode).toBe(200);
+        expect(res2.statusCode).toBe(undefined);
         const req3 = { body: { nombreId1: 'usuario1', nombreId2: 'usuario2', bioma: 'Norte' } };
         const res3 = { json: function(_json) {this._json = _json; return this;}, status: function(s) { 
             this.statusCode = s; return this; }, send: () => {} };
         try {
             await crearPartida(req3, res3);
         } catch (error) {}
-        expect(res3.statusCode).toBe(200);
+        expect(res3.statusCode).toBe(undefined);
         // guardar el código de la partida
         _codigo = res3._json.codigo;
         console.log(_codigo);
@@ -299,7 +300,7 @@ describe("Mostrar tableros", () => {
             await mostrarTableros(req, res);
             }
         catch (error) {}
-        expect(res.statusCode).toBe(200);
+        expect(res.statusCode).toBe(undefined);
     });
     it("Debería fallar al mostrar los tableros con demasiados campos", async () => {
         const req = { body: { codigo: _codigo, extra: 1 } };
@@ -342,7 +343,7 @@ describe("Realizar disparo", () => {
         try {
           await registrarUsuario(req, res);
         } catch (error) {}
-        expect(res.statusCode).toBe(200);
+        expect(res.statusCode).toBe(undefined);
         const req2 = { body: { nombreId: 'usuario2', contraseña: 'Passwd2.',
         correo: 'usuario2@example.com' } };
         const res2 = { json: () => {}, status: function(s) { 
@@ -350,14 +351,14 @@ describe("Realizar disparo", () => {
         try {
           await registrarUsuario(req2, res2);
         } catch (error) {}
-        expect(res2.statusCode).toBe(200);
+        expect(res2.statusCode).toBe(undefined);
         const req3 = { body: { nombreId1: 'usuario1', nombreId2: 'usuario2', bioma: 'Norte' } };
         const res3 = { json: function(_json) {this._json = _json; return this;}, status: function(s) { 
             this.statusCode = s; return this; }, send: () => {} };
         try {
             await crearPartida(req3, res3);
         } catch (error) {}
-        expect(res3.statusCode).toBe(200);
+        expect(res3.statusCode).toBe(undefined);
         _codigo = res3._json.codigo;
     });
     it("Debería realizar un disparo correctamente", async () => {
@@ -369,7 +370,7 @@ describe("Realizar disparo", () => {
             }
         catch (error) {}
         console.log(res._json);
-        expect(res.statusCode).toBe(200);
+        expect(res.statusCode).toBe(undefined);
     });
     it("Debería fallar al realizar un disparo con demasiados campos", async () => {
         const req = { body: { codigo: _codigo, jugador: 1, i: 1, j: 1, extra: 1 } };
@@ -441,7 +442,7 @@ describe("Realizar disparo", () => {
         try {
             await realizarDisparo(req, res);
         } catch (error) {}
-        expect(res.statusCode).toBe(200);
+        expect(res.statusCode).toBe(undefined);
     });
     it("Debería hundir el barco", async () => {
         const req = { body: { codigo: _codigo, jugador: 1, i: 1, j: 2 } };
@@ -450,7 +451,7 @@ describe("Realizar disparo", () => {
         try {
             await realizarDisparo(req, res);
         } catch (error) {}
-        expect(res.statusCode).toBe(200);
+        expect(res.statusCode).toBe(undefined);
     });
     it("Debería fallar al disparar al agua", async () => {
         const req = { body: { codigo: _codigo, jugador: 2, i: 1, j: 3 } };
@@ -459,7 +460,7 @@ describe("Realizar disparo", () => {
         try {
             await realizarDisparo(req, res);
         } catch (error) {}
-        expect(res.statusCode).toBe(200);
+        expect(res.statusCode).toBe(undefined);
     });
     it("Debería fallar al repetir un disparo", async () => {
         const req = { body: { codigo: _codigo, jugador: 1, i: 1, j: 1 } };
@@ -484,7 +485,7 @@ describe("Enviar mensaje", () => {
         try {
           await registrarUsuario(req, res);
         } catch (error) {}
-        expect(res.statusCode).toBe(200);
+        expect(res.statusCode).toBe(undefined);
         const req2 = { body: { nombreId: 'usuario2', contraseña: 'Passwd2.',
         correo: 'usuario2@example.com' } };
         const res2 = { json: () => {}, status: function(s) { 
@@ -492,14 +493,14 @@ describe("Enviar mensaje", () => {
         try {
           await registrarUsuario(req2, res2);
         } catch (error) {}
-        expect(res2.statusCode).toBe(200);
+        expect(res2.statusCode).toBe(undefined);
         const req3 = { body: { nombreId1: 'usuario1', nombreId2: 'usuario2', bioma: 'Norte' } };
         const res3 = { json: function(_json) {this._json = _json; return this;}, status: function(s) { 
             this.statusCode = s; return this; }, send: () => {} };
         try {
             await crearPartida(req3, res3);
         } catch (error) {}
-        expect(res3.statusCode).toBe(200);
+        expect(res3.statusCode).toBe(undefined);
         _codigo = res3._json.codigo;
     });
     it("Debería enviar un mensaje correctamente", async () => {
@@ -510,7 +511,7 @@ describe("Enviar mensaje", () => {
             await enviarMensaje(req, res);
             }
         catch (error) {}
-        expect(res.statusCode).toBe(200);
+        expect(res.statusCode).toBe(undefined);
     });
     it("Debería fallar al enviar un mensaje con demasiados campos", async () => {
         const req = { body: { codigo: _codigo, autor: 1, mensaje: "Esto es una prueba", extra: 1 } };
@@ -571,7 +572,7 @@ describe("Obtener chat", () => {
         try {
           await registrarUsuario(req, res);
         } catch (error) {}
-        expect(res.statusCode).toBe(200);
+        expect(res.statusCode).toBe(undefined);
         const req2 = { body: { nombreId: 'usuario2', contraseña: 'Passwd2.',
         correo: 'usuario2@example.com' } };
         const res2 = { json: () => {}, status: function(s) { 
@@ -579,14 +580,14 @@ describe("Obtener chat", () => {
         try {
           await registrarUsuario(req2, res2);
         } catch (error) {}
-        expect(res2.statusCode).toBe(200);
+        expect(res2.statusCode).toBe(undefined);
         const req3 = { body: { nombreId1: 'usuario1', nombreId2: 'usuario2', bioma: 'Norte' } };
         const res3 = { json: function(_json) {this._json = _json; return this;}, status: function(s) { 
             this.statusCode = s; return this; }, send: () => {} };
         try {
             await crearPartida(req3, res3);
         } catch (error) {}
-        expect(res3.statusCode).toBe(200);
+        expect(res3.statusCode).toBe(undefined);
         _codigo = res3._json.codigo;
         const req4 = { body: { codigo: _codigo, autor: 1, mensaje: "Esto es una prueba" } };
         const res4 = { json: () => {}, status: function(s) { 
@@ -594,7 +595,7 @@ describe("Obtener chat", () => {
         try {
             await enviarMensaje(req4, res4);
         } catch (error) {}
-        expect(res4.statusCode).toBe(200);
+        expect(res4.statusCode).toBe(undefined);
     });
     it("Debería obtener el chat correctamente", async () => {
         const req = { body: { codigo: _codigo } };
@@ -604,7 +605,7 @@ describe("Obtener chat", () => {
             await obtenerChat(req, res);
         } catch (error) {}
         console.log(res._json);
-        expect(res.statusCode).toBe(200);
+        expect(res.statusCode).toBe(undefined);
         expect(res._json[0].mensaje).toBe("Esto es una prueba");
     });
     it("Debería fallar al obtener el chat con demasiados campos", async () => {
