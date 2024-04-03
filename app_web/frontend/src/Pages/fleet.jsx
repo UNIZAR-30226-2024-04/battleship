@@ -48,7 +48,7 @@ export function Fleet() {
             removable: true,            // eliminar widgets si se sacan del tablero
             acceptWidgets: true,        // acepta widgets de otros tableros
             disableResize: true,        // quita icono de resize en cada widget
-            cellHeight: "80px", // Establecer la altura de cada celda en 50px
+            //cellHeight: "80px", // Establecer la altura de cada celda en 50px
         });
         setBoard(board); // Almacenar la instancia de GridStack en el estado
     }, []);
@@ -201,7 +201,7 @@ export function Fleet() {
 
 
     return (
-        <div>
+        <>
             <div className="fleet-page-container">
                 <Navbar/>
                 <div className="fleet-container">
@@ -210,27 +210,26 @@ export function Fleet() {
                     </h1>
                     <div className="fleet-main-content-container">
                         <div className="grid-stack fleet-board" onClick={handleItemClick}></div>
+                        <div className="ship-buttons-container">
+                            <div className="ship-buttons">
+                                <button onClick={() => addNewWidget("Aircraft")}>Añadir portaviones</button>
+                            </div>
+                            <div className="ship-buttons">
+                                <button onClick={() => addNewWidget("Bship")}>Añadir acorazado</button>
+                            </div>
+                            <div className="ship-buttons">
+                                <button onClick={() => addNewWidget("Sub")}>Añadir submarino</button>
+                            </div>
+                            <div className="ship-buttons">
+                                <button onClick={() => addNewWidget("Destroy")}>Añadir destructor</button>
+                            </div>
+                            <div className="ship-buttons">
+                                <button onClick={() => addNewWidget("Patrol")}>Añadir patrullera</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div className="ship-buttons-container">
-                    <div className="ship-buttons">
-                        <button onClick={() => addNewWidget("Aircraft")}>Añadir portaviones</button>
-                    </div>
-                    <div className="ship-buttons">
-                        <button onClick={() => addNewWidget("Bship")}>Añadir acorazado</button>
-                    </div>
-                    <div className="ship-buttons">
-                        <button onClick={() => addNewWidget("Sub")}>Añadir submarino</button>
-                    </div>
-                    <div className="ship-buttons">
-                        <button onClick={() => addNewWidget("Destroy")}>Añadir destructor</button>
-                    </div>
-                    <div className="ship-buttons">
-                        <button onClick={() => addNewWidget("Patrol")}>Añadir patrullera</button>
-                    </div>
-                </div>
-                
             </div>
-        </div>
+        </>
     );
 }

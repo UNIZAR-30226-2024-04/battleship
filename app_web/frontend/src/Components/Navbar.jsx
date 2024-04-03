@@ -29,6 +29,8 @@ export function Navbar() {
     };
 
     return (
+        // "stretch": altura de NavBar será igual al contenido de la derecha
+        //<div style={{ display: "flex", alignItems: "stretch"}}>
         <div style={{ display: "flex", height: "100vh"}}>
             <Sidebar 
                 // Cambiar el color de fondo
