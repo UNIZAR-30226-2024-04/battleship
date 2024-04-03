@@ -815,7 +815,6 @@ exports.obtenerUsuario = async (req, res) => {
     if (perfil) {
       res.json(perfil);
       console.log("Perfil obtenido con éxito", perfil);
-      res.status(200).send('Perfil obtenido con éxito');
       // MODIFICACIÓN: NO SE DEVUELVEN TODOS LOS CAMPOS DEL PERFIL: CONTRASEÑA,... ############################################################################################
       return perfil;
     } else {

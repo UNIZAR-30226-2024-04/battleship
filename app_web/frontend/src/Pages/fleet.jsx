@@ -18,10 +18,8 @@ import aircraftImgRotated from '../Images/fleet/portaaviones_rotado.png';
 import destroyImgRotated from '../Images/fleet/destructor_rotado.png';
 
 // Establecer la url de obtenerPerfil, moverBarcoInicial del backend
-const urlObtenerPerfil = 'http://localhost:8080/obtenerUsuario';
-const urlMoverBarcoInicial = 'http://localhost:8080/moverBarcoInicial';
-
-const mongoose = require('mongoose');
+const urlObtenerPerfil = 'http://localhost:8080/perfil/obtenerUsuario';
+const urlMoverBarcoInicial = 'http://localhost:8080/perfil/moverBarcoInicial';
 
 
 export function Fleet() {    
@@ -53,8 +51,51 @@ export function Fleet() {
             cellHeight: "80px", // Establecer la altura de cada celda en 50px
         });
         setBoard(board); // Almacenar la instancia de GridStack en el estado
-        addNewWidget("Patrol");
     }, []);
+
+    // Este efecto se ejecuta cuando el board está inicializado
+    useEffect(() => {
+        // Obtener el tablero inicial del perfil en la base de datos
+        try {
+            fetch(urlObtenerPerfil, {
+                method: 'POST',
+                headers: {
+                'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ nombreId: 'usuario1' })
+            })
+            .then(response => {
+                if (!response.ok) {
+                throw new Error('La solicitud ha fallado');
+                }
+                return response.json();
+            })
+            .then(data => {
+                const tableroInicial = data.tableroInicial;
+                // const tableroInicial = [
+                //     [{ i: 1, j: 1 }, { i: 1, j: 2 }],
+                //     [{ i: 7, j: 1 }, { i: 8, j: 1 }, { i: 9, j: 1 }],
+                //     [{ i: 3, j: 10 }, { i: 4, j: 10 }, { i: 5, j: 10 }],
+                //     [{ i: 3, j: 6 }, { i: 4, j: 6 }, { i: 5, j: 6 }, { i: 6, j: 6 }],
+                //     [{ i: 10, j: 6 }, { i: 10, j: 7 }, { i: 10, j: 8 }, { i: 10, j: 9 }, { i: 10, j: 10 }]
+                //   ];
+                addNewWidgetPos("Patrol", 5, 5);
+                addNewWidgetPos("Patrol", tableroInicial[0].j-1, tableroInicial[0].i-1);
+
+
+
+
+
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                addNewWidgetPos("Patrol", 8, 9);
+            });
+        } catch (error) {
+            console.error('Error al obtener el usuario:', error);
+        }
+    }, [board]);
+
 
 
     // Función que añade un elemento a la cuadrícula
@@ -93,7 +134,7 @@ export function Fleet() {
             //content: `<div onClick={handleItemClick}>${shipName}</div>`,
             //content: '<img src={aircraftImg} />',
             // content: shipInfo[ship].name,
-            // content: `<img src="${shipInfo[ship].img}" alt="${shipInfo[ship].name}" style="width: 100%; height: 100%;" />`, // Mostrar imagen del barco con tamaño personalizado
+            content: `<img src="${shipInfo[ship].img}" alt="${shipInfo[ship].name}" style="width: 100%; height: 100%;" />`, // Mostrar imagen del barco con tamaño personalizado
             //sizeToContent: true,
             x: x,
             y: y,
@@ -111,57 +152,6 @@ export function Fleet() {
             //console.log(board['engine']['nodes'])
         }
     };
-
-
-
-
-
-
-    // // Conectarse a la base de datos para obtener el tablero inicial del perfil
-    // mongoose.connect('mongodb://localhost/BattleshipDB')
-    // .then(async () => {
-    // console.log('Conectado a MongoDB...');
-    try {
-        fetch('/obtenerUsuario', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ nombreId: 'usuario1' })
-          })
-          .then(response => {
-            if (!response.ok) {
-              throw new Error('La solicitud ha fallado');
-            }
-            return response.json();
-          })
-          .then(data => {
-            // const tableroInicial = data.tableroInicial;
-            // const tableroInicial = [
-            //     [{ i: 1, j: 1 }, { i: 1, j: 2 }],
-            //     [{ i: 7, j: 1 }, { i: 8, j: 1 }, { i: 9, j: 1 }],
-            //     [{ i: 3, j: 10 }, { i: 4, j: 10 }, { i: 5, j: 10 }],
-            //     [{ i: 3, j: 6 }, { i: 4, j: 6 }, { i: 5, j: 6 }, { i: 6, j: 6 }],
-            //     [{ i: 10, j: 6 }, { i: 10, j: 7 }, { i: 10, j: 8 }, { i: 10, j: 9 }, { i: 10, j: 10 }]
-            //   ];
-            
-            // Añadir barcos al tablero
-            addNewWidget("Patrol");
-
-
-
-
-
-          })
-          .catch(error => {
-            console.error('Error:', error);
-          });
-    } catch (error) {
-        console.error('Error al obtener el usuario:', error);
-    }
-
-
-
 
 
     // Función para manejar el clic izquierdo en los widgets del tablero
@@ -211,17 +201,18 @@ export function Fleet() {
 
 
     return (
-        <div className="fleet-page-container">
-            <Navbar/>
-            <div className="fleet-container">
-                <h1 className="fleet-banner-container">
-                    Mi flota
-                </h1>
-                <div className="fleet-main-content-container">
-                    <div className="grid-stack fleet-board" onClick={handleItemClick}></div>
+        <div>
+            <div className="fleet-page-container">
+                <Navbar/>
+                <div className="fleet-container">
+                    <h1 className="fleet-banner-container">
+                        Mi flota
+                    </h1>
+                    <div className="fleet-main-content-container">
+                        <div className="grid-stack fleet-board" onClick={handleItemClick}></div>
+                    </div>
                 </div>
-            </div>
-            <div className="ship-buttons-container">
+                <div className="ship-buttons-container">
                     <div className="ship-buttons">
                         <button onClick={() => addNewWidget("Aircraft")}>Añadir portaviones</button>
                     </div>
@@ -238,6 +229,8 @@ export function Fleet() {
                         <button onClick={() => addNewWidget("Patrol")}>Añadir patrullera</button>
                     </div>
                 </div>
+                
+            </div>
         </div>
     );
 }
