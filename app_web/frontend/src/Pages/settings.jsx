@@ -93,32 +93,3 @@ export function Settings() {
         </div>
     );
 }
-
-/*
-<div className="settings-profile-body">
-                                <div className="settings-profile-body-user-content">
-                                    <div className="settings-profile-body-user-header">
-                                        <span>Nombre de usuario</span>
-                                    </div>
-                                    <div className="settings-profile-body-user-input">
-                                        <input></input>
-                                    </div>
-                                </div>
-                                <div className="settings-profile-body-country">
-                                    <div className="settings-profile-body-country-header">
-                                        <span>País</span>
-                                    </div>
-                                    <div className="settings-profile-body-country-input"></div>
-                                </div>
-                                <div className="settings-profile-body-about">
-                                    <div className="settings-profile-body-about-header">
-                                        <span>Acerca de mí</span>
-                                    </div>
-                                    <div className="settings-profile-body-about-input">
-                                        <textarea placeholder="Introduzca su descripción..."></textarea>
-                                    </div>
-                                </div>
-                                <div className="settings-profile-body-apply"></div>
-                            </div>
-
-*/
