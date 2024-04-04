@@ -3,8 +3,7 @@ const mongoose = require('mongoose');
 // La privacidad de los datos la manejamos en el servidor/API
 
 const Schema = mongoose.Schema;
-const publicacionesPredeterminadas = require('../data/publicaciones');
-const Reacciones = require('../data/reacciones');
+const Reaccion = require('../data/reacciones');
 
 // Publicacion Schema
 const publicacionSchema = new Schema({
@@ -18,11 +17,11 @@ const publicacionSchema = new Schema({
     required: true 
   },
   texto: {              // texto de la publicación
-    type: publicacionesPredeterminadas,
+    type: String,
     required: true
   },
   reacciones: {             // Lista de reacciones a la publicacion
-    type: [Reacciones],
+    type: [Reaccion],
     default: []
   }
 });

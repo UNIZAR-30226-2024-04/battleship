@@ -1,7 +1,12 @@
 // Lista de reacciones disponibles
-const Reacciones = {
-    usuario: { type: String, required: true},
-    estado: { type: String, enum: [ 'LIKE', 'DISLIKE', 'XD', ':)', ':(', 'OK!', 'LOL', 'OMG', 'WOW'], default: 'LIKE'}
+const posiblesReacciones = [ 'LIKE', 'DISLIKE', 'XD', ':)', ':(', 'OK!', 'LOL', 'OMG', 'WOW'];
+
+const Reaccion = {
+    nombreId: { type: String, required: true },
+    estado: { type: String, enum: posiblesReacciones, required: true, default: 'LIKE'}
 };
 
-module.exports = Reacciones;
+
+
+module.exports.Reaccion = Reaccion;
+module.exports.posiblesReacciones = posiblesReacciones;

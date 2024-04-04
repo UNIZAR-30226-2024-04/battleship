@@ -118,7 +118,7 @@ crearPerfil = async (req, res) => {
     const perfilGuardado = await nuevoPerfil.save();
     // Enviar la respuesta al cliente
     res.json(perfilGuardado);
-    console.log("Perfil creado con éxito", perfilGuardado);
+    console.log("Perfil creado con éxito");
     return perfilGuardado;
   } catch (error) {
     res.status(500).send('Hubo un error');
@@ -189,7 +189,7 @@ exports.modificarDatosPersonales = async (req, res) => {
     // Verificar si el perfil existe y enviar la respuesta al cliente
     if (perfilModificado) {
       res.json(perfilModificado);
-      console.log("Perfil modificado con éxito", perfilModificado);
+      console.log("Perfil modificado con éxito");
     } else {
       res.status(404).send('No se ha encontrado el perfil a modificar');
       console.error("No se ha encontrado el perfil a modificar");
@@ -274,7 +274,7 @@ exports.registrarUsuario = async (req, res) => {  // Requiere nombreId (o _id), 
       const token = crearToken(perfil);
       // Enviar el token como respuesta al cliente
       res.json(token);
-      console.log("Usuario registrado con éxito", token);
+      console.log("Usuario registrado con éxito");
     }
   } catch (error) {
     res.status(500).send('Hubo un error');
@@ -304,7 +304,7 @@ exports.iniciarSesion = async (req, res) => { // Requiere nombreId (o _id) y con
       const token = crearToken(perfil);
       // Enviar el token como respuesta al cliente
       res.json(token);
-      console.log("Sesión iniciada con éxito", token);
+      console.log("Sesión iniciada con éxito");
     } else {
       res.status(404).send('No se ha encontrado el perfil a iniciar sesión');
       console.error("No se ha encontrado el perfil a iniciar sesión");
@@ -357,7 +357,7 @@ exports.autenticarUsuario = async (req, res) => { // Requiere nombreId y contras
         return;
       }
       res.json(perfil);
-      console.log("Perfil autenticado con éxito", perfil);
+      console.log("Perfil autenticado con éxito");
       return perfil
     } else {
       res.status(404).send('No se ha encontrado el perfil a autenticar');
@@ -440,7 +440,7 @@ exports.modificarMazo = async (req, res) => {
     // Verificar si el perfil existe y enviar la respuesta al cliente
     if (perfilModificado) {
       res.json(perfilModificado);
-      console.log("Mazo modificado con éxito", perfilModificado);
+      console.log("Mazo modificado con éxito");
     } else {
       res.status(404).send('No se ha encontrado el perfil a modificar');
       console.error("No se ha encontrado el perfil a modificar");
@@ -693,7 +693,7 @@ exports.actualizarEstadisticas = async (req, res) => {
     // Verificar si el perfil existe y enviar la respuesta al cliente
     if (perfilModificado) {
       res.json(perfilModificado);
-      console.log("Perfil modificado con éxito", perfilModificado);
+      console.log("Perfil modificado con éxito");
     } else {
       res.status(404).send('No se ha encontrado el perfil a actualizar');
       console.error("No se ha encontrado el perfil a actualizar");
@@ -756,7 +756,7 @@ exports.actualizarPuntosExperiencia = async (req, res) => {
     // Verificar si el perfil existe y enviar la respuesta al cliente
     if (perfilModificado) {
       res.json(perfilModificado);
-      console.log("Perfil modificado con éxito", perfilModificado);
+      console.log("Perfil modificado con éxito");
     } else {
       res.status(404).send('No se ha encontrado el perfil a actualizar');
       console.error("No se ha encontrado el perfil a actualizar");
@@ -804,7 +804,7 @@ exports.obtenerUsuario = async (req, res) => {
     // Verificar si el perfil existe y enviar la respuesta al cliente
     if (perfil) {
       res.json(perfil);
-      console.log("Perfil obtenido con éxito", perfil);
+      console.log("Perfil obtenido con éxito");
       // MODIFICACIÓN: NO SE DEVUELVEN TODOS LOS CAMPOS DEL PERFIL: CONTRASEÑA,... ############################################################################################
       return perfil;
     } else {
