@@ -3,7 +3,8 @@ const bcrypt = require('bcrypt'); // Para hash de constraseña
 const jwt = require('jsonwebtoken'); // Para generar tokens JWT
 const crypto = require('crypto'); // Para generar claves secretas
 const habilidadesDisponibles = require('../data/habilidades')
-const Coordenada = require('../data/coordenada')
+const Coordenada = require('../data/coordenada');
+const { config } = require('../config/auth.config');
 
 const tableroDim = Coordenada.i.max;  // Dimensiones del tablero
 
@@ -30,12 +31,20 @@ function esNumero(numero) {
 
 // Funcion para crear un token de sesión
 function crearToken(perfil) {
-  // Generar bytes aleatorios para la clave privada
-  const clavePrivadaBuffer = crypto.randomBytes(32);
-  const clavePrivada = clavePrivadaBuffer.toString('hex');
   // Si el nombre de usuario y la contraseña son válidos, generar un token JWT
-  const token = jwt.sign(perfil.toJSON(), clavePrivada);
+  const token = jwt.sign({id: perfil.nombreId}, config.secret, 
+    { algorithm: 'HS256', expiresIn: 86400 }); // Expira en 24 horas
   return token;
+}
+
+// Funcion para comprobar un token de sesión
+function comprobarToken(token) {
+  try {
+    const perfil = jwt.verify(token, clavePrivada);
+    return perfil;
+  } catch (error) {
+    return null;
+  }
 }
 
 
@@ -273,7 +282,10 @@ exports.registrarUsuario = async (req, res) => {  // Requiere nombreId (o _id), 
     if (perfil) {
       const token = crearToken(perfil);
       // Enviar el token como respuesta al cliente
-      res.json(token);
+      perfilDevuelto = perfil;
+      perfilDevuelto.contraseña = undefined; // No enviar la contraseña en la respuesta
+      perfilDevuelto.token = token;
+      res.json(perfilDevuelto);
       console.log("Usuario registrado con éxito");
     }
   } catch (error) {
@@ -303,7 +315,10 @@ exports.iniciarSesion = async (req, res) => { // Requiere nombreId (o _id) y con
     if (perfil) {
       const token = crearToken(perfil);
       // Enviar el token como respuesta al cliente
-      res.json(token);
+      perfilDevuelto = perfil;
+      perfilDevuelto.contraseña = undefined; // No enviar la contraseña en la respuesta
+      perfilDevuelto.token = token;
+      res.json(perfilDevuelto);
       console.log("Sesión iniciada con éxito");
     } else {
       res.status(404).send('No se ha encontrado el perfil a iniciar sesión');
@@ -803,9 +818,15 @@ exports.obtenerUsuario = async (req, res) => {
     const perfil = await Perfil.findOne(filtro);
     // Verificar si el perfil existe y enviar la respuesta al cliente
     if (perfil) {
-      res.json(perfil);
+      const perfilDevuelto = perfil;
+      perfilDevuelto.contraseña = undefined; // No enviar la contraseña en la respuesta
+      perfilDevuelto.listaAmigos = undefined; // No enviar la lista de amigos en la respuesta
+      perfilDevuelto.listaSolicitudes = undefined; // No enviar la lista de solicitudes en la respuesta
+      perfilDevuelto.tableroInicial = undefined; // No enviar el tablero inicial en la respuesta
+      perfilDevuelto.mazoHabilidades = undefined; // No enviar el mazo de habilidades en la respuesta
+      perfilDevuelto.correo = undefined; // No enviar el correo en la respuesta
+      res.json(perfilDevuelto);
       console.log("Perfil obtenido con éxito");
-      // MODIFICACIÓN: NO SE DEVUELVEN TODOS LOS CAMPOS DEL PERFIL: CONTRASEÑA,... ############################################################################################
       return perfil;
     } else {
       res.status(404).send('No se ha encontrado el perfil a obtener');
