@@ -1,17 +1,33 @@
 import 'package:battleship/tablero.dart';
 import 'package:flutter/material.dart';
 import 'barco.dart';
+import 'habilidad.dart';
+import 'perfil.dart';
 
 class Juego {
   Tablero tablero_jugador1 = Tablero();
   Tablero tablero_jugador2 = Tablero();
-  int numBarcos = 5;  // Número de barcos que tiene cada jugador
-  int barcosRestantesJugador1 = 0;  // Número de barcos que tiene el jugador 1
-  int barcosRestantesJugador2 = 0;  // Número de barcos que tiene el jugador 2
-  int turno = 1;  // 1: Jugador 1, 2: Jugador 2
-  List<bool> barcosJugador1 = [];  // Barcos que tiene el jugador 1
-  List<bool> barcosJugador2 = [];  // Barcos que tiene el jugador 2
-  int ganador = 0;  // 0: No hay ganador, 1: Jugador 1, 2: Jugador 2
+  int numBarcos = 5;
+  int barcosRestantesJugador1 = 0;
+  int barcosRestantesJugador2 = 0;
+  int turno = 1;
+  List<bool> barcosJugador1 = [];
+  List<bool> barcosJugador2 = [];
+  int ganador = 0;
+  List<Habilidad> habilidadesJugador1 = [];   // habilidades en el mazo del jugador 1
+  List<Habilidad> habilidadesJugador2 = [];   // habilidades en el mazo del jugador 2
+  Perfil perfilJugador1 = Perfil();
+  Perfil perfilJugador2 = Perfil();
+  List<bool> habilidadesUtilizadasJugador1 = [];
+  List<bool> habilidadesUtilizadasJugador2 = [];
+  int disparosPendientes = 0; // disparo básico 1. Habilidades depende
+  bool habilidadSeleccionadaEnTurno = false;
+  int numHabilidades = 3;
+  int numAtaques = 0; // número de ataques en total
+  int numAtaquesJugador1 = 0;
+  int numAtaquesJugador2 = 0;
+  int indexHabilidad = 0;
+
 
   // Instancia privada y estática del singleton
   static final Juego _singleton = Juego._internal();
@@ -26,9 +42,22 @@ class Juego {
     turno = 1;
     barcosJugador1 = List.filled(numBarcos, true);
     barcosJugador2 = List.filled(numBarcos, true);
+    perfilJugador1 = Perfil(turno: 1);
+    perfilJugador2 = Perfil(turno: 2);
+    habilidadesJugador1 = perfilJugador1.getHabilidadesSeleccionadas();
+    habilidadesJugador2 = perfilJugador2.getHabilidadesSeleccionadas();
+    habilidadesUtilizadasJugador1 = List.filled(habilidadesJugador1.length, false);
+    habilidadesUtilizadasJugador2 = List.filled(habilidadesJugador2.length, false);
+    disparosPendientes = 1;
+    habilidadSeleccionadaEnTurno = false;
+    numHabilidades = 3;
+    numAtaques = 0;
+    numAtaquesJugador1 = 0;
+    numAtaquesJugador2 = 0;
+    indexHabilidad = 0;
   }
 
-  // Constructor de fábrica
+  // Método para obtener la instancia del singleton
   factory Juego() {
     return _singleton;
   }
@@ -142,5 +171,42 @@ class Juego {
     dy = dy + height / Juego().tablero_jugador.casillaSize > Juego().tablero_jugador.numFilas ? Juego().tablero_jugador.numFilas - height / Juego().tablero_jugador.casillaSize : dy;
 
     return Offset(dx, dy);
+  }
+
+  // Getter de habilidades
+  List<Habilidad> getHabilidadesJugador() {
+    return turno == 1 ? habilidadesJugador1 : habilidadesJugador2;
+  }
+
+  List<Habilidad> getHabilidadesOponente() {
+    return turno == 1 ? habilidadesJugador2 : habilidadesJugador1;
+  }
+
+  List<bool> getHabilidadesUtilizadasJugador() {
+    return turno == 1 ? habilidadesUtilizadasJugador1 : habilidadesUtilizadasJugador2;
+  }
+
+  List<bool> getHabilidadesUtilizadasOponente() {
+    return turno == 1 ? habilidadesUtilizadasJugador2 : habilidadesUtilizadasJugador1;
+  }
+
+  int getNumAtaques() {
+    return numAtaques;
+  }
+
+  void contabilizarAtaque() {
+    print("CONTABILIZAR ATAQUE");
+    if (turno == 1) {
+      numAtaquesJugador1++;
+    } else {
+      numAtaquesJugador2++;
+    }
+    numAtaques++;
+  }
+
+  void callbackAtaque() {
+    for (int i = 0; i < numHabilidades; i++) {
+      getHabilidadesJugador()[i].informarHabilidad();
+    }
   }
 }

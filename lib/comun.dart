@@ -8,48 +8,42 @@ import 'perfil.dart';
 
 // Panel superior.
 Widget buildHeader(BuildContext context) {
-  return Row(
-    children: [
-      const Padding(
-        padding: EdgeInsets.only(left: 20),
-        child: Image(
-          image: AssetImage('images/logo.png'),
-          width: 100,
-          height: 100,
-          alignment: Alignment.topLeft,
-        ),
-      ),
-      const Spacer(),
-      Transform.translate(
-        offset: const Offset(0, -20),
-        child: const Image(
-          image: AssetImage('images/battleship.png'),
-          width: 150,
-          height: 150,
-          alignment: Alignment.center,
-        ),
-      ),
-      const Spacer(),
-      Padding(
-        padding: const EdgeInsets.only(right: 20),
-        child: GestureDetector(
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const Perfil()),
-            );
-          },
-          child: const Image(
-            image: AssetImage('images/perfil.png'),
-            width: 100,
-            height: 100,
-            alignment: Alignment.topRight,
+  return Transform.translate(
+    offset: const Offset(0, 10),
+    child: Row(
+      children: [
+        const Padding(
+          padding: EdgeInsets.only(left: 20),
+          child: Image(
+            image: AssetImage('images/logo.png'),
+            width: 55,
+            height: 55,
+            alignment: Alignment.topLeft,
           ),
         ),
-      ),
-    ],
+        const Spacer(),
+        Padding(
+          padding: const EdgeInsets.only(right: 20),
+          child: GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => Perfil()),
+              );
+            },
+            child: const Image(
+              image: AssetImage('images/perfil.png'),
+              width: 70,
+              height: 70,
+              alignment: Alignment.topRight,
+            ),
+          ),
+        ),
+      ],
+    ),
   );
 }
+
 
 // Panel inferior.
 Widget buildActions(BuildContext context) {

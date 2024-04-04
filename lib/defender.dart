@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:battleship/juego.dart';
 import 'package:flutter/material.dart';
 import 'comun.dart';
@@ -24,7 +23,13 @@ class _DefenderState extends State<Defender> {
 
   void iniciarTransicionAutomatica() {
     Timer(const Duration(seconds: 2), () {
-      Juego().cambiarTurno();
+      setState(() {
+        Juego().contabilizarAtaque();
+        Juego().callbackAtaque();
+        Juego().disparosPendientes = 1;
+        Juego().habilidadSeleccionadaEnTurno = false;
+        Juego().cambiarTurno();
+      });
       DestinoManager.setDestino(const Atacar());
       Navigator.push(
         context,
@@ -47,6 +52,7 @@ class _DefenderState extends State<Defender> {
         body: Column(
           children: [
             buildHeader(context),
+            const Spacer(),
             _construirBarcosRestantes(),
             _construirTableroConBarcosDefensa(),
             const Spacer(),
@@ -59,7 +65,7 @@ class _DefenderState extends State<Defender> {
 
   Widget _construirBarcosRestantes() {
     return Container(
-      padding: EdgeInsets.all(10),
+      padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
         color: Colors.blue.shade900.withOpacity(0.6),
         borderRadius: BorderRadius.circular(10),
@@ -68,7 +74,7 @@ class _DefenderState extends State<Defender> {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           buildTitle('Tus barcos restantes: ${Juego().getBarcosRestantesOponente()}', 16),
-          SizedBox(height: 10),
+          const SizedBox(height: 10),
           Wrap(
             alignment: WrapAlignment.center,
             children: [
@@ -77,7 +83,7 @@ class _DefenderState extends State<Defender> {
                   Column(
                     children: [
                       Padding(
-                        padding: EdgeInsets.all(5),
+                        padding: const EdgeInsets.all(5),
                         child: Image.asset(
                           'images/${Juego().tablero_oponente.barcos[i].nombre}.png', 
                           width: 50, 
@@ -85,10 +91,10 @@ class _DefenderState extends State<Defender> {
                         ),
                       ),
                       Padding(
-                        padding: EdgeInsets.all(5), 
+                        padding: const EdgeInsets.all(5), 
                         child: Text(
                           Juego().tablero_oponente.barcos[i].longitud.toString(),
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 15,
                             color: Colors.white,
                           ),
