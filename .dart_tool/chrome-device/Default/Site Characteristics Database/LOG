@@ -1,4 +1,13 @@
-2024/04/04-01:13:45.486 2ec0 Reusing MANIFEST C:\Users\xavie\AppData\Local\Temp\flutter_tools.a93607df\flutter_tools_chrome_device.162ef8cf\Default\Site Characteristics Database/MANIFEST-000001
-2024/04/04-01:13:45.486 2ec0 Recovering log #6
-2024/04/04-01:13:45.486 2ec0 Reusing old log C:\Users\xavie\AppData\Local\Temp\flutter_tools.a93607df\flutter_tools_chrome_device.162ef8cf\Default\Site Characteristics Database/000006.log 
-2024/04/04-01:13:45.487 2ec0 Delete type=0 #3
+2024/04/04-20:41:10.401 4844 Reusing MANIFEST C:\Users\xavie\AppData\Local\Temp\flutter_tools.3cf306ec\flutter_tools_chrome_device.308583a9\Default\Site Characteristics Database/MANIFEST-000001
+2024/04/04-20:41:10.401 4844 Recovering log #3
+2024/04/04-20:41:10.401 4844 Level-0 table #13: started
+2024/04/04-20:41:10.406 4844 Level-0 table #13: 874 bytes OK
+2024/04/04-20:41:10.406 4844 Recovering log #6
+2024/04/04-20:41:10.413 4844 Level-0 table #14: started
+2024/04/04-20:41:10.417 4844 Level-0 table #14: 1381 bytes OK
+2024/04/04-20:41:10.417 4844 Recovering log #10
+2024/04/04-20:41:10.418 4844 Reusing old log C:\Users\xavie\AppData\Local\Temp\flutter_tools.3cf306ec\flutter_tools_chrome_device.308583a9\Default\Site Characteristics Database/000010.log 
+2024/04/04-20:41:10.419 4844 Delete type=0 #3
+2024/04/04-20:41:10.419 4844 Delete type=2 #4
+2024/04/04-20:41:10.419 4844 Delete type=2 #6
+2024/04/04-20:41:10.419 4844 Delete type=0 #6

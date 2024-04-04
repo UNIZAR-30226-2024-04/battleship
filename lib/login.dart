@@ -85,24 +85,33 @@ class _InicioSesionState extends State<InicioSesion> {
   }
 
   void _handleRegistrarsePressed(BuildContext context) {
-    Navigator.push(
+    Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => Registro()),
+      PageRouteBuilder(
+        pageBuilder: (context, animation1, animation2) => Registro(),
+        transitionDuration: Duration(seconds: 0),
+      ),
     );
   }
 
   void _handleRecContrasenaPressed(BuildContext context) {
-      Navigator.push(
+    Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => const RecuperacionContrasena()),
+      PageRouteBuilder(
+        pageBuilder: (context, animation1, animation2) => RecuperacionContrasena(),
+        transitionDuration: Duration(seconds: 0),
+      ),
     );
   }
 
   void _handlePressed(BuildContext context, AuthProvider authProvider) {
     if(_authProvider.authenticate(_emailController.text, _passwordController.text)) {
-      Navigator.push(
+      Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => DestinoManager.getDestino()),
+        PageRouteBuilder(
+          pageBuilder: (context, animation1, animation2) => DestinoManager.getDestino(),
+          transitionDuration: Duration(seconds: 0),
+        ),
       );
     }
   }

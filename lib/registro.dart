@@ -62,9 +62,12 @@ class Registro extends StatelessWidget {
   }
 
   void _handleIniciarSesionPressed(BuildContext context) {
-    Navigator.push(
+    Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => const InicioSesion()),
+      PageRouteBuilder(
+        pageBuilder: (context, animation1, animation2) => InicioSesion(),
+        transitionDuration: Duration(seconds: 0),
+      ),
     );
   }
 
@@ -81,9 +84,12 @@ class Registro extends StatelessWidget {
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
     }
     else if(_authProvider.signUp(_emailController.text, _passwordController.text, _nameController.text)) {
-      Navigator.push(
+      Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => DestinoManager.getDestino()),
+        PageRouteBuilder(
+          pageBuilder: (context, animation1, animation2) => DestinoManager.getDestino(),
+          transitionDuration: Duration(seconds: 0),
+        ),
       );
     }
   }

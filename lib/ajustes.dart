@@ -52,9 +52,12 @@ class Ajustes extends StatelessWidget {
 
   void _handlePressed(BuildContext context, AuthProvider authProvider) {
     authProvider.logOut();
-    Navigator.push(
+    Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => Principal()),
+      PageRouteBuilder(
+        pageBuilder: (context, animation1, animation2) => Principal(),
+        transitionDuration: Duration(seconds: 0),
+      ),
     );
   }
 }

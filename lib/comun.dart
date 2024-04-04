@@ -26,9 +26,12 @@ Widget buildHeader(BuildContext context) {
           padding: const EdgeInsets.only(right: 20),
           child: GestureDetector(
             onTap: () {
-              Navigator.push(
+              Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(builder: (context) => Perfil()),
+                PageRouteBuilder(
+                  pageBuilder: (context, animation1, animation2) => Perfil(),
+                  transitionDuration: Duration(seconds: 0),
+                ),
               );
             },
             child: const Image(
@@ -54,33 +57,48 @@ Widget buildActions(BuildContext context) {
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           _buildActionItem('Jugar', 'images/jugar.png', () {
-            Navigator.push(
+            Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (context) => Principal()),
+              PageRouteBuilder(
+                pageBuilder: (context, animation1, animation2) => Principal(),
+                transitionDuration: Duration(seconds: 0),
+              ),
             );
           }),
           _buildActionItem('Habilidades', 'images/habilidad.png', () {
-            Navigator.push(
+            Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (context) => const Habilidades()),
+              PageRouteBuilder(
+                pageBuilder: (context, animation1, animation2) => Habilidades(),
+                transitionDuration: Duration(seconds: 0),
+              ),
             );
           }),
           _buildActionItem('Flota', 'images/flota.png', () {
-            Navigator.push(
+            Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (context) => const Flota()),
+              PageRouteBuilder(
+                pageBuilder: (context, animation1, animation2) => Flota(),
+                transitionDuration: Duration(seconds: 0),
+              ),
             );
           }),
           _buildActionItem('Social', 'images/social.png', () {
-            Navigator.push(
+            Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (context) => const Social()),
+              PageRouteBuilder(
+                pageBuilder: (context, animation1, animation2) => Social(),
+                transitionDuration: Duration(seconds: 0),
+              ),
             );
           }),
           _buildActionItem('Ajustes', 'images/ajustes.png', () {
-            Navigator.push(
+            Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (context) => Ajustes()),
+              PageRouteBuilder(
+                pageBuilder: (context, animation1, animation2) => Ajustes(),
+                transitionDuration: Duration(seconds: 0),
+              ),
             );
           }),
         ],

@@ -317,9 +317,12 @@ class _AtacarState extends State<Atacar> {
           print("¡Juego terminado!");
           print("¡Ganador: ${Juego().getGanador()}!");
           Juego().reiniciarPartida();
-          Navigator.push(
+          Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (context) => Principal()),
+            PageRouteBuilder(
+              pageBuilder: (context, animation1, animation2) => Principal(),
+              transitionDuration: Duration(seconds: 0),
+            ),
           );
         }
       }
@@ -332,9 +335,12 @@ class _AtacarState extends State<Atacar> {
       Juego().habilidadSeleccionadaEnTurno = false;
       Juego().cambiarTurno();
       DestinoManager.setDestino(const Defender());
-      Navigator.push(
+      Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const Defender()),
+        PageRouteBuilder(
+          pageBuilder: (context, animation1, animation2) => Defender(),
+          transitionDuration: Duration(seconds: 0),
+        ),
       );
     }
   }

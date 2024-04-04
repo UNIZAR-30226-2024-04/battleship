@@ -65,14 +65,20 @@ class Principal extends StatelessWidget {
 void _handleOnlinePressed(BuildContext context, AuthProvider authProvider) {
   DestinoManager.setDestino(const ColocarBarcos());
   if (!authProvider.isLoggedIn) {
-    Navigator.push(
+    Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => const InicioSesion()),
+      PageRouteBuilder(
+        pageBuilder: (context, animation1, animation2) => InicioSesion(),
+        transitionDuration: Duration(seconds: 0),
+      ),
     );
   } else {
-    Navigator.push(
+    Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => const ColocarBarcos()),
+      PageRouteBuilder(
+        pageBuilder: (context, animation1, animation2) => ColocarBarcos(),
+        transitionDuration: Duration(seconds: 0),
+      ),
     );
   }
 }
@@ -80,14 +86,20 @@ void _handleOnlinePressed(BuildContext context, AuthProvider authProvider) {
 void _handleOfflinePressed(BuildContext context, AuthProvider authProvider) {
   DestinoManager.setDestino(const ColocarBarcos());
   if (!authProvider.isLoggedIn) {
-    Navigator.push(
+    Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => const InicioSesion()),
+      PageRouteBuilder(
+        pageBuilder: (context, animation1, animation2) => InicioSesion(),
+        transitionDuration: Duration(seconds: 0),
+      ),
     );
   } else {
-    Navigator.push(
+    Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => const ColocarBarcos()),
+      PageRouteBuilder(
+        pageBuilder: (context, animation1, animation2) => ColocarBarcos(),
+        transitionDuration: Duration(seconds: 0),
+      ),
     );
   }
 }

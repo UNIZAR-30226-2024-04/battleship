@@ -77,8 +77,9 @@ class _ColocarBarcosState extends State<ColocarBarcos> {
                   },
                   onPanUpdate: (details) {
                     setState(() {
-                      var newDx = (barco.barcoPosition.dx + details.delta.dx / Juego().tablero_jugador.casillaSize);
-                      var newDy = (barco.barcoPosition.dy + details.delta.dy / Juego().tablero_jugador.casillaSize);
+                      // ¡¡ GestureDetector interpreta (columna, fila) en lugar de (fila, columna) !!
+                      var newDx = (barco.barcoPosition.dx + details.delta.dy / Juego().tablero_jugador.casillaSize);
+                      var newDy = (barco.barcoPosition.dy + details.delta.dx / Juego().tablero_jugador.casillaSize);
 
                       barco.barcoPosition = Offset(newDx, newDy);
                       barco.barcoPosition = Juego().boundPosition(barco.barcoPosition, barco.getHeight(Juego().tablero_jugador.casillaSize), barco.getWidth(Juego().tablero_jugador.casillaSize));
@@ -172,9 +173,12 @@ class _ColocarBarcosState extends State<ColocarBarcos> {
 
   void _handlePressed(BuildContext context) {
     DestinoManager.setDestino(const Atacar());
-    Navigator.push(
+    Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => const Atacar()),
+      PageRouteBuilder(
+        pageBuilder: (context, animation1, animation2) => const Atacar(),
+        transitionDuration: Duration(seconds: 0),
+      ),
     );
   }
 }

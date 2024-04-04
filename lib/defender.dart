@@ -31,9 +31,12 @@ class _DefenderState extends State<Defender> {
         Juego().cambiarTurno();
       });
       DestinoManager.setDestino(const Atacar());
-      Navigator.push(
+      Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const Atacar()),
+        PageRouteBuilder(
+          pageBuilder: (context, animation1, animation2) => Atacar(),
+          transitionDuration: Duration(seconds: 0),
+        ),
       );
     });
   }
