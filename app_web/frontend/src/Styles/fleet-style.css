@@ -24,6 +24,10 @@
     background-color: transparent;
 }
 
+.grid-stack-item-content {
+    overflow: hidden;
+}
+
 .border-dark {
     border: 2px solid rgb(255, 170, 0);
     background-color: rgb(58, 164, 16);

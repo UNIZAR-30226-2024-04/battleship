@@ -22,6 +22,11 @@ const urlObtenerPerfil = 'http://localhost:8080/perfil/obtenerUsuario';
 const urlMoverBarcoInicial = 'http://localhost:8080/perfil/moverBarcoInicial';
 
 
+function esBarcoHorizontal(barco) {
+    return barco[0].i === barco[1].i;
+}
+
+
 export function Fleet() {    
     // Contiene el tamaño y nombre de los barcos a usar
     const shipInfo = {
@@ -71,7 +76,7 @@ export function Fleet() {
                 return response.json();
             })
             .then(data => {
-                const tableroInicial = data.tableroInicial;
+                let tableroInicial = data.tableroInicial;
                 // const tableroInicial = [
                 //     [{ i: 1, j: 1 }, { i: 1, j: 2 }],
                 //     [{ i: 7, j: 1 }, { i: 8, j: 1 }, { i: 9, j: 1 }],
@@ -79,20 +84,40 @@ export function Fleet() {
                 //     [{ i: 3, j: 6 }, { i: 4, j: 6 }, { i: 5, j: 6 }, { i: 6, j: 6 }],
                 //     [{ i: 10, j: 6 }, { i: 10, j: 7 }, { i: 10, j: 8 }, { i: 10, j: 9 }, { i: 10, j: 10 }]
                 //   ];
-                addNewWidgetPos("Patrol", 5, 5);
-                addNewWidgetPos("Patrol", tableroInicial[0].j-1, tableroInicial[0].i-1);
+                addNewWidgetPos("Patrol", tableroInicial[0][0].j-1, tableroInicial[0][0].i-1, esBarcoHorizontal(tableroInicial[0]));
+                addNewWidgetPos("Destroy", tableroInicial[1][0].j-1, tableroInicial[1][0].i-1, esBarcoHorizontal(tableroInicial[1]));
+                addNewWidgetPos("Sub", tableroInicial[2][0].j-1, tableroInicial[2][0].i-1, esBarcoHorizontal(tableroInicial[2]));
+                addNewWidgetPos("Bship", tableroInicial[3][0].j-1, tableroInicial[3][0].i-1, esBarcoHorizontal(tableroInicial[3]));
+                addNewWidgetPos("Aircraft", tableroInicial[4][0].j-1, tableroInicial[4][0].i-1, esBarcoHorizontal(tableroInicial[4]));
+                
 
+                // fetch(urlMoverBarcoInicial, {
+                //     method: 'POST',
+                //     headers: {
+                //     'Content-Type': 'application/json'
+                //     },
+                //     body: JSON.stringify({ nombreId: 'usuario1',  barcoId: 0, iProaNueva: , jProaNueva: , rotar: })
+                // })
+                // .then(response => {
+                //     if (!response.ok) {
+                //     throw new Error('La solicitud ha fallado');
+                //     }
+                //     return response.json();
+                // })
+                // .then(data => {
+                //     let tableroInicial = data.tableroInicial;
+                //      if (tableroInicial) {}
 
+                // })
 
 
 
             })
             .catch(error => {
                 console.error('Error:', error);
-                addNewWidgetPos("Patrol", 8, 9);
             });
         } catch (error) {
-            console.error('Error al obtener el usuario:', error);
+            console.error('Error:', error);
         }
     }, [board]);
 
@@ -104,10 +129,11 @@ export function Fleet() {
         const node = {
             id: String(count),      // id para identificar el widget
             locked: true,           // inmutable por otros widgets
+            noResize: true,
             //content: `<div onClick={handleItemClick}>${shipName}</div>`,
             //content: '<img src={aircraftImg} />',
             // content: shipInfo[ship].name,
-            content: `<img src="${shipInfo[ship].img}" alt="${shipInfo[ship].name}" style="width: 100%; height: 100%;" />`, // Mostrar imagen del barco con tamaño personalizado
+            content: `<img src="${shipInfo[ship].img}" alt="${shipInfo[ship].name}" style="width: 100%; height: 100%; overflow: hidden;" />`, // Mostrar imagen del barco con tamaño personalizado
             //sizeToContent: true,
             x: Math.round((boardDimension - 1) * Math.random()),
             y: Math.round((boardDimension - 1) * Math.random()),
@@ -126,7 +152,7 @@ export function Fleet() {
     };
 
     // Función que añade un elemento a la cuadrícula
-    const addNewWidgetPos = (ship, x, y) => {
+    const addNewWidgetPos = (ship, x, y, esHorizontal) => {
         //const shipName = shipInfo[ship].name;
         const node = {
             id: String(count),      // id para identificar el widget
@@ -134,14 +160,18 @@ export function Fleet() {
             //content: `<div onClick={handleItemClick}>${shipName}</div>`,
             //content: '<img src={aircraftImg} />',
             // content: shipInfo[ship].name,
-            content: `<img src="${shipInfo[ship].img}" alt="${shipInfo[ship].name}" style="width: 100%; height: 100%;" />`, // Mostrar imagen del barco con tamaño personalizado
+            content: `<img src="${shipInfo[ship].img}" alt="${shipInfo[ship].name}" style="width: 100%; height: 100%; overflow: hidden;" />`, // Mostrar imagen del barco con tamaño personalizado
             //sizeToContent: true,
             x: x,
             y: y,
-            // w: shipInfo[ship].size,
-            w: 2,
+            w: shipInfo[ship].size,
             h: 1,
         };
+        if (!esHorizontal) {
+            node.content = `<img src="${shipInfo[ship].imgRotated}" alt="${shipInfo[ship].name}" style="width: 100%; height: 100%;" />`;
+            node.w = 1;
+            node.h = shipInfo[ship].size;
+        }
         if (board) {    // El tablero está inicializado
             board.addWidget(node);   // Añadir widget a la cuadrícula
             setCount(prevCount => prevCount + 1); // Incrementar el contador
@@ -182,10 +212,10 @@ export function Fleet() {
             
             if (rotatedWidget.h > rotatedWidget.w) {
                 // Poner la imagen rotada
-                rotatedWidget.content = `<img src="${shipInfo[shipType].imgRotated}" alt="${shipInfo[shipType].name}" style="width: 100%; height: 100%;" />`;
+                rotatedWidget.content = `<img src="${shipInfo[shipType].imgRotated}" alt="${shipInfo[shipType].name}" style="width: 100%; height: 100%; overflow: hidden;" />`;
             } else {
                 // Poner la imagen normal
-                rotatedWidget.content = `<img src="${shipInfo[shipType].img}" alt="${shipInfo[shipType].name}" style="width: 100%; height: 100%;" />`;
+                rotatedWidget.content = `<img src="${shipInfo[shipType].img}" alt="${shipInfo[shipType].name}" style="width: 100%; height: 100%; overflow: hidden;" />`;
             }
             if (widgetTarget) {   // Si no ha dado error
                 board.update(widgetTarget, rotatedWidget)

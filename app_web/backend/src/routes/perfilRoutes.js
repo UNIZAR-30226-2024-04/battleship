@@ -1,6 +1,17 @@
 const express = require('express');
 const router = express.Router();
 const perfilController = require('../controllers/perfilController');
+const verificarToken = require('../middlewares/authjwt');
+const verificarRegistro = require('../middlewares/verificarRegistro');
+
+// Ruta para registrar usuario
+router.post('/registro', verificarRegistro, perfilController.registrarUsuario);
+// Ruta para iniciar sesión
+router.post('/inicioSesion', perfilController.iniciarSesion);
+// Ruta para modificar perfil
+//router.post('/modificarPerfil', verificarToken, perfilController.modificarPerfil);
+// Ruta para obtener perfil
+//router.get('/obtenerPerfil', perfilController.obtenerPerfil);
 
 // Ruta para crear perfil
 // router.post('../perfil', perfilController.crearPerfil);

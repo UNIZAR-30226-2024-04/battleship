@@ -3,8 +3,18 @@ const bcrypt = require('bcrypt'); // Para hash de constraseña
 const jwt = require('jsonwebtoken'); // Para generar tokens JWT
 const crypto = require('crypto'); // Para generar claves secretas
 const habilidadesDisponibles = require('../data/habilidades')
-const Coordenada = require('../data/coordenada')
-
+const Coordenada = require('../data/coordenada');
+const { config } = require('../config/auth.config');
+/**
+ * @module perfilController
+ * @description Funciones para el manejo de perfiles de usuario.
+ * @see module:perfilModel
+ * @requires bcrypt
+ * @requires jsonwebtoken
+ * @requires config
+ * @requires module:perfilModel
+ * 
+ */
 const tableroDim = Coordenada.i.max;  // Dimensiones del tablero
 
 /*--------------------------------------------------------------------------------------------------------------------*/
@@ -30,12 +40,20 @@ function esNumero(numero) {
 
 // Funcion para crear un token de sesión
 function crearToken(perfil) {
-  // Generar bytes aleatorios para la clave privada
-  const clavePrivadaBuffer = crypto.randomBytes(32);
-  const clavePrivada = clavePrivadaBuffer.toString('hex');
   // Si el nombre de usuario y la contraseña son válidos, generar un token JWT
-  const token = jwt.sign(perfil.toJSON(), clavePrivada);
+  const token = jwt.sign({id: perfil.nombreId}, config.secret, 
+    { algorithm: 'HS256', expiresIn: 86400 }); // Expira en 24 horas
   return token;
+}
+
+// Funcion para comprobar un token de sesión
+function comprobarToken(token) {
+  try {
+    const perfil = jwt.verify(token, clavePrivada);
+    return perfil;
+  } catch (error) {
+    return null;
+  }
 }
 
 
@@ -43,19 +61,20 @@ function crearToken(perfil) {
 /*------------------------------------------------ PERFIL BÁSICO  ----------------------------------------------------*/
 /*--------------------------------------------------------------------------------------------------------------------*/
 
-/**
- * @description Crea un nuevo perfil con el nombre, la contraseña hasheada y el correo.
- * @param {Object} req - El objeto de solicitud HTTP.
- * @param {string} req.body.nombreId - El nombre debe ser nuevo en la base de datos.
- * @param {string} req.body.contraseña - La contraseña debe tener al menos 8 caracteres, 1 minúsucla, 1 mayúscula, 1 dígito y un caracter especial.
- * @param {string} req.body.correo - El correo debe tener un formato válido.
- * @param {Object} res - El objeto de respuesta HTTP.
- * @example
- * perfil = { nombreId: 'usuario1', contraseña: 'Passwd1.', correo: 'usuario1@example.com' };
- * const req = { body: perfil };
- * const res = { json: () => {}, status: () => ({ send: () => {} }) }; // No hace nada
- * await crearPerfil(req, res);
- */
+// /**
+//  * @memberof module:perfilController
+//  * @description Crea un nuevo perfil con el nombre, la contraseña hasheada y el correo.
+//  * @param {Object} req - El objeto de solicitud HTTP.
+//  * @param {string} req.body.nombreId - El nombre debe ser nuevo en la base de datos.
+//  * @param {string} req.body.contraseña - La contraseña debe tener al menos 8 caracteres, 1 minúsucla, 1 mayúscula, 1 dígito y un caracter especial.
+//  * @param {string} req.body.correo - El correo debe tener un formato válido.
+//  * @param {Object} res - El objeto de respuesta HTTP.
+//  * @example
+//  * perfil = { nombreId: 'usuario1', contraseña: 'Passwd1.', correo: 'usuario1@example.com' };
+//  * const req = { body: perfil };
+//  * const res = { json: () => {}, status: () => ({ send: () => {} }) }; // No hace nada
+//  * await crearPerfil(req, res);
+//  */
 crearPerfil = async (req, res) => {
   try {
     // Extracción de parámetros del cuerpo de la solicitud
@@ -118,8 +137,7 @@ crearPerfil = async (req, res) => {
     const perfilGuardado = await nuevoPerfil.save();
     // Enviar la respuesta al cliente
     res.json(perfilGuardado);
-    res.status(200).send('Perfil creado con éxito');
-    console.log("Perfil creado con éxito", perfilGuardado);
+    console.log("Perfil creado con éxito");
     return perfilGuardado;
   } catch (error) {
     res.status(500).send('Hubo un error');
@@ -128,6 +146,7 @@ crearPerfil = async (req, res) => {
 };
 
 /**
+ * @memberof module:perfilController
  * @description Modifica la contraseña y/o el correo de un perfil identificado por _id o nombreId.
  * @param {Object} req - El objeto de solicitud HTTP.
  * @param {string} [req.body._id] - El perfil debe existir en la base de datos.
@@ -190,8 +209,7 @@ exports.modificarDatosPersonales = async (req, res) => {
     // Verificar si el perfil existe y enviar la respuesta al cliente
     if (perfilModificado) {
       res.json(perfilModificado);
-      res.status(200).send('Perfil modificado con éxito');
-      console.log("Perfil modificado con éxito", perfilModificado);
+      console.log("Perfil modificado con éxito");
     } else {
       res.status(404).send('No se ha encontrado el perfil a modificar');
       console.error("No se ha encontrado el perfil a modificar");
@@ -205,6 +223,7 @@ exports.modificarDatosPersonales = async (req, res) => {
 
 
 /**
+ * @memberof module:perfilController
  * @description Elimina un perfil de usuario identificado por _id o nombreId.
  * @param {Object} req - El objeto de solicitud HTTP.
  * @param {string} [req.body._id] - El perfil debe existir en la base de datos.
@@ -238,7 +257,6 @@ exports.eliminarUsuario = async (req, res) => {
     // Verificar si se eliminó el perfil y enviar la respuesta al cliente
     if (resultado.deletedCount > 0) {
       res.json({ mensaje: 'Perfil eliminado correctamente' });
-      res.status(200).send('Perfil eliminado correctamente');
       console.log("Perfil eliminado correctamente");
     } else {
       res.status(404).send('No se ha encontrado el perfil a eliminar');
@@ -256,6 +274,7 @@ exports.eliminarUsuario = async (req, res) => {
 /*--------------------------------------------------------------------------------------------------------------------*/
 
 /**
+ * @memberof module:perfilController
  * @description Devuelve un token de sesión del perfil identificado por _id o nombreId si es creado con éxito.
  * @param {Object} req - El objeto de solicitud HTTP.
  * @param {string} [req.body._id] - El perfil debe existir en la base de datos.
@@ -276,9 +295,11 @@ exports.registrarUsuario = async (req, res) => {  // Requiere nombreId (o _id), 
     if (perfil) {
       const token = crearToken(perfil);
       // Enviar el token como respuesta al cliente
-      res.json(token);
-      res.status(200).send('Usuario registrado con éxito');
-      console.log("Usuario registrado con éxito", token);
+      perfilDevuelto = perfil;
+      perfilDevuelto.contraseña = undefined; // No enviar la contraseña en la respuesta
+      perfilDevuelto.token = token;
+      res.json(perfilDevuelto);
+      console.log("Usuario registrado con éxito");
     }
   } catch (error) {
     res.status(500).send('Hubo un error');
@@ -288,6 +309,7 @@ exports.registrarUsuario = async (req, res) => {  // Requiere nombreId (o _id), 
 
 
 /**
+ * @memberof module:perfilController
  * @description Devuelve un token de sesión del perfil identificado por _id o nombreId si la contraseña es correcta.
  * @param {Object} req - El objeto de solicitud HTTP.
  * @param {string} [req.body._id] - El perfil debe existir en la base de datos.
@@ -307,9 +329,11 @@ exports.iniciarSesion = async (req, res) => { // Requiere nombreId (o _id) y con
     if (perfil) {
       const token = crearToken(perfil);
       // Enviar el token como respuesta al cliente
-      res.json(token);
-      res.status(200).send('Sesión iniciada con éxito');
-      console.log("Sesión iniciada con éxito", token);
+      perfilDevuelto = perfil;
+      perfilDevuelto.contraseña = undefined; // No enviar la contraseña en la respuesta
+      perfilDevuelto.token = token;
+      res.json(perfilDevuelto);
+      console.log("Sesión iniciada con éxito");
     } else {
       res.status(404).send('No se ha encontrado el perfil a iniciar sesión');
       console.error("No se ha encontrado el perfil a iniciar sesión");
@@ -322,6 +346,7 @@ exports.iniciarSesion = async (req, res) => { // Requiere nombreId (o _id) y con
 
 
 /**
+ * @memberof module:perfilController
  * @description Devuelve un perfil identificado por _id o nombreId si la contraseña es correcta. Devuelve null en caso contrario.
  * @param {Object} req - El objeto de solicitud HTTP.
  * @param {string} [req.body._id] - El perfil debe existir en la base de datos.
@@ -362,8 +387,7 @@ exports.autenticarUsuario = async (req, res) => { // Requiere nombreId y contras
         return;
       }
       res.json(perfil);
-      console.log("Perfil autenticado con éxito", perfil);
-      res.status(200).send('Perfil autenticado con éxito');
+      console.log("Perfil autenticado con éxito");
       return perfil
     } else {
       res.status(404).send('No se ha encontrado el perfil a autenticar');
@@ -382,6 +406,7 @@ exports.autenticarUsuario = async (req, res) => { // Requiere nombreId y contras
 /*--------------------------------------------------------------------------------------------------------------------*/
 
 /**
+ * @memberof module:perfilController
  * @description Modifica el mazo de un perfil identificado por _id o nombreId.
  * @param {Object} req - El objeto de solicitud HTTP con body.
  * @param {string} [req.body._id] - El perfil debe existir en la base de datos.
@@ -446,8 +471,7 @@ exports.modificarMazo = async (req, res) => {
     // Verificar si el perfil existe y enviar la respuesta al cliente
     if (perfilModificado) {
       res.json(perfilModificado);
-      console.log("Mazo modificado con éxito", perfilModificado);
-      res.status(200).send('Mazo modificado con éxito');
+      console.log("Mazo modificado con éxito");
     } else {
       res.status(404).send('No se ha encontrado el perfil a modificar');
       console.error("No se ha encontrado el perfil a modificar");
@@ -460,7 +484,7 @@ exports.modificarMazo = async (req, res) => {
 
 // Función para verificar si un barco es horizontal
 function esBarcoHorizontal(barco) {
-  return barco[0].i == barco[1].i;
+  return barco[0].i === barco[1].i;
 }
 
 // Función para trasladar y/o rotar un barco dentro del tablero
@@ -532,6 +556,7 @@ function barcoColisiona(tablero, barco, barcoId) {
 }
 
 /**
+ * @memberof module:perfilController
  * @description Mueve y/o rota el barco indicado por barcoId en el tablero inicial de un perfil identificado por _id o nombreId.
  * Para trasladar el barco se indica la nueva posición de la proa (parte izquierda si el barco es horizontal o parte superior si es 
  * vertical) con iProaNueva, jProaNueva. Para rotar el barco se escribe 1 en rotar.
@@ -586,14 +611,14 @@ exports.moverBarcoInicial = async (req, res) => {
       console.error("No se ha encontrado el perfil a modificar");
       return;
     } 
-    tableroInicial = perfil.tableroInicial; // No es una copia, es otro puntero
+    let tableroInicial = perfil.tableroInicial; // No es una copia, es otro puntero
     // Verificar que barcoId es un índice válido de tableroInicial
     if (barcoId < 0 || barcoId >= tableroInicial.length) {
       res.status(400).send("barcoId debe estar entre 0 y "+(tableroInicial.length - 1));
       console.error("barcoId debe estar entre 0 y "+(tableroInicial.length - 1));
       return;
     }
-    barco = tableroInicial[barcoId];
+    let barco = tableroInicial[barcoId];
     // Verificar que la nueva posición del barco está en el rango correcto
     if (moverBarco(barco, iProaNueva, jProaNueva, rotar)) {
       // Verificar que la nueva posición del barco no colisiona con otros barcos
@@ -621,7 +646,6 @@ exports.moverBarcoInicial = async (req, res) => {
     if (perfilModificado) {
       res.json(perfilModificado);
       console.log("Tablero inicial modificado con éxito");
-      res.status(200).send('Tablero inicial modificado con éxito');
     } else {
       res.status(404).send('No se ha encontrado el perfil a modificar');
       console.error("No se ha encontrado el perfil a modificar");
@@ -637,6 +661,7 @@ exports.moverBarcoInicial = async (req, res) => {
 /*--------------------------------------------------------------------------------------------------------------------*/
 
 /**
+ * @memberof module:perfilController
  * @description Actualiza las estadísticas de un perfil identificado por _id o nombreId. Las nuevas estadísticas indicadas 
  * incrementan a las existentes en la base de datos. Los nuevos trofeos se suman si victoria es 1 y se restan si victoria es 0.
  * Normalmente, se llama con una funcion similar que pertenece al modulo de partida.
@@ -701,8 +726,7 @@ exports.actualizarEstadisticas = async (req, res) => {
     // Verificar si el perfil existe y enviar la respuesta al cliente
     if (perfilModificado) {
       res.json(perfilModificado);
-      console.log("Perfil modificado con éxito", perfilModificado);
-      res.status(200).send('Perfil modificado con éxito');
+      console.log("Perfil modificado con éxito");
     } else {
       res.status(404).send('No se ha encontrado el perfil a actualizar');
       console.error("No se ha encontrado el perfil a actualizar");
@@ -716,6 +740,7 @@ exports.actualizarEstadisticas = async (req, res) => {
 };
 
 /**
+ * @memberof module:perfilController
  * @description Actualiza los puntos de experiencia de un perfil identificado por _id o nombreId. Los nuevos puntos de experiencia 
  * indicados incrementan a los existentes en la base de datos.
  * @param {Object} req - El objeto de solicitud HTTP.
@@ -765,8 +790,7 @@ exports.actualizarPuntosExperiencia = async (req, res) => {
     // Verificar si el perfil existe y enviar la respuesta al cliente
     if (perfilModificado) {
       res.json(perfilModificado);
-      console.log("Perfil modificado con éxito", perfilModificado);
-      res.status(200).send('Puntos de experiencia actualizados con éxito');
+      console.log("Perfil modificado con éxito");
     } else {
       res.status(404).send('No se ha encontrado el perfil a actualizar');
       console.error("No se ha encontrado el perfil a actualizar");
@@ -781,6 +805,7 @@ exports.actualizarPuntosExperiencia = async (req, res) => {
 
 
 /**
+ * @memberof module:perfilController
  * @description Obtiene un perfil identificado por _id o nombreId.
  * @param {Object} req - El objeto de solicitud HTTP.
  * @param {string} [req.body._id] - El perfil debe existir en la base de datos.
@@ -813,9 +838,15 @@ exports.obtenerUsuario = async (req, res) => {
     const perfil = await Perfil.findOne(filtro);
     // Verificar si el perfil existe y enviar la respuesta al cliente
     if (perfil) {
-      res.json(perfil);
-      console.log("Perfil obtenido con éxito", perfil);
-      // MODIFICACIÓN: NO SE DEVUELVEN TODOS LOS CAMPOS DEL PERFIL: CONTRASEÑA,... ############################################################################################
+      const perfilDevuelto = perfil;
+      perfilDevuelto.contraseña = undefined; // No enviar la contraseña en la respuesta
+      perfilDevuelto.listaAmigos = undefined; // No enviar la lista de amigos en la respuesta
+      perfilDevuelto.listaSolicitudes = undefined; // No enviar la lista de solicitudes en la respuesta
+      // perfilDevuelto.tableroInicial = undefined; // No enviar el tablero inicial en la respuesta
+      perfilDevuelto.mazoHabilidades = undefined; // No enviar el mazo de habilidades en la respuesta
+      perfilDevuelto.correo = undefined; // No enviar el correo en la respuesta
+      res.json(perfilDevuelto);
+      console.log("Perfil obtenido con éxito");
       return perfil;
     } else {
       res.status(404).send('No se ha encontrado el perfil a obtener');
@@ -836,6 +867,7 @@ exports.obtenerUsuario = async (req, res) => {
 
 
 /**
+ * @memberof module:perfilController
  * @description Acepta una solicitud de amistad de un perfil identificado por nombreIdAmigo en el perfil identificado por _id o nombreId.
  * Añade el nombreIdAmigo a la lista de amigos del perfil y viceversa.
  * @param {Object} req - El objeto de solicitud HTTP.
@@ -912,7 +944,6 @@ exports.agnadirAmigo = async (req, res) => {
     if (perfilModificado && amigoModificado) {
       res.json(perfilModificado);
       console.log("Amigo añadido con éxito", perfilModificado);
-      res.status(200).send('Amigo añadido con éxito');
     } else {
       res.status(404).send('No se ha podido añaadir el amigo');
       console.error("No se ha podido añadir el amigo");
@@ -926,6 +957,7 @@ exports.agnadirAmigo = async (req, res) => {
 
 
 /**
+ * @memberof module:perfilController
  * @description Elimina un amigo del perfil identificado por _id o nombreId.
  * @param {Object} req - El objeto de solicitud HTTP.
  * @param {string} [req.body._id] - El perfil debe existir en la base de datos.
@@ -989,7 +1021,6 @@ exports.eliminarAmigo = async (req, res) => {
     if (perfilModificado && amigoModificado) {
       res.json(perfilModificado);
       console.log("Amigo eliminado con éxito", perfilModificado);
-      res.status(200).send('Amigo eliminado con éxito');
     } else {
       res.status(404).send('No se ha encontrado el perfil a modificar');
       console.error("No se ha encontrado el perfil a modificar");
@@ -1002,6 +1033,7 @@ exports.eliminarAmigo = async (req, res) => {
 }
 
 /**
+ * @memberof module:perfilController
  * @description Envia una solicitud de amistad a un perfil identificado por nombreIdAmigo desde el perfil identificado por _id o nombreId.
  * Añade el nombreId a la lista de solicitudes del perfil.
  * @param {Object} req - El objeto de solicitud HTTP.
@@ -1081,7 +1113,6 @@ exports.enviarSolicitudAmistad = async (req, res) => {
     if (perfilModificado) {
       res.json(perfilModificado);
       console.log("Solicitud de amistad enviada con éxito", perfilModificado);
-      res.status(200).send('Solicitud de amistad enviada con éxito');
     } else {
       res.status(404).send('No se ha podido enviar la solicitud de amistad');
       console.error("No se ha podido enviar la solicitud de amistad");
@@ -1094,6 +1125,7 @@ exports.enviarSolicitudAmistad = async (req, res) => {
 }
 
 /**
+ * @memberof module:perfilController
  * @description Elimina una solicitud de amistad de un perfil identificado por nombreIdAmigo en el perfil identificado por _id o nombreId.
  * Elimina el nombreIdAmigo de la lista de solicitudes del perfil.
  * @param {Object} req - El objeto de solicitud HTTP.
@@ -1153,7 +1185,6 @@ exports.eliminarSolicitudAmistad = async (req, res) => {
     if (perfilModificado) {
       res.json(perfilModificado);
       console.log("Solicitud de amistad eliminada con éxito", perfilModificado);
-      res.status(200).send('Solicitud de amistad eliminada con éxito');
     } else {
       res.status(404).send('No se ha podido eliminar la solicitud de amistad');
       console.error("No se ha podido eliminar la solicitud de amistad");
