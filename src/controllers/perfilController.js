@@ -842,7 +842,7 @@ exports.obtenerUsuario = async (req, res) => {
       perfilDevuelto.contraseña = undefined; // No enviar la contraseña en la respuesta
       perfilDevuelto.listaAmigos = undefined; // No enviar la lista de amigos en la respuesta
       perfilDevuelto.listaSolicitudes = undefined; // No enviar la lista de solicitudes en la respuesta
-      perfilDevuelto.tableroInicial = undefined; // No enviar el tablero inicial en la respuesta
+      //perfilDevuelto.tableroInicial = undefined; // No enviar el tablero inicial en la respuesta
       perfilDevuelto.mazoHabilidades = undefined; // No enviar el mazo de habilidades en la respuesta
       perfilDevuelto.correo = undefined; // No enviar el correo en la respuesta
       res.json(perfilDevuelto);

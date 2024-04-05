@@ -3,12 +3,11 @@ const niveles = [10, 50, 100, 200, 500, 1000];
 
 /** 
  * @module data/niveles
- * @description Sistema de puntos de experiencia a obtener por nivel
+ * @description Módulo de niveles y experiencia
 */
 
-
 /** 
- * @memberof module:data/niveles
+ * @memberof module:data
  * @function calcularNivel
  * @description Calcula el nivel de un usuario a partir de sus puntos de experiencia
  * @param {number} puntos - Puntos de experiencia del usuario

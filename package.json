@@ -4,7 +4,7 @@
   "description": "PROYS, P3, Ejemplo Node.",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
+    "start": "node src/server.js",
     "test": "jest perfilController.test.js partidaController.test.js publicacionController.test.js --coverage --runInBand",
     "docs-gen": "npx jsdoc -c .jsdoc.json -r",
     "docs": "npm run docs-gen"
