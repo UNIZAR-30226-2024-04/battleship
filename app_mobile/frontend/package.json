@@ -1,0 +1,26 @@
+{
+  "name": "my-frontend-app",
+  "version": "1.0.0",
+  "description": "A frontend application",
+  "main": "index.js",
+  "scripts": {
+    "start": "npm run serve",
+    "serve": "vue-cli-service serve",
+    "build": "vue-cli-service build"
+  },
+  "keywords": [
+    "frontend",
+    "vue"
+  ],
+  "author": "Your Name",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.6.8",
+    "vue": "^2.6.11",
+    "vue-router": "^3.2.0"
+  },
+  "devDependencies": {
+    "@vue/cli-service": "^5.0.8",
+    "vue-template-compiler": "^2.6.11"
+  }
+}

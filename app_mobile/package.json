@@ -1,0 +1,13 @@
+{
+    "devDependencies": {
+        "concurrently": "^8.2.2"
+    },
+    "scripts": {
+        "start": "concurrently \"npm run start-backend\" \"npm run start-frontend\"",
+        "start-backend": "cd backend/src && node server.js",
+        "start-frontend": "cd frontend/src && npm start"
+    },
+    "dependencies": {
+        "@types/node": "^20.11.17"
+    }
+}
