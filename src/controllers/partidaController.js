@@ -3,7 +3,13 @@ const Perfil = require('../models/perfilModel');
 const Coordenada = require('../data/coordenada')
 const biomasDisponibles = require('../data/biomas');
 const tableroDim = Coordenada.i.max;  // Dimensiones del tablero
-
+/**
+ * @module partidaController
+ * @description Controlador para las partidas
+ * @see module:partidaModel
+ * @requires module:partidaModel
+ * @requires module:perfilModel
+ */
 
 // ------------------------------------------ //
 // ----------- FUNCIONES INTERNAS ----------- //

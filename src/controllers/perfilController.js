@@ -5,7 +5,16 @@ const crypto = require('crypto'); // Para generar claves secretas
 const habilidadesDisponibles = require('../data/habilidades')
 const Coordenada = require('../data/coordenada');
 const { config } = require('../config/auth.config');
-
+/**
+ * @module perfilController
+ * @description Funciones para el manejo de perfiles de usuario.
+ * @see module:perfilModel
+ * @requires bcrypt
+ * @requires jsonwebtoken
+ * @requires config
+ * @requires module:perfilModel
+ * 
+ */
 const tableroDim = Coordenada.i.max;  // Dimensiones del tablero
 
 /*--------------------------------------------------------------------------------------------------------------------*/
@@ -52,19 +61,20 @@ function comprobarToken(token) {
 /*------------------------------------------------ PERFIL BÁSICO  ----------------------------------------------------*/
 /*--------------------------------------------------------------------------------------------------------------------*/
 
-/**
- * @description Crea un nuevo perfil con el nombre, la contraseña hasheada y el correo.
- * @param {Object} req - El objeto de solicitud HTTP.
- * @param {string} req.body.nombreId - El nombre debe ser nuevo en la base de datos.
- * @param {string} req.body.contraseña - La contraseña debe tener al menos 8 caracteres, 1 minúsucla, 1 mayúscula, 1 dígito y un caracter especial.
- * @param {string} req.body.correo - El correo debe tener un formato válido.
- * @param {Object} res - El objeto de respuesta HTTP.
- * @example
- * perfil = { nombreId: 'usuario1', contraseña: 'Passwd1.', correo: 'usuario1@example.com' };
- * const req = { body: perfil };
- * const res = { json: () => {}, status: () => ({ send: () => {} }) }; // No hace nada
- * await crearPerfil(req, res);
- */
+// /**
+//  * @memberof module:perfilController
+//  * @description Crea un nuevo perfil con el nombre, la contraseña hasheada y el correo.
+//  * @param {Object} req - El objeto de solicitud HTTP.
+//  * @param {string} req.body.nombreId - El nombre debe ser nuevo en la base de datos.
+//  * @param {string} req.body.contraseña - La contraseña debe tener al menos 8 caracteres, 1 minúsucla, 1 mayúscula, 1 dígito y un caracter especial.
+//  * @param {string} req.body.correo - El correo debe tener un formato válido.
+//  * @param {Object} res - El objeto de respuesta HTTP.
+//  * @example
+//  * perfil = { nombreId: 'usuario1', contraseña: 'Passwd1.', correo: 'usuario1@example.com' };
+//  * const req = { body: perfil };
+//  * const res = { json: () => {}, status: () => ({ send: () => {} }) }; // No hace nada
+//  * await crearPerfil(req, res);
+//  */
 crearPerfil = async (req, res) => {
   try {
     // Extracción de parámetros del cuerpo de la solicitud
@@ -136,6 +146,7 @@ crearPerfil = async (req, res) => {
 };
 
 /**
+ * @memberof module:perfilController
  * @description Modifica la contraseña y/o el correo de un perfil identificado por _id o nombreId.
  * @param {Object} req - El objeto de solicitud HTTP.
  * @param {string} [req.body._id] - El perfil debe existir en la base de datos.
@@ -212,6 +223,7 @@ exports.modificarDatosPersonales = async (req, res) => {
 
 
 /**
+ * @memberof module:perfilController
  * @description Elimina un perfil de usuario identificado por _id o nombreId.
  * @param {Object} req - El objeto de solicitud HTTP.
  * @param {string} [req.body._id] - El perfil debe existir en la base de datos.
@@ -262,6 +274,7 @@ exports.eliminarUsuario = async (req, res) => {
 /*--------------------------------------------------------------------------------------------------------------------*/
 
 /**
+ * @memberof module:perfilController
  * @description Devuelve un token de sesión del perfil identificado por _id o nombreId si es creado con éxito.
  * @param {Object} req - El objeto de solicitud HTTP.
  * @param {string} [req.body._id] - El perfil debe existir en la base de datos.
@@ -296,6 +309,7 @@ exports.registrarUsuario = async (req, res) => {  // Requiere nombreId (o _id), 
 
 
 /**
+ * @memberof module:perfilController
  * @description Devuelve un token de sesión del perfil identificado por _id o nombreId si la contraseña es correcta.
  * @param {Object} req - El objeto de solicitud HTTP.
  * @param {string} [req.body._id] - El perfil debe existir en la base de datos.
@@ -332,6 +346,7 @@ exports.iniciarSesion = async (req, res) => { // Requiere nombreId (o _id) y con
 
 
 /**
+ * @memberof module:perfilController
  * @description Devuelve un perfil identificado por _id o nombreId si la contraseña es correcta. Devuelve null en caso contrario.
  * @param {Object} req - El objeto de solicitud HTTP.
  * @param {string} [req.body._id] - El perfil debe existir en la base de datos.
@@ -391,6 +406,7 @@ exports.autenticarUsuario = async (req, res) => { // Requiere nombreId y contras
 /*--------------------------------------------------------------------------------------------------------------------*/
 
 /**
+ * @memberof module:perfilController
  * @description Modifica el mazo de un perfil identificado por _id o nombreId.
  * @param {Object} req - El objeto de solicitud HTTP con body.
  * @param {string} [req.body._id] - El perfil debe existir en la base de datos.
@@ -540,6 +556,7 @@ function barcoColisiona(tablero, barco, barcoId) {
 }
 
 /**
+ * @memberof module:perfilController
  * @description Mueve y/o rota el barco indicado por barcoId en el tablero inicial de un perfil identificado por _id o nombreId.
  * Para trasladar el barco se indica la nueva posición de la proa (parte izquierda si el barco es horizontal o parte superior si es 
  * vertical) con iProaNueva, jProaNueva. Para rotar el barco se escribe 1 en rotar.
@@ -644,6 +661,7 @@ exports.moverBarcoInicial = async (req, res) => {
 /*--------------------------------------------------------------------------------------------------------------------*/
 
 /**
+ * @memberof module:perfilController
  * @description Actualiza las estadísticas de un perfil identificado por _id o nombreId. Las nuevas estadísticas indicadas 
  * incrementan a las existentes en la base de datos. Los nuevos trofeos se suman si victoria es 1 y se restan si victoria es 0.
  * Normalmente, se llama con una funcion similar que pertenece al modulo de partida.
@@ -722,6 +740,7 @@ exports.actualizarEstadisticas = async (req, res) => {
 };
 
 /**
+ * @memberof module:perfilController
  * @description Actualiza los puntos de experiencia de un perfil identificado por _id o nombreId. Los nuevos puntos de experiencia 
  * indicados incrementan a los existentes en la base de datos.
  * @param {Object} req - El objeto de solicitud HTTP.
@@ -786,6 +805,7 @@ exports.actualizarPuntosExperiencia = async (req, res) => {
 
 
 /**
+ * @memberof module:perfilController
  * @description Obtiene un perfil identificado por _id o nombreId.
  * @param {Object} req - El objeto de solicitud HTTP.
  * @param {string} [req.body._id] - El perfil debe existir en la base de datos.
@@ -847,6 +867,7 @@ exports.obtenerUsuario = async (req, res) => {
 
 
 /**
+ * @memberof module:perfilController
  * @description Acepta una solicitud de amistad de un perfil identificado por nombreIdAmigo en el perfil identificado por _id o nombreId.
  * Añade el nombreIdAmigo a la lista de amigos del perfil y viceversa.
  * @param {Object} req - El objeto de solicitud HTTP.
@@ -936,6 +957,7 @@ exports.agnadirAmigo = async (req, res) => {
 
 
 /**
+ * @memberof module:perfilController
  * @description Elimina un amigo del perfil identificado por _id o nombreId.
  * @param {Object} req - El objeto de solicitud HTTP.
  * @param {string} [req.body._id] - El perfil debe existir en la base de datos.
@@ -1011,6 +1033,7 @@ exports.eliminarAmigo = async (req, res) => {
 }
 
 /**
+ * @memberof module:perfilController
  * @description Envia una solicitud de amistad a un perfil identificado por nombreIdAmigo desde el perfil identificado por _id o nombreId.
  * Añade el nombreId a la lista de solicitudes del perfil.
  * @param {Object} req - El objeto de solicitud HTTP.
@@ -1102,6 +1125,7 @@ exports.enviarSolicitudAmistad = async (req, res) => {
 }
 
 /**
+ * @memberof module:perfilController
  * @description Elimina una solicitud de amistad de un perfil identificado por nombreIdAmigo en el perfil identificado por _id o nombreId.
  * Elimina el nombreIdAmigo de la lista de solicitudes del perfil.
  * @param {Object} req - El objeto de solicitud HTTP.
