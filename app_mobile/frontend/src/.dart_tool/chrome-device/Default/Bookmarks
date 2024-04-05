@@ -1,5 +1,5 @@
 {
-   "checksum": "f5dba529984c9b848bf81a66444be568",
+   "checksum": "cf42abd355c0372535ae3a3da38a54d0",
    "roots": {
       "bookmark_bar": {
          "children": [ {
@@ -12,7 +12,7 @@
             "url": "https://drive.google.com/drive/folders/1BWwn8d6p130VaQ6W4_OP7XpweBhsd0ka"
          }, {
             "date_added": "13317308448848853",
-            "date_last_used": "13346590097496591",
+            "date_last_used": "13356809604881422",
             "guid": "c018f264-2eed-46ae-bbcb-2c908cc06eb4",
             "id": "8",
             "name": "Área personal",
@@ -149,7 +149,7 @@
          "date_modified": "13353765375360427",
          "guid": "0bc5d13f-2cba-5d74-951f-3f233fe6c908",
          "id": "1",
-         "name": "Barra de marcadores",
+         "name": "Bookmarks bar",
          "type": "folder"
       },
       "other": {
@@ -159,7 +159,7 @@
          "date_modified": "0",
          "guid": "82b081ec-3dd3-529c-8475-ab6c344590dd",
          "id": "2",
-         "name": "Otros marcadores",
+         "name": "Other bookmarks",
          "type": "folder"
       },
       "synced": {
@@ -169,7 +169,7 @@
          "date_modified": "0",
          "guid": "4cf2e351-0e85-532b-bb37-df045d8f8d0f",
          "id": "3",
-         "name": "Marcadores del móvil",
+         "name": "Mobile bookmarks",
          "type": "folder"
       }
    },

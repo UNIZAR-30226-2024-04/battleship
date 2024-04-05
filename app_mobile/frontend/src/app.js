@@ -1,9 +1,11 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const app = express();
+const cors = require('cors');
 
-// Reemplaza 'myDatabase' con el nombre de tu base de datos
-const mongoURI = "mongodb://developer:password@localhost:27017/myDatabase";
+const mongoURI = 'mongodb://localhost/BattleshipDB';
+
+app.use(cors({}));
 
 app.connectDatabase = async () => {
     try {

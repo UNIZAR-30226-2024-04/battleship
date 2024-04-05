@@ -23,11 +23,11 @@ class Barco {
     print("Rotado: $_esRotado");
   }
 
-  void _catchPosition() {
+  void catchPosition() {
     _barcoPositionCached = _barcoPosition;
   }
 
-  void _resetPosition() {
+  void resetPosition() {
     _barcoPosition = _barcoPositionCached;
   }
 
@@ -58,44 +58,6 @@ class Barco {
     return false;
   }
 
-
-  // Método que devuelve una matriz de casillas ocupadas por el barco. Si una de las casillas que
-  // ocupa el barco está ocupada por otro barco, se considera que el barco no puede ser colocado
-  // en esa posición y devuelve la matriz sin modificar, devolviendo el estado interno del barco al cacheado.
-void updateOcupadas(List<List<bool>> casillasOcupadas) {
-  List<List<int>> casillasOcupadasNuevas = getCasillasOcupadas(_barcoPosition);
-
-  // Buscar conflictos con el resto de barcos.
-  for (int i = 0; i < casillasOcupadasNuevas.length; i++) {
-    int fila = casillasOcupadasNuevas[i][0];
-    int columna = casillasOcupadasNuevas[i][1];
-
-    // Si la casilla está ocupada por otro barco distinto de mí.
-    if (casillasOcupadas[fila][columna] && !casillaOcupadaPorMiBarco(fila, columna)) {
-      _resetPosition();
-      return;
-    }
-  }
-
-  // Liberar las casillas ocupadas por el barco en la posición anterior.
-  List<List<int>> casillasOcupadasAntiguas = getCasillasOcupadas(_barcoPositionCached);
-  for (int i = 0; i < casillasOcupadasAntiguas.length; i++) {
-    int fila = casillasOcupadasAntiguas[i][0];
-    int columna = casillasOcupadasAntiguas[i][1];
-    casillasOcupadas[fila][columna] = false;
-  }
-
-  // Inserción correcta del barco. Reservar las casillas.
-  for (int i = 0; i < casillasOcupadasNuevas.length; i++) {
-    int fila = casillasOcupadasNuevas[i][0];
-    int columna = casillasOcupadasNuevas[i][1];
-    casillasOcupadas[fila][columna] = true;
-  }
-
-  // Actualizar la posición cacheada del barco.
-  _catchPosition();
-}
-
   // Getters
   String get nombre => _nombre;
   Offset get barcoPosition => _barcoPosition;
@@ -119,5 +81,14 @@ void updateOcupadas(List<List<bool>> casillasOcupadas) {
 
   set esRotado(bool esRotado) {
     _esRotado = esRotado;
+  }
+
+  String getImagePath() {
+    if(!_esRotado) {
+      return 'images/' + _nombre + '.png';
+    }
+    else {
+      return 'images/' + _nombre + '_rotado.png';
+    }
   }
 }

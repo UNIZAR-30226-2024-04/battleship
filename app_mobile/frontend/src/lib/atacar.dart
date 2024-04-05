@@ -221,8 +221,8 @@ class _AtacarState extends State<Atacar> {
             decoration: BoxDecoration(
               color: const Color.fromARGB(128, 116, 181, 213),
               border: Border.all(color: Colors.black, width: 1),
-            ),
-            child: Juego().tablero_oponente.casillasAtacadas[rowIndex][j] && Juego().tablero_oponente.casillasOcupadas[rowIndex][j] ? Image.asset('images/redCross.png', fit: BoxFit.cover) : Image.asset('images/dot.png', fit: BoxFit.cover),
+            ),// CASILLAS ATACADAS Y OCUPADAS (BACKEND)
+            child: Juego().tablero_oponente.casillasAtacadas[rowIndex][j] ? Image.asset('images/redCross.png', fit: BoxFit.cover) : Image.asset('images/dot.png', fit: BoxFit.cover),
           ),
         ),
       );
@@ -307,8 +307,9 @@ class _AtacarState extends State<Atacar> {
         }
       }
 
+      // BACKENDDDDDDDDDDDDDDDDDDDD
       // Si la casilla tiene un barco.
-      if(Juego().tablero_oponente.casillasOcupadas[i][j]) {
+      if(true) { // casillas ocupadas
         Juego().actualizarBarcosRestantes();
         if(!Juego().habilidadSeleccionadaEnTurno) {
           Juego().disparosPendientes++;

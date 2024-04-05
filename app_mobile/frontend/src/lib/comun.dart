@@ -1,4 +1,6 @@
+import 'package:battleship/authProvider.dart';
 import 'package:flutter/material.dart';
+import 'package:mongo_dart/mongo_dart.dart';
 import 'habilidades.dart';
 import 'flota.dart';
 import 'ajustes.dart';
@@ -29,7 +31,7 @@ Widget buildHeader(BuildContext context) {
               Navigator.pushReplacement(
                 context,
                 PageRouteBuilder(
-                  pageBuilder: (context, animation1, animation2) => Perfil(),
+                  pageBuilder: (context, animation1, animation2) => Perfil(AuthProvider().name),
                   transitionDuration: const Duration(seconds: 0),
                 ),
               );
@@ -157,4 +159,20 @@ bool contiene(List<List<int>> lista, Offset posicion) {
     }
   }
   return false;
+}
+
+
+List<Offset> takeFirstSquare(List<dynamic> input) {
+  List<Offset> output = [];
+
+  for (var sublist in input) {
+    if (sublist is List && sublist.isNotEmpty) {
+      var map = sublist[0];
+      if (map is Map && map.containsKey('i') && map.containsKey('j')) {
+        output.add(Offset(map['i'].toDouble(), map['j'].toDouble()));
+      }
+    }
+  }
+
+  return output;
 }

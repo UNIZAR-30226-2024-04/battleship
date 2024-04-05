@@ -1,8 +1,5 @@
-2024/04/05-13:36:25.370 5120 Reusing MANIFEST C:\Users\xavie\AppData\Local\Temp\flutter_tools.63e5e100\flutter_tools_chrome_device.c309014e\Default\Site Characteristics Database/MANIFEST-000001
-2024/04/05-13:36:25.371 5120 Recovering log #3
-2024/04/05-13:36:25.371 5120 Level-0 table #3: started
-2024/04/05-13:36:25.372 5120 Level-0 table #3: 194 bytes OK
-2024/04/05-13:36:25.372 5120 Recovering log #19
-2024/04/05-13:36:25.373 5120 Reusing old log C:\Users\xavie\AppData\Local\Temp\flutter_tools.63e5e100\flutter_tools_chrome_device.c309014e\Default\Site Characteristics Database/000019.log 
-2024/04/05-13:36:25.374 5120 Delete type=0 #3
-2024/04/05-13:36:25.374 5120 Delete type=2 #20
+2024/04/05-20:50:58.261 356c Reusing MANIFEST C:\Users\xavie\AppData\Local\Temp\flutter_tools.1baef050\flutter_tools_chrome_device.948a3504\Default\Site Characteristics Database/MANIFEST-000001
+2024/04/05-20:50:58.262 356c Recovering log #19
+2024/04/05-20:50:58.262 356c Reusing old log C:\Users\xavie\AppData\Local\Temp\flutter_tools.1baef050\flutter_tools_chrome_device.948a3504\Default\Site Characteristics Database/000019.log 
+2024/04/05-20:50:58.262 356c Delete type=0 #3
+2024/04/05-20:50:58.262 356c Delete type=2 #20

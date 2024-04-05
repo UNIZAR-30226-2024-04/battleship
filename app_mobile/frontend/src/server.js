@@ -1,6 +1,6 @@
-const app = require('./app')
-const mongoose = require('mongoose'); // Asegúrate de requerir mongoose
-const PORT = process.env.PORT || 8080;
+const app = require('./app');
+const mongoose = require('mongoose');
+const PORT = 8081;
 
 // Inicia el servidor express
 const server = app.listen(PORT, () => {

@@ -155,7 +155,7 @@ class _DefenderState extends State<Defender> {
               top: barcosOponente[i].barcoPosition.dx * Juego().tablero_oponente.casillaSize,
               left: barcosOponente[i].barcoPosition.dy * Juego().tablero_oponente.casillaSize,
               child: Image.asset(
-                'images/${barcosOponente[i].nombre}.png',
+                barcosOponente[i].getImagePath(),
                 width: barcosOponente[i].getWidth(Juego().tablero_oponente.casillaSize),
                 height: barcosOponente[i].getHeight(Juego().tablero_oponente.casillaSize),
                 fit: BoxFit.fill,

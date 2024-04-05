@@ -1,8 +1,14 @@
+import 'dart:developer';
+
+import 'package:battleship/comun.dart';
 import 'package:battleship/tablero.dart';
 import 'package:flutter/material.dart';
 import 'barco.dart';
 import 'habilidad.dart';
 import 'perfil.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+
 
 class Juego {
   Tablero tablero_jugador1 = Tablero();
@@ -16,8 +22,8 @@ class Juego {
   int ganador = 0;
   List<Habilidad> habilidadesJugador1 = [];   // habilidades en el mazo del jugador 1
   List<Habilidad> habilidadesJugador2 = [];   // habilidades en el mazo del jugador 2
-  Perfil perfilJugador1 = Perfil();
-  Perfil perfilJugador2 = Perfil();
+  Perfil perfilJugador1 = Perfil('');
+  Perfil perfilJugador2 = Perfil('');
   List<bool> habilidadesUtilizadasJugador1 = [];
   List<bool> habilidadesUtilizadasJugador2 = [];
   int disparosPendientes = 0; // disparo básico 1. Habilidades depende
@@ -27,7 +33,11 @@ class Juego {
   int numAtaquesJugador1 = 0;
   int numAtaquesJugador2 = 0;
   int indexHabilidad = 0;
-
+  List<String> nombresBarcosEnOrden = ['patrullero', 'destructor', 'submarino', 'acorazado', 'portaaviones'];  // barcos en orden de tamaño creciente
+  List<int> longitudesBarcosEnOrden = [2, 3, 3, 4, 5];  // longitudes de los barcos en orden de tamaño creciente
+  List<bool> rotadosEnOrden = [false, false, true, false, false];
+  String urlObtenerPerfil = 'http://localhost:8080/perfil/obtenerUsuario';
+  String urlMoverBarcoInicial = 'http://localhost:8080/perfil/moverBarcoInicial';
 
   // Instancia privada y estática del singleton
   static final Juego _singleton = Juego._internal();
@@ -42,8 +52,8 @@ class Juego {
     turno = 1;
     barcosJugador1 = List.filled(numBarcos, true);
     barcosJugador2 = List.filled(numBarcos, true);
-    perfilJugador1 = Perfil(turno: 1);
-    perfilJugador2 = Perfil(turno: 2);
+    perfilJugador1 = Perfil('usuario1', turno: 1);
+    perfilJugador2 = Perfil('usuario2', turno: 2);
     habilidadesJugador1 = perfilJugador1.getHabilidadesSeleccionadas();
     habilidadesJugador2 = perfilJugador2.getHabilidadesSeleccionadas();
     habilidadesUtilizadasJugador1 = List.filled(habilidadesJugador1.length, false);
@@ -57,10 +67,84 @@ class Juego {
     indexHabilidad = 0;
   }
 
+  Future<void> inicializarBarcosJugadores() async {
+    List<Offset> posInicial1 = await obtenerBarcos('usuario1', urlObtenerPerfil);
+    List<Offset> posInicial2 = await obtenerBarcos('usuario2', urlObtenerPerfil);
+
+    for(int i = 0; i < numBarcos; i++) {
+      tablero_jugador1.barcos.add(Barco(nombresBarcosEnOrden[i], posInicial1[i], longitudesBarcosEnOrden[i], rotadosEnOrden[i]));
+      tablero_jugador2.barcos.add(Barco(nombresBarcosEnOrden[i], posInicial2[i], longitudesBarcosEnOrden[i], rotadosEnOrden[i]));
+    }
+  }
+
   // Método para obtener la instancia del singleton
   factory Juego() {
     return _singleton;
   }
+
+  Future<List<Offset>> obtenerBarcos(String usuario, String url) async {
+    var response = await http.post(
+      Uri.parse(url),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(<String, String>{
+        'nombreId': usuario,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      var data = jsonDecode(response.body);
+      var tableroInicial = data['tableroInicial'];
+
+      print(tableroInicial);
+
+      // Extraer solo las propiedades 'i' y 'j'
+      var tableroExtraido = tableroInicial.map((fila) => 
+        fila.map((celda) => 
+          {'i': celda['i'], 'j': celda['j']}
+        ).toList()
+      ).toList();
+
+      print(tableroExtraido);
+
+      return takeFirstSquare(tableroExtraido);
+
+    } else {
+      throw Exception('La solicitud ha fallado');
+    }
+  }
+
+  Future<bool> moverBarco(String url, Offset nuevaPos, bool rotar, String usuario, int barcoId) async {
+    var uri = Uri.parse(url);
+    var response = await http.post(
+      uri,
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(<String, dynamic>{
+        'nombreId': usuario,
+        'barcoId': barcoId,
+        'iProaNueva': nuevaPos.dx,
+        'jProaNueva': nuevaPos.dy,
+        'rotar': rotar,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      var data = jsonDecode(response.body);
+      var tableroInicial = data['tableroInicial'];
+      if (tableroInicial != null) {
+        print("BARCO MOVIDO");
+        return true;
+      }
+
+      return false;
+    } else {
+      return false;
+    }
+  }
+
 
   Tablero get tablero_jugador {
     return turno == 1 ? tablero_jugador1 : tablero_jugador2;

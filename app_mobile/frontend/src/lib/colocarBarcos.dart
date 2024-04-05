@@ -1,3 +1,4 @@
+import 'package:battleship/authProvider.dart';
 import 'package:battleship/destino.dart';
 import 'package:battleship/juego.dart';
 import 'package:flutter/material.dart';
@@ -15,6 +16,7 @@ class ColocarBarcos extends StatefulWidget {
 
 class _ColocarBarcosState extends State<ColocarBarcos> {
   Map<Barco, bool> _draggingStates = {};
+  late Future<void> _barcosFuture;
 
   @override
   void initState() {
@@ -24,6 +26,16 @@ class _ColocarBarcosState extends State<ColocarBarcos> {
     _draggingStates = {
       for (var barco in barcos) barco: false,
     };
+
+    _barcosFuture = inicializarBarcosJugadores();
+  }
+
+  Future<void> inicializarBarcosJugadores() async {
+    await Juego().inicializarBarcosJugadores();
+  }
+
+  Future<bool> moverBarco(Barco barco) async {
+    return await Juego().moverBarco(Juego().urlMoverBarcoInicial, barco.barcoPosition, barco.esRotado, AuthProvider().name, Juego().tablero_jugador.barcos.indexOf(barco));
   }
 
   @override
@@ -41,7 +53,18 @@ class _ColocarBarcosState extends State<ColocarBarcos> {
           children: [
             buildHeader(context),
             buildTitle('¡Coloca tu flota!', 28),
-            _construirTableroConBarcosEditable(),
+            FutureBuilder<void>(
+              future: _barcosFuture,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  // Mientras espera que se complete la inicialización de los barcos, puedes mostrar un indicador de carga.
+                  return CircularProgressIndicator();
+                } else {
+                  // Una vez que se complete la inicialización, construir el tablero con los barcos.
+                  return _construirTableroConBarcosEditable();
+                }
+              },
+            ),
             const Spacer(),
             buildActionButton(context, () => _handlePressed(context), "Comenzar"),
             const Spacer(),
@@ -73,6 +96,7 @@ class _ColocarBarcosState extends State<ColocarBarcos> {
                   onPanStart: (details) {
                     setState(() {
                       _draggingStates[barco] = true;
+                      barco.catchPosition();
                     });
                   },
                   onPanUpdate: (details) {
@@ -90,13 +114,33 @@ class _ColocarBarcosState extends State<ColocarBarcos> {
                       barco.barcoPosition = Offset(barco.barcoPosition.dx.roundToDouble(), barco.barcoPosition.dy.roundToDouble());
                       barco.barcoPosition = Juego().boundPosition(barco.barcoPosition, barco.getHeight(Juego().tablero_jugador.casillaSize), barco.getWidth(Juego().tablero_jugador.casillaSize));
                       _draggingStates[barco] = false;
-                      barco.updateOcupadas(Juego().tablero_jugador.casillasOcupadas);
+                      late Future<bool> response = moverBarco(barco);
+                      FutureBuilder<void>(
+                        future: _barcosFuture,
+                        builder: (context, snapshot) {
+                            if (snapshot.connectionState == ConnectionState.waiting) {
+                              // Mientras espera que se complete la inicialización de los barcos, puedes mostrar un indicador de carga.
+                              return CircularProgressIndicator();
+                            } else {
+                              // Una vez que se complete la inicialización, construir el tablero con los barcos.
+                              return _construirTableroConBarcosEditable();
+                            }
+                        },
+                      );
+                      response.then((value) {
+                        if(!value) {
+                          setState(() {
+                            print("VOY A RESETEAR POSICION");
+                            barco.resetPosition();
+                          });
+                        }
+                      });
                     });
                   },
                   child: Opacity(
                     opacity: _draggingStates[barco] ?? false ? 0.5 : 1.0,
                     child: Image.asset(
-                      'images/${barco.nombre}.png',
+                      barco.getImagePath(),
                       width: barco.getWidth(Juego().tablero_jugador.casillaSize),
                       height: barco.getHeight(Juego().tablero_jugador.casillaSize),
                       fit: BoxFit.fill,
