@@ -7,9 +7,8 @@
 /**
  * @typedef {Array} BiomasDisponibles
  * @memberof module:data/biomas
- * @file src/data/biomas.js
  * @description Lista de biomas disponibles
- * @example ['Mediterraneo', 'Cantabrico', 'Norte', 'Bermudas']
+ * @default ['Mediterraneo', 'Cantabrico', 'Norte', 'Bermudas']
  */
 
 // Lista de biomas disponibles

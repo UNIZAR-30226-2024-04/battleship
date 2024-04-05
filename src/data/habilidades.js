@@ -5,11 +5,10 @@
 */
 
 /**
- * @typedef {Array} habilidadesDisponibles
+ * @const {Array} habilidadesDisponibles
  * @memberof module:data/habilidades
- * @file src/data/habilidades.js
  * @description Lista de habilidades disponibles
- * @example ['Rafaga', 'Recargado', 'Sonar', 'Mina', 'Teledirigido']
+ * @default ['Rafaga', 'Recargado', 'Sonar', 'Mina', 'Teledirigido']
  */
 
 // Lista de habilidades disponibles

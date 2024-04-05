@@ -5,6 +5,34 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const habilidadesDisponibles = require('../data/habilidades');
 const Tablero = require('../data/tablero');
+
+/**
+ * @module models/perfilModel
+ * @description Modelo de Perfil
+ * @requires mongoose
+ * @requires data/habilidades
+ * @requires data/tablero
+ */
+
+/**
+ * @typedef {Object} Perfil
+ * @property {String} nombreId - Nombre de usuario
+ * @property {String} contraseña - Contraseña usuario
+ * @property {String[]} listaAmigos - Lista de amigos del usuario
+ * @property {String[]} listaSolicitudes - Lista de solicitudes de amistad
+ * @property {Number} trofeos - Trofeos del usuario (ELO)
+ * @property {Number} puntosExperiencia - Puntos que determinan el nivel del usuario
+ * @property {Tablero} tableroInicial - Lista barcos del jugador
+ * @property {habilidadesDisponibles[]} mazoHabilidades - Habilidades(enteros) elegidas de una lista fija
+ * @property {String} correo - Correo electrónico del usuario
+ * @property {Number} partidasJugadas - Total de partidas jugadas
+ * @property {Number} partidasGanadas - Total de partidas ganadas
+ * @property {Number} barcosHundidos - Total de barcos hundidos
+ * @property {Number} barcosPerdidos - Total de barcos perdidos
+ * @property {Number} disparosAcertados - Total de disparos acertados
+ * @property {Number} disparosFallados - Total de disparos fallados
+ */
+
 // Perfil Schema
 const perfilSchema = new Schema({
   nombreId: {                     // IDENTIFICADOR OBLIGATORIO: Nombre de usuario

@@ -3,14 +3,22 @@
  * @description Tipo de dato Coordenada
 */
 
+/**
+ * @typedef {String} EstadoCoordenada
+ * @description Estado de la coordenada
+ * @memberof module:data/coordenada
+ * @default 'Agua'
+ * @example 'Agua'
+ * @example 'Tocado'
+ * @example 'Hundido'
+ */
 
 /**
  * @typedef Coordenada
  * @property {Number} i.required - Coordenada i
  * @property {Number} j.required - Coordenada j
- * @property {String} estado - Estado de la coordenada: 'Agua', 'Tocado', 'Hundido'
+ * @property {EstadoCoordenada} estado - Estado de la coordenada
  * @memberof module:data/coordenada
- * @file src/data/coordenada.js
  * @description Tipo de dato Coordenada
  * @example { i: 1, j: 1, estado: 'Agua' }
  */

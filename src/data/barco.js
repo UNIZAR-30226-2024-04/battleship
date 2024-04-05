@@ -10,7 +10,6 @@ const Coordenada = require('./coordenada');
  * @typedef {Object} Barco
  * @property {Coordenada[]} coordenadas
  * @memberof module:data/barco
- * @file src/data/barco.js
  * @description Tipo de dato Barco
  */
 

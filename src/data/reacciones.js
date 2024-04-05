@@ -7,7 +7,6 @@
 /**
  * @typedef posiblesReacciones
  * @memberof module:data/reacciones
- * @file src/data/reacciones.js
  * @description Lista de reacciones disponibles
  * @example ['LIKE', 'DISLIKE', 'XD', ':)', ':(', 'OK!', 'LOL', 'OMG', 'WOW']
  */
@@ -19,7 +18,6 @@ const posiblesReacciones = [ 'LIKE', 'DISLIKE', 'XD', ':)', ':(', 'OK!', 'LOL', 
  * @property {String} nombreId
  * @property {posiblesReacciones} estado - Estado de la reacción
  * @memberof module:data/reacciones
- * @file src/data/reacciones.js
  * @description Tipo de dato Reaccion
  * @example { nombreId: '1', estado: 'LIKE' }
  */
