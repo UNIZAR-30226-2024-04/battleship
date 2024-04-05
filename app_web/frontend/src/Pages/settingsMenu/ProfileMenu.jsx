@@ -23,10 +23,10 @@ const ProfileMenu = () => {
                     >        
                     </input>
                 </div>
-                <div className="settings-profile-body-user-header">
+                <div className="settings-profile-body-email-header">
                     <span>Correo electrónico</span>
                 </div>
-                <div className="settings-profile-body-user-input">
+                <div className="settings-profile-body-email-input">
                     <input
                         name="email"
                         autoComplete="on"

@@ -10,7 +10,7 @@ export function Register() {
                     <div className="register-banner-container">
                         <span>Battleship</span>
                     </div>
-                    <form className="register-body">
+                    <form className="register-body" name="register" method="post" action="/backend/endpoint">
                         <div className="register-username-header">
                             <span>Nombre de usuario</span>
                         </div>
