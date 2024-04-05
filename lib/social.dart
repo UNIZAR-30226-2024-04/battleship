@@ -27,4 +27,25 @@ class Social extends StatelessWidget {
       ),
     );
   }
+
+/* INTENTO DE HACER UNA LISTA DESPLEGABLE: NO COMPILA AÚN, TENGO QUE SEGUIR INVESTIGANDO
+List<String> listaDeOpciones = ["A","B","C","D","E","F","G"];
+
+  DropdownButtonFormField(
+    items: listaDeOpciones.map((e){
+      return DropdownMenuItem(
+        child: SizedBox(
+          width: double.infinity,
+          child: Text(
+            e,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+        value: e,
+      );
+    }).toList(),
+    onChanged: (String value) {},
+    isDense: true,
+    isExpanded: true,
+  )*/
 }

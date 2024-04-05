@@ -1,9 +1,16 @@
-2024/04/04-19:11:06.799 4398 Reusing MANIFEST C:\Users\xavie\AppData\Local\Temp\flutter_tools.95483c34\flutter_tools_chrome_device.d3d3790a\Default\Site Characteristics Database/MANIFEST-000001
-2024/04/04-19:11:06.800 bb8 Compacting 4@0 + 0@1 files
-2024/04/04-19:11:06.802 bb8 Generated table #11@0: 8 keys, 557 bytes
-2024/04/04-19:11:06.802 bb8 Compacted 4@0 + 0@1 files => 557 bytes
-2024/04/04-19:11:06.803 bb8 compacted to: files[ 0 1 0 0 0 0 0 ]
-2024/04/04-19:11:06.803 bb8 Delete type=2 #4
-2024/04/04-19:11:06.803 bb8 Delete type=2 #6
-2024/04/04-19:11:06.803 bb8 Delete type=2 #7
-2024/04/04-19:11:06.803 bb8 Delete type=2 #8
+2024/04/05-11:27:30.391 44a8 Log #3: 28 ops saved to Table #15 OK
+2024/04/05-11:27:30.401 44a8 Archiving C:\Users\nerea\AppData\Local\Temp\flutter_tools.5083f73b\flutter_tools_chrome_device.31795f40\Default\Site Characteristics Database/000003.log: OK
+2024/04/05-11:27:30.405 44a8 Log #6: 48 ops saved to Table #16 OK
+2024/04/05-11:27:30.409 44a8 Archiving C:\Users\nerea\AppData\Local\Temp\flutter_tools.5083f73b\flutter_tools_chrome_device.31795f40\Default\Site Characteristics Database/000006.log: OK
+2024/04/05-11:27:30.416 44a8 Log #10: 3 ops saved to Table #17 OK
+2024/04/05-11:27:30.417 44a8 Archiving C:\Users\nerea\AppData\Local\Temp\flutter_tools.5083f73b\flutter_tools_chrome_device.31795f40\Default\Site Characteristics Database/000010.log: OK
+2024/04/05-11:27:30.418 44a8 Table #4: 28 entries OK
+2024/04/05-11:27:30.419 44a8 Table #6: 28 entries OK
+2024/04/05-11:27:30.419 44a8 Table #11: 8 entries OK
+2024/04/05-11:27:30.420 44a8 Table #13: 28 entries OK
+2024/04/05-11:27:30.420 44a8 Table #14: 48 entries OK
+2024/04/05-11:27:30.420 44a8 Table #15: 28 entries OK
+2024/04/05-11:27:30.420 44a8 Table #16: 48 entries OK
+2024/04/05-11:27:30.421 44a8 Table #17: 3 entries OK
+2024/04/05-11:27:30.426 44a8 Archiving C:\Users\nerea\AppData\Local\Temp\flutter_tools.5083f73b\flutter_tools_chrome_device.31795f40\Default\Site Characteristics Database/MANIFEST-000001: OK
+2024/04/05-11:27:30.437 44a8 **** Repaired leveldb C:\Users\nerea\AppData\Local\Temp\flutter_tools.5083f73b\flutter_tools_chrome_device.31795f40\Default\Site Characteristics Database; recovered 8 files; 7079 bytes. Some data may have been lost. ****

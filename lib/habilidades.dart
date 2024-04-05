@@ -10,7 +10,7 @@ class Habilidades extends StatelessWidget {
     return Container(
       decoration: const BoxDecoration(
         image: DecorationImage(
-          image: AssetImage('images/fondo.jpg'),
+          image: AssetImage('images/fondo.jpg'),  //Añadir el fondo
           fit: BoxFit.cover,
         ),
       ),

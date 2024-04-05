@@ -1,10 +1,10 @@
 {
-   "checksum": "cf42abd355c0372535ae3a3da38a54d0",
+   "checksum": "f5dba529984c9b848bf81a66444be568",
    "roots": {
       "bookmark_bar": {
          "children": [ {
             "date_added": "13316879092753543",
-            "date_last_used": "13342557191061700",
+            "date_last_used": "13356782874098029",
             "guid": "839d6c0f-05dc-4eb4-89f8-82bbb1073cfe",
             "id": "7",
             "name": "MatInf - Google Drive",
@@ -149,7 +149,7 @@
          "date_modified": "13353765375360427",
          "guid": "0bc5d13f-2cba-5d74-951f-3f233fe6c908",
          "id": "1",
-         "name": "Bookmarks bar",
+         "name": "Barra de marcadores",
          "type": "folder"
       },
       "other": {
@@ -159,7 +159,7 @@
          "date_modified": "0",
          "guid": "82b081ec-3dd3-529c-8475-ab6c344590dd",
          "id": "2",
-         "name": "Other bookmarks",
+         "name": "Otros marcadores",
          "type": "folder"
       },
       "synced": {
@@ -169,7 +169,7 @@
          "date_modified": "0",
          "guid": "4cf2e351-0e85-532b-bb37-df045d8f8d0f",
          "id": "3",
-         "name": "Mobile bookmarks",
+         "name": "Marcadores del móvil",
          "type": "folder"
       }
    },
