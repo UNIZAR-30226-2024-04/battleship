@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 
 const Schema = mongoose.Schema;
 const habilidadesDisponibles = require('../data/habilidades');
+const paisesDisponibles = require('../data/paises');
 const Tablero = require('../data/tablero');
 
 /**
@@ -11,6 +12,7 @@ const Tablero = require('../data/tablero');
  * @description Modelo de Perfil
  * @requires mongoose
  * @requires data/habilidades
+ * @requires data/paises
  * @requires data/tablero
  */
 
@@ -18,6 +20,7 @@ const Tablero = require('../data/tablero');
  * @typedef {Object} Perfil
  * @property {String} nombreId - Nombre de usuario
  * @property {String} contraseña - Contraseña usuario
+ * @property {String} pais - País de residencia del usuario
  * @property {String[]} listaAmigos - Lista de amigos del usuario
  * @property {String[]} listaSolicitudes - Lista de solicitudes de amistad
  * @property {Number} trofeos - Trofeos del usuario (ELO)
@@ -43,6 +46,11 @@ const perfilSchema = new Schema({
   contraseña: {              // OBLIGATORIA: Contraseña usuario
     type: String, 
     required: true 
+  },
+  pais: {                   // País de residencia del usuario
+    type: String, 
+    enum: paisesDisponibles,
+    default: 'Desconocido' 
   },
   listaAmigos: {             // Lista de amigos del usuario
     type: [String],          // Lista de nombreId

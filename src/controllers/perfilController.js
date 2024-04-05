@@ -3,6 +3,7 @@ const bcrypt = require('bcrypt'); // Para hash de constraseña
 const jwt = require('jsonwebtoken'); // Para generar tokens JWT
 const crypto = require('crypto'); // Para generar claves secretas
 const habilidadesDisponibles = require('../data/habilidades')
+const paisesDisponibles = require('../data/paises')
 const Coordenada = require('../data/coordenada');
 const { config } = require('../config/auth.config');
 /**
@@ -211,6 +212,7 @@ exports.obtenerUsuario = async (req, res) => {
  * @param {string} [req.body.nombreId] - El perfil debe existir en la base de datos.
  * @param {string} [req.body.contraseña] - La contraseña debe tener al menos 8 caracteres, 1 minúsucla, 1 mayúscula, 1 dígito y un caracter especial.
  * @param {string} [req.body.correo] - El correo debe tener un formato válido.
+ * @param {string} [req.body.pais] - El pais debe estar en la lista de paises disponibles.
  * @param {Object} res - El objeto de respuesta HTTP.
  * @example
  * perfil = { nombreId: 'usuario1', correo: 'MODIFICADOusuario1@example.com' };
@@ -221,7 +223,7 @@ exports.obtenerUsuario = async (req, res) => {
 exports.modificarDatosPersonales = async (req, res) => {
   try {
     // Extracción de parámetros del cuerpo de la solicitud
-    const { _id, nombreId, contraseña, correo, ...extraParam } = req.body;
+    const { _id, nombreId, contraseña, correo, pais, ...extraParam } = req.body;
     // Verificar si hay algún parámetro extra
     if (Object.keys(extraParam).length > 0) {
       res.status(400).send('Sobran parámetros, se espera nombreId (o _id), contraseña y/o correo');
@@ -246,6 +248,11 @@ exports.modificarDatosPersonales = async (req, res) => {
       console.error("El correo no es válido");
       return;
     }
+    if (pais && !paisesDisponibles.includes(pais)) {
+      res.status(400).send('El país no es válido');
+      console.error("El país no es válido");
+      return;
+    }
     // Generar hash de la contraseña si se proporciona
     let hashContraseña; // valor undefined (si no se le da valor, no se tendrá en cuenta en el $set)
     if (contraseña) {
@@ -258,7 +265,8 @@ exports.modificarDatosPersonales = async (req, res) => {
       {
         $set: {
           contraseña: hashContraseña,
-          correo: correo
+          correo: correo,
+          pais: pais
         }
       },
       { new: true } // Para devolver el documento actualizado
