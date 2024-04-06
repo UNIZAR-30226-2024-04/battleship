@@ -74,45 +74,6 @@ export function Fleet() {
     const [board, setBoard] = useState(null); // Estado para almacenar la instancia de GridStack
     const [count, setCount] = useState(0); // Estado para contar widgets
 
-    const [dragStartPos, setDragStartPos] = useState({ left: 0, top: 0 });
-
-    // Función para manejar el inicio del arrastre del widget
-    const handleDragStart = (event, ui) => {
-        const { pageX, pageY } = event;
-        const cellWidth = document.querySelector('.grid-stack').clientWidth / boardDimension;
-        const cellHeight = document.querySelector('.grid-stack').clientHeight / boardDimension;
-        const cellX = Math.floor(pageX / cellWidth) - 4;
-        const cellY = Math.floor(pageY / cellHeight);
-        setDragStartPos({ x: cellX, y: cellY });
-        console.log("Drag start: ", cellX, cellY);
-    };
-
-    // Función para manejar el final del arrastre del widget
-    const handleDragStop = (event, ui) => {
-        const { pageX, pageY } = event;
-        const cellWidth = document.querySelector('.grid-stack').clientWidth / boardDimension;
-        const cellHeight = document.querySelector('.grid-stack').clientHeight / boardDimension;
-        const cellX = Math.floor(pageX / cellWidth) - 4;
-        const cellY = Math.floor(pageY / cellHeight);
-        console.log("Drag stop: ", cellX, cellY);
-        //console.log("Drag stop: ", dragStartPos, cellX, cellY);
-        //console.log("Drag stop: ", ui);
-        // Verificar colisión antes de soltar el widget
-        // if (true) {
-        //     // Si hay una colisión, no actualices la posición del widget
-        //     ui.helper.data('_gridstack_node').x = dragStartPos.x;
-        //     ui.helper.data('_gridstack_node').y = dragStartPos.y;
-        //     board.engine._updateNode(ui.helper);
-        // } else {
-        //     // Si no hay colisión, actualiza la posición del widget en el tablero
-        //     ui.helper.data('_gridstack_node').x = cellX;
-        //     ui.helper.data('_gridstack_node').y = cellY;
-        //     board.engine._updateNode(ui.helper);
-        // }
-    };
-
-
-
     // Este efecto se ejecuta solo una vez después del montaje inicial del componente
     useEffect(() => {
         // Inicializamos el tablero con las siguientes propiedades
@@ -128,11 +89,24 @@ export function Fleet() {
             //cellHeight: "80px", // Establecer la altura de cada celda en 50px
             
         });
-        // Adjuntar controladores de eventos al widget
-        board.on('dragstart', handleDragStart);
-        board.on('dragstop', handleDragStop);
         setBoard(board); // Almacenar la instancia de GridStack en el estado
     }, []);
+
+    const mostrarWidgetsTablero = (tablero) => {
+        addNewWidgetPos(1, "Patrol", tablero[0][0].j-1, tablero[0][0].i-1, esBarcoHorizontal(tablero[0]));
+        addNewWidgetPos(2, "Destroy", tablero[1][0].j-1, tablero[1][0].i-1, esBarcoHorizontal(tablero[1]));
+        addNewWidgetPos(3, "Sub", tablero[2][0].j-1, tablero[2][0].i-1, esBarcoHorizontal(tablero[2]));
+        addNewWidgetPos(4, "Bship", tablero[3][0].j-1, tablero[3][0].i-1, esBarcoHorizontal(tablero[3]));
+        addNewWidgetPos(5, "Aircraft", tablero[4][0].j-1, tablero[4][0].i-1, esBarcoHorizontal(tablero[4]));
+        setCount(6);
+    }
+
+    const borrarWidgetsTablero = () => {
+        if (board) {
+            board.removeAll();
+        }
+    }
+
 
     // Este efecto se ejecuta cuando el board está inicializado
     useEffect(() => {
@@ -160,13 +134,9 @@ export function Fleet() {
                 //     [{ i: 3, j: 6 }, { i: 4, j: 6 }, { i: 5, j: 6 }, { i: 6, j: 6 }],
                 //     [{ i: 10, j: 6 }, { i: 10, j: 7 }, { i: 10, j: 8 }, { i: 10, j: 9 }, { i: 10, j: 10 }]
                 //   ];
+                mostrarWidgetsTablero(tableroInicial);
 
-                addNewWidgetPos(1, "Patrol", tableroInicial[0][0].j-1, tableroInicial[0][0].i-1, esBarcoHorizontal(tableroInicial[0]));
-                addNewWidgetPos(2, "Destroy", tableroInicial[1][0].j-1, tableroInicial[1][0].i-1, esBarcoHorizontal(tableroInicial[1]));
-                addNewWidgetPos(3, "Sub", tableroInicial[2][0].j-1, tableroInicial[2][0].i-1, esBarcoHorizontal(tableroInicial[2]));
-                addNewWidgetPos(4, "Bship", tableroInicial[3][0].j-1, tableroInicial[3][0].i-1, esBarcoHorizontal(tableroInicial[3]));
-                addNewWidgetPos(5, "Aircraft", tableroInicial[4][0].j-1, tableroInicial[4][0].i-1, esBarcoHorizontal(tableroInicial[4]));
-                setCount(6);
+                
                 
 
                 // fetch(urlMoverBarcoInicial, {
@@ -199,35 +169,27 @@ export function Fleet() {
         }
     }, [board]);
 
-
-
-    // Función que añade un elemento a la cuadrícula
-    const addNewWidget = (ship) => {
-        //const shipName = shipInfo[ship].name;
-        const node = {
-            id: String(count),      // id para identificar el widget
-            locked: true,           // inmutable por otros widgets
-            noResize: true,
-            //content: `<div onClick={handleItemClick}>${shipName}</div>`,
-            //content: '<img src={aircraftImg} />',
-            // content: shipInfo[ship].name,
-            content: `<img src="${shipInfo[ship].img}" alt="${shipInfo[ship].name}";" />`,
-            //sizeToContent: true,
-            x: Math.round((boardDimension - 1) * Math.random()),
-            y: Math.round((boardDimension - 1) * Math.random()),
-            w: shipInfo[ship].size,
-            h: 1,
-        };
-        if (board) {    // El tablero está inicializado
-            board.addWidget(node);   // Añadir widget a la cuadrícula
-            setCount(prevCount => prevCount + 1); // Incrementar el contador
-            
-            // Debug
-            //console.log(document.getElementsByClassName('gs-id-0'));
-            //console.log(node)
-            //console.log(board['engine']['nodes'])
+    useEffect(() => {
+        // Verificar si el tablero está inicializado
+        if (board) {
+            // Agregar un listener para el evento 'change'
+            board.on('change', (event, nodes) => {
+                // nodes es un array de objetos que contienen la información actualizada de los widgets
+                // Aquí puedes acceder a node.x, node.y, node.w y node.h para cada widget
+                nodes.forEach(node => {
+                    console.log('Widget ID:', node.id);
+                    console.log('New X position:', node.x);
+                    console.log('New Y position:', node.y);
+                    console.log('New width:', node.w);
+                    console.log('New height:', node.h);
+                    // Aquí puedes realizar cualquier acción adicional que desees con esta información
+                });
+            });
+            console.log(board.engine.nodes);
         }
-    };
+    }, [board]); // Ejecutar este efecto cada vez que board cambie
+    
+
 
     // Función que añade un elemento a la cuadrícula
     const addNewWidgetPos = (id, ship, x, y, esHorizontal) => {
@@ -252,6 +214,7 @@ export function Fleet() {
         }
         if (board) {    // El tablero está inicializado
             board.addWidget(node);   // Añadir widget a la cuadrícula
+            
             setCount(prevCount => prevCount + 1); // Incrementar el contador
             
             // Debug
