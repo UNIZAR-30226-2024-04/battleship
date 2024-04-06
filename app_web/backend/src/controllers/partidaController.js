@@ -44,9 +44,22 @@ function dispararCoordenada(tablero, i, j) {
 // ----------- FUNCIONES EXPORTADAS ----------- //
 // -------------------------------------------- //
 
-// Crea una partida con dos jugadores (_id, nombreId) y un bioma
-// Guarda la partida en la base de datos
-// Devuelve la partida creada
+/**
+ * @function crearPartida
+ * @description Crea una partida con dos jugadores (_id, nombreId) y un bioma, la guarda en la base de datos y devuelve la partida creada
+ * @param {Object} req - El objeto de solicitud HTTP
+ * @param {String} [req.body._id1] - El id del jugador 1, si no se proporciona se espera el nombreId1
+ * @param {String} [req.body._id2] - El id del jugador 2, si no se proporciona se espera el nombreId2
+ * @param {String} [req.body.nombreId1] - El nombreId del jugador 1
+ * @param {String} [req.body.nombreId2] - El nombreId del jugador 2
+ * @param {BiomasDisponibles} req.body.bioma - El bioma de la partida
+ * @param {Object} res - El objeto de respuesta HTTP
+ * @returns {Partida} La partida creada
+ * @example 
+ * peticion = { body: { nombreId1: 'jugador1', nombreId2: 'jugador2', bioma: 'Mediterraneo' } }
+ * respuesta = { json: () => {} }
+ * await crearPartida(peticion, respuesta)
+ */
 exports.crearPartida = async (req, res) => {
   try {
     const { _id1, _id2, nombreId1, nombreId2, bioma = 'Mediterraneo', ...extraParam } = req.body;
@@ -106,7 +119,20 @@ exports.crearPartida = async (req, res) => {
   }
 };
 
-// Devuelve el tablero de barcos y los disparos realizados
+/**
+ * @function mostrarMiTablero
+ * @description Devuelve el tablero de barcos y los disparos realizados del jugador en la partida
+ * @param {Object} req - El objeto de solicitud HTTP
+ * @param {String} [req.body._id] - El id de la partida, si no se proporciona se espera el codigo
+ * @param {String} [req.body.codigo] - El codigo de la partida
+ * @param {Number} req.body.jugador - El número del jugador (1 o 2)
+ * @param {Object} res - El objeto de respuesta HTTP
+ * @returns {Object} El tablero de barcos y los disparos realizados del jugador
+ * @example
+ * peticion = { body: { codigo: '1234567890', jugador: 1 } }
+ * respuesta = { json: () => {} }
+ * await mostrarMiTablero(peticion, respuesta)
+ */
 exports.mostrarMiTablero = async (req, res) => {
   try {
     const { _id, codigo, jugador, ...extraParam } = req.body;
@@ -153,6 +179,20 @@ exports.mostrarMiTablero = async (req, res) => {
 };
 
 // Mostrar tablero de barcos del jugador enemigo
+/**
+ * @function mostrarTableroEnemigo
+ * @description Devuelve el tablero de barcos del jugador enemigo en la partida
+ * @param {Object} req - El objeto de solicitud HTTP
+ * @param {String} [req.body._id] - El id de la partida, si no se proporciona se espera el codigo
+ * @param {String} [req.body.codigo] - El codigo de la partida
+ * @param {Number} req.body.jugador - El número del jugador (1 o 2)
+ * @param {Object} res - El objeto de respuesta HTTP
+ * @returns {Object} El tablero de barcos del jugador enemigo
+ * @example
+ * peticion = { body: { codigo: '1234567890', jugador: 1 } }
+ * respuesta = { json: () => {} }
+ * await mostrarTableroEnemigo(peticion, respuesta)
+ */
 exports.mostrarTableroEnemigo = async (req, res) => {
   try {
     const { _id, codigo, jugador, ...extraParam } = req.body;
@@ -198,6 +238,19 @@ exports.mostrarTableroEnemigo = async (req, res) => {
 };
 
 // Devuelve los tableros y disparos realizados de ambos jugadores 
+/**
+ * @function mostrarTableros
+ * @description Devuelve los tableros y disparos realizados de ambos jugadores en la partida
+ * @param {Object} req - El objeto de solicitud HTTP
+ * @param {String} [req.body._id] - El id de la partida, si no se proporciona se espera el codigo
+ * @param {String} [req.body.codigo] - El codigo de la partida
+ * @param {Object} res - El objeto de respuesta HTTP
+ * @returns {Object} Los tableros y disparos realizados de ambos jugadores
+ * @example
+ * peticion = { body: { codigo: '1234567890' } }
+ * respuesta = { json: () => {} }
+ * await mostrarTableros(peticion, respuesta)
+ */
 exports.mostrarTableros = async (req, res) => {
   try {
     const { _id, codigo, ...extraParam } = req.body;
@@ -240,6 +293,22 @@ exports.mostrarTableros = async (req, res) => {
 };
 
 // Realizar un disparo en la coordenada (i, j) del enemigo
+/**
+ * @function realizarDisparo
+ * @description Realiza un disparo en la coordenada (i, j) del enemigo y actualiza el estado de la partida
+ * @param {Object} req - El objeto de solicitud HTTP
+ * @param {String} [req.body._id] - El id de la partida, si no se proporciona se espera el codigo
+ * @param {String} [req.body.codigo] - El codigo de la partida
+ * @param {Number} req.body.jugador - El número del jugador (1 o 2)
+ * @param {Number} req.body.i - La coordenada i del disparo
+ * @param {Number} req.body.j - La coordenada j del disparo
+ * @param {Object} res - El objeto de respuesta HTTP
+ * @returns {Partida} La partida modificada
+ * @example
+ * peticion = { body: { codigo: '1234567890', jugador: 1, i: 1, j: 1 } }
+ * respuesta = { json: () => {} }
+ * await realizarDisparo(peticion, respuesta)
+ */
 exports.realizarDisparo = async (req, res) => {
   try {
     const { _id, codigo, jugador, i, j, ...extraParam } = req.body;
@@ -326,6 +395,22 @@ exports.realizarDisparo = async (req, res) => {
 
 // Actualizar estado de la partida tras un disparo o habilidad del adversario
 // Devuelve mi tablero y los disparos realizados
+/**
+ * @function actualizarEstadoPartida
+ * @description Actualiza el estado de la partida tras un disparo o habilidad del adversario
+ * @param {Object} req - El objeto de solicitud HTTP
+ * @param {String} [req.body._id] - El id de la partida, si no se proporciona se espera el codigo
+ * @param {String} [req.body.codigo] - El codigo de la partida
+ * @param {Number} req.body.jugador - El número del jugador (1 o 2)
+ * @param {Object[]} req.body.tablero - El tablero de barcos del jugador
+ * @param {Object[]} req.body.disparos - Los disparos realizados por el jugador
+ * @param {Object} res - El objeto de respuesta HTTP
+ * @returns {Partida} La partida modificada
+ * @example
+ * peticion = { body: { codigo: '1234567890', jugador: 1, tablero: [], disparos: [] } }
+ * respuesta = { json: () => {} }
+ * await actualizarEstadoPartida(peticion, respuesta)
+ */
 exports.actualizarEstadoPartida = async (req, res) => {
   try {
     const { codigo, jugador } = req.body;
@@ -353,6 +438,21 @@ const { actualizarEstadisticas } = require('./perfilController')
 
 // Funcion para guardar las estadisticas de cada jugador al finalizar la partida
 // Devuelve las estadisticas de la partida de ambos jugadores
+/**
+ * @function actualizarEstadisticasFinales
+ * @description Actualiza las estadísticas de los jugadores al finalizar la partida
+ * @param {Object} req - El objeto de solicitud HTTP
+ * @param {String} [req.body._id] - El id de la partida, si no se proporciona se espera el codigo
+ * @param {String} [req.body.codigo] - El codigo de la partida
+ * @param {Object} res - El objeto de respuesta HTTP
+ * @returns {Object} Las estadísticas de la partida de ambos jugadores
+ * @example
+ * peticion = { body: { codigo: '1234567890' } }
+ * respuesta = { json: () => {} }
+ * await actualizarEstadisticasFinales(peticion, respuesta)
+ * @see module:perfilController.actualizarEstadisticas
+ * @requires module:perfilController.actualizarEstadisticas
+ */
 exports.actualizarEstadisticasFinales = async (req, res) => {
   try {
     const { codigo } = req.body;
@@ -397,6 +497,19 @@ exports.actualizarEstadisticasFinales = async (req, res) => {
 
 
 // Funcion para obtener el chat de una partida
+/**
+ * @function obtenerChat
+ * @description Devuelve el chat de la partida
+ * @param {Object} req - El objeto de solicitud HTTP
+ * @param {String} [req.body._id] - El id de la partida, si no se proporciona se espera el codigo
+ * @param {String} [req.body.codigo] - El codigo de la partida
+ * @param {Object} res - El objeto de respuesta HTTP
+ * @returns {Object[]} El chat de la partida
+ * @example
+ * peticion = { body: { codigo: '1234567890' } }
+ * respuesta = { json: () => {} }
+ * await obtenerChat(peticion, respuesta)
+ */
 exports.obtenerChat = async (req, res) => {
   try {
     const { _id, codigo, ...extraParam  } = req.body;
@@ -426,6 +539,22 @@ exports.obtenerChat = async (req, res) => {
 };
 
 // Funcion para enviar un mensaje al chat de una partida
+/**
+ * @function enviarMensaje
+ * @description Envia un mensaje al chat de la partida
+ * @param {Object} req - El objeto de solicitud HTTP
+ * @param {String} [req.body._id] - El id de la partida, si no se proporciona se espera el codigo
+ * @param {String} [req.body.codigo] - El codigo de la partida
+ * @param {Number} req.body.autor - El número del jugador que envía el mensaje (1 o 2)
+ * @param {String} req.body.mensaje - El mensaje a enviar
+ * @param {Object} res - El objeto de respuesta HTTP
+ * @returns {Partida} La partida modificada
+ * @example
+ * peticion = { body: { codigo: '1234567890', autor: 1, mensaje
+ * : 'Hola' }
+ * respuesta = { json: () => {} }
+ * await enviarMensaje(peticion, respuesta)
+ */
 exports.enviarMensaje = async (req, res) => {
   try {
     const { _id, codigo, autor, mensaje, ...extraParam } = req.body;
@@ -477,6 +606,4 @@ exports.enviarMensaje = async (req, res) => {
     res.status(500).send('Hubo un error');
   }
 };
-
-
 

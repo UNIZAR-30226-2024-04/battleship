@@ -25,6 +25,7 @@ function generarCodigo() {
 
 /**
  * @memberof module:publicacionController
+ * @function crearPublicacion
  * @description Crea una nueva publicación en el perfil del usuario especificado.
  * @param {Request} req - El objeto de solicitud HTTP.
  * @param {Response} [req.body.nombreId] - El perfil debe existir en la base de datos.
@@ -197,6 +198,7 @@ exports.crearPublicacion = async (req, res) => {
 
 /**
  * @memberof module:publicacionController
+ * @function getPublicacionesPerfil
  * @description Devuelve todas las publicaciones del perfil del usuario.
  * @param {Request} req - El objeto de solicitud HTTP.
  * @param {Response} [req.body.nombreId] - El perfil debe existir en la base de datos.
@@ -238,6 +240,7 @@ exports.getPublicacionesPerfil  = async (req, res) => {
 
 /**
  * @memberof module:publicacionController
+ * @function reaccionarPublicacion
  * @description Añade una reacción a una publicación identificada por su id, dado un usuario y una reacción predefinida.
  * @param {Request} req - El objeto de solicitud HTTP.
  * @param {Response} [req.body.publicacionId] - La publicación debe existir en la base de datos.
@@ -324,6 +327,7 @@ exports.reaccionarPublicacion = async (req, res) => {
 
 /**
  * @memberof module:publicacionController
+ * @function eliminarPublicacion
  * @description Elimina una publicación de un usuario identificada por su id.
  * @param {Request} req - El objeto de solicitud HTTP.
  * @param {Response} [req.body.publicacionId] - La publicación debe existir en la base de datos.

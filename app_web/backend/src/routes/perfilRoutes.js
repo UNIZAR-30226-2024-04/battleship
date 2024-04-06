@@ -17,7 +17,7 @@ router.post('/inicioSesion', perfilController.iniciarSesion);
 // router.post('../perfil', perfilController.crearPerfil);
 // Rutas para modificar perfil
 // router.post('/perfiles', perfilController.modificarPerfilDatosPersonales);
-// router.post('/perfiles', perfilController.modificarMazo);
+router.post('/modificarMazo', perfilController.modificarMazo);
 router.post('/moverBarcoInicial', perfilController.moverBarcoInicial);
 // router.post('/perfiles', perfilController.actualizarEstadisticas);
 // // Ruta para eliminar perfil

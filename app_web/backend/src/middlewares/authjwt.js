@@ -7,12 +7,13 @@ const verificarToken = async (req, res, next) => {
     if (!token) {
         return res.status(403).send({ message: 'No se ha proporcionado un token' });
     }
-
     jwt.verify(token, config.secret, async (err, decoded) => {
         if (err) {
             return res.status(401).send({ message: 'No autorizado' });
         }
-        req.nombreId = decoded.id;
+        if (decoded.id !== req.nombreId) {
+            return res.status(401).send({ message: 'El token no corresponde al usuario' });
+        }
         const perfil = await Perfil.findOne({ nombreId: req.nombreId });
         if (!perfil) {
             return res.status(404).send({ message: 'Perfil no encontrado' });

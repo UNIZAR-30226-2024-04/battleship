@@ -26,12 +26,12 @@ import torpedoImg from '../Images/skills/torpedo.png';
 // Establecer la url de obtenerPerfil, moverBarcoInicial del backend
 const urlObtenerPerfil = 'http://localhost:8080/perfil/obtenerUsuario';
 const urlMoverBarcoInicial = 'http://localhost:8080/perfil/moverBarcoInicial';
+const urlModificarMazoHabilidades = 'http://localhost:8080/perfil/modificarMazo';
 
 
 function esBarcoHorizontal(barco) {
     return barco[0].i === barco[1].i;
 }
-
 
 export function Fleet() {    
     // Contiene el tamaño y nombre de los barcos a usar
@@ -44,20 +44,22 @@ export function Fleet() {
     };
 
     const skillInfo = {
-        'Mine': { id: 1, name: "Mine", img: mineImg},
-        'Missile': { id: 2, name: "Missile", img: missileImg},
-        'Burst': { id: 3, name: "Burst", img: burstImg},
+        'Mine': { id: 1, name: "Mina", img: mineImg},
+        'Missile': { id: 2, name: "Teledirigido", img: missileImg},
+        'Burst': { id: 3, name: "Rafaga", img: burstImg},
         'Sonar': { id: 4, name: "Sonar", img: sonarImg},
-        'Torpedo': { id: 5, name: "Torpedo", img: torpedoImg},
+        'Torpedo': { id: 5, name: "Recargado", img: torpedoImg},
     };
 
+    let tableroInicial = [];
+
     // cola fifo para las skills de tamaño 3
-    const [skillQueue, setSkillQueue] = useState([]); // Estado para la cola de habilidades
+    let [skillQueue, setSkillQueue] = useState([]); // Estado para la cola de habilidades
 
     // Función para agregar una skill a la cola
-    const enqueueSkill = (skillId) => {
-        if (!skillQueue.includes(skillId)) {
-            setSkillQueue(prevQueue => [...prevQueue, skillId]);
+    const enqueueSkill = (skillName) => {
+        if (!skillQueue.includes(skillName)) {
+            setSkillQueue(prevQueue => [...prevQueue, skillName]);
             if (skillQueue.length >= 3) {
                 setSkillQueue(prevQueue => prevQueue.slice(1)); // Eliminar el primer elemento si la cola excede el límite
             }
@@ -65,8 +67,8 @@ export function Fleet() {
         console.log("Skill queue: ", skillQueue);
     };
 
-    const esSkillEnCola = (skillId) => {
-        return skillQueue.includes(skillId);
+    const isSkillEnqueued = (skillName) => {
+        return skillQueue.includes(skillName);
     };
 
     const boardDimension = 10;
@@ -126,7 +128,7 @@ export function Fleet() {
                 return response.json();
             })
             .then(data => {
-                let tableroInicial = data.tableroInicial;
+                tableroInicial = data.tableroInicial;
                 // const tableroInicial = [
                 //     [{ i: 1, j: 1 }, { i: 1, j: 2 }],
                 //     [{ i: 7, j: 1 }, { i: 8, j: 1 }, { i: 9, j: 1 }],
@@ -135,31 +137,7 @@ export function Fleet() {
                 //     [{ i: 10, j: 6 }, { i: 10, j: 7 }, { i: 10, j: 8 }, { i: 10, j: 9 }, { i: 10, j: 10 }]
                 //   ];
                 mostrarWidgetsTablero(tableroInicial);
-
-                
-                
-
-                // fetch(urlMoverBarcoInicial, {
-                //     method: 'POST',
-                //     headers: {
-                //     'Content-Type': 'application/json'
-                //     },
-                //     body: JSON.stringify({ nombreId: 'usuario1',  barcoId: 0, iProaNueva: , jProaNueva: , rotar: })
-                // })
-                // .then(response => {
-                //     if (!response.ok) {
-                //     throw new Error('La solicitud ha fallado');
-                //     }
-                //     return response.json();
-                // })
-                // .then(data => {
-                //     let tableroInicial = data.tableroInicial;
-                //      if (tableroInicial) {}
-
-                // })
-
-
-
+                skillQueue = data.mazoHabilidades;
             })
             .catch(error => {
                 console.error('Error:', error);
@@ -182,8 +160,38 @@ export function Fleet() {
                     console.log('New Y position:', node.y);
                     console.log('New width:', node.w);
                     console.log('New height:', node.h);
-                    // Aquí puedes realizar cualquier acción adicional que desees con esta información
-                });
+
+                    // Verificar si el barco ha cambiado de orientación
+                    let esHorizontalAntes = esBarcoHorizontal(tableroInicial[node.id-1]);
+                    let esHorizontalDespues = node.w > node.h;
+
+                    if (esHorizontalAntes === esHorizontalDespues) {
+                        // Aquí editar el tablero en la base de datos
+                        fetch(urlMoverBarcoInicial, {
+                            method: 'POST',
+                            headers: {
+                            'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ nombreId: 'usuario1',  barcoId: node.id-1, iProaNueva: node.y+1, jProaNueva: node.x+1})
+                        })
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('La solicitud ha fallado');
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            if (data) {
+                                console.log(data);
+                                borrarWidgetsTablero();
+                                mostrarWidgetsTablero(data.tableroInicial);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                        });
+                    }
+                })
             });
             console.log(board.engine.nodes);
         }
@@ -240,36 +248,79 @@ export function Fleet() {
         }
     
         if (clickedNode) {
-            // Rotamos figura widget
-            const rotatedWidget = {
-                h: clickedNode.w,
-                w: clickedNode.h,
-            }
-
             const wantedAtribute = "[gs-id=\"" + clickedNode.id + "\"]";
             const widgetTarget = document.querySelector(wantedAtribute);
 
-            // Obtener el tipo de barco del widgetTarget
-            let shipType = widgetTarget.querySelector('img').alt;
-            
-            if (rotatedWidget.h > rotatedWidget.w) {
-                // Poner la imagen rotada
-                rotatedWidget.content = `<img src="${shipInfo[shipType].imgRotated}" alt="${shipInfo[shipType].name}";" />`;
-            } else {
-                // Poner la imagen normal
-                rotatedWidget.content = `<img src="${shipInfo[shipType].img}" alt="${shipInfo[shipType].name}";" />`;
-            }
-            if (widgetTarget) {   // Si no ha dado error
-                board.update(widgetTarget, rotatedWidget)
-            }
-            
-            /*
-            // Rotamos contenido
-            let contenido = elemento[index].querySelector('.grid-stack-item-content');
-            contenido.style.transform = 'rotate(90deg)';
-            */
+            // Usar el backend para ver si la rotacion es posible
+            // y en tal caso, guardar en bbdd y rotar el widget
+            fetch(urlMoverBarcoInicial, {
+                method: 'POST',
+                headers: {
+                'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ nombreId: 'usuario1',  barcoId: clickedNode.id-1, rotar: 1})
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('La solicitud ha fallado');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data) {
+                    console.log(data);
+                    console.log("Rotar barco");
+                    // Rotamos figura widget
+                    const rotatedWidget = {
+                        h: clickedNode.w,
+                        w: clickedNode.h,
+                    }
+
+                    // Obtener el tipo de barco del widgetTarget
+                    let shipType = widgetTarget.querySelector('img').alt;
+                    
+                    if (rotatedWidget.h > rotatedWidget.w) {
+                        // Poner la imagen rotada
+                        rotatedWidget.content = `<img src="${shipInfo[shipType].imgRotated}" alt="${shipInfo[shipType].name}";" />`;
+                    } else {
+                        // Poner la imagen normal
+                        rotatedWidget.content = `<img src="${shipInfo[shipType].img}" alt="${shipInfo[shipType].name}";" />`;
+                    }
+                    if (widgetTarget) {   // Si no ha dado error
+                        board.update(widgetTarget, rotatedWidget);
+                    }
+                } else {   // Si no se pudo rotar el barco
+                    board.update(widgetTarget, widgetTarget); // actualizo para que disparar el mostrarWidgetsTablero
+                    console.log("No se pudo rotar el barco");
+                }
+            })
         }
     };
+
+    useEffect(() => {
+        // Modificar el mazo en la base de datos
+        fetch(urlModificarMazoHabilidades, {
+            method: 'POST',
+            headers: {
+            'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ nombreId: 'usuario1',  mazoHabilidades: skillQueue})
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('La solicitud ha fallado');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data) {
+                console.log(data);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    }, [skillQueue]);
 
 
     return (
@@ -283,24 +334,24 @@ export function Fleet() {
                     <div className="fleet-main-content-container">
                         <div className="grid-stack fleet-board" onClick={handleItemClick}></div>
                         <div className="ship-buttons-container">
-                            <div className={`skill-button ${esSkillEnCola(1) ? 'skill-button-selected' : ''}`}>
-                                <img onClick={() => enqueueSkill(1)} src={mineImg} alt="Mine" />
+                            <div className={`skill-button ${isSkillEnqueued("Mina") ? 'skill-button-selected' : ''}`}>
+                                <img onClick={() => enqueueSkill("Mina")} src={mineImg} alt="Mine" />
                             </div>
                             <br></br>
-                            <div className={`skill-button ${esSkillEnCola(2) ? 'skill-button-selected' : ''}`}>
-                                <img onClick={() => enqueueSkill(2)} src={missileImg} alt="Missile" />
+                            <div className={`skill-button ${isSkillEnqueued("Teledirigido") ? 'skill-button-selected' : ''}`}>
+                                <img onClick={() => enqueueSkill("Teledirigido")} src={missileImg} alt="Missile" />
                             </div>
                             <br></br>
-                            <div className={`skill-button ${esSkillEnCola(3) ? 'skill-button-selected' : ''}`}>
-                                <img onClick={() => enqueueSkill(3)} src={burstImg} alt="Burst" />
+                            <div className={`skill-button ${isSkillEnqueued("Rafaga") ? 'skill-button-selected' : ''}`}>
+                                <img onClick={() => enqueueSkill("Rafaga")} src={burstImg} alt="Burst" />
                             </div>
                             <br></br>
-                            <div className={`skill-button ${esSkillEnCola(4) ? 'skill-button-selected' : ''}`}>
-                                <img onClick={() => enqueueSkill(4)} src={sonarImg} alt="Sonar" />
+                            <div className={`skill-button ${isSkillEnqueued("Sonar") ? 'skill-button-selected' : ''}`}>
+                                <img onClick={() => enqueueSkill("Sonar")} src={sonarImg} alt="Sonar" />
                             </div>
                             <br></br>
-                            <div className={`skill-button ${esSkillEnCola(5) ? 'skill-button-selected' : ''}`}>
-                                <img onClick={() => enqueueSkill(5)} src={torpedoImg} alt="Torpedo" />
+                            <div className={`skill-button ${isSkillEnqueued("Recargado") ? 'skill-button-selected' : ''}`}>
+                                <img onClick={() => enqueueSkill("Recargado")} src={torpedoImg} alt="Torpedo" />
                             </div>
                         </div>
                     </div>

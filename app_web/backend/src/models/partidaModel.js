@@ -8,6 +8,45 @@ const climasDisponibles = require('../data/climas');
 const Tablero = require('../data/tablero');
 const Coordenada = require('../data/coordenada');
 
+/**
+ * @module models/partidaModel
+ * @description Modelo de Partida
+ * @requires mongoose
+ * @requires data/biomas
+ * @requires data/climas
+ * @requires data/tablero
+ * @requires data/coordenada
+ * @requires data/perfil
+ * @requires models/perfilModel
+ */
+
+/**
+ * @typedef {Object} mensajeChat
+ * @property {String} mensaje - Mensaje del chat
+ * @property {String} autor - Autor del mensaje
+ * @property {Date} timestamp - Fecha y hora del mensaje
+ */
+
+/**
+ * @typedef {Object} Partida
+ * @property {Number} codigo - Identificador de la partida
+ * @property {mensajeChat[]} chat - Lista de mensajes del chat
+ * @property {Number} contadorTurno - Jugador 1 juga si es impar, jugador 2 si es par
+ * @property {Perfil} jugador1 - Perfil del jugador 1
+ * @property {Perfil} jugador2 - Perfil del jugador 2
+ * @property {Tablero} tableroBarcos1 - Lista barcos del jugador 1
+ * @property {Tablero} tableroBarcos2 - Lista barcos del jugador 2
+ * @property {Coordenada[]} disparosRealizados1 - Lista con los disparos realizados por J1
+ * @property {Coordenada[]} disparosRealizados2 - Lista con los disparos realizados por J2
+ * @property {String} clima - Clima actual Calma/Viento/Tormenta/Niebla
+ * @property {Number} usosHab1 - Total de usos restantes de habilidades del J1
+ * @property {Number} usosHab2 - Total de usos restantes de habilidades del J2
+ * @property {Coordenada[]} minas1 - Lista con las minas colocadas por J1
+ * @property {Coordenada[]} minas2 - Lista con las minas colocadas por J2
+ * @property {String} bioma - Bioma en el que se va a jugar la partida y que se caracteriza por una mayor probabilidad de clima
+ * @property {Perfil} ganador - Perfil del jugador ganador
+ */
+
 // Partida Schema
 const partidaSchema = new Schema({
   codigo: { // Identificador de la partida

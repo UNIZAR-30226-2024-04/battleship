@@ -18,7 +18,7 @@ console.log = function() {};
 describe("Crear partida", () => {
     beforeAll(async () => {
         const connection = mongoose.connection;
-        connection.dropDatabase();
+        await connection.dropDatabase();
         const req = { body: { nombreId: 'usuario1', contraseña: 'Passwd1.',
         correo: 'usuario1@example.com' } };
         const res = { json: () => {}, status: function(s) { 
@@ -107,7 +107,7 @@ var _codigo = 0;
 describe("Mostrar mi tablero", () => {
     beforeAll(async () => {
         const connection = mongoose.connection;
-        connection.dropDatabase();
+        await connection.dropDatabase();
         const req = { body: { nombreId: 'usuario1', contraseña: 'Passwd1.',
         correo: 'usuario1@example.com' } };
         const res = { json: () => {}, status: function(s) { 
@@ -186,7 +186,7 @@ _codigo = 1;
 describe("Mostrar tablero enemigo", () => {
     beforeAll(async () => {
         const connection = mongoose.connection;
-        connection.dropDatabase();
+        await connection.dropDatabase();
         const req = { body: { nombreId: 'usuario1', contraseña: 'Passwd1.',
         correo: 'usuario1@example.com' } };
         const res = { json: () => {}, status: function(s) { 
@@ -264,7 +264,7 @@ describe("Mostrar tablero enemigo", () => {
 describe("Mostrar tableros", () => {
     beforeAll(async () => {
         const connection = mongoose.connection;
-        connection.dropDatabase();
+        await connection.dropDatabase();
         const req = { body: { nombreId: 'usuario1', contraseña: 'Passwd1.',
         correo: 'usuario1@example.com' } };
         const res = { json: () => {}, status: function(s) { 
@@ -335,7 +335,7 @@ describe("Mostrar tableros", () => {
 describe("Realizar disparo", () => {
     beforeAll(async () => {
         const connection = mongoose.connection;
-        connection.dropDatabase();
+        await connection.dropDatabase();
         const req = { body: { nombreId: 'usuario1', contraseña: 'Passwd1.',
         correo: 'usuario1@example.com' } };
         const res = { json: () => {}, status: function(s) { 
@@ -477,7 +477,7 @@ describe("Realizar disparo", () => {
 describe("Enviar mensaje", () => {
     beforeAll(async () => {
         const connection = mongoose.connection;
-        connection.dropDatabase();
+        await connection.dropDatabase();
         const req = { body: { nombreId: 'usuario1', contraseña: 'Passwd1.',
         correo: 'usuario1@example.com' } };
         const res = { json: () => {}, status: function(s) { 
@@ -564,7 +564,7 @@ describe("Enviar mensaje", () => {
 describe("Obtener chat", () => {
     beforeAll(async () => {
         const connection = mongoose.connection;
-        connection.dropDatabase();
+        await connection.dropDatabase();
         const req = { body: { nombreId: 'usuario1', contraseña: 'Passwd1.',
         correo: 'usuario1@example.com' } };
         const res = { json: () => {}, status: function(s) { 
