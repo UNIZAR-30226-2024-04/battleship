@@ -84,11 +84,43 @@ export function Fleet() {
                 //     [{ i: 3, j: 6 }, { i: 4, j: 6 }, { i: 5, j: 6 }, { i: 6, j: 6 }],
                 //     [{ i: 10, j: 6 }, { i: 10, j: 7 }, { i: 10, j: 8 }, { i: 10, j: 9 }, { i: 10, j: 10 }]
                 //   ];
-                addNewWidgetPos("Patrol", tableroInicial[0][0].j-1, tableroInicial[0][0].i-1, esBarcoHorizontal(tableroInicial[0]));
-                addNewWidgetPos("Destroy", tableroInicial[1][0].j-1, tableroInicial[1][0].i-1, esBarcoHorizontal(tableroInicial[1]));
-                addNewWidgetPos("Sub", tableroInicial[2][0].j-1, tableroInicial[2][0].i-1, esBarcoHorizontal(tableroInicial[2]));
-                addNewWidgetPos("Bship", tableroInicial[3][0].j-1, tableroInicial[3][0].i-1, esBarcoHorizontal(tableroInicial[3]));
-                addNewWidgetPos("Aircraft", tableroInicial[4][0].j-1, tableroInicial[4][0].i-1, esBarcoHorizontal(tableroInicial[4]));
+                // setTimeout(() => {
+                //     addNewWidgetPos("Patrol", tableroInicial[0][0].j-1, tableroInicial[0][0].i-1, esBarcoHorizontal(tableroInicial[0]));
+                // }, 1000); // Delay of 1 second (1000 milliseconds)
+
+                // setTimeout(() => {
+                //     addNewWidgetPos("Destroy", tableroInicial[1][0].j-1, tableroInicial[1][0].i-1, esBarcoHorizontal(tableroInicial[1]));
+                // }, 2000); // Delay of 2 seconds (2000 milliseconds)
+
+                // setTimeout(() => {
+                //     addNewWidgetPos("Sub", tableroInicial[2][0].j-1, tableroInicial[2][0].i-1, esBarcoHorizontal(tableroInicial[2]));
+                // }, 3000); // Delay of 3 seconds (3000 milliseconds)
+
+                // setTimeout(() => {
+                //     addNewWidgetPos("Bship", tableroInicial[3][0].j-1, tableroInicial[3][0].i-1, esBarcoHorizontal(tableroInicial[3]));
+                // }, 4000); // Delay of 4 seconds (4000 milliseconds)
+
+                // setTimeout(() => {
+                //     addNewWidgetPos("Aircraft", tableroInicial[4][0].j-1, tableroInicial[4][0].i-1, esBarcoHorizontal(tableroInicial[4]));
+                // }, 5000); // Delay of 5 seconds (5000 milliseconds)
+
+                addNewWidgetPos(1, "Patrol", tableroInicial[0][0].j-1, tableroInicial[0][0].i-1, esBarcoHorizontal(tableroInicial[0]));
+
+                addNewWidgetPos(2, "Destroy", tableroInicial[1][0].j-1, tableroInicial[1][0].i-1, esBarcoHorizontal(tableroInicial[1]));
+
+                addNewWidgetPos(3, "Sub", tableroInicial[2][0].j-1, tableroInicial[2][0].i-1, esBarcoHorizontal(tableroInicial[2]));
+
+                addNewWidgetPos(4, "Bship", tableroInicial[3][0].j-1, tableroInicial[3][0].i-1, esBarcoHorizontal(tableroInicial[3]));
+
+                addNewWidgetPos(5, "Aircraft", tableroInicial[4][0].j-1, tableroInicial[4][0].i-1, esBarcoHorizontal(tableroInicial[4]));
+
+                setCount(6);
+
+                // addNewWidget("Patrol");
+                // addNewWidget("Destroy");
+                // addNewWidget("Sub");
+                // addNewWidget("Bship");
+                // addNewWidget("Aircraft");
                 
 
                 // fetch(urlMoverBarcoInicial, {
@@ -152,10 +184,10 @@ export function Fleet() {
     };
 
     // Función que añade un elemento a la cuadrícula
-    const addNewWidgetPos = (ship, x, y, esHorizontal) => {
+    const addNewWidgetPos = (id, ship, x, y, esHorizontal) => {
         //const shipName = shipInfo[ship].name;
         const node = {
-            id: String(count),      // id para identificar el widget
+            id: id,      // id para identificar el widget
             locked: true,           // inmutable por otros widgets
             //content: `<div onClick={handleItemClick}>${shipName}</div>`,
             //content: '<img src={aircraftImg} />',
@@ -194,6 +226,7 @@ export function Fleet() {
             const gridStackItem = event.target.closest('.grid-stack-item');
             if (gridStackItem) {
                 clickedNode = gridStackItem.gridstackNode;
+                console.log(clickedNode);
             }
         }
     
