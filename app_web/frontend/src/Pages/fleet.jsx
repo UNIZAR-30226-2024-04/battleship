@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Navbar } from "../Components/Navbar";
 import { GridStack } from 'gridstack';
 import '../Styles/fleet-style.css';
@@ -16,6 +16,12 @@ import submarineImgRotated from '../Images/fleet/submarino_rotado.png';
 import bshipImgRotated from '../Images/fleet/acorazado_rotado.png';
 import aircraftImgRotated from '../Images/fleet/portaaviones_rotado.png';
 import destroyImgRotated from '../Images/fleet/destructor_rotado.png';
+
+import mineImg from '../Images/skills/mina.png';
+import missileImg from '../Images/skills/misil.png';
+import burstImg from '../Images/skills/rafaga.png';
+import sonarImg from '../Images/skills/sonar.png';
+import torpedoImg from '../Images/skills/torpedo.png';
 
 // Establecer la url de obtenerPerfil, moverBarcoInicial del backend
 const urlObtenerPerfil = 'http://localhost:8080/perfil/obtenerUsuario';
@@ -37,6 +43,23 @@ export function Fleet() {
         'Patrol': { size: 2, name: "Patrol", img: patrolImg, imgRotated: patrolImgRotated},
     };
 
+    // // cola fifo para las skills de tamaño 3
+    // const skillQueue = useRef([]); // Cola FIFO para las skills de tamaño 3
+
+    // // Función para agregar una skill a la cola
+    // const enqueueSkill = (skill) => {
+    //     skillQueue.current.push(skill);
+    //     if (skillQueue.current.length > 3) {
+    //         skillQueue.current.shift();
+    //     }
+    // };
+
+    // // Ejemplo de uso
+    // enqueueSkill(1);
+    // enqueueSkill(2);
+    // enqueueSkill(3);
+    // console.log(skillQueue.current); // Output: [1, 2, 3]
+
     const boardDimension = 10;
 
     const [board, setBoard] = useState(null); // Estado para almacenar la instancia de GridStack
@@ -50,10 +73,13 @@ export function Fleet() {
             float: true,
             column: boardDimension,     // coordenadas indexadas a 0..9
             row: boardDimension,        // coordenadas indexadas a 0..9
-            removable: true,            // eliminar widgets si se sacan del tablero
+            removable: false,            // eliminar widgets si se sacan del tablero
             acceptWidgets: true,        // acepta widgets de otros tableros
             disableResize: true,        // quita icono de resize en cada widget
+            resizable: {},               // no se puede redimensionar
+            animate: false,              // animación al añadir o mover widgets
             //cellHeight: "80px", // Establecer la altura de cada celda en 50px
+            
         });
         setBoard(board); // Almacenar la instancia de GridStack en el estado
     }, []);
@@ -115,12 +141,6 @@ export function Fleet() {
                 addNewWidgetPos(5, "Aircraft", tableroInicial[4][0].j-1, tableroInicial[4][0].i-1, esBarcoHorizontal(tableroInicial[4]));
 
                 setCount(6);
-
-                // addNewWidget("Patrol");
-                // addNewWidget("Destroy");
-                // addNewWidget("Sub");
-                // addNewWidget("Bship");
-                // addNewWidget("Aircraft");
                 
 
                 // fetch(urlMoverBarcoInicial, {
@@ -274,20 +294,24 @@ export function Fleet() {
                     <div className="fleet-main-content-container">
                         <div className="grid-stack fleet-board" onClick={handleItemClick}></div>
                         <div className="ship-buttons-container">
-                            <div className="ship-buttons">
-                                <button onClick={() => addNewWidget("Aircraft")}>Añadir portaviones</button>
+                            <div className="skill-button">
+                                <img onClick={() => addNewWidget("Aircraft")} src={mineImg} alt="Mine" />
                             </div>
-                            <div className="ship-buttons">
-                                <button onClick={() => addNewWidget("Bship")}>Añadir acorazado</button>
+                            <br></br>
+                            <div className="skill-button">
+                                <img onClick={() => addNewWidget("Bship")} src={missileImg} alt="Missile" />
                             </div>
-                            <div className="ship-buttons">
-                                <button onClick={() => addNewWidget("Sub")}>Añadir submarino</button>
+                            <br></br>
+                            <div className="skill-button">
+                                <img onClick={() => addNewWidget("Sub")} src={burstImg} alt="Burst" />
                             </div>
-                            <div className="ship-buttons">
-                                <button onClick={() => addNewWidget("Destroy")}>Añadir destructor</button>
+                            <br></br>
+                            <div className="skill-button">
+                                <img onClick={() => addNewWidget("Destroy")} src={sonarImg} alt="Sonar" />
                             </div>
-                            <div className="ship-buttons">
-                                <button onClick={() => addNewWidget("Patrol")}>Añadir patrullera</button>
+                            <br></br>
+                            <div className="skill-button">
+                                <img onClick={() => addNewWidget("Patrol")} src={torpedoImg} alt="Torpedo" />
                             </div>
                         </div>
                     </div>
