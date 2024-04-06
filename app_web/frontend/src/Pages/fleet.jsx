@@ -133,7 +133,7 @@ export function Fleet() {
             //content: `<div onClick={handleItemClick}>${shipName}</div>`,
             //content: '<img src={aircraftImg} />',
             // content: shipInfo[ship].name,
-            content: `<img src="${shipInfo[ship].img}" alt="${shipInfo[ship].name}" style="width: 100%; height: 100%; overflow: hidden;" />`, // Mostrar imagen del barco con tamaño personalizado
+            content: `<img src="${shipInfo[ship].img}" alt="${shipInfo[ship].name}";" />`,
             //sizeToContent: true,
             x: Math.round((boardDimension - 1) * Math.random()),
             y: Math.round((boardDimension - 1) * Math.random()),
@@ -160,7 +160,7 @@ export function Fleet() {
             //content: `<div onClick={handleItemClick}>${shipName}</div>`,
             //content: '<img src={aircraftImg} />',
             // content: shipInfo[ship].name,
-            content: `<img src="${shipInfo[ship].img}" alt="${shipInfo[ship].name}" style="width: 100%; height: 100%; overflow: hidden;" />`, // Mostrar imagen del barco con tamaño personalizado
+            content: `<img src="${shipInfo[ship].img}" alt="${shipInfo[ship].name}";" />`,
             //sizeToContent: true,
             x: x,
             y: y,
@@ -168,7 +168,7 @@ export function Fleet() {
             h: 1,
         };
         if (!esHorizontal) {
-            node.content = `<img src="${shipInfo[ship].imgRotated}" alt="${shipInfo[ship].name}" style="width: 100%; height: 100%;" />`;
+            node.content = `<img src="${shipInfo[ship].imgRotated}" alt="${shipInfo[ship].name}";" />`;
             node.w = 1;
             node.h = shipInfo[ship].size;
         }
@@ -212,10 +212,10 @@ export function Fleet() {
             
             if (rotatedWidget.h > rotatedWidget.w) {
                 // Poner la imagen rotada
-                rotatedWidget.content = `<img src="${shipInfo[shipType].imgRotated}" alt="${shipInfo[shipType].name}" style="width: 100%; height: 100%; overflow: hidden;" />`;
+                rotatedWidget.content = `<img src="${shipInfo[shipType].imgRotated}" alt="${shipInfo[shipType].name}";" />`;
             } else {
                 // Poner la imagen normal
-                rotatedWidget.content = `<img src="${shipInfo[shipType].img}" alt="${shipInfo[shipType].name}" style="width: 100%; height: 100%; overflow: hidden;" />`;
+                rotatedWidget.content = `<img src="${shipInfo[shipType].img}" alt="${shipInfo[shipType].name}";" />`;
             }
             if (widgetTarget) {   // Si no ha dado error
                 board.update(widgetTarget, rotatedWidget)
