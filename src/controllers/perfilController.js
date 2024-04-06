@@ -738,13 +738,11 @@ exports.moverBarcoInicial = async (req, res) => {
     if (moverBarco(barco, iProaNueva, jProaNueva, rotar)) {
       // Verificar que la nueva posición del barco no colisiona con otros barcos
       if (barcoColisiona(tableroInicial, barco, barcoId)) {
-        res.status(404).send('El movimiento del barco colisiona con otros barcos');
-        console.error("El movimiento del barco colisiona con otros barcos");
+        console.log("El movimiento del barco colisiona con otros barcos");
         return;
       }
     } else {
-      res.status(404).send('El movimiento del barco se sale del tablero');
-      console.error("El movimiento del barco se sale del tablero");
+      console.log("El movimiento del barco se sale del tablero");
       return;
     }
     // Buscar y actualizar el perfil en la base de datos

@@ -943,32 +943,54 @@ describe('Mover barco inicial', () => {
     } catch (error) {}
     expect(res.statusCode).toBe(400);
   });
-  it('Debería fallar al trasladar un barco fuera del tablero', async () => {
+  it('Debería no actualizar al trasladar un barco fuera del tablero', async () => {
     const req = { body: { nombreId: 'usuario1', barcoId: 0, iProaNueva: 2, jProaNueva: 10 } };
     const res = { json: () => {}, status: function(s) { 
       this.statusCode = s; return this; }, send: () => {} };
     try {
       await moverBarcoInicial(req, res);
     } catch (error) {}
-    expect(res.statusCode).toBe(404);
+    expect(res.statusCode).toBe(undefined);
+
+    const perfil = await Perfil.findOne({nombreId: 'usuario1'});
+    expect(perfil.tableroInicial[0][0].i).toBe(3);
+    expect(perfil.tableroInicial[0][0].j).toBe(3);
+    expect(perfil.tableroInicial[0][1].i).toBe(3);
+    expect(perfil.tableroInicial[0][1].j).toBe(4);
   });
-  it('Debería fallar al rotar un barco fuera del tablero', async () => {
+  it('Debería no actualizar al rotar un barco fuera del tablero', async () => {
     const req = { body: { nombreId: 'usuario1', barcoId: 4, rotar: 1} };
     const res = { json: () => {}, status: function(s) { 
       this.statusCode = s; return this; }, send: () => {} };
     try {
       await moverBarcoInicial(req, res);
     } catch (error) {}
-    expect(res.statusCode).toBe(404);
+    expect(res.statusCode).toBe(undefined);
+    const perfil = await Perfil.findOne({nombreId: 'usuario1'});
+    expect(perfil.tableroInicial[4][0].i).toBe(10);
+    expect(perfil.tableroInicial[4][0].j).toBe(6);
+    expect(perfil.tableroInicial[4][1].i).toBe(10);
+    expect(perfil.tableroInicial[4][1].j).toBe(7);
+    expect(perfil.tableroInicial[4][2].i).toBe(10);
+    expect(perfil.tableroInicial[4][2].j).toBe(8);
+    expect(perfil.tableroInicial[4][3].i).toBe(10);
+    expect(perfil.tableroInicial[4][3].j).toBe(9);
+    expect(perfil.tableroInicial[4][4].i).toBe(10);
+    expect(perfil.tableroInicial[4][4].j).toBe(10);
   });
-  it('Debería fallar al trasladar un barco a una posición ocupada', async () => {
+  it('Debería no actualizar al trasladar un barco a una posición ocupada', async () => {
     const req = { body: { nombreId: 'usuario1', barcoId: 0, iProaNueva: 1, jProaNueva: 6 } };
     const res = { json: () => {}, status: function(s) { 
       this.statusCode = s; return this; }, send: () => {} };
     try {
       await moverBarcoInicial(req, res);
     } catch (error) {}
-    expect(res.statusCode).toBe(404);
+    expect(res.statusCode).toBe(undefined);
+    const perfil = await Perfil.findOne({nombreId: 'usuario1'});
+    expect(perfil.tableroInicial[0][0].i).toBe(3);
+    expect(perfil.tableroInicial[0][0].j).toBe(3);
+    expect(perfil.tableroInicial[0][1].i).toBe(3);
+    expect(perfil.tableroInicial[0][1].j).toBe(4);
   });
   it('Debería fallar al indicar un usuario no existente', async () => {
     const req = { body: { nombreId: 'usuario3', barcoId: 0, iProaNueva: 3, jProaNueva: 3 } };
