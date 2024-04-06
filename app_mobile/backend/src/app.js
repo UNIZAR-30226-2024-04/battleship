@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require("mongoose");
 const perfilRoutes = require('./routes/perfilRoutes');
+const partidaRoutes = require('./routes/partidaRoutes');
 
 const app = express();
 
@@ -31,6 +32,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // Rutas
 app.use('/perfil', perfilRoutes);
+app.use('/partida', partidaRoutes);
 
 app.get('/', (req, res) => {
     res.json({ message: 'API de Battleship' });

@@ -4,7 +4,9 @@ import 'comun.dart';
 import 'habilidad.dart';
 
 class Perfil extends StatefulWidget {
-  String _nombre = "";
+  String _email = '';
+  String _password = '';
+  String _name = '';
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final bool _rememberMe = false;
@@ -12,8 +14,8 @@ class Perfil extends StatefulWidget {
   List<Habilidad> _habilidades = [];  // habilidades desbloqueadas
   List<Habilidad> _habilidadesSeleccionadas = [];  // habilidades seleccionadas para la partida
 
-  Perfil(nombre, {super.key, turno = 1}) {
-    _nombre = nombre;
+  Perfil(name, {super.key, turno = 1}) {
+    _name = name;
     _habilidades = [Sonar(turno), Mina(turno), MisilTeledirigido(turno), RafagaDeMisiles(turno), TorpedoRecargado(turno)];
     _habilidadesSeleccionadas = [RafagaDeMisiles(turno), TorpedoRecargado(turno), MisilTeledirigido(turno)];
   }
@@ -23,6 +25,24 @@ class Perfil extends StatefulWidget {
 
   List<Habilidad> getHabilidadesSeleccionadas() {
     return _habilidadesSeleccionadas;
+  }
+
+  // Gettters
+  String get email => _email;
+  String get password => _password;
+  String get name => _name;
+
+  // Setters
+  set email(String email) {
+    _email = email;
+  }
+  
+  set password(String password) {
+    _password = password;
+  }
+
+  set name(String name) {
+    _name = name;
   }
 }
 

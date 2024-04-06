@@ -5,9 +5,9 @@ const verificarToken = require('../middlewares/authjwt');
 const verificarRegistro = require('../middlewares/verificarRegistro');
 
 // Ruta para registrar usuario
-router.post('/registro', verificarRegistro, perfilController.registrarUsuario);
+router.post('/registrarUsuario', verificarRegistro, perfilController.registrarUsuario);
 // Ruta para iniciar sesión
-router.post('/inicioSesion', perfilController.iniciarSesion);
+router.post('/iniciarSesion', perfilController.iniciarSesion);
 // Ruta para modificar perfil
 //router.post('/modificarPerfil', verificarToken, perfilController.modificarPerfil);
 // Ruta para obtener perfil

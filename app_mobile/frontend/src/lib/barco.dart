@@ -7,13 +7,15 @@ class Barco {
   int _longitud = 0;
   Offset _barcoPositionCached = const Offset(0.0, 0.0);
   bool _esRotadoCached = false;
+  bool _hundido = false;
 
-  Barco(String nombre, Offset barcoPosition, int longitud, bool esRotado) {
+  Barco(String nombre, Offset barcoPosition, int longitud, bool esRotado, bool hundido) {
     _nombre = nombre;
     _barcoPosition = barcoPosition;
     _longitud = longitud;
     _esRotado = esRotado;
     _barcoPositionCached = barcoPosition;
+    _hundido = hundido;
   }
 
   // MOstrar información del barco

@@ -5,9 +5,11 @@ import 'package:flutter/material.dart';
 import 'barco.dart';
 import 'comun.dart';
 import 'defender.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class Atacar extends StatefulWidget {
-  const Atacar({super.key});
+  String urlDisparar = 'http://localhost:8080/partida/realizarDisparo';
 
   @override
   _AtacarState createState() => _AtacarState();
@@ -85,7 +87,7 @@ class _AtacarState extends State<Atacar> {
                       Padding(
                         padding: const EdgeInsets.all(5),
                         child: Image.asset(
-                          'images/${Juego().tablero_oponente.barcos[i].nombre}.png', 
+                          Juego().tablero_oponente.barcos[i].getImagePath(), 
                           width: 50, 
                           height: 50,
                         ),
@@ -141,7 +143,7 @@ class _AtacarState extends State<Atacar> {
                         child: Opacity(
                           opacity: !Juego().getHabilidadesJugador()[i].disponible() ? 0.3 : 1.0,
                           child: Image.asset(
-                            'images/${Juego().getHabilidadesJugador()[i].nombre}.png', 
+                            Juego().getHabilidadesJugador()[i].getImagePath(), 
                             width: 50, 
                             height: 50,
                           ),
@@ -283,49 +285,61 @@ class _AtacarState extends State<Atacar> {
     );
   }
 
-  void _handleTap(int i, int j) {
-    Juego().disparosPendientes--;
+  Future<bool> dispararCoordenada(int i, int j) async {
+      var response = await http.post(
+        Uri.parse(widget.urlDisparar),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode(<String, dynamic>{
+          'codigo': Juego().codigo,
+          'jugador': Juego().turno,
+          'i': i,
+          'j': j,
+        }),
+      );
 
-    if(Juego().getHabilidadesJugador()[Juego().indexHabilidad].nombre == "mina") {
-      
+    if (response.statusCode == 200) {
+      var data = jsonDecode(response.body);
+      //var tableroInicial = data['tableroInicial'];
+      print(data);
+      if (data != null) {
+        print("DISPARO REALIZADO");
+        return true;
+      }
+      return false;
+    } else {
+      return false;
     }
-    else {
-      List<Offset> casillasAAtacar = [];
-      if(Juego().habilidadSeleccionadaEnTurno) {
-        var habilidadSeleccionada = Juego().getHabilidadesJugador()[Juego().indexHabilidad];
-        casillasAAtacar = habilidadSeleccionada.ejecutar(i, j);
-      }
-      else {
-        casillasAAtacar.add(Offset(i.toDouble(), j.toDouble()));
-      }
+  }
 
-      // Atacar las casillas
-      for (Offset casilla in casillasAAtacar) {
-        if (casilla.dx >= 1 && casilla.dx < Juego().tablero_oponente.numFilas && casilla.dy >= 1 && casilla.dy < Juego().tablero_oponente.numColumnas) {
-          print("Voy a atacar la casilla ${casilla.dx.toInt()}, ${casilla.dy.toInt()}");
-          Juego().tablero_oponente.casillasAtacadas[casilla.dx.toInt()][casilla.dy.toInt()] = true;
-        }
-      }
 
-      // BACKENDDDDDDDDDDDDDDDDDDDD
-      // Si la casilla tiene un barco.
-      if(true) { // casillas ocupadas
-        Juego().actualizarBarcosRestantes();
-        if(!Juego().habilidadSeleccionadaEnTurno) {
-          Juego().disparosPendientes++;
-        }
-        if(Juego().juegoTerminado()) {
-          print("¡Juego terminado!");
-          print("¡Ganador: ${Juego().getGanador()}!");
-          Juego().reiniciarPartida();
-          Navigator.pushReplacement(
-            context,
-            PageRouteBuilder(
-              pageBuilder: (context, animation1, animation2) => Principal(),
-              transitionDuration: const Duration(seconds: 0),
-            ),
-          );
-        }
+  void _handleTap(int i, int j) {
+    print("TURNO: " + Juego().turno.toString());
+    dispararCoordenada(i, j);
+    print("HE DISPARADO EN: " + i.toString() + " " + j.toString());
+    Juego().disparosPendientes--;
+    Juego().actualizarPartida();
+    print("HE ACTUALIZADO LA PARTIDA");
+  
+    // BACKENDDDDDDDDDDDDDDDDDDDD
+    // Si la casilla tiene un barco.
+    if(true) { // casillas ocupadas
+      Juego().actualizarBarcosRestantes();
+      if(!Juego().habilidadSeleccionadaEnTurno) {
+        Juego().disparosPendientes++;
+      }
+      if(Juego().juegoTerminado()) {
+        print("¡Juego terminado!");
+        print("¡Ganador: ${Juego().getGanador()}!");
+        Juego().reiniciarPartida();
+        Navigator.pushReplacement(
+          context,
+          PageRouteBuilder(
+            pageBuilder: (context, animation1, animation2) => Principal(),
+            transitionDuration: const Duration(seconds: 0),
+          ),
+        );
       }
     }
 

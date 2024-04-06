@@ -1,3 +1,4 @@
+import 'package:battleship/authProvider.dart';
 import 'package:battleship/comun.dart';
 import 'package:battleship/tablero.dart';
 import 'package:flutter/material.dart';
@@ -34,6 +35,9 @@ class Juego {
   List<String> nombresBarcosEnOrden = ['patrullero', 'destructor', 'submarino', 'acorazado', 'portaaviones'];  // barcos en orden de tamaño creciente
   String urlObtenerPerfil = 'http://localhost:8080/perfil/obtenerUsuario';
   String urlMoverBarcoInicial = 'http://localhost:8080/perfil/moverBarcoInicial';
+  String urlActualizarPartida = 'http://localhost:8080/partida/actualizarEstadoPartida';
+  String urlCrearPartida = 'http://localhost:8080/partida/crearPartida';
+  int codigo = 0;
 
   // Instancia privada y estática del singleton
   static final Juego _singleton = Juego._internal();
@@ -49,7 +53,7 @@ class Juego {
     barcosJugador1 = List.filled(numBarcos, true);
     barcosJugador2 = List.filled(numBarcos, true);
     perfilJugador1 = Perfil('usuario1', turno: 1);
-    perfilJugador2 = Perfil('usuario2', turno: 2);
+    perfilJugador2 = Perfil('maquina', turno: 2);
     habilidadesJugador1 = perfilJugador1.getHabilidadesSeleccionadas();
     habilidadesJugador2 = perfilJugador2.getHabilidadesSeleccionadas();
     habilidadesUtilizadasJugador1 = List.filled(habilidadesJugador1.length, false);
@@ -63,9 +67,16 @@ class Juego {
     indexHabilidad = 0;
   }
 
-  Future<void> inicializarBarcosJugadores() async {
-    tablero_jugador1.barcos = await obtenerBarcos('usuario1', urlObtenerPerfil);
-    tablero_jugador2.barcos = await obtenerBarcos('usuario2', urlObtenerPerfil);
+  Future<void> inicializarBarcosJugador() async {
+    tablero_jugador1.barcos = await obtenerBarcos(AuthProvider().name, urlObtenerPerfil);
+  }
+
+  Perfil getPerfilJugador() {
+    return turno == 1 ? perfilJugador1 : perfilJugador2;
+  }
+
+  Perfil getPerfilOponente() {
+    return turno == 1 ? perfilJugador2 : perfilJugador1;
   }
 
   // Método para obtener la instancia del singleton
@@ -81,7 +92,8 @@ class Juego {
       Offset barcoPos = Offset(tablero[i][0].dx, tablero[i][0].dy);
       int long = tablero[i].length;
       bool rotado = tablero[i][0].dy == tablero[i][1].dy ? true : false;
-      barcos.add(Barco(nombre, barcoPos, long, rotado));
+      bool hundido = false;
+      barcos.add(Barco(nombre, barcoPos, long, rotado, hundido));
       barcos[i].showInfo();
     }
     return barcos;
@@ -175,16 +187,6 @@ class Juego {
 
   void cambiarTurno() {
     turno = turno == 1 ? 2 : 1;
-  }
-
-  bool barcoHundido(Barco barco, Tablero tablero) {
-    List<List<int>> casillasOcupadas = barco.getCasillasOcupadas(barco.barcoPosition);
-    for (int i = 0; i < casillasOcupadas.length; i++) {
-      if (!tablero.casillasAtacadas[casillasOcupadas[i][0]][casillasOcupadas[i][1]]) {
-        return false;
-      }
-    }
-    return true;
   }
 
   void decrementarBarcosRestantesOponente() {
@@ -296,4 +298,86 @@ class Juego {
       getHabilidadesJugador()[i].informarHabilidad();
     }
   }
+
+  bool barcoHundido(Barco barco, Tablero tablero) {
+    List<List<int>> casillasOcupadas = barco.getCasillasOcupadas(barco.barcoPosition);
+    for (int i = 0; i < casillasOcupadas.length; i++) {
+      if (!tablero.casillasAtacadas[casillasOcupadas[i][0]][casillasOcupadas[i][1]]) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  List<List<String>> obtenerEstado(List<dynamic> lista) {
+    List<List<String>> estados = [];
+    for (var elemento in lista) {
+      if (elemento is List) {
+        List<String> subEstados = [];
+        for (var mapa in elemento) {
+          if (mapa is Map && mapa.containsKey('estado')) {
+            subEstados.add(mapa['estado']);
+          }
+        }
+        estados.add(subEstados);
+      }
+    }
+    return estados;
+  }
+
+
+  Future<void> crearPartida() async {
+    var response = await http.post(
+      Uri.parse(urlCrearPartida),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(<String, String>{
+        'nombreId1': getPerfilJugador().name,
+        'nombreId2': 'maquina',
+        'bioma': 'Mediterraneo' ,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      var data = jsonDecode(response.body);
+      print(data);
+
+      codigo = data['codigo'];
+
+      print(codigo);  
+
+      print(data['tableroBarcos1']);
+
+      print(obtenerEstado(data['tableroBarcos1']));
+
+
+    } else {
+      throw Exception('La solicitud ha fallado');
+    }
+  }
+
+  Future<void> actualizarPartida() async {
+    var response = await http.post(
+      Uri.parse(urlActualizarPartida),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(<String, dynamic>{
+        'codigo': codigo,
+        'jugador': turno,
+        'tablero': [] ,
+        'disparos': [] ,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      var data = jsonDecode(response.body);
+      print(data);
+
+    } else {
+      throw Exception('La solicitud ha fallado');
+    }
+  }
+
 }

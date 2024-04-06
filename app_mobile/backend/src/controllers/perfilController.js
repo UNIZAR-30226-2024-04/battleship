@@ -5,7 +5,7 @@ const crypto = require('crypto'); // Para generar claves secretas
 const habilidadesDisponibles = require('../data/habilidades')
 const paisesDisponibles = require('../data/paises')
 const Coordenada = require('../data/coordenada');
-const { config } = require('../config/auth.config');
+const config = require('../config/auth.config');
 /**
  * @module perfilController
  * @description Funciones para el manejo de perfiles de usuario.
@@ -46,17 +46,6 @@ function crearToken(perfil) {
     { algorithm: 'HS256', expiresIn: 86400 }); // Expira en 24 horas
   return token;
 }
-
-// Funcion para comprobar un token de sesión
-function comprobarToken(token) {
-  try {
-    const perfil = jwt.verify(token, clavePrivada);
-    return perfil;
-  } catch (error) {
-    return null;
-  }
-}
-
 
 /*--------------------------------------------------------------------------------------------------------------------*/
 /*------------------------------------------------ PERFIL BÁSICO  ----------------------------------------------------*/
@@ -205,6 +194,58 @@ exports.obtenerUsuario = async (req, res) => {
 
 /**
  * @memberof module:perfilController
+ * @function obtenerDatosPersonales
+ * @description Obtiene los datos personales de un perfil identificado por _id o nombreId.
+ * @param {Object} req - El objeto de solicitud HTTP.
+ * @param {string} [req.body._id] - El perfil debe existir en la base de datos.
+ * @param {string} [req.body.nombreId] - El perfil debe existir en la base de datos.
+ * @param {Object} res - El objeto de respuesta HTTP.
+ * @example
+ * perfil = { nombreId: 'usuario1'};
+ * const req = { body: perfil };
+ * const res = { json: () => {}, status: () => ({ send: () => {} }) }; // No hace nada
+ * await obtenerDatosPersonales(req, res);
+ */
+exports.obtenerDatosPersonales = async (req, res) => {
+  try {
+    // Extraer el nombreId del parámetro de la solicitud
+    const { _id, nombreId, ...extraParam } = req.body;
+    // Verificar si hay algún parámetro extra
+    if (Object.keys(extraParam).length > 0) {
+      res.status(400).send('Sobran parámetros, se espera nombreId (o _id)');
+      console.error("Sobran parámetros, se espera nombreId (o _id)");
+      return;
+    }
+    // Verificar si alguno de los parámetros está ausente
+    if (!nombreId && !_id) {
+      res.status(400).send('Falta el nombreId o _id en la solicitud');
+      console.error("Falta el nombreId o _id en la solicitud");
+      return;
+    }
+    // Buscar el perfil en la base de datos
+    const filtro = _id ? { _id: _id } : { nombreId: nombreId };
+    const perfil = await Perfil.findOne(filtro);
+    // Verificar si el perfil existe y enviar la respuesta al cliente
+    if (perfil) {
+      const perfilDevuelto = perfil;
+      perfilDevuelto.contraseña = undefined; // No enviar la contraseña en la respuesta
+      res.json(perfilDevuelto);
+      console.log("Perfil obtenido con éxito");
+      return perfilDevuelto;
+    } else {
+      res.status(404).send('No se ha encontrado el perfil a obtener');
+      console.error("No se ha encontrado el perfil a obtener");
+    }
+
+  } catch (error) {
+    res.status(500).send('Hubo un error');
+    console.error("Error al obtener el perfil", error);
+  }
+}
+
+
+/**
+ * @memberof module:perfilController
  * @function modificarDatosPersonales
  * @description Modifica la contraseña y/o el correo de un perfil identificado por _id o nombreId.
  * @param {Object} req - El objeto de solicitud HTTP.
@@ -350,6 +391,7 @@ exports.eliminarUsuario = async (req, res) => {
  * @param {string} req.body.contraseña - La contraseña debe tener al menos 8 caracteres, 1 minúsucla, 1 mayúscula, 1 dígito y un caracter especial.
  * @param {string} req.body.correo - El correo debe tener un formato válido.
  * @param {Object} res - El objeto de respuesta HTTP.
+ * @param {string} res.token - El token de sesión del perfil.
  * @example
  * perfil = { nombreId: 'usuario4', contraseña: 'Passwd4.', correo: 'usuario4@example.com' };
  * const req = { body: perfil };
@@ -366,7 +408,7 @@ exports.registrarUsuario = async (req, res) => {  // Requiere nombreId (o _id), 
       perfilDevuelto = perfil;
       perfilDevuelto.contraseña = undefined; // No enviar la contraseña en la respuesta
       perfilDevuelto.token = token;
-      res.json(perfilDevuelto);
+      //res.json(perfilDevuelto);
       console.log("Usuario registrado con éxito");
     }
   } catch (error) {
@@ -385,6 +427,7 @@ exports.registrarUsuario = async (req, res) => {  // Requiere nombreId (o _id), 
  * @param {string} [req.body.nombreId] - El perfil debe existir en la base de datos.
  * @param {string} req.body.contraseña
  * @param {Object} res - El objeto de respuesta HTTP.
+ * @param {string} res.token - El token de sesión del perfil.
  * @example
  * perfil = { nombreId: 'usuario1', contraseña: 'Passwd1.'};
  * const req = { body: perfil };
@@ -401,7 +444,7 @@ exports.iniciarSesion = async (req, res) => { // Requiere nombreId (o _id) y con
       perfilDevuelto = perfil;
       perfilDevuelto.contraseña = undefined; // No enviar la contraseña en la respuesta
       perfilDevuelto.token = token;
-      res.json(perfilDevuelto);
+      //res.json(perfilDevuelto);
       console.log("Sesión iniciada con éxito");
     } else {
       res.status(404).send('No se ha encontrado el perfil a iniciar sesión');

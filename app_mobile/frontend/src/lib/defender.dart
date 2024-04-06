@@ -30,11 +30,11 @@ class _DefenderState extends State<Defender> {
         Juego().habilidadSeleccionadaEnTurno = false;
         Juego().cambiarTurno();
       });
-      DestinoManager.setDestino(const Atacar());
+      DestinoManager.setDestino(Atacar());
       Navigator.pushReplacement(
         context,
         PageRouteBuilder(
-          pageBuilder: (context, animation1, animation2) => const Atacar(),
+          pageBuilder: (context, animation1, animation2) => Atacar(),
           transitionDuration: const Duration(seconds: 0),
         ),
       );

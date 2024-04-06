@@ -19,6 +19,10 @@ abstract class Habilidad {
   bool disponible();
 
   void informarHabilidad();
+
+  String getImagePath() {
+    return 'images/' + nombre + '.png';
+  }
 }
 
 class Sonar extends Habilidad {

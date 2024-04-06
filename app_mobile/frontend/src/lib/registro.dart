@@ -72,7 +72,7 @@ class Registro extends StatelessWidget {
   }
 
 
-  void _handlePressed(BuildContext context, AuthProvider authProvider) {
+  Future<void> _handlePressed(BuildContext context, AuthProvider authProvider) async {
     if(_passwordController.text != _passwordConfController.text) {
       const snackBar = SnackBar(
         content: Text(
@@ -83,7 +83,7 @@ class Registro extends StatelessWidget {
       );
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
     }
-    else if(_authProvider.signUp(_emailController.text, _passwordController.text, _nameController.text)) {
+    else if(await _authProvider.signUp(_nameController.text, _passwordController.text, _emailController.text)) {
       Navigator.pushReplacement(
         context,
         PageRouteBuilder(

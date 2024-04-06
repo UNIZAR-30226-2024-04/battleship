@@ -27,11 +27,11 @@ class _ColocarBarcosState extends State<ColocarBarcos> {
       for (var barco in barcos) barco: false,
     };
 
-    _barcosFuture = inicializarBarcosJugadores();
+    _barcosFuture = inicializarBarcosJugador();
   }
 
-  Future<void> inicializarBarcosJugadores() async {
-    await Juego().inicializarBarcosJugadores();
+  Future<void> inicializarBarcosJugador() async {
+    await Juego().inicializarBarcosJugador();
   }
 
   Future<bool> moverBarco(Barco barco, bool rotar) async {
@@ -244,11 +244,12 @@ class _ColocarBarcosState extends State<ColocarBarcos> {
   }
 
   void _handlePressed(BuildContext context) {
-    DestinoManager.setDestino(const Atacar());
+    Juego().crearPartida();
+    DestinoManager.setDestino(Atacar());
     Navigator.pushReplacement(
       context,
       PageRouteBuilder(
-        pageBuilder: (context, animation1, animation2) => const Atacar(),
+        pageBuilder: (context, animation1, animation2) => Atacar(),
         transitionDuration: const Duration(seconds: 0),
       ),
     );

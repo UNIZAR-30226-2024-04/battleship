@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+
+import 'juego.dart';
 
 class AuthProvider with ChangeNotifier {
-  String _email = '';
-  String _password = '';
-  String _name = 'usuario1';
+  String _urlInicioSesion = 'http://localhost:8080/perfil/iniciarSesion';
+  String _urlRegistro = 'http://localhost:8080/perfil/registrarUsuario';
   bool _isLoggedIn = false;
 
   bool get isLoggedIn => _isLoggedIn;
-  String get email => _email;
-  String get password => _password;
-  String get name => _name;
+  String get email => Juego().getPerfilJugador().email;
+  String get password => Juego().getPerfilJugador().password;
+  String get name => Juego().getPerfilJugador().name;
 
   set isLoggedIn(bool value) {
     _isLoggedIn = value;
@@ -25,33 +28,101 @@ class AuthProvider with ChangeNotifier {
 
   AuthProvider._internal();
 
-  // TO-DO :)
-  bool authenticate(String email, String password) {
-    if (email == '1' && password == '1') {
-      _email = email;
-      _password = password;
-      _isLoggedIn = true;
-      notifyListeners(); // Notifica a los listeners que la variable ha cambiado
-      return true;
+  Future<bool> loginDB(String nombre, String password) async {
+    var uri = Uri.parse(_urlInicioSesion);
+    var response = await http.post(
+      uri,
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(<String, dynamic>{
+        'nombreId': nombre,
+        'contraseña': password,
+      }),
+    );
+
+    //print(response.statusCode);
+    //print(response.body);
+    if (response.statusCode == 200) {
+      var data = jsonDecode(response.body);
+      print("RESPUESTA OK");
+      print(data);
+      if (data != null) {
+        print("LOGIN CORRECTO");
+        return true;
+      }
+
+      return false;
     } else {
       return false;
     }
   }
 
-  // TO-DO :)
-  bool signUp(String email, String password, String name) {
-    if (email == '1' && password == '1' && name == 'pepillo') {
-      _email = email;
-      _password = password;
-      _name = name;
-      _isLoggedIn = true;
-      notifyListeners(); // Notifica a los listeners que la variable ha cambiado
-      return true;
+
+  Future<bool> signUpDB(String nombre, String password, String email) async {
+    var uri = Uri.parse(_urlRegistro);
+    var response = await http.post(
+      uri,
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(<String, dynamic>{
+        'nombreId': nombre,
+        'contraseña': password,
+        'correo': email,
+      }),
+    );
+
+    //print(response.statusCode);
+    //print(response.body);
+    if (response.statusCode == 200) {
+      var data = jsonDecode(response.body);
+      print("RESPUESTA OK");
+      print(data);
+      if (data != null) {
+        print("REGISTRO CORRECTO");
+        return true;
+      }
+
+      return false;
     } else {
       return false;
     }
   }
 
+
+  Future<bool> login(String name, String password) async {
+    bool response = await loginDB(name, password);
+
+    if(response) {
+        _isLoggedIn = true;
+        Juego().getPerfilJugador().name = name;
+        Juego().getPerfilJugador().password = password;
+        notifyListeners(); // Notifica a los listeners que la variable ha cambiado
+        return true;
+    }
+
+    print("Credenciales incorrectas");
+
+    return false;
+  }
+
+  Future<bool> signUp(String name, String password, String email) async {
+    bool response = await signUpDB(name, password, email);
+
+    if(response) {
+        _isLoggedIn = true;
+        Juego().getPerfilJugador().name = name;
+        Juego().getPerfilJugador().password = password;
+        Juego().getPerfilJugador().email = email;
+        notifyListeners(); // Notifica a los listeners que la variable ha cambiado
+        return true;
+    }
+
+    print("Credenciales incorrectas");
+
+    return false;
+  }
   void logOut() {
     _isLoggedIn = false;
     notifyListeners();

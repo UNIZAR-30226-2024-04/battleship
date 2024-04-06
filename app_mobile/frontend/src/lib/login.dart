@@ -15,7 +15,7 @@ class InicioSesion extends StatefulWidget {
 }
 
 class _InicioSesionState extends State<InicioSesion> {
-  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _nombreController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool _rememberMe = false;
   final AuthProvider _authProvider = AuthProvider();
@@ -35,7 +35,7 @@ class _InicioSesionState extends State<InicioSesion> {
           children: [
             buildHeader(context),
             const Spacer(),
-            _buildLogin(context, () => _handlePressed(context, _authProvider)),
+            _buildLogin(context, () async => await _handlePressed(context, _authProvider)),
             const Spacer(),
             buildActions(context),
           ],
@@ -51,7 +51,7 @@ class _InicioSesionState extends State<InicioSesion> {
         buildTitle('Iniciar Sesión', 28),
 
         const SizedBox(height: 10.0),
-        buildEntryButton('Email', 'Introduzca la dirección de correo', Icons.email, _emailController),
+        buildEntryButton('Nombre', 'Introduzca su nombre', Icons.person, _nombreController),
         buildEntryAstButton('Contraseña', 'Introduzca la contraseña', Icons.lock, _passwordController),
         buildTextButton(context, () => _handleRecContrasenaPressed(context), 'Olvidé la contraseña'),
         const SizedBox(height: 10.0),
@@ -104,8 +104,8 @@ class _InicioSesionState extends State<InicioSesion> {
     );
   }
 
-  void _handlePressed(BuildContext context, AuthProvider authProvider) {
-    if(_authProvider.authenticate(_emailController.text, _passwordController.text)) {
+  Future<void> _handlePressed(BuildContext context, AuthProvider authProvider) async {
+    if(await _authProvider.login(_nombreController.text, _passwordController.text)) {
       Navigator.pushReplacement(
         context,
         PageRouteBuilder(
@@ -113,6 +113,9 @@ class _InicioSesionState extends State<InicioSesion> {
           transitionDuration: const Duration(seconds: 0),
         ),
       );
+    }
+    else {
+      print("ERROR: Credenciales incorrectas");
     }
   }
 }
