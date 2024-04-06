@@ -6,6 +6,7 @@ class Barco {
   bool _esRotado = false;
   int _longitud = 0;
   Offset _barcoPositionCached = const Offset(0.0, 0.0);
+  bool _esRotadoCached = false;
 
   Barco(String nombre, Offset barcoPosition, int longitud, bool esRotado) {
     _nombre = nombre;
@@ -25,10 +26,12 @@ class Barco {
 
   void catchPosition() {
     _barcoPositionCached = _barcoPosition;
+    _esRotadoCached = _esRotado;
   }
 
   void resetPosition() {
     _barcoPosition = _barcoPositionCached;
+    _esRotado = _esRotadoCached;
   }
 
   List<List<int>> getCasillasOcupadas(Offset position) {
@@ -75,7 +78,7 @@ class Barco {
     _longitud = longitud;
   }
 
-  set nombreBaseBarco(String nombre) {
+  set nombre(String nombre) {
     _nombre = nombre;
   }
 
@@ -90,5 +93,9 @@ class Barco {
     else {
       return 'images/' + _nombre + '_rotado.png';
     }
+  }
+
+  void rotate() {
+    _esRotado = !_esRotado;
   }
 }

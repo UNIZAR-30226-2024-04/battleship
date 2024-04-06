@@ -162,15 +162,18 @@ bool contiene(List<List<int>> lista, Offset posicion) {
 }
 
 
-List<Offset> takeFirstSquare(List<dynamic> input) {
-  List<Offset> output = [];
+List<List<Offset>> dynamic2Offset(List<dynamic> input) {
+  List<List<Offset>> output = [];
 
   for (var sublist in input) {
     if (sublist is List && sublist.isNotEmpty) {
-      var map = sublist[0];
-      if (map is Map && map.containsKey('i') && map.containsKey('j')) {
-        output.add(Offset(map['i'].toDouble(), map['j'].toDouble()));
+      List<Offset> offsetSublist = [];
+      for (var map in sublist) {
+        if (map is Map && map.containsKey('i') && map.containsKey('j')) {
+          offsetSublist.add(Offset(map['i'].toDouble(), map['j'].toDouble()));
+        }
       }
+      output.add(offsetSublist);
     }
   }
 

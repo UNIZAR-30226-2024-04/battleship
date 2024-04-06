@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:battleship/comun.dart';
 import 'package:battleship/tablero.dart';
 import 'package:flutter/material.dart';
@@ -34,8 +32,6 @@ class Juego {
   int numAtaquesJugador2 = 0;
   int indexHabilidad = 0;
   List<String> nombresBarcosEnOrden = ['patrullero', 'destructor', 'submarino', 'acorazado', 'portaaviones'];  // barcos en orden de tamaño creciente
-  List<int> longitudesBarcosEnOrden = [2, 3, 3, 4, 5];  // longitudes de los barcos en orden de tamaño creciente
-  List<bool> rotadosEnOrden = [false, false, true, false, false];
   String urlObtenerPerfil = 'http://localhost:8080/perfil/obtenerUsuario';
   String urlMoverBarcoInicial = 'http://localhost:8080/perfil/moverBarcoInicial';
 
@@ -68,13 +64,8 @@ class Juego {
   }
 
   Future<void> inicializarBarcosJugadores() async {
-    List<Offset> posInicial1 = await obtenerBarcos('usuario1', urlObtenerPerfil);
-    List<Offset> posInicial2 = await obtenerBarcos('usuario2', urlObtenerPerfil);
-
-    for(int i = 0; i < numBarcos; i++) {
-      tablero_jugador1.barcos.add(Barco(nombresBarcosEnOrden[i], posInicial1[i], longitudesBarcosEnOrden[i], rotadosEnOrden[i]));
-      tablero_jugador2.barcos.add(Barco(nombresBarcosEnOrden[i], posInicial2[i], longitudesBarcosEnOrden[i], rotadosEnOrden[i]));
-    }
+    tablero_jugador1.barcos = await obtenerBarcos('usuario1', urlObtenerPerfil);
+    tablero_jugador2.barcos = await obtenerBarcos('usuario2', urlObtenerPerfil);
   }
 
   // Método para obtener la instancia del singleton
@@ -82,7 +73,21 @@ class Juego {
     return _singleton;
   }
 
-  Future<List<Offset>> obtenerBarcos(String usuario, String url) async {
+  List<Barco> procesaTableroBD(List<List<Offset>> tablero) {
+    List<Barco> barcos = [];
+
+    for (int i = 0; i < numBarcos; i++) {
+      String nombre = nombresBarcosEnOrden[i];
+      Offset barcoPos = Offset(tablero[i][0].dx, tablero[i][0].dy);
+      int long = tablero[i].length;
+      bool rotado = tablero[i][0].dy == tablero[i][1].dy ? true : false;
+      barcos.add(Barco(nombre, barcoPos, long, rotado));
+      barcos[i].showInfo();
+    }
+    return barcos;
+  }
+
+  Future<List<Barco>> obtenerBarcos(String usuario, String url) async {
     var response = await http.post(
       Uri.parse(url),
       headers: <String, String>{
@@ -106,9 +111,7 @@ class Juego {
         ).toList()
       ).toList();
 
-      print(tableroExtraido);
-
-      return takeFirstSquare(tableroExtraido);
+      return procesaTableroBD(dynamic2Offset(tableroExtraido));
 
     } else {
       throw Exception('La solicitud ha fallado');

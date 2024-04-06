@@ -34,8 +34,8 @@ class _ColocarBarcosState extends State<ColocarBarcos> {
     await Juego().inicializarBarcosJugadores();
   }
 
-  Future<bool> moverBarco(Barco barco) async {
-    return await Juego().moverBarco(Juego().urlMoverBarcoInicial, barco.barcoPosition, barco.esRotado, AuthProvider().name, Juego().tablero_jugador.barcos.indexOf(barco));
+  Future<bool> moverBarco(Barco barco, bool rotar) async {
+    return await Juego().moverBarco(Juego().urlMoverBarcoInicial, barco.barcoPosition, rotar, AuthProvider().name, Juego().tablero_jugador.barcos.indexOf(barco));
   }
 
   @override
@@ -93,6 +93,33 @@ class _ColocarBarcosState extends State<ColocarBarcos> {
             child: Column(
               children: [
                 GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      barco.catchPosition();
+                      barco.rotate();
+                      late Future<bool> response = moverBarco(barco, true);
+                      FutureBuilder<void>(
+                        future: _barcosFuture,
+                        builder: (context, snapshot) {
+                            if (snapshot.connectionState == ConnectionState.waiting) {
+                              // Mientras espera que se complete la inicialización de los barcos, puedes mostrar un indicador de carga.
+                              return CircularProgressIndicator();
+                            } else {
+                              // Una vez que se complete la inicialización, construir el tablero con los barcos.
+                              return _construirTableroConBarcosEditable();
+                            }
+                        },
+                      );
+                      response.then((value) {
+                        if(!value) {
+                          setState(() {
+                            print("VOY A RESETEAR POSICION");
+                            barco.resetPosition();
+                          });
+                        }
+                      });
+                    });
+                  },
                   onPanStart: (details) {
                     setState(() {
                       _draggingStates[barco] = true;
@@ -114,7 +141,7 @@ class _ColocarBarcosState extends State<ColocarBarcos> {
                       barco.barcoPosition = Offset(barco.barcoPosition.dx.roundToDouble(), barco.barcoPosition.dy.roundToDouble());
                       barco.barcoPosition = Juego().boundPosition(barco.barcoPosition, barco.getHeight(Juego().tablero_jugador.casillaSize), barco.getWidth(Juego().tablero_jugador.casillaSize));
                       _draggingStates[barco] = false;
-                      late Future<bool> response = moverBarco(barco);
+                      late Future<bool> response = moverBarco(barco, false);
                       FutureBuilder<void>(
                         future: _barcosFuture,
                         builder: (context, snapshot) {
