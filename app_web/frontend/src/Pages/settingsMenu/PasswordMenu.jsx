@@ -3,61 +3,46 @@ import React from 'react';
 const PasswordMenu = () => {
     return (
         <>
-            <div className="settings-profile-header">
-                <div className="settings-profile-img"> FOTO </div>
-                <div className="settings-profile-name">
-                    <span>Butanero Putero</span>
+            <form className="settings-passwd-body settings-menu-body" name="changepasswd" method="post" action="/backend/password">
+                <div className="settings-password-currentpasswd-header">
+                    <span>Contraseña actual</span>
                 </div>
-            </div>
-            <form className="settings-profile-body" name="userdata" method="post" action="/backend/">
-                <div className="settings-profile-body-user-header">
-                    <span>Nombre de usuario</span>
-                </div>
-                <div className="settings-profile-body-user-input">
+                <div className="settings-password-currentpasswd-input">
                     <input
-                        name="username"
+                        name="currentpasswd"
                         autoComplete="off"
-                        placeholder="Introduzca su nombre de usuario..."
-                        type="text"
+                        placeholder="Introduzca su contraseña actual..."
+                        type="password"
                         size="30"
                     >        
                     </input>
                 </div>
-                <div className="settings-profile-body-user-header">
-                    <span>Correo electrónico</span>
+                <div className="settings-password-newpasswd-header">
+                    <span>Nueva contraseña</span>
                 </div>
-                <div className="settings-profile-body-user-input">
+                <div className="settings-password-newpasswd-input">
                     <input
-                        name="email"
-                        autoComplete="on"
-                        placeholder="Introduzca su correo electrónico..."
-                        type="email"
+                        name="newpasswd"
+                        autoComplete="off"
+                        placeholder="Introduzca su nueva contraseña..."
+                        type="password"
                         size="30"
                     ></input>
                 </div>
-                <div className="settings-profile-body-country-header">
-                    <span>País</span>
+                <div className="settings-password-confirmpasswd-header">
+                    <span>Confirmar nueva contraseña</span>
                 </div>
-                <div className="settings-profile-body-country-input">
-                    <select>
-                        <option value="spain">España</option>
-                        <option value="fool">Cataluña</option>
-                        <option value="benched">Andorra</option>
-                    </select>
+                <div className="settings-password-confirmpasswd-input">
+                    <input
+                        name="confirmpasswd"
+                        autoComplete="off"
+                        placeholder="Introduzca su nueva contraseña..."
+                        type="password"
+                        size="30"
+                    ></input>
                 </div>
-                <div className="settings-profile-body-about-header">
-                    <span>Acerca de mí</span>
-                </div>
-                <div className="settings-profile-body-about-input">
-                    <textarea
-                        name="about"
-                        placeholder="Introduzca su descripción..."
-                        cols="28"
-                        rows="4"
-                    ></textarea>
-                </div>
-                <div className="settings-profile-body-apply">
-                    <input type="submit" value="Realizar cambios"></input>
+                <div className="settings-password-apply">
+                    <input type="submit" value="Cambiar contraseña"></input>
                 </div>
             </form>
         </>

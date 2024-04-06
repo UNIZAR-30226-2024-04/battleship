@@ -76,6 +76,18 @@
     flex-direction: column;
 }
 
+.settings-menu-body {
+    display: grid;
+    padding: 1em 3em 0em 1em;
+    margin-left: 3em;
+    background-color: #1D3461;
+
+    & :last-child {     /* Submit button */
+        justify-self: center;
+        grid-column: col-start / col-end;
+    }
+}
+
 .settings-profile-header {
     display: flex;
     flex-direction: row;
@@ -98,23 +110,20 @@
 }
 
 .settings-profile-body {
-    display: grid;
     grid-template-columns: [col-start] repeat(2, 15em) [col-end];
     grid-template-rows: repeat(3, 3em) 6em 3em;
-    padding: 1em 3em 0em 1em;
-    margin-left: 3em;
-    background-color: #1D3461;
 
-    & :last-child {     /* Submit button */
-        justify-self: center;
-        grid-column: col-start / col-end;
-    }
 }
 
-.settings-profile-body-country-input select {
+.settings-passwd-body {
+    grid-template-columns: [col-start] repeat(2, 15em) [col-end];
+    grid-template-rows: repeat(3, 3em) 3em;
+}
+
+.settings-profile-country-input select {
     width: 20em;
 }
 
-.settings-profile-body-about-input textarea {
+.settings-profile-about-input textarea {
     resize: none;
 }
