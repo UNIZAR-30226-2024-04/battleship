@@ -74,6 +74,44 @@ export function Fleet() {
     const [board, setBoard] = useState(null); // Estado para almacenar la instancia de GridStack
     const [count, setCount] = useState(0); // Estado para contar widgets
 
+    const [dragStartPos, setDragStartPos] = useState({ left: 0, top: 0 });
+
+    // Función para manejar el inicio del arrastre del widget
+    const handleDragStart = (event, ui) => {
+        const { pageX, pageY } = event;
+        const cellWidth = document.querySelector('.grid-stack').clientWidth / boardDimension;
+        const cellHeight = document.querySelector('.grid-stack').clientHeight / boardDimension;
+        const cellX = Math.floor(pageX / cellWidth) - 4;
+        const cellY = Math.floor(pageY / cellHeight);
+        setDragStartPos({ x: cellX, y: cellY });
+        console.log("Drag start: ", cellX, cellY);
+    };
+
+    // Función para manejar el final del arrastre del widget
+    const handleDragStop = (event, ui) => {
+        const { pageX, pageY } = event;
+        const cellWidth = document.querySelector('.grid-stack').clientWidth / boardDimension;
+        const cellHeight = document.querySelector('.grid-stack').clientHeight / boardDimension;
+        const cellX = Math.floor(pageX / cellWidth) - 4;
+        const cellY = Math.floor(pageY / cellHeight);
+        console.log("Drag stop: ", cellX, cellY);
+        //console.log("Drag stop: ", dragStartPos, cellX, cellY);
+        //console.log("Drag stop: ", ui);
+        // Verificar colisión antes de soltar el widget
+        // if (true) {
+        //     // Si hay una colisión, no actualices la posición del widget
+        //     ui.helper.data('_gridstack_node').x = dragStartPos.x;
+        //     ui.helper.data('_gridstack_node').y = dragStartPos.y;
+        //     board.engine._updateNode(ui.helper);
+        // } else {
+        //     // Si no hay colisión, actualiza la posición del widget en el tablero
+        //     ui.helper.data('_gridstack_node').x = cellX;
+        //     ui.helper.data('_gridstack_node').y = cellY;
+        //     board.engine._updateNode(ui.helper);
+        // }
+    };
+
+
 
     // Este efecto se ejecuta solo una vez después del montaje inicial del componente
     useEffect(() => {
@@ -90,6 +128,9 @@ export function Fleet() {
             //cellHeight: "80px", // Establecer la altura de cada celda en 50px
             
         });
+        // Adjuntar controladores de eventos al widget
+        board.on('dragstart', handleDragStart);
+        board.on('dragstop', handleDragStop);
         setBoard(board); // Almacenar la instancia de GridStack en el estado
     }, []);
 
