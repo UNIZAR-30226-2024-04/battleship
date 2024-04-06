@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { Navbar } from "../Components/Navbar";
 import { GridStack } from 'gridstack';
 import '../Styles/fleet-style.css';
@@ -43,22 +43,31 @@ export function Fleet() {
         'Patrol': { size: 2, name: "Patrol", img: patrolImg, imgRotated: patrolImgRotated},
     };
 
-    // // cola fifo para las skills de tamaño 3
-    // const skillQueue = useRef([]); // Cola FIFO para las skills de tamaño 3
+    const skillInfo = {
+        'Mine': { id: 1, name: "Mine", img: mineImg},
+        'Missile': { id: 2, name: "Missile", img: missileImg},
+        'Burst': { id: 3, name: "Burst", img: burstImg},
+        'Sonar': { id: 4, name: "Sonar", img: sonarImg},
+        'Torpedo': { id: 5, name: "Torpedo", img: torpedoImg},
+    };
 
-    // // Función para agregar una skill a la cola
-    // const enqueueSkill = (skill) => {
-    //     skillQueue.current.push(skill);
-    //     if (skillQueue.current.length > 3) {
-    //         skillQueue.current.shift();
-    //     }
-    // };
+    // cola fifo para las skills de tamaño 3
+    const [skillQueue, setSkillQueue] = useState([]); // Estado para la cola de habilidades
 
-    // // Ejemplo de uso
-    // enqueueSkill(1);
-    // enqueueSkill(2);
-    // enqueueSkill(3);
-    // console.log(skillQueue.current); // Output: [1, 2, 3]
+    // Función para agregar una skill a la cola
+    const enqueueSkill = (skillId) => {
+        if (!skillQueue.includes(skillId)) {
+            setSkillQueue(prevQueue => [...prevQueue, skillId]);
+            if (skillQueue.length >= 3) {
+                setSkillQueue(prevQueue => prevQueue.slice(1)); // Eliminar el primer elemento si la cola excede el límite
+            }
+        }
+        console.log("Skill queue: ", skillQueue);
+    };
+
+    const esSkillEnCola = (skillId) => {
+        return skillQueue.includes(skillId);
+    };
 
     const boardDimension = 10;
 
@@ -110,36 +119,12 @@ export function Fleet() {
                 //     [{ i: 3, j: 6 }, { i: 4, j: 6 }, { i: 5, j: 6 }, { i: 6, j: 6 }],
                 //     [{ i: 10, j: 6 }, { i: 10, j: 7 }, { i: 10, j: 8 }, { i: 10, j: 9 }, { i: 10, j: 10 }]
                 //   ];
-                // setTimeout(() => {
-                //     addNewWidgetPos("Patrol", tableroInicial[0][0].j-1, tableroInicial[0][0].i-1, esBarcoHorizontal(tableroInicial[0]));
-                // }, 1000); // Delay of 1 second (1000 milliseconds)
-
-                // setTimeout(() => {
-                //     addNewWidgetPos("Destroy", tableroInicial[1][0].j-1, tableroInicial[1][0].i-1, esBarcoHorizontal(tableroInicial[1]));
-                // }, 2000); // Delay of 2 seconds (2000 milliseconds)
-
-                // setTimeout(() => {
-                //     addNewWidgetPos("Sub", tableroInicial[2][0].j-1, tableroInicial[2][0].i-1, esBarcoHorizontal(tableroInicial[2]));
-                // }, 3000); // Delay of 3 seconds (3000 milliseconds)
-
-                // setTimeout(() => {
-                //     addNewWidgetPos("Bship", tableroInicial[3][0].j-1, tableroInicial[3][0].i-1, esBarcoHorizontal(tableroInicial[3]));
-                // }, 4000); // Delay of 4 seconds (4000 milliseconds)
-
-                // setTimeout(() => {
-                //     addNewWidgetPos("Aircraft", tableroInicial[4][0].j-1, tableroInicial[4][0].i-1, esBarcoHorizontal(tableroInicial[4]));
-                // }, 5000); // Delay of 5 seconds (5000 milliseconds)
 
                 addNewWidgetPos(1, "Patrol", tableroInicial[0][0].j-1, tableroInicial[0][0].i-1, esBarcoHorizontal(tableroInicial[0]));
-
                 addNewWidgetPos(2, "Destroy", tableroInicial[1][0].j-1, tableroInicial[1][0].i-1, esBarcoHorizontal(tableroInicial[1]));
-
                 addNewWidgetPos(3, "Sub", tableroInicial[2][0].j-1, tableroInicial[2][0].i-1, esBarcoHorizontal(tableroInicial[2]));
-
                 addNewWidgetPos(4, "Bship", tableroInicial[3][0].j-1, tableroInicial[3][0].i-1, esBarcoHorizontal(tableroInicial[3]));
-
                 addNewWidgetPos(5, "Aircraft", tableroInicial[4][0].j-1, tableroInicial[4][0].i-1, esBarcoHorizontal(tableroInicial[4]));
-
                 setCount(6);
                 
 
@@ -294,24 +279,24 @@ export function Fleet() {
                     <div className="fleet-main-content-container">
                         <div className="grid-stack fleet-board" onClick={handleItemClick}></div>
                         <div className="ship-buttons-container">
-                            <div className="skill-button">
-                                <img onClick={() => addNewWidget("Aircraft")} src={mineImg} alt="Mine" />
+                            <div className={`skill-button ${esSkillEnCola(1) ? 'skill-button-selected' : ''}`}>
+                                <img onClick={() => enqueueSkill(1)} src={mineImg} alt="Mine" />
                             </div>
                             <br></br>
-                            <div className="skill-button">
-                                <img onClick={() => addNewWidget("Bship")} src={missileImg} alt="Missile" />
+                            <div className={`skill-button ${esSkillEnCola(2) ? 'skill-button-selected' : ''}`}>
+                                <img onClick={() => enqueueSkill(2)} src={missileImg} alt="Missile" />
                             </div>
                             <br></br>
-                            <div className="skill-button">
-                                <img onClick={() => addNewWidget("Sub")} src={burstImg} alt="Burst" />
+                            <div className={`skill-button ${esSkillEnCola(3) ? 'skill-button-selected' : ''}`}>
+                                <img onClick={() => enqueueSkill(3)} src={burstImg} alt="Burst" />
                             </div>
                             <br></br>
-                            <div className="skill-button">
-                                <img onClick={() => addNewWidget("Destroy")} src={sonarImg} alt="Sonar" />
+                            <div className={`skill-button ${esSkillEnCola(4) ? 'skill-button-selected' : ''}`}>
+                                <img onClick={() => enqueueSkill(4)} src={sonarImg} alt="Sonar" />
                             </div>
                             <br></br>
-                            <div className="skill-button">
-                                <img onClick={() => addNewWidget("Patrol")} src={torpedoImg} alt="Torpedo" />
+                            <div className={`skill-button ${esSkillEnCola(5) ? 'skill-button-selected' : ''}`}>
+                                <img onClick={() => enqueueSkill(5)} src={torpedoImg} alt="Torpedo" />
                             </div>
                         </div>
                     </div>
