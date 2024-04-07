@@ -71,7 +71,7 @@ const ProfileMenu = () => {
                     ></textarea>
                 </div>
                 <div className="settings-profile-apply">
-                    <input type="submit" value="Realizar cambios"></input>
+                    <input type="submit" value="Aplicar cambios"></input>
                 </div>
             </form>
         </>

@@ -1,63 +1,67 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 const MatchMenu = () => {
+
+    const [allowRivalName, setRivalName] = useState(false);
+    const [allowRivalElo, setRivalElo] = useState(false);
+    const [allowRivalEmotes, setRivalEmotes] = useState(false);
+
+    const handleToggleActive = (e) => {
+        switch (e.target.name){
+        case "rivalName":
+                setRivalName(!allowRivalName);
+                break;
+        case "rivalEmotes":
+            setRivalEmotes(!allowRivalEmotes);    
+            break;
+        case "rivalElo":
+            setRivalElo(!allowRivalElo);
+            break;
+        default:
+        }
+    };
+
     return (
         <>
-            <div className="settings-profile-header">
-                <div className="settings-profile-img"> FOTO </div>
-                <div className="settings-profile-name">
-                    <span>Butanero Putero</span>
+            <form className="settings-match-body settings-menu-body" name="matchsettings" method="post" action="/backend/match">
+                <div className="settings-match-rivalname-header">
+                    <span>Ver nombre del rival</span>
                 </div>
-            </div>
-            <form className="settings-profile-body" name="userdata" method="post" action="/backend/">
-                <div className="settings-profile-body-user-header">
-                    <span>Nombre de usuario</span>
-                </div>
-                <div className="settings-profile-body-user-input">
+                <div className="settings-match-rivalname-input">
                     <input
-                        name="username"
-                        autoComplete="off"
-                        placeholder="Introduzca su nombre de usuario..."
-                        type="text"
-                        size="30"
-                    >        
-                    </input>
+                        type="checkbox"
+                        name="rivalName"
+                        value={allowRivalName}
+                        checked={allowRivalName}
+                        onChange={handleToggleActive}
+                    />    
                 </div>
-                <div className="settings-profile-body-user-header">
-                    <span>Correo electrónico</span>
+                <div className="settings-match-rivalelo-header">
+                    <span>Ver elo del rival</span>
                 </div>
-                <div className="settings-profile-body-user-input">
+                <div className="settings-match-rivalelo-input">
                     <input
-                        name="email"
-                        autoComplete="on"
-                        placeholder="Introduzca su correo electrónico..."
-                        type="email"
-                        size="30"
-                    ></input>
+                        type="checkbox"
+                        name="rivalElo"
+                        value={allowRivalElo}
+                        checked={allowRivalElo}
+                        onChange={handleToggleActive}
+                    />   
                 </div>
-                <div className="settings-profile-body-country-header">
-                    <span>País</span>
+                <div className="settings-match-rivalemotes-header">
+                    <span>Ver emoticonos en partida</span>
                 </div>
-                <div className="settings-profile-body-country-input">
-                    <select>
-                        <option value="spain">España</option>
-                        <option value="fool">Cataluña</option>
-                        <option value="benched">Andorra</option>
-                    </select>
+                <div className="settings-match-rivalemotes-input">
+                    <input
+                        type="checkbox"
+                        name="rivalEmotes"
+                        value={allowRivalEmotes}
+                        checked={allowRivalEmotes}
+                        onChange={handleToggleActive}
+                    /> 
                 </div>
-                <div className="settings-profile-body-about-header">
-                    <span>Acerca de mí</span>
-                </div>
-                <div className="settings-profile-body-about-input">
-                    <textarea
-                        name="about"
-                        placeholder="Introduzca su descripción..."
-                        cols="28"
-                        rows="4"
-                    ></textarea>
-                </div>
-                <div className="settings-profile-body-apply">
-                    <input type="submit" value="Realizar cambios"></input>
+                <div className="settings-match-apply">
+                    <input type="submit" value="Aplicar cambios"></input>
                 </div>
             </form>
         </>

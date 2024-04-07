@@ -120,6 +120,11 @@
     grid-template-rows: repeat(3, 3em) 3em;
 }
 
+.settings-match-body {
+    grid-template-columns: [col-start] repeat(2, 15em) [col-end];
+    grid-template-rows: repeat(3, 3em) 3em;
+}
+
 .settings-profile-country-input select {
     width: 20em;
 }
