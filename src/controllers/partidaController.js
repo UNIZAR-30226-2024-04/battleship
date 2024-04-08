@@ -24,6 +24,19 @@ function generarCodigo() {
   return parseInt(codigo.substring(0, 10), 16); // Convierte los primeros 10 caracteres del hash en un número
 }
 
+// Funcion que devuelve el barco (si existe) disparado en esa coordenada. En caso contrario devuelve null
+function dispararCoordenada(tablero, i, j) {
+  for (let barco of tablero) {
+      for (let coordenada of barco) {
+          if (coordenada.i === i && coordenada.j === j) {
+              // Marcar la coordenada como disparada
+              coordenada.estado = 'Tocado';
+              return barco; // Se encontró un barco en estas coordenadas
+          }
+      }
+  }
+  return null; // No se encontró ningún barco en estas coordenadas
+}
 
 // -------------------------------------------- //
 // -------------- PARTIDA BASICA -------------- //
