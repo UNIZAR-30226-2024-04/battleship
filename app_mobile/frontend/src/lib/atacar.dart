@@ -301,6 +301,10 @@ class _AtacarState extends State<Atacar> {
         }),
       );
 
+    var data = jsonDecode(response.body);
+
+    print(data);
+
     if (response.statusCode == 200) {
       var data = jsonDecode(response.body);
       //var tableroInicial = data['tableroInicial'];
@@ -316,12 +320,15 @@ class _AtacarState extends State<Atacar> {
   }
 
 
+
+
+
   void _handleTap(int i, int j) {
     print("TURNO: ${Juego().turno}");
     dispararCoordenada(i, j);
     print("HE DISPARADO EN: $i $j");
     Juego().disparosPendientes--;
-    Juego().actualizarPartida();
+    //Juego().actualizarPartida();
     print("HE ACTUALIZADO LA PARTIDA");
   
     // BACKENDDDDDDDDDDDDDDDDDDDD

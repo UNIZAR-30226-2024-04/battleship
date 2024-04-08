@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'destino.dart';
+import 'juego.dart';
 import 'registro.dart';
 import 'recContrasena.dart';
 import 'botones.dart';
 import 'authProvider.dart';
 import 'comun.dart';
-
 
 class InicioSesion extends StatefulWidget {
   const InicioSesion({super.key});
@@ -19,6 +19,21 @@ class _InicioSesionState extends State<InicioSesion> {
   final TextEditingController _passwordController = TextEditingController();
   bool _rememberMe = false;
   final AuthProvider _authProvider = AuthProvider();
+
+  @override
+  void initState() {
+    super.initState();
+    _autoFillFields();
+  }
+
+  void _autoFillFields() {
+    if (_rememberMe) {
+      setState(() {
+        _nombreController.text = Juego().getPerfilJugador().name;
+        _passwordController.text = Juego().getPerfilJugador().password;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -43,7 +58,6 @@ class _InicioSesionState extends State<InicioSesion> {
       ),
     );
   }
-
 
   Widget _buildLogin(BuildContext context, VoidCallback? onPressed) {
     return Column(
@@ -98,7 +112,7 @@ class _InicioSesionState extends State<InicioSesion> {
     Navigator.pushReplacement(
       context,
       PageRouteBuilder(
-        pageBuilder: (context, animation1, animation2) => const RecuperacionContrasena(),
+        pageBuilder: (context, animation1, animation2) => RecuperacionContrasena(),
         transitionDuration: const Duration(seconds: 0),
       ),
     );
@@ -119,4 +133,3 @@ class _InicioSesionState extends State<InicioSesion> {
     }
   }
 }
-

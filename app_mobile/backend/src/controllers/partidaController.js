@@ -4,7 +4,7 @@ const Coordenada = require('../data/coordenada')
 const biomasDisponibles = require('../data/biomas');
 const tableroDim = Coordenada.i.max;  // Dimensiones del tablero
 /**
- * @module partidaController
+ * @module controllers/partida
  * @description Controlador para las partidas
  * @see module:partidaModel
  * @requires module:partidaModel
@@ -25,23 +25,8 @@ function generarCodigo() {
 }
 
 
-// Funcion que devuelve el barco (si existe) disparado en esa coordenada. En caso contrario devuelve null
-function dispararCoordenada(tablero, i, j) {
-  for (let barco of tablero) {
-      for (let coordenada of barco) {
-          if (coordenada.i === i && coordenada.j === j) {
-              // Marcar la coordenada como disparada
-              coordenada.estado = 'Tocado';
-              return barco; // Se encontró un barco en estas coordenadas
-          }
-      }
-  }
-  return null; // No se encontró ningún barco en estas coordenadas
-}
-
-
 // -------------------------------------------- //
-// ----------- FUNCIONES EXPORTADAS ----------- //
+// -------------- PARTIDA BASICA -------------- //
 // -------------------------------------------- //
 
 /**
@@ -53,8 +38,8 @@ function dispararCoordenada(tablero, i, j) {
  * @param {String} [req.body.nombreId1] - El nombreId del jugador 1
  * @param {String} [req.body.nombreId2] - El nombreId del jugador 2
  * @param {BiomasDisponibles} req.body.bioma - El bioma de la partida
- * @param {Object} res - El objeto de respuesta HTTP
- * @returns {Partida} La partida creada
+ * @param {Partida} res - La partida creada
+ * @param {Number} res.codigo - El código de la partida
  * @example 
  * peticion = { body: { nombreId1: 'jugador1', nombreId2: 'jugador2', bioma: 'Mediterraneo' } }
  * respuesta = { json: () => {} }
@@ -124,10 +109,11 @@ exports.crearPartida = async (req, res) => {
  * @description Devuelve el tablero de barcos y los disparos realizados del jugador en la partida
  * @param {Object} req - El objeto de solicitud HTTP
  * @param {String} [req.body._id] - El id de la partida, si no se proporciona se espera el codigo
- * @param {String} [req.body.codigo] - El codigo de la partida
+ * @param {Number} [req.body.codigo] - El codigo de la partida
  * @param {Number} req.body.jugador - El número del jugador (1 o 2)
- * @param {Object} res - El objeto de respuesta HTTP
- * @returns {Object} El tablero de barcos y los disparos realizados del jugador
+ * @param {Object} res - El tablero de barcos y los disparos realizados del jugador
+ * @param {Tablero} res.tableroBarcos - El tablero de barcos del jugador
+ * @param {Coordenada[]} res.disparosRealizados - Los disparos realizados por el jugador
  * @example
  * peticion = { body: { codigo: '1234567890', jugador: 1 } }
  * respuesta = { json: () => {} }
@@ -187,7 +173,7 @@ exports.mostrarMiTablero = async (req, res) => {
  * @param {String} [req.body.codigo] - El codigo de la partida
  * @param {Number} req.body.jugador - El número del jugador (1 o 2)
  * @param {Object} res - El objeto de respuesta HTTP
- * @returns {Object} El tablero de barcos del jugador enemigo
+ * @returns {Tablero} El tablero de barcos del jugador enemigo
  * @example
  * peticion = { body: { codigo: '1234567890', jugador: 1 } }
  * respuesta = { json: () => {} }
@@ -365,9 +351,13 @@ exports.realizarDisparo = async (req, res) => {
         disparo.estado = 'Tocado'; // Los disparos solo son Agua o Tocado
       }
       disparosRealizados.push(disparo);
+      jugador === 1 ? partida.disparosRealizados1 = disparosRealizados : partida.disparosRealizados2 = disparosRealizados;
       
       // Actualizar el contador de turnos
       partida.contadorTurno++;
+
+      // Pasamos el turno al otro jugador
+      partida.turno = jugador === 1 ? 2 : 1;
 
       // Actualizar la partida
       const partidaModificada = await Partida.findOneAndUpdate(
@@ -375,10 +365,18 @@ exports.realizarDisparo = async (req, res) => {
         partida, // Actualizar (partida contiene los cambios)
         { new: true } // Para devolver el documento actualizado
       );
+
       if (partidaModificada) {
-        res.json(partidaModificada );
+        const partidaDevuelta = partidaModificada;
+
+        // NO SE DEBE DEVOLVER EL TABLERO DEL JUGADOR ENEMIGO -----------------------------------------------------------------------------
+        const data = {
+          resultado: barcoTocado,
+          partida: partidaModificada
+        };
+        
+        res.json(data);
         console.log("Partida modificada con éxito");
-        return partidaModificada;
       } else {
         res.status(404).send('No se ha encontrado la partida a actualizar');
         console.error("No se ha encontrado la partida a actualizar");
@@ -392,6 +390,7 @@ exports.realizarDisparo = async (req, res) => {
     console.error("Hubo un error");
   }
 };
+
 
 // Actualizar estado de la partida tras un disparo o habilidad del adversario
 // Devuelve mi tablero y los disparos realizados
@@ -434,7 +433,8 @@ exports.actualizarEstadoPartida = async (req, res) => {
 };
 
 // Necesitamos alterar las estadisticas almacenadas en el perfil de los jugadores
-const { actualizarEstadisticas } = require('./perfilController')
+const { actualizarEstadisticas } = require('./perfilController');
+const Tablero = require('../data/tablero');
 
 // Funcion para guardar las estadisticas de cada jugador al finalizar la partida
 // Devuelve las estadisticas de la partida de ambos jugadores
@@ -486,7 +486,6 @@ exports.actualizarEstadisticasFinales = async (req, res) => {
       await actualizarEstadisticas(req1, res1);
       await actualizarEstadisticas(req2, res2);
       res.json({ estadisticasJ1, estadisticasJ2 });
-      return { estadisticasJ1, estadisticasJ2 };
     } else {
       res.status(404).send('Partida no encontrada');
     }
@@ -527,7 +526,6 @@ exports.obtenerChat = async (req, res) => {
     const partida = await Partida.findOne(filtro);
     if (partida) {
       res.json(partida.chat);
-      return partida.chat;
     } else {
       res.status(404).send('Partida no encontrada');
       console.error('Partida no encontrada');
@@ -592,7 +590,6 @@ exports.enviarMensaje = async (req, res) => {
       if (partidaModificada) {
         res.json(partidaModificada );
         console.log("Partida modificada con éxito");
-        return partidaModificada;
       } else {
         res.status(404).send('No se ha encontrado la partida a actualizar');
         console.error("No se ha encontrado la partida a actualizar");

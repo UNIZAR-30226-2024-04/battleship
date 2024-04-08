@@ -38,6 +38,7 @@ class Juego {
   String urlActualizarPartida = 'http://localhost:8080/partida/actualizarEstadoPartida';
   String urlCrearPartida = 'http://localhost:8080/partida/crearPartida';
   int codigo = 0;
+  int token = 0;
 
   // Instancia privada y estática del singleton
   static final Juego _singleton = Juego._internal();
@@ -331,12 +332,14 @@ class Juego {
       Uri.parse(urlCrearPartida),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
+        'Authorization': 'Bearer $token',
       },
       body: jsonEncode(<String, String>{
         'nombreId1': getPerfilJugador().name,
         'nombreId2': 'maquina',
         'bioma': 'Mediterraneo' ,
       }),
+      
     );
 
     if (response.statusCode == 200) {
@@ -347,9 +350,9 @@ class Juego {
 
       print(codigo);  
 
-      print(data['tableroBarcos1']);
+      //print(data['tableroBarcos1']);
 
-      print(obtenerEstado(data['tableroBarcos1']));
+      //print(obtenerEstado(data['tableroBarcos1']));
 
 
     } else {

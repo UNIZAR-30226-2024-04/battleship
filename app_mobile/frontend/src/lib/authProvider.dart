@@ -41,13 +41,12 @@ class AuthProvider with ChangeNotifier {
       }),
     );
 
-    //print(response.statusCode);
-    //print(response.body);
     if (response.statusCode == 200) {
       var data = jsonDecode(response.body);
       print("RESPUESTA OK");
       print(data);
       if (data != null) {
+        Juego().token = data['token'];
         print("LOGIN CORRECTO");
         return true;
       }
@@ -57,7 +56,6 @@ class AuthProvider with ChangeNotifier {
       return false;
     }
   }
-
 
   Future<bool> signUpDB(String nombre, String password, String email) async {
     var uri = Uri.parse(_urlRegistro);
@@ -73,13 +71,12 @@ class AuthProvider with ChangeNotifier {
       }),
     );
 
-    //print(response.statusCode);
-    //print(response.body);
     if (response.statusCode == 200) {
       var data = jsonDecode(response.body);
       print("RESPUESTA OK");
       print(data);
       if (data != null) {
+        Juego().token = data['token'];
         print("REGISTRO CORRECTO");
         return true;
       }
@@ -101,6 +98,7 @@ class AuthProvider with ChangeNotifier {
         notifyListeners(); // Notifica a los listeners que la variable ha cambiado
         return true;
     }
+
 
     print("Credenciales incorrectas");
 

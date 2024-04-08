@@ -2,36 +2,42 @@ const express = require('express');
 const router = express.Router();
 const partidaController = require('../controllers/partidaController');
 const verificarToken = require('../middlewares/authjwt');
-const verificarRegistro = require('../middlewares/verificarRegistro');
 
-// Ruta para registrar usuario
-router.post('/realizarDisparo', partidaController.realizarDisparo);
-router.post('/actualizarEstadoPartida', partidaController.actualizarEstadoPartida);
-router.post('/crearPartida', partidaController.crearPartida);
-// Ruta para iniciar sesión
-//router.post('/inicioSesion', perfilController.iniciarSesion);
-// Ruta para modificar perfil
-//router.post('/modificarPerfil', verificarToken, perfilController.modificarPerfil);
-// Ruta para obtener perfil
-//router.get('/obtenerPerfil', perfilController.obtenerPerfil);
 
-// Ruta para crear perfil
-// router.post('../perfil', perfilController.crearPerfil);
-// Rutas para modificar perfil
-// router.post('/perfiles', perfilController.modificarPerfilDatosPersonales);
-// router.post('/perfiles', perfilController.modificarMazo);
-//router.post('/moverBarcoInicial', perfilController.moverBarcoInicial);
-// router.post('/perfiles', perfilController.actualizarEstadisticas);
-// // Ruta para eliminar perfil
-// router.post('/perfiles', perfilController.eliminarPerfil);
-// // Ruta para obtener perfil
-// router.get('/perfil', perfilController.obtenerUsuario);
-//router.post('/obtenerUsuario', perfilController.obtenerUsuario);
-// // Ruta para iniciar sesión
-// router.post('/perfiles', perfilController.iniciarSesion);
-// // Ruta para registrar usuario
-// router.post('/perfiles', perfilController.registrarUsuario);
-// // Ruta para autenticar usuario
-// router.post('/perfiles', perfilController.autenticarUsuario);
+// -------------------------------------------- //
+// -------------- PARTIDA BASICA -------------- //
+// -------------------------------------------- //
+
+// Ruta para crear partida
+router.post('/crearPartida', verificarToken, partidaController.crearPartida);
+
+// Ruta para realizar disparo
+router.post('/realizarDisparo', verificarToken, partidaController.realizarDisparo);
+
+// Ruta para mostrar mi tablero
+router.post('/mostrarMiTablero', verificarToken, partidaController.mostrarMiTablero);
+
+// Ruta para mostrar tablero enemigo
+router.post('/mostrarTableroEnemigo', verificarToken, partidaController.mostrarTableroEnemigo);
+
+// Ruta para mostrar ambos tableros
+router.post('/mostrarTableros', verificarToken, partidaController.mostrarTableros);
+
+// Ruta para actualizar la partida (DEPRECATED)
+router.post('/actualizarPartida', verificarToken, partidaController.actualizarEstadoPartida);
+
+// Ruta para actualizar las estadisticas al terminar
+router.post('/actualizarEstadisticas', verificarToken, partidaController.actualizarEstadisticasFinales);
+
+
+// --------------------------------------------- //
+// -------------- CHAT DE PARTIDA -------------- //
+// --------------------------------------------- //
+
+// Ruta para obtener el chat
+router.post('/obtenerChat', verificarToken, partidaController.obtenerChat);
+
+// Ruta para enviar mensaje
+router.post('/enviarMensaje', verificarToken, partidaController.enviarMensaje);
 
 module.exports = router;

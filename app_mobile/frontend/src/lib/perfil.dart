@@ -1,14 +1,21 @@
 import 'package:flutter/material.dart';
 import 'authProvider.dart';
+import 'botones.dart';
 import 'comun.dart';
 import 'habilidad.dart';
+import 'main.dart';
 
 class Perfil extends StatefulWidget {
   String _email = '';
   String _password = '';
   String _name = '';
   final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _idiomaController = TextEditingController();
+  final TextEditingController _privacyController = TextEditingController();
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _oldPasswordController = TextEditingController();
+  final TextEditingController _newPasswordController = TextEditingController();
+  final TextEditingController _repNewPasswordController = TextEditingController();
   final bool _rememberMe = false;
   final AuthProvider _authProvider = AuthProvider();
   List<Habilidad> _habilidades = [];  // habilidades desbloqueadas
@@ -72,6 +79,8 @@ class _PerfilState extends State<Perfil> {
                   children: [
                     _buildUserInfo(),
                     _buildStats(),
+                    _buildSettings(),
+                    buildActionButton(context, () => _handlePressed(context, AuthProvider()), 'Cerrar Sesión'),
                   ],
                 ),
               ),
@@ -133,6 +142,31 @@ class _PerfilState extends State<Perfil> {
           ],
         ),
       ),
+    );
+  }
+
+  void _handlePressed(BuildContext context, AuthProvider authProvider) {
+    authProvider.logOut();
+    Navigator.pushReplacement(
+      context,
+      PageRouteBuilder(
+        pageBuilder: (context, animation1, animation2) => Principal(),
+        transitionDuration: const Duration(seconds: 0),
+      ),
+    );
+  }
+
+  Widget _buildSettings() {
+    return Column(
+      children: [
+        buildEntryButton('Nombre', 'Introduzca el nombre', Icons.email, widget._nameController),
+        buildEntryButton('Email', 'Introduzca el email', Icons.email, widget._emailController),
+        buildEntryAstButton('Contraseña', 'Introduzca la contraseña actual', Icons.lock, widget._oldPasswordController),
+        buildEntryAstButton('Contraseña', 'Introduzca la contraseña nueva', Icons.lock, widget._newPasswordController),
+        buildEntryAstButton('Contraseña', 'Repita la contraseña nueva', Icons.lock, widget._repNewPasswordController),
+        buildDropdownButton(context, 'Nacionalidad', ['España', 'Alemania', 'Italia'], widget._idiomaController),
+        buildDropdownButton(context, 'Privacidad del perfil', ['Público', 'Privado'], widget._privacyController),
+      ],
     );
   }
 }

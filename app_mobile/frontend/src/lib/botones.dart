@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+
 // Checkbox
 class CustomCheckbox extends StatefulWidget {
   final bool value;
@@ -121,8 +122,8 @@ Widget buildTextButton (BuildContext context, VoidCallback onTapAction, String t
     child: Text(
       text,
       style: const TextStyle(
-        color: Colors.white, // Color del texto
-        fontSize: 16.0, // Tamaño del texto
+        color: Colors.white,
+        fontSize: 16.0,
       ),
     ),
   );
@@ -204,6 +205,77 @@ Widget buildDropdownButton(BuildContext context, String text, List<String> items
           controller.text = newValue ?? '';
         },
       ),
+    ),
+  );
+}
+
+
+Widget buildToggleButton({required bool isActive, required VoidCallback onPressed}) {
+  return GestureDetector(
+    onTap: onPressed,
+    child: AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      width: 70.0,
+      height: 30.0,
+      decoration: BoxDecoration(
+        color: isActive ? Colors.red : Colors.green,
+        borderRadius: BorderRadius.circular(25.0),
+      ),
+      child: Row(
+        mainAxisAlignment:
+            isActive ? MainAxisAlignment.end : MainAxisAlignment.start,
+        children: <Widget>[
+          Container(
+            width: 40.0,
+            height: 40.0,
+            margin: const EdgeInsets.all(5.0),
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+
+Widget buildEntryToggleButton(String text, bool isActive, VoidCallback onPressed) {
+  return Padding(
+    padding: const EdgeInsets.all(10),
+    child: Stack(
+      alignment: Alignment.centerRight,
+      children: <Widget>[
+        Container(
+          width: 300, 
+          height: 60,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(30.0),
+            border: Border.all(
+              color: Colors.grey,
+              width: 1.0,
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 0),
+            child: Text(
+              text,
+              textAlign: TextAlign.left,
+              style: const TextStyle(
+                fontSize: 16,
+              ),
+            ),
+          ),
+        ),
+        Positioned(
+          right: 10, 
+          child: Container(
+            child: buildToggleButton(isActive: isActive, onPressed: onPressed),
+          ),
+        ),
+      ],
     ),
   );
 }

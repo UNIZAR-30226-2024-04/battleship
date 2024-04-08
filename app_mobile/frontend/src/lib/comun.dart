@@ -111,7 +111,7 @@ Widget buildActions(BuildContext context) {
             Navigator.pushReplacement(
               context,
               PageRouteBuilder(
-                pageBuilder: (context, animation1, animation2) => Ajustes(),
+                pageBuilder: (context, animation1, animation2) => const Ajustes(),
                 transitionDuration: const Duration(seconds: 0),
               ),
             );

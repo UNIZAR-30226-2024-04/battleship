@@ -7,7 +7,7 @@ const paisesDisponibles = require('../data/paises')
 const Coordenada = require('../data/coordenada');
 const config = require('../config/auth.config');
 /**
- * @module perfilController
+ * @module controllers/perfil
  * @description Funciones para el manejo de perfiles de usuario.
  * @see module:perfilModel
  * @requires bcrypt
@@ -45,6 +45,11 @@ function crearToken(perfil) {
   const token = jwt.sign({id: perfil.nombreId}, config.secret, 
     { algorithm: 'HS256', expiresIn: 86400 }); // Expira en 24 horas
   return token;
+}
+
+// Función para verificar si un barco es horizontal
+function esBarcoHorizontal(barco) {
+  return barco[0].i == barco[1].i;
 }
 
 /*--------------------------------------------------------------------------------------------------------------------*/
@@ -126,7 +131,6 @@ crearPerfil = async (req, res) => {
     // Guardar el perfil en la base de datos
     const perfilGuardado = await nuevoPerfil.save();
     // Enviar la respuesta al cliente
-    res.json(perfilGuardado);
     console.log("Perfil creado con éxito");
     return perfilGuardado;
   } catch (error) {
@@ -176,11 +180,10 @@ exports.obtenerUsuario = async (req, res) => {
       perfilDevuelto.listaAmigos = undefined; // No enviar la lista de amigos en la respuesta
       perfilDevuelto.listaSolicitudes = undefined; // No enviar la lista de solicitudes en la respuesta
       //perfilDevuelto.tableroInicial = undefined; // No enviar el tablero inicial en la respuesta
-      perfilDevuelto.mazoHabilidades = undefined; // No enviar el mazo de habilidades en la respuesta
+      //perfilDevuelto.mazoHabilidades = undefined; // No enviar el mazo de habilidades en la respuesta
       perfilDevuelto.correo = undefined; // No enviar el correo en la respuesta
       res.json(perfilDevuelto);
       console.log("Perfil obtenido con éxito");
-      return perfil;
     } else {
       res.status(404).send('No se ha encontrado el perfil a obtener');
       console.error("No se ha encontrado el perfil a obtener");
@@ -231,7 +234,6 @@ exports.obtenerDatosPersonales = async (req, res) => {
       perfilDevuelto.contraseña = undefined; // No enviar la contraseña en la respuesta
       res.json(perfilDevuelto);
       console.log("Perfil obtenido con éxito");
-      return perfilDevuelto;
     } else {
       res.status(404).send('No se ha encontrado el perfil a obtener');
       console.error("No se ha encontrado el perfil a obtener");
@@ -408,7 +410,7 @@ exports.registrarUsuario = async (req, res) => {  // Requiere nombreId (o _id), 
       perfilDevuelto = perfil;
       perfilDevuelto.contraseña = undefined; // No enviar la contraseña en la respuesta
       perfilDevuelto.token = token;
-      //res.json(perfilDevuelto);
+      res.json(perfilDevuelto);
       console.log("Usuario registrado con éxito");
     }
   } catch (error) {
@@ -444,7 +446,7 @@ exports.iniciarSesion = async (req, res) => { // Requiere nombreId (o _id) y con
       perfilDevuelto = perfil;
       perfilDevuelto.contraseña = undefined; // No enviar la contraseña en la respuesta
       perfilDevuelto.token = token;
-      //res.json(perfilDevuelto);
+      res.json(perfilDevuelto);
       console.log("Sesión iniciada con éxito");
     } else {
       res.status(404).send('No se ha encontrado el perfil a iniciar sesión');
@@ -499,7 +501,6 @@ exports.autenticarUsuario = async (req, res) => { // Requiere nombreId y contras
         console.error("La contraseña no es válida");
         return;
       }
-      res.json(perfil);
       console.log("Perfil autenticado con éxito");
       return perfil
     } else {
@@ -595,11 +596,6 @@ exports.modificarMazo = async (req, res) => {
     console.error("Error al modificar el mazo", error);
   }
 };
-
-// Función para verificar si un barco es horizontal
-function esBarcoHorizontal(barco) {
-  return barco[0].i == barco[1].i;
-}
 
 // Función para trasladar y/o rotar un barco dentro del tablero
 function moverBarco(barco, iProaNueva, jProaNueva, rotar) {
@@ -738,13 +734,11 @@ exports.moverBarcoInicial = async (req, res) => {
     if (moverBarco(barco, iProaNueva, jProaNueva, rotar)) {
       // Verificar que la nueva posición del barco no colisiona con otros barcos
       if (barcoColisiona(tableroInicial, barco, barcoId)) {
-        res.status(404).send('El movimiento del barco colisiona con otros barcos');
-        console.error("El movimiento del barco colisiona con otros barcos");
+        console.log("El movimiento del barco colisiona con otros barcos");
         return;
       }
     } else {
-      res.status(404).send('El movimiento del barco se sale del tablero');
-      console.error("El movimiento del barco se sale del tablero");
+      console.log("El movimiento del barco se sale del tablero");
       return;
     }
     // Buscar y actualizar el perfil en la base de datos
