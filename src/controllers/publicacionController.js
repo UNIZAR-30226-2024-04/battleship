@@ -5,8 +5,8 @@ const { calcularNivel } = require('../data/niveles');
 const {posiblesReacciones} = require('../data/reacciones');
 
 /**
- * @module publicacionController
- * @description Controladores para la gestión de publicaciones.
+ * @module controllers/publicacion
+ * @description Controlador para la gestión de publicaciones.
  */
 
 // ------------------------------------------ //
@@ -28,18 +28,19 @@ function generarCodigo() {
  * @function crearPublicacion
  * @description Crea una nueva publicación en el perfil del usuario especificado.
  * @param {Request} req - El objeto de solicitud HTTP.
- * @param {Response} [req.body.nombreId] - El perfil debe existir en la base de datos.
- * @param {Response} [req.body.tipoPublicacion] - El tipo de publicación debe ser un número entero.
- * @param {Response} [req.body.nivel] - El nivel debe ser un número entero.
- * @param {Response} [req.body.trofeos] - Los trofeos deben ser un número entero.
- * @param {Response} [req.body.partidasGanadas] - Las partidas ganadas deben ser un número entero.
- * @param {Response} [req.body.partidasJugadas] - Las partidas jugadas deben ser un número entero.
- * @param {Response} [req.body.torneo] - El torneo debe ser una cadena de texto.
- * @param {Response} res - El objeto de respuesta HTTP.
+ * @param {String} [req.body.nombreId] - El perfil debe existir en la base de datos.
+ * @param {Number} [req.body.tipoPublicacion] - El tipo de publicación debe ser un número entero.
+ * @param {Number} [req.body.nivel] - El nivel debe ser un número entero.
+ * @param {Number} [req.body.trofeos] - Los trofeos deben ser un número entero.
+ * @param {Number} [req.body.partidasGanadas] - Las partidas ganadas deben ser un número entero.
+ * @param {Number} [req.body.partidasJugadas] - Las partidas jugadas deben ser un número entero.
+ * @param {String} [req.body.torneo] - El torneo debe ser una cadena de texto.
+ * @param {Publicacion} res - La publicación creada.
+ * @param {String} res.publicacionId - Identificador de la publicación.
  * @example
  * perfil = { nombreId: 'usuario1', tipoPublicacion: 0, nivel: 10 };
  * const req = { body: perfil };
- * const res = { json: (perfil) => { return perfil; } };
+ * const res = { json: (publicacion) => { return publicacion; } };
  * await crearPublicacion(req, res);
  */
 exports.crearPublicacion = async (req, res) => {
@@ -200,8 +201,8 @@ exports.crearPublicacion = async (req, res) => {
  * @function getPublicacionesPerfil
  * @description Devuelve todas las publicaciones del perfil del usuario.
  * @param {Request} req - El objeto de solicitud HTTP.
- * @param {Response} [req.body.nombreId] - El perfil debe existir en la base de datos.
- * @param {Response} res - El objeto de respuesta HTTP.
+ * @param {String} [req.body.nombreId] - El perfil debe existir en la base de datos.
+ * @param {Publicacion[]} res - Lista de publicaciones del perfil.
  * @example
  * perfil = { nombreId: 'usuario1' };
  * const req = { body: perfil };
@@ -241,10 +242,10 @@ exports.getPublicacionesPerfil  = async (req, res) => {
  * @function reaccionarPublicacion
  * @description Añade una reacción a una publicación identificada por su id, dado un usuario y una reacción predefinida.
  * @param {Request} req - El objeto de solicitud HTTP.
- * @param {Response} [req.body.publicacionId] - La publicación debe existir en la base de datos.
- * @param {Response} [req.body.nombreId] - El perfil debe existir en la base de datos.
- * @param {Response} [req.body.reaccionId] - La reacción debe ser un número entero.
- * @param {Response} res - El objeto de respuesta HTTP.
+ * @param {String} [req.body.publicacionId] - La publicación debe existir en la base de datos.
+ * @param {String} [req.body.nombreId] - El perfil debe existir en la base de datos.
+ * @param {Number} [req.body.reaccionId] - La reacción debe ser un número entero.
+ * @param {Publicacion} res - La publicación con la reacción añadida.
  * @example
  * reaccion = { publicacionId: '123', nombreId: 'usuario1', reaccionId: 0 };
  * const req = { body: reaccion };
@@ -327,9 +328,10 @@ exports.reaccionarPublicacion = async (req, res) => {
  * @function eliminarPublicacion
  * @description Elimina una publicación de un usuario identificada por su id.
  * @param {Request} req - El objeto de solicitud HTTP.
- * @param {Response} [req.body.publicacionId] - La publicación debe existir en la base de datos.
- * @param {Response} [req.body.nombreId] - El perfil debe existir en la base de datos.
+ * @param {String} [req.body.publicacionId] - La publicación debe existir en la base de datos.
+ * @param {String} [req.body.nombreId] - El perfil debe existir en la base de datos.
  * @param {Response} res - El objeto de respuesta HTTP.
+ * @param {String} res.message - Mensaje de confirmación.
  * @example
  * publicacion = { publicacionId: '123', nombreId: 'usuario1' };
  * const req = { body: publicacion };

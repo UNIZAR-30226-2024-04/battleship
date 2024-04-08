@@ -7,7 +7,7 @@ const paisesDisponibles = require('../data/paises')
 const Coordenada = require('../data/coordenada');
 const config = require('../config/auth.config');
 /**
- * @module perfilController
+ * @module controllers/perfil
  * @description Funciones para el manejo de perfiles de usuario.
  * @see module:perfilModel
  * @requires bcrypt
