@@ -25,21 +25,6 @@ function generarCodigo() {
 }
 
 
-// Funcion que devuelve el barco (si existe) disparado en esa coordenada. En caso contrario devuelve null
-function dispararCoordenada(tablero, i, j) {
-  for (let barco of tablero) {
-      for (let coordenada of barco) {
-          if (coordenada.i === i && coordenada.j === j) {
-              // Marcar la coordenada como disparada
-              coordenada.estado = 'Tocado';
-              return barco; // Se encontró un barco en estas coordenadas
-          }
-      }
-  }
-  return null; // No se encontró ningún barco en estas coordenadas
-}
-
-
 // -------------------------------------------- //
 // -------------- PARTIDA BASICA -------------- //
 // -------------------------------------------- //
@@ -366,9 +351,13 @@ exports.realizarDisparo = async (req, res) => {
         disparo.estado = 'Tocado'; // Los disparos solo son Agua o Tocado
       }
       disparosRealizados.push(disparo);
+      jugador === 1 ? partida.disparosRealizados1 = disparosRealizados : partida.disparosRealizados2 = disparosRealizados;
       
       // Actualizar el contador de turnos
       partida.contadorTurno++;
+
+      // Pasamos el turno al otro jugador
+      partida.turno = jugador === 1 ? 2 : 1;
 
       // Actualizar la partida
       const partidaModificada = await Partida.findOneAndUpdate(
@@ -376,11 +365,17 @@ exports.realizarDisparo = async (req, res) => {
         partida, // Actualizar (partida contiene los cambios)
         { new: true } // Para devolver el documento actualizado
       );
+
       if (partidaModificada) {
         const partidaDevuelta = partidaModificada;
 
         // NO SE DEBE DEVOLVER EL TABLERO DEL JUGADOR ENEMIGO -----------------------------------------------------------------------------
-        res.json(partidaModificada );
+        const data = {
+          resultado: barcoTocado,
+          partida: partidaModificada
+        };
+        
+        res.json(data);
         console.log("Partida modificada con éxito");
       } else {
         res.status(404).send('No se ha encontrado la partida a actualizar');
@@ -395,6 +390,7 @@ exports.realizarDisparo = async (req, res) => {
     console.error("Hubo un error");
   }
 };
+
 
 // Actualizar estado de la partida tras un disparo o habilidad del adversario
 // Devuelve mi tablero y los disparos realizados
