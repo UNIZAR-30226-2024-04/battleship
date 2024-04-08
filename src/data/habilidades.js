@@ -1,17 +1,16 @@
 
 /** 
  * @module data/habilidades
- * @description Tipo de dato Habilidades
 */
 
 /**
  * @const {Array} habilidadesDisponibles
  * @memberof module:data/habilidades
- * @description Lista de habilidades disponibles
+ * @description Lista de habilidades disponibles a utilizar por los jugadores
  * @default ['Rafaga', 'Recargado', 'Sonar', 'Mina', 'Teledirigido']
+ * @readonly
+ * @enum {String}
  */
-
-// Lista de habilidades disponibles
 const habilidadesDisponibles = ['Rafaga', 'Recargado', 'Sonar', 'Mina', 'Teledirigido'];
 
 module.exports = habilidadesDisponibles;

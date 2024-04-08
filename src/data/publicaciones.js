@@ -1,7 +1,6 @@
 
 /** 
  * @module data/publicaciones
- * @description Tipo de dato Publicaciones
 */
 
 /**

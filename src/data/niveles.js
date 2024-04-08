@@ -1,16 +1,17 @@
 // Lista de puntos de experiencia a obtener por nivel
+
+/** 
+ * @module data/niveles
+*/
+
 /**
  * @const {number[]} niveles
+ * @memberof module:data/niveles
  * @description Lista de puntos de experiencia a obtener por nivel
  * @default [10, 50, 100, 200, 500, 1000]
  * @memberof module:data/niveles
  */
 const niveles = [10, 50, 100, 200, 500, 1000];
-
-/** 
- * @module data/niveles
- * @description Módulo de niveles y experiencia
-*/
 
 /** 
  * @memberof module:data/niveles

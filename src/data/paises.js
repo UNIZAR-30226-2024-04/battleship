@@ -1,17 +1,16 @@
 
 /** 
  * @module data/paises
- * @description Tipo de dato Paises
 */
 
 /**
  * @const {Array} paisesDisponibles
  * @memberof module:data/paises
- * @description Lista de paises disponibles
+ * @description Lista de paises disponibles para seleccionar en el perfil de usuario
  * @default ['Desconocido', 'España', 'Portugal', 'Reino Unido', 'Francia']
+ * @readonly
+ * @enum {String}
  */
-
-// Lista de paises disponibles
 const paisesDisponibles = ['Desconocido', 'España', 'Portugal', 'Reino Unido', 'Francia'];
 
 module.exports = paisesDisponibles;

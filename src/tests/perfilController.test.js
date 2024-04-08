@@ -814,10 +814,10 @@ describe('Mover barco inicial', () => {
       expect(res.statusCode).toBe(undefined);
 
       const perfil = await Perfil.findOne({nombreId: 'usuario1'});
-      expect(perfil.tableroInicial[0][0].i).toBe(3);
-      expect(perfil.tableroInicial[0][0].j).toBe(3);
-      expect(perfil.tableroInicial[0][1].i).toBe(3);
-      expect(perfil.tableroInicial[0][1].j).toBe(4);
+      expect(perfil.tableroInicial[0].coordenadas[0].i).toBe(3);
+      expect(perfil.tableroInicial[0].coordenadas[0].j).toBe(3);
+      expect(perfil.tableroInicial[0].coordenadas[1].i).toBe(3);
+      expect(perfil.tableroInicial[0].coordenadas[1].j).toBe(4);
   });
   it("Derbería rotar correctamente un barco inicial", async () => {
     const req = { body: { nombreId: 'usuario1', barcoId: 1, rotar: 1} };
@@ -829,12 +829,12 @@ describe('Mover barco inicial', () => {
     expect(res.statusCode).toBe(undefined);
 
     const perfil = await Perfil.findOne({nombreId: 'usuario1'});
-    expect(perfil.tableroInicial[1][0].i).toBe(7);
-    expect(perfil.tableroInicial[1][0].j).toBe(1);
-    expect(perfil.tableroInicial[1][1].i).toBe(7);
-    expect(perfil.tableroInicial[1][1].j).toBe(2);
-    expect(perfil.tableroInicial[1][2].i).toBe(7);
-    expect(perfil.tableroInicial[1][2].j).toBe(3);
+    expect(perfil.tableroInicial[1].coordenadas[0].i).toBe(7);
+    expect(perfil.tableroInicial[1].coordenadas[0].j).toBe(1);
+    expect(perfil.tableroInicial[1].coordenadas[1].i).toBe(7);
+    expect(perfil.tableroInicial[1].coordenadas[1].j).toBe(2);
+    expect(perfil.tableroInicial[1].coordenadas[2].i).toBe(7);
+    expect(perfil.tableroInicial[1].coordenadas[2].j).toBe(3);
   });
   it("Debería rotar y trasladar correctamente un barco inicial", async () => {
     const req = { body: { nombreId: 'usuario1', barcoId: 3, iProaNueva: 1, jProaNueva: 6, rotar: 1} };
@@ -846,12 +846,12 @@ describe('Mover barco inicial', () => {
     expect(res.statusCode).toBe(undefined);
 
     const perfil = await Perfil.findOne({nombreId: 'usuario1'});
-    expect(perfil.tableroInicial[3][0].i).toBe(1);
-    expect(perfil.tableroInicial[3][0].j).toBe(6);
-    expect(perfil.tableroInicial[3][1].i).toBe(1);
-    expect(perfil.tableroInicial[3][1].j).toBe(7);
-    expect(perfil.tableroInicial[3][2].i).toBe(1);
-    expect(perfil.tableroInicial[3][2].j).toBe(8);
+    expect(perfil.tableroInicial[3].coordenadas[0].i).toBe(1);
+    expect(perfil.tableroInicial[3].coordenadas[0].j).toBe(6);
+    expect(perfil.tableroInicial[3].coordenadas[1].i).toBe(1);
+    expect(perfil.tableroInicial[3].coordenadas[1].j).toBe(7);
+    expect(perfil.tableroInicial[3].coordenadas[2].i).toBe(1);
+    expect(perfil.tableroInicial[3].coordenadas[2].j).toBe(8);
   });
   it('Debería fallar al trasladar un barco inicial con un campo extra', async () => {
       const req = { body: { nombreId: 'usuario1', barcoId: 0, iProaNueva: 3, jProaNueva: 3, extra: 1 } };
@@ -953,10 +953,10 @@ describe('Mover barco inicial', () => {
     expect(res.statusCode).toBe(undefined);
 
     const perfil = await Perfil.findOne({nombreId: 'usuario1'});
-    expect(perfil.tableroInicial[0][0].i).toBe(3);
-    expect(perfil.tableroInicial[0][0].j).toBe(3);
-    expect(perfil.tableroInicial[0][1].i).toBe(3);
-    expect(perfil.tableroInicial[0][1].j).toBe(4);
+    expect(perfil.tableroInicial[0].coordenadas[0].i).toBe(3);
+    expect(perfil.tableroInicial[0].coordenadas[0].j).toBe(3);
+    expect(perfil.tableroInicial[0].coordenadas[1].i).toBe(3);
+    expect(perfil.tableroInicial[0].coordenadas[1].j).toBe(4);
   });
   it('Debería no actualizar al rotar un barco fuera del tablero', async () => {
     const req = { body: { nombreId: 'usuario1', barcoId: 4, rotar: 1} };
@@ -967,16 +967,16 @@ describe('Mover barco inicial', () => {
     } catch (error) {}
     expect(res.statusCode).toBe(undefined);
     const perfil = await Perfil.findOne({nombreId: 'usuario1'});
-    expect(perfil.tableroInicial[4][0].i).toBe(10);
-    expect(perfil.tableroInicial[4][0].j).toBe(6);
-    expect(perfil.tableroInicial[4][1].i).toBe(10);
-    expect(perfil.tableroInicial[4][1].j).toBe(7);
-    expect(perfil.tableroInicial[4][2].i).toBe(10);
-    expect(perfil.tableroInicial[4][2].j).toBe(8);
-    expect(perfil.tableroInicial[4][3].i).toBe(10);
-    expect(perfil.tableroInicial[4][3].j).toBe(9);
-    expect(perfil.tableroInicial[4][4].i).toBe(10);
-    expect(perfil.tableroInicial[4][4].j).toBe(10);
+    expect(perfil.tableroInicial[4].coordenadas[0].i).toBe(10);
+    expect(perfil.tableroInicial[4].coordenadas[0].j).toBe(6);
+    expect(perfil.tableroInicial[4].coordenadas[1].i).toBe(10);
+    expect(perfil.tableroInicial[4].coordenadas[1].j).toBe(7);
+    expect(perfil.tableroInicial[4].coordenadas[2].i).toBe(10);
+    expect(perfil.tableroInicial[4].coordenadas[2].j).toBe(8);
+    expect(perfil.tableroInicial[4].coordenadas[3].i).toBe(10);
+    expect(perfil.tableroInicial[4].coordenadas[3].j).toBe(9);
+    expect(perfil.tableroInicial[4].coordenadas[4].i).toBe(10);
+    expect(perfil.tableroInicial[4].coordenadas[4].j).toBe(10);
   });
   it('Debería no actualizar al trasladar un barco a una posición ocupada', async () => {
     const req = { body: { nombreId: 'usuario1', barcoId: 0, iProaNueva: 1, jProaNueva: 6 } };
@@ -987,10 +987,10 @@ describe('Mover barco inicial', () => {
     } catch (error) {}
     expect(res.statusCode).toBe(undefined);
     const perfil = await Perfil.findOne({nombreId: 'usuario1'});
-    expect(perfil.tableroInicial[0][0].i).toBe(3);
-    expect(perfil.tableroInicial[0][0].j).toBe(3);
-    expect(perfil.tableroInicial[0][1].i).toBe(3);
-    expect(perfil.tableroInicial[0][1].j).toBe(4);
+    expect(perfil.tableroInicial[0].coordenadas[0].i).toBe(3);
+    expect(perfil.tableroInicial[0].coordenadas[0].j).toBe(3);
+    expect(perfil.tableroInicial[0].coordenadas[1].i).toBe(3);
+    expect(perfil.tableroInicial[0].coordenadas[1].j).toBe(4);
   });
   it('Debería fallar al indicar un usuario no existente', async () => {
     const req = { body: { nombreId: 'usuario3', barcoId: 0, iProaNueva: 3, jProaNueva: 3 } };

@@ -6,6 +6,7 @@ const habilidadesDisponibles = require('../data/habilidades')
 const paisesDisponibles = require('../data/paises')
 const Coordenada = require('../data/coordenada');
 const config = require('../config/auth.config');
+const { coordenadas } = require('../data/barco');
 /**
  * @module controllers/perfil
  * @description Funciones para el manejo de perfiles de usuario.
@@ -112,11 +113,16 @@ crearPerfil = async (req, res) => {
     // Crear un tablero aleatorio con un barco de 5 casillas de largo. Coordenadas de izda a derecha o de arriba a abajo.
     // Notación matricial
     const tableroInicial = [
-      [{ i: 1, j: 1 }, { i: 1, j: 2 }],
-      [{ i: 7, j: 1 }, { i: 8, j: 1 }, { i: 9, j: 1 }],
-      [{ i: 3, j: 10 }, { i: 4, j: 10 }, { i: 5, j: 10 }],
-      [{ i: 3, j: 6 }, { i: 4, j: 6 }, { i: 5, j: 6 }, { i: 6, j: 6 }],
-      [{ i: 10, j: 6 }, { i: 10, j: 7 }, { i: 10, j: 8 }, { i: 10, j: 9 }, { i: 10, j: 10 }]
+      {coordenadas: [{ i: 1, j: 1 }, { i: 1, j: 2 }],
+       tipo: 'Acorazado'},
+      {coordenadas: [{ i: 7, j: 1 }, { i: 8, j: 1 }, { i: 9, j: 1 }],
+       tipo: 'Fragata'},
+      {coordenadas: [{ i: 3, j: 10 }, { i: 4, j: 10 }, { i: 5, j: 10 }], 
+       tipo: 'Submarino'},
+      {coordenadas: [{ i: 3, j: 6 }, { i: 4, j: 6 }, { i: 5, j: 6 }, { i: 6, j: 6 }],
+       tipo: 'Patrullera'},
+      {coordenadas: [{ i: 10, j: 6 }, { i: 10, j: 7 }, { i: 10, j: 8 }, { i: 10, j: 9 }, { i: 10, j: 10 }], 
+       tipo: 'Acorazado'}
     ];
       
     
@@ -130,8 +136,6 @@ crearPerfil = async (req, res) => {
 
     // Guardar el perfil en la base de datos
     const perfilGuardado = await nuevoPerfil.save();
-    // Enviar la respuesta al cliente
-    console.log("Perfil creado con éxito");
     return perfilGuardado;
   } catch (error) {
     res.status(500).send('Hubo un error');
@@ -233,7 +237,7 @@ exports.obtenerDatosPersonales = async (req, res) => {
       const perfilDevuelto = perfil;
       perfilDevuelto.contraseña = undefined; // No enviar la contraseña en la respuesta
       res.json(perfilDevuelto);
-      console.log("Perfil obtenido con éxito");
+      console.log("Datos personales obtenidos con éxito");
     } else {
       res.status(404).send('No se ha encontrado el perfil a obtener');
       console.error("No se ha encontrado el perfil a obtener");
@@ -409,8 +413,11 @@ exports.registrarUsuario = async (req, res) => {  // Requiere nombreId (o _id), 
       // Enviar el token como respuesta al cliente
       perfilDevuelto = perfil;
       perfilDevuelto.contraseña = undefined; // No enviar la contraseña en la respuesta
-      perfilDevuelto.token = token;
-      res.json(perfilDevuelto);
+      const data = {
+        perfilDevuelto,
+        token
+      }
+      res.json(data);
       console.log("Usuario registrado con éxito");
     }
   } catch (error) {
@@ -445,8 +452,11 @@ exports.iniciarSesion = async (req, res) => { // Requiere nombreId (o _id) y con
       // Enviar el token como respuesta al cliente
       perfilDevuelto = perfil;
       perfilDevuelto.contraseña = undefined; // No enviar la contraseña en la respuesta
-      perfilDevuelto.token = token;
-      res.json(perfilDevuelto);
+      const data = {
+        perfilDevuelto,
+        token
+      }
+      res.json(data);
       console.log("Sesión iniciada con éxito");
     } else {
       res.status(404).send('No se ha encontrado el perfil a iniciar sesión');
@@ -501,7 +511,6 @@ exports.autenticarUsuario = async (req, res) => { // Requiere nombreId y contras
         console.error("La contraseña no es válida");
         return;
       }
-      console.log("Perfil autenticado con éxito");
       return perfil
     } else {
       res.status(404).send('No se ha encontrado el perfil a autenticar');
@@ -645,7 +654,7 @@ function moverBarco(barco, iProaNueva, jProaNueva, rotar) {
 // Función para verificar si el barco que irá en la posición barcoId colisiona con otros barcos
 function barcoColisiona(tablero, barco, barcoId) {
   for (let i = 0; i < barcoId; i++) { // Recorrer los otros barcos
-    for (const coordenada of tablero[i]) {
+    for (const coordenada of tablero[i].coordenadas) {
       for (const nuevaCoordenada of barco) {
         if (coordenada.i === nuevaCoordenada.i && coordenada.j === nuevaCoordenada.j) {
           return true; // Hay colisión
@@ -654,7 +663,7 @@ function barcoColisiona(tablero, barco, barcoId) {
     }
   }
   for (let i = barcoId + 1; i < tablero.length; i++) {
-    for (const coordenada of tablero[i]) { // Recorrer los otros barcos
+    for (const coordenada of tablero[i].coordenadas) { // Recorrer los otros barcos
       for (const nuevaCoordenada of barco) {
         if (coordenada.i === nuevaCoordenada.i && coordenada.j === nuevaCoordenada.j) {
           return true; // Hay colisión
@@ -731,9 +740,9 @@ exports.moverBarcoInicial = async (req, res) => {
     }
     barco = tableroInicial[barcoId];
     // Verificar que la nueva posición del barco está en el rango correcto
-    if (moverBarco(barco, iProaNueva, jProaNueva, rotar)) {
+    if (moverBarco(barco.coordenadas, iProaNueva, jProaNueva, rotar)) {
       // Verificar que la nueva posición del barco no colisiona con otros barcos
-      if (barcoColisiona(tableroInicial, barco, barcoId)) {
+      if (barcoColisiona(tableroInicial, barco.coordenadas, barcoId)) {
         console.log("El movimiento del barco colisiona con otros barcos");
         return;
       }

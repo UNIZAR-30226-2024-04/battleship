@@ -24,18 +24,19 @@ function generarCodigo() {
   return parseInt(codigo.substring(0, 10), 16); // Convierte los primeros 10 caracteres del hash en un número
 }
 
-// Funcion que devuelve el barco (si existe) disparado en esa coordenada. En caso contrario devuelve null
+
+// Funcion que devuelve el barco (si existe) disparado en la coordenada (i, j).
+// Si no hay barco en la coordenada, devuelve null.
 function dispararCoordenada(tablero, i, j) {
   for (let barco of tablero) {
-      for (let coordenada of barco) {
-          if (coordenada.i === i && coordenada.j === j) {
-              // Marcar la coordenada como disparada
-              coordenada.estado = 'Tocado';
-              return barco; // Se encontró un barco en estas coordenadas
-          }
+    for (let coordenada of barco.coordenadas) {
+      if (coordenada.i === i && coordenada.j === j) {
+        coordenada.estado = 'Tocado';
+        return barco.coordenadas;
       }
+    }
   }
-  return null; // No se encontró ningún barco en estas coordenadas
+  return null;
 }
 
 // -------------------------------------------- //
@@ -353,14 +354,15 @@ exports.realizarDisparo = async (req, res) => {
         console.error("Casilla ya disparada");
         return;
       }
+
       // Realizar disparo
       let barcoTocado = jugador === 1 ? dispararCoordenada(partida.tableroBarcos2, i, j) :
-        dispararCoordenada(partida.tableroBarcos1, i, j);
+      dispararCoordenada(partida.tableroBarcos1, i, j);
       // Actualizar disparosRealizados y tableroBarcos
       let disparo = { i, j, estado: 'Agua' };
       if (barcoTocado) { 
         barcoTocado.every(coordenada => coordenada.estado === 'Tocado') && 
-          barcoTocado.map(coordenada => coordenada.estado = 'Hundido');    
+        barcoTocado.map(coordenada => coordenada.estado = 'Hundido');    
         disparo.estado = 'Tocado'; // Los disparos solo son Agua o Tocado
       }
       disparosRealizados.push(disparo);
@@ -368,9 +370,8 @@ exports.realizarDisparo = async (req, res) => {
       
       // Actualizar el contador de turnos
       partida.contadorTurno++;
-
       // Pasamos el turno al otro jugador
-      partida.turno = jugador === 1 ? 2 : 1;
+      //partida.turno = jugador === 1 ? 2 : 1;
 
       // Actualizar la partida
       const partidaModificada = await Partida.findOneAndUpdate(
@@ -385,7 +386,7 @@ exports.realizarDisparo = async (req, res) => {
         // NO SE DEBE DEVOLVER EL TABLERO DEL JUGADOR ENEMIGO -----------------------------------------------------------------------------
         const respuestaDisparo = {
           resultado: barcoTocado,
-          partida: partidaModificada
+          partida: partidaDevuelta
         };
         
         res.json(respuestaDisparo);

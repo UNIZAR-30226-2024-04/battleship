@@ -28,6 +28,9 @@ describe('Crear publicacion', () => {
           await registrarUsuario(req, res);
         } catch (error) {}
         expect(res.statusCode).toBe(undefined);
+
+        // Aumentar el nivel del usuario
+        await Perfil.updateOne({nombreId: 'usuario1'}, {puntosExperiencia: 20});
     });
     it('Debería crear una publicación correctamente con nivel 1', async () => {
         const req = { body: { nombreId: 'usuario1', tipoPublicacion: 0, nivel : 1 } };
