@@ -47,6 +47,11 @@ function crearToken(perfil) {
   return token;
 }
 
+// Función para verificar si un barco es horizontal
+function esBarcoHorizontal(barco) {
+  return barco[0].i == barco[1].i;
+}
+
 /*--------------------------------------------------------------------------------------------------------------------*/
 /*------------------------------------------------ PERFIL BÁSICO  ----------------------------------------------------*/
 /*--------------------------------------------------------------------------------------------------------------------*/
@@ -591,11 +596,6 @@ exports.modificarMazo = async (req, res) => {
     console.error("Error al modificar el mazo", error);
   }
 };
-
-// Función para verificar si un barco es horizontal
-function esBarcoHorizontal(barco) {
-  return barco[0].i == barco[1].i;
-}
 
 // Función para trasladar y/o rotar un barco dentro del tablero
 function moverBarco(barco, iProaNueva, jProaNueva, rotar) {
