@@ -90,10 +90,10 @@ class Barco {
 
   String getImagePath() {
     if(!_esRotado) {
-      return 'images/' + _nombre + '.png';
+      return 'images/$_nombre.png';
     }
     else {
-      return 'images/' + _nombre + '_rotado.png';
+      return 'images/${_nombre}_rotado.png';
     }
   }
 

@@ -58,7 +58,7 @@ class _ColocarBarcosState extends State<ColocarBarcos> {
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   // Mientras espera que se complete la inicialización de los barcos, puedes mostrar un indicador de carga.
-                  return CircularProgressIndicator();
+                  return const CircularProgressIndicator();
                 } else {
                   // Una vez que se complete la inicialización, construir el tablero con los barcos.
                   return _construirTableroConBarcosEditable();
@@ -103,7 +103,7 @@ class _ColocarBarcosState extends State<ColocarBarcos> {
                         builder: (context, snapshot) {
                             if (snapshot.connectionState == ConnectionState.waiting) {
                               // Mientras espera que se complete la inicialización de los barcos, puedes mostrar un indicador de carga.
-                              return CircularProgressIndicator();
+                              return const CircularProgressIndicator();
                             } else {
                               // Una vez que se complete la inicialización, construir el tablero con los barcos.
                               return _construirTableroConBarcosEditable();
@@ -147,7 +147,7 @@ class _ColocarBarcosState extends State<ColocarBarcos> {
                         builder: (context, snapshot) {
                             if (snapshot.connectionState == ConnectionState.waiting) {
                               // Mientras espera que se complete la inicialización de los barcos, puedes mostrar un indicador de carga.
-                              return CircularProgressIndicator();
+                              return const CircularProgressIndicator();
                             } else {
                               // Una vez que se complete la inicialización, construir el tablero con los barcos.
                               return _construirTableroConBarcosEditable();

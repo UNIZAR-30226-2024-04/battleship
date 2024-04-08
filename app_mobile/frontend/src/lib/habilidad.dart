@@ -21,7 +21,7 @@ abstract class Habilidad {
   void informarHabilidad();
 
   String getImagePath() {
-    return 'images/' + nombre + '.png';
+    return 'images/$nombre.png';
   }
 }
 

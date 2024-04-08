@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'comun.dart';
 
 class Social extends StatelessWidget {
+  const Social({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -22,7 +24,7 @@ class Social extends StatelessWidget {
                   child: Column(
                     children: [
                       construirPestanas(),
-                      Spacer(),
+                      const Spacer(),
                       buildActions(context),
                     ],
                   ),
@@ -37,12 +39,12 @@ class Social extends StatelessWidget {
 
   Widget construirPestanas() {
     return Container(
-      margin: EdgeInsets.all(10),
+      margin: const EdgeInsets.all(10),
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.5),
         borderRadius: BorderRadius.circular(15),
       ),
-      child: Column(
+      child: const Column(
         children: [
           TabBar(
             indicatorSize: TabBarIndicatorSize.tab,

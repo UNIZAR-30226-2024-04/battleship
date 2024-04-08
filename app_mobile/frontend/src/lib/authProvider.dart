@@ -5,8 +5,8 @@ import 'package:http/http.dart' as http;
 import 'juego.dart';
 
 class AuthProvider with ChangeNotifier {
-  String _urlInicioSesion = 'http://localhost:8080/perfil/iniciarSesion';
-  String _urlRegistro = 'http://localhost:8080/perfil/registrarUsuario';
+  final String _urlInicioSesion = 'http://localhost:8080/perfil/iniciarSesion';
+  final String _urlRegistro = 'http://localhost:8080/perfil/registrarUsuario';
   bool _isLoggedIn = false;
 
   bool get isLoggedIn => _isLoggedIn;

@@ -11,6 +11,8 @@ import 'package:http/http.dart' as http;
 class Atacar extends StatefulWidget {
   String urlDisparar = 'http://localhost:8080/partida/realizarDisparo';
 
+  Atacar({super.key});
+
   @override
   _AtacarState createState() => _AtacarState();
 }
@@ -315,9 +317,9 @@ class _AtacarState extends State<Atacar> {
 
 
   void _handleTap(int i, int j) {
-    print("TURNO: " + Juego().turno.toString());
+    print("TURNO: ${Juego().turno}");
     dispararCoordenada(i, j);
-    print("HE DISPARADO EN: " + i.toString() + " " + j.toString());
+    print("HE DISPARADO EN: $i $j");
     Juego().disparosPendientes--;
     Juego().actualizarPartida();
     print("HE ACTUALIZADO LA PARTIDA");

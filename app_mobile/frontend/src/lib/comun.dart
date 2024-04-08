@@ -1,7 +1,6 @@
 import 'package:battleship/authProvider.dart';
 import 'package:battleship/destino.dart';
 import 'package:flutter/material.dart';
-import 'package:mongo_dart/mongo_dart.dart';
 import 'habilidades.dart';
 import 'flota.dart';
 import 'ajustes.dart';
@@ -103,7 +102,7 @@ Widget buildActions(BuildContext context) {
             Navigator.pushReplacement(
               context,
               PageRouteBuilder(
-                pageBuilder: (context, animation1, animation2) => Social(),
+                pageBuilder: (context, animation1, animation2) => const Social(),
                 transitionDuration: const Duration(seconds: 0),
               ),
             );
