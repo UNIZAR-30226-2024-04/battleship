@@ -54,7 +54,7 @@ export function Fleet() {
     let tableroInicial = [];
 
     // cola fifo para las skills de tamaño 3
-    let [skillQueue, setSkillQueue] = useState([]); // Estado para la cola de habilidades
+    let [skillQueue, setSkillQueue] = useState(["null"]); // Estado para la cola de habilidades
 
     // Función para agregar una skill a la cola
     const enqueueSkill = (skillName) => {
@@ -67,8 +67,16 @@ export function Fleet() {
         console.log("Skill queue: ", skillQueue);
     };
 
+    // Función para verificar si una skill está encolada
     const isSkillEnqueued = (skillName) => {
         return skillQueue.includes(skillName);
+    };
+
+    // Función para quitar una skill de la cola
+    const dequeueSkill = (skillName) => {
+        if (skillQueue.includes(skillName)) {
+            setSkillQueue(prevQueue => prevQueue.filter(skill => skill !== skillName));
+        }
     };
 
     const boardDimension = 10;
@@ -137,7 +145,16 @@ export function Fleet() {
                 //     [{ i: 10, j: 6 }, { i: 10, j: 7 }, { i: 10, j: 8 }, { i: 10, j: 9 }, { i: 10, j: 10 }]
                 //   ];
                 mostrarWidgetsTablero(tableroInicial);
-                skillQueue = data.mazoHabilidades;
+                console.log("Skill queue antes:", skillQueue);
+                if (data.mazoHabilidades) {
+                    console.log(data.mazoHabilidades);
+                    if (isSkillEnqueued("null")) {
+                        setSkillQueue([]);
+                    }
+                    for (let i = 0; i < data.mazoHabilidades.length; i++) {
+                        enqueueSkill(data.mazoHabilidades[i]);
+                    }
+                }
             })
             .catch(error => {
                 console.error('Error:', error);
@@ -298,28 +315,30 @@ export function Fleet() {
     };
 
     useEffect(() => {
-        // Modificar el mazo en la base de datos
-        fetch(urlModificarMazoHabilidades, {
-            method: 'POST',
-            headers: {
-            'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ nombreId: 'usuario1',  mazoHabilidades: skillQueue})
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('La solicitud ha fallado');
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (data) {
-                console.log(data);
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-        });
+        if (!(skillQueue.length > 0 && skillQueue[0] === "null")) {
+            // Modificar el mazo en la base de datos
+            fetch(urlModificarMazoHabilidades, {
+                method: 'POST',
+                headers: {
+                'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ nombreId: 'usuario1',  mazoHabilidades: skillQueue})
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('La solicitud ha fallado');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data) {
+                    console.log(data);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
     }, [skillQueue]);
 
 
@@ -335,23 +354,23 @@ export function Fleet() {
                         <div className="grid-stack fleet-board" onClick={handleItemClick}></div>
                         <div className="ship-buttons-container">
                             <div className={`skill-button ${isSkillEnqueued("Mina") ? 'skill-button-selected' : ''}`}>
-                                <img onClick={() => enqueueSkill("Mina")} src={mineImg} alt="Mine" />
+                                <img onClick={() => isSkillEnqueued("Mina") ? dequeueSkill("Mina") : enqueueSkill("Mina")} src={mineImg} alt="Mine" />
                             </div>
                             <br></br>
                             <div className={`skill-button ${isSkillEnqueued("Teledirigido") ? 'skill-button-selected' : ''}`}>
-                                <img onClick={() => enqueueSkill("Teledirigido")} src={missileImg} alt="Missile" />
+                                <img onClick={() => isSkillEnqueued("Teledirigido") ? dequeueSkill("Teledirigido") : enqueueSkill("Teledirigido")} src={missileImg} alt="Missile" />
                             </div>
                             <br></br>
                             <div className={`skill-button ${isSkillEnqueued("Rafaga") ? 'skill-button-selected' : ''}`}>
-                                <img onClick={() => enqueueSkill("Rafaga")} src={burstImg} alt="Burst" />
+                                <img onClick={() => isSkillEnqueued("Rafaga") ? dequeueSkill("Rafaga") : enqueueSkill("Rafaga")} src={burstImg} alt="Burst" />
                             </div>
                             <br></br>
                             <div className={`skill-button ${isSkillEnqueued("Sonar") ? 'skill-button-selected' : ''}`}>
-                                <img onClick={() => enqueueSkill("Sonar")} src={sonarImg} alt="Sonar" />
+                                <img onClick={() => isSkillEnqueued("Sonar") ? dequeueSkill("Sonar") : enqueueSkill("Sonar")} src={sonarImg} alt="Sonar" />
                             </div>
                             <br></br>
                             <div className={`skill-button ${isSkillEnqueued("Recargado") ? 'skill-button-selected' : ''}`}>
-                                <img onClick={() => enqueueSkill("Recargado")} src={torpedoImg} alt="Torpedo" />
+                                <img onClick={() => isSkillEnqueued("Recargado") ? dequeueSkill("Recargado") : enqueueSkill("Recargado")} src={torpedoImg} alt="Torpedo" />
                             </div>
                         </div>
                     </div>

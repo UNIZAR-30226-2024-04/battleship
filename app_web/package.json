@@ -8,6 +8,7 @@
         "start-frontend": "cd frontend/src && npm start"
     },
     "dependencies": {
-        "@types/node": "^20.11.17"
+        "@types/node": "^20.11.17",
+        "react-world-flags": "^1.6.0"
     }
 }
