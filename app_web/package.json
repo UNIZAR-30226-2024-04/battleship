@@ -9,6 +9,7 @@
     },
     "dependencies": {
         "@types/node": "^20.11.17",
+        "http": "^0.0.1-security",
         "react-world-flags": "^1.6.0"
     }
 }

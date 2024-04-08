@@ -64,7 +64,6 @@ export function Fleet() {
                 setSkillQueue(prevQueue => prevQueue.slice(1)); // Eliminar el primer elemento si la cola excede el límite
             }
         }
-        console.log("Skill queue: ", skillQueue);
     };
 
     // Función para verificar si una skill está encolada
@@ -100,6 +99,53 @@ export function Fleet() {
             
         });
         setBoard(board); // Almacenar la instancia de GridStack en el estado
+        if (board) {
+            // Agregar un listener para el evento 'change'
+            board.on('change', (event, nodes) => {
+                // nodes es un array de objetos que contienen la información actualizada de los widgets
+                // Aquí puedes acceder a node.x, node.y, node.w y node.h para cada widget
+                nodes.forEach(node => {
+                    // cansole.log('Widget ID:', node.id);
+                    // cansole.log('New X position:', node.x);
+                    // cansole.log('New Y position:', node.y);
+                    // cansole.log('New width:', node.w);
+                    // cansole.log('New height:', node.h);
+                    // cansole.log('New orientation:', node.info);
+
+                    // Restablecer la info del widget a noRotated
+                    if (node.info === "rotated") {
+                        node.info = "noRotated"; 
+                        // Notar que esto hace que se capture de nuevo en el evento
+                        // 'change' pero el resto de los atributos no cambian
+                    } else {
+                        node.info = "noRotated";
+                        // Aquí editar el tablero en la base de datos
+                        fetch(urlMoverBarcoInicial, {
+                            method: 'POST',
+                            headers: {
+                            'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ nombreId: 'usuario1',  barcoId: node.id-1, iProaNueva: node.y+1, jProaNueva: node.x+1})
+                        })
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('La solicitud ha fallado');
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            if (data) {
+                                borrarWidgetsTablero();
+                                mostrarWidgetsTablero(data.tableroInicial);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                        });
+                    }
+                })
+            });
+        }
     }, []);
 
     const mostrarWidgetsTablero = (tablero) => {
@@ -118,7 +164,7 @@ export function Fleet() {
     }
 
 
-    // Este efecto se ejecuta cuando el board está inicializado
+    // Este efecto se ejecuta cuando board cambia
     useEffect(() => {
         // Obtener el tablero inicial del perfil en la base de datos
         try {
@@ -144,10 +190,9 @@ export function Fleet() {
                 //     [{ i: 3, j: 6 }, { i: 4, j: 6 }, { i: 5, j: 6 }, { i: 6, j: 6 }],
                 //     [{ i: 10, j: 6 }, { i: 10, j: 7 }, { i: 10, j: 8 }, { i: 10, j: 9 }, { i: 10, j: 10 }]
                 //   ];
+                borrarWidgetsTablero();
                 mostrarWidgetsTablero(tableroInicial);
-                console.log("Skill queue antes:", skillQueue);
                 if (data.mazoHabilidades) {
-                    console.log(data.mazoHabilidades);
                     if (isSkillEnqueued("null")) {
                         setSkillQueue([]);
                     }
@@ -162,57 +207,8 @@ export function Fleet() {
         } catch (error) {
             console.error('Error:', error);
         }
+        
     }, [board]);
-
-    useEffect(() => {
-        // Verificar si el tablero está inicializado
-        if (board) {
-            // Agregar un listener para el evento 'change'
-            board.on('change', (event, nodes) => {
-                // nodes es un array de objetos que contienen la información actualizada de los widgets
-                // Aquí puedes acceder a node.x, node.y, node.w y node.h para cada widget
-                nodes.forEach(node => {
-                    console.log('Widget ID:', node.id);
-                    console.log('New X position:', node.x);
-                    console.log('New Y position:', node.y);
-                    console.log('New width:', node.w);
-                    console.log('New height:', node.h);
-
-                    // Verificar si el barco ha cambiado de orientación
-                    let esHorizontalAntes = esBarcoHorizontal(tableroInicial[node.id-1]);
-                    let esHorizontalDespues = node.w > node.h;
-
-                    if (esHorizontalAntes === esHorizontalDespues) {
-                        // Aquí editar el tablero en la base de datos
-                        fetch(urlMoverBarcoInicial, {
-                            method: 'POST',
-                            headers: {
-                            'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({ nombreId: 'usuario1',  barcoId: node.id-1, iProaNueva: node.y+1, jProaNueva: node.x+1})
-                        })
-                        .then(response => {
-                            if (!response.ok) {
-                                throw new Error('La solicitud ha fallado');
-                            }
-                            return response.json();
-                        })
-                        .then(data => {
-                            if (data) {
-                                console.log(data);
-                                borrarWidgetsTablero();
-                                mostrarWidgetsTablero(data.tableroInicial);
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
-                        });
-                    }
-                })
-            });
-            console.log(board.engine.nodes);
-        }
-    }, [board]); // Ejecutar este efecto cada vez que board cambie
     
 
 
@@ -222,15 +218,12 @@ export function Fleet() {
         const node = {
             id: id,      // id para identificar el widget
             locked: true,           // inmutable por otros widgets
-            //content: `<div onClick={handleItemClick}>${shipName}</div>`,
-            //content: '<img src={aircraftImg} />',
-            // content: shipInfo[ship].name,
             content: `<img src="${shipInfo[ship].img}" alt="${shipInfo[ship].name}";" />`,
-            //sizeToContent: true,
             x: x,
             y: y,
             w: shipInfo[ship].size,
             h: 1,
+            info: "noRotated"
         };
         if (!esHorizontal) {
             node.content = `<img src="${shipInfo[ship].imgRotated}" alt="${shipInfo[ship].name}";" />`;
@@ -241,11 +234,6 @@ export function Fleet() {
             board.addWidget(node);   // Añadir widget a la cuadrícula
             
             setCount(prevCount => prevCount + 1); // Incrementar el contador
-            
-            // Debug
-            //console.log(document.getElementsByClassName('gs-id-0'));
-            //console.log(node)
-            //console.log(board['engine']['nodes'])
         }
     };
 
@@ -260,7 +248,6 @@ export function Fleet() {
             const gridStackItem = event.target.closest('.grid-stack-item');
             if (gridStackItem) {
                 clickedNode = gridStackItem.gridstackNode;
-                console.log(clickedNode);
             }
         }
     
@@ -268,6 +255,7 @@ export function Fleet() {
             const wantedAtribute = "[gs-id=\"" + clickedNode.id + "\"]";
             const widgetTarget = document.querySelector(wantedAtribute);
 
+            let hayDatos = false;
             // Usar el backend para ver si la rotacion es posible
             // y en tal caso, guardar en bbdd y rotar el widget
             fetch(urlMoverBarcoInicial, {
@@ -285,12 +273,14 @@ export function Fleet() {
             })
             .then(data => {
                 if (data) {
-                    console.log(data);
-                    console.log("Rotar barco");
+                    hayDatos = true;
                     // Rotamos figura widget
                     const rotatedWidget = {
+                        id: clickedNode.id,      // id para identificar el widget
+                        locked: true,           // inmutable por otros widgets
                         h: clickedNode.w,
                         w: clickedNode.h,
+                        info: "rotated",
                     }
 
                     // Obtener el tipo de barco del widgetTarget
@@ -305,10 +295,10 @@ export function Fleet() {
                     }
                     if (widgetTarget) {   // Si no ha dado error
                         board.update(widgetTarget, rotatedWidget);
+                        // actualizar tableroInical desde la base de datos
+                        // getTablero(tableroInicial);
+                        
                     }
-                } else {   // Si no se pudo rotar el barco
-                    board.update(widgetTarget, widgetTarget); // actualizo para que disparar el mostrarWidgetsTablero
-                    console.log("No se pudo rotar el barco");
                 }
             })
         }
@@ -329,11 +319,6 @@ export function Fleet() {
                     throw new Error('La solicitud ha fallado');
                 }
                 return response.json();
-            })
-            .then(data => {
-                if (data) {
-                    console.log(data);
-                }
             })
             .catch(error => {
                 console.error('Error:', error);
