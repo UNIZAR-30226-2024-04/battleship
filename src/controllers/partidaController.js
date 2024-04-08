@@ -370,12 +370,12 @@ exports.realizarDisparo = async (req, res) => {
         const partidaDevuelta = partidaModificada;
 
         // NO SE DEBE DEVOLVER EL TABLERO DEL JUGADOR ENEMIGO -----------------------------------------------------------------------------
-        const data = {
+        const respuestaDisparo = {
           resultado: barcoTocado,
           partida: partidaModificada
         };
         
-        res.json(data);
+        res.json(respuestaDisparo);
         console.log("Partida modificada con éxito");
       } else {
         res.status(404).send('No se ha encontrado la partida a actualizar');

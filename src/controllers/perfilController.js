@@ -179,8 +179,8 @@ exports.obtenerUsuario = async (req, res) => {
       perfilDevuelto.contraseña = undefined; // No enviar la contraseña en la respuesta
       perfilDevuelto.listaAmigos = undefined; // No enviar la lista de amigos en la respuesta
       perfilDevuelto.listaSolicitudes = undefined; // No enviar la lista de solicitudes en la respuesta
-      //perfilDevuelto.tableroInicial = undefined; // No enviar el tablero inicial en la respuesta
-      //perfilDevuelto.mazoHabilidades = undefined; // No enviar el mazo de habilidades en la respuesta
+      perfilDevuelto.tableroInicial = undefined; // No enviar el tablero inicial en la respuesta
+      perfilDevuelto.mazoHabilidades = undefined; // No enviar el mazo de habilidades en la respuesta
       perfilDevuelto.correo = undefined; // No enviar el correo en la respuesta
       res.json(perfilDevuelto);
       console.log("Perfil obtenido con éxito");
@@ -919,7 +919,7 @@ exports.actualizarPuntosExperiencia = async (req, res) => {
 
 /**
  * @memberof module:perfilController
- * @function obtenerAmigos
+ * @function agnadirAmigos
  * @description Acepta una solicitud de amistad de un perfil identificado por nombreIdAmigo en el perfil identificado por _id o nombreId.
  * Añade el nombreIdAmigo a la lista de amigos del perfil y viceversa.
  * @param {Object} req - El objeto de solicitud HTTP.
@@ -1004,6 +1004,54 @@ exports.agnadirAmigo = async (req, res) => {
   catch (error) {
     res.status(500).send('Hubo un error');
     console.error("Error al añadir amigo", error);
+  }
+};
+
+/**
+ * 
+ * @memberof module:perfilController
+ * @function obtenerAmigos
+ * @description Obtiene la lista de amigos de un perfil identificado por _id o nombreId.
+ * @param {Object} req - El objeto de solicitud HTTP.
+ * @param {string} [req.body._id] - El perfil debe existir en la base de datos.
+ * @param {string} [req.body.nombreId] - El perfil debe existir en la base de datos.
+ * @param {Object} res - El objeto de respuesta HTTP.
+ * @example
+ * perfil = { nombreId: 'usuario1'};
+ * const req = { body: perfil };
+ * const res = { json: () => {}, status: () => ({ send: () => {} }) }; // No hace nada
+ * await obtenerAmigos(req, res);
+ */
+exports.obtenerAmigos = async (req, res) => {
+  try {
+    // Extraer los parámetros del cuerpo de la solicitud
+    const { _id, nombreId, ...extraParam } = req.body;
+    // Verificar si hay algún parámetro extra
+    if (Object.keys(extraParam).length > 0) {
+      res.status(400).send('Sobran parámetros, se espera _id (o nombreId)');
+      console.error("Sobran parámetros, se espera _id (o nombreId)");
+      return;
+    }
+    // Verificar si alguno de los parámetros está ausente
+    if (!nombreId && !_id) {
+      res.status(400).send('Falta el nombreId (o _id) en la solicitud');
+      console.error("Falta el nombreId (o _id) en la solicitud");
+      return;
+    }
+    // Buscar el perfil en la base de datos
+    const filtro = _id ? { _id: _id } : { nombreId: nombreId };
+    const perfil = await Perfil.findOne(filtro);
+    if (!perfil) {
+      res.status(404).send('No se ha encontrado el perfil');
+      console.error("No se ha encontrado el perfil");
+      return;
+    }
+    // Verificar si el perfil existe y enviar la respuesta al cliente
+    res.json(perfil.listaAmigos);
+    console.log("Amigos obtenidos con éxito", perfil.listaAmigos);
+  } catch (error) {
+    res.status(500).send('Hubo un error');
+    console.error("Error al obtener amigos", error);
   }
 };
 

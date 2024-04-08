@@ -24,10 +24,10 @@ router.post('/mostrarTableroEnemigo', verificarToken, partidaController.mostrarT
 router.post('/mostrarTableros', verificarToken, partidaController.mostrarTableros);
 
 // Ruta para actualizar la partida (DEPRECATED)
-router.post('/actualizarPartida', verificarToken, partidaController.actualizarEstadoPartida);
+router.post('/actualizarEstadoPartida', verificarToken, partidaController.actualizarEstadoPartida);
 
 // Ruta para actualizar las estadisticas al terminar
-router.post('/actualizarEstadisticas', verificarToken, partidaController.actualizarEstadisticasFinales);
+router.post('/actualizarEstadisticasFinales', verificarToken, partidaController.actualizarEstadisticasFinales);
 
 
 // --------------------------------------------- //

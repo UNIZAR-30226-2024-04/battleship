@@ -11,9 +11,9 @@ const verificarRegistro = require('../middlewares/verificarRegistro');
 // Ruta para obtener perfil
 router.post('/obtenerUsuario', perfilController.obtenerUsuario);
 // Ruta para obtener datos personales del perfil
-router.post('/obtenerDatosPersonales', verificarToken, perfilController.obtenerPerfilDatosPersonales);
+router.post('/obtenerDatosPersonales', verificarToken, perfilController.obtenerDatosPersonales);
 // Ruta para modificar datos personales del perfil
-router.post('/modificarDatosPersonales', verificarToken, perfilController.modificarPerfilDatosPersonales);
+router.post('/modificarDatosPersonales', verificarToken, perfilController.modificarDatosPersonales);
 // Ruta para eliminar usuario
 router.post('/eliminarUsuario', perfilController.eliminarUsuario);
 
@@ -24,7 +24,7 @@ router.post('/eliminarUsuario', perfilController.eliminarUsuario);
 // Ruta para registrar usuario
 router.post('/registrarUsuario', verificarRegistro, perfilController.registrarUsuario);
 // Ruta para iniciar sesión
-router.post('/inicioSesion', perfilController.iniciarSesion);
+router.post('/iniciarSesion', perfilController.iniciarSesion);
 
 /*--------------------------------------------------------------------------------------------------------------------*/
 /*------------------------------------------- ASPECTOS PARA PARTIDAS  ------------------------------------------------*/
@@ -42,7 +42,7 @@ router.post('/moverBarcoInicial', verificarToken, perfilController.moverBarcoIni
 // Ruta para modificar estadisticas
 router.post('/actualizarEstadisticas', verificarToken, perfilController.actualizarEstadisticas);
 // Ruta para modificar la experiencia
-router.post('/actualizarPuntosExperiencia', verificarToken, perfilController.actualizarEstadisticas);
+router.post('/actualizarPuntosExperiencia', verificarToken, perfilController.actualizarPuntosExperiencia);
 
 /*--------------------------------------------------------------------------------------------------------------------*/
 /*--------------------------------------------------- RED SOCIAL  ----------------------------------------------------*/
@@ -55,8 +55,8 @@ router.post('/agnadirAmigo', verificarToken, perfilController.agnadirAmigo);
 // Ruta para eliminar amigos
 router.post('/eliminarAmigo', verificarToken, perfilController.eliminarAmigo);
 // Ruta para enviar solicitudes de amistad
-router.post('/enviarSolicitud', verificarToken, perfilController.enviarSolicitudAmistad);
+router.post('/enviarSolicitudAmistad', verificarToken, perfilController.enviarSolicitudAmistad);
 // Ruta para eliminar solicitudes de amistad
-router.post('/eliminarSolicitud', verificarToken, perfilController.eliminarSolicitudAmistad);
+router.post('/eliminarSolicitudAmistad', verificarToken, perfilController.eliminarSolicitudAmistad);
 
 module.exports = router;
