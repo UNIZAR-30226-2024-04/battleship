@@ -5,10 +5,10 @@
 */
 
 /**
- * @typedef posiblesReacciones
+ * @const posiblesReacciones
  * @memberof module:data/reacciones
  * @description Lista de reacciones disponibles
- * @example ['LIKE', 'DISLIKE', 'XD', ':)', ':(', 'OK!', 'LOL', 'OMG', 'WOW']
+ * @default ['LIKE', 'DISLIKE', 'XD', ':)', ':(', 'OK!', 'LOL', 'OMG', 'WOW']
  */
 // Lista de reacciones disponibles
 const posiblesReacciones = [ 'LIKE', 'DISLIKE', 'XD', ':)', ':(', 'OK!', 'LOL', 'OMG', 'WOW'];

@@ -5,7 +5,7 @@
 */
 
 /**
- * @typedef {Array} paisesDisponibles
+ * @const {Array} paisesDisponibles
  * @memberof module:data/paises
  * @description Lista de paises disponibles
  * @default ['Desconocido', 'España', 'Portugal', 'Reino Unido', 'Francia']
