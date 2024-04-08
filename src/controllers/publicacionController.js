@@ -188,7 +188,6 @@ exports.crearPublicacion = async (req, res) => {
     });
     const savedPublicacion = await publicacion.save();
     res.json(savedPublicacion);
-    return savedPublicacion;
   }
   catch (error) {
     res.status(500).send('Hubo un error');
@@ -231,7 +230,6 @@ exports.getPublicacionesPerfil  = async (req, res) => {
     }
     const publicaciones = await Publicacion.find({usuario: nombreId});
     res.json(publicaciones);
-    return publicaciones;
   } catch (error) {
     res.status(500).send('Hubo un error');
     console.error("Error al obtener las publicaciones del usuario");
@@ -316,7 +314,6 @@ exports.reaccionarPublicacion = async (req, res) => {
       publicacion, 
       {new: true});
     res.json(savedPublicacion);
-    return savedPublicacion;
   }
   catch (error) {
     res.status(500).send('Hubo un error');

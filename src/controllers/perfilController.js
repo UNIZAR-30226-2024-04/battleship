@@ -126,7 +126,6 @@ crearPerfil = async (req, res) => {
     // Guardar el perfil en la base de datos
     const perfilGuardado = await nuevoPerfil.save();
     // Enviar la respuesta al cliente
-    res.json(perfilGuardado);
     console.log("Perfil creado con éxito");
     return perfilGuardado;
   } catch (error) {
@@ -180,7 +179,6 @@ exports.obtenerUsuario = async (req, res) => {
       perfilDevuelto.correo = undefined; // No enviar el correo en la respuesta
       res.json(perfilDevuelto);
       console.log("Perfil obtenido con éxito");
-      return perfil;
     } else {
       res.status(404).send('No se ha encontrado el perfil a obtener');
       console.error("No se ha encontrado el perfil a obtener");
@@ -231,7 +229,6 @@ exports.obtenerDatosPersonales = async (req, res) => {
       perfilDevuelto.contraseña = undefined; // No enviar la contraseña en la respuesta
       res.json(perfilDevuelto);
       console.log("Perfil obtenido con éxito");
-      return perfilDevuelto;
     } else {
       res.status(404).send('No se ha encontrado el perfil a obtener');
       console.error("No se ha encontrado el perfil a obtener");
@@ -499,7 +496,6 @@ exports.autenticarUsuario = async (req, res) => { // Requiere nombreId y contras
         console.error("La contraseña no es válida");
         return;
       }
-      res.json(perfil);
       console.log("Perfil autenticado con éxito");
       return perfil
     } else {

@@ -378,7 +378,6 @@ exports.realizarDisparo = async (req, res) => {
       if (partidaModificada) {
         res.json(partidaModificada );
         console.log("Partida modificada con éxito");
-        return partidaModificada;
       } else {
         res.status(404).send('No se ha encontrado la partida a actualizar');
         console.error("No se ha encontrado la partida a actualizar");
@@ -486,7 +485,6 @@ exports.actualizarEstadisticasFinales = async (req, res) => {
       await actualizarEstadisticas(req1, res1);
       await actualizarEstadisticas(req2, res2);
       res.json({ estadisticasJ1, estadisticasJ2 });
-      return { estadisticasJ1, estadisticasJ2 };
     } else {
       res.status(404).send('Partida no encontrada');
     }
@@ -527,7 +525,6 @@ exports.obtenerChat = async (req, res) => {
     const partida = await Partida.findOne(filtro);
     if (partida) {
       res.json(partida.chat);
-      return partida.chat;
     } else {
       res.status(404).send('Partida no encontrada');
       console.error('Partida no encontrada');
@@ -592,7 +589,6 @@ exports.enviarMensaje = async (req, res) => {
       if (partidaModificada) {
         res.json(partidaModificada );
         console.log("Partida modificada con éxito");
-        return partidaModificada;
       } else {
         res.status(404).send('No se ha encontrado la partida a actualizar');
         console.error("No se ha encontrado la partida a actualizar");
