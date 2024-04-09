@@ -34,7 +34,8 @@ const MatchMenu = () => {
                         value={allowRivalName}
                         checked={allowRivalName}
                         onChange={handleToggleActive}
-                    />    
+                    />
+                    <input type="hidden" name="rivalName" value="false"/>
                 </div>
                 <div className="settings-match-rivalelo-header">
                     <span>Ver elo del rival</span>
@@ -46,7 +47,8 @@ const MatchMenu = () => {
                         value={allowRivalElo}
                         checked={allowRivalElo}
                         onChange={handleToggleActive}
-                    />   
+                    />
+                    <input type="hidden" name="rivalElo" value="false"/>
                 </div>
                 <div className="settings-match-rivalemotes-header">
                     <span>Ver emoticonos en partida</span>
@@ -58,7 +60,8 @@ const MatchMenu = () => {
                         value={allowRivalEmotes}
                         checked={allowRivalEmotes}
                         onChange={handleToggleActive}
-                    /> 
+                    />
+                    <input type="hidden" name="rivalEmotes" value="false"/>
                 </div>
                 <div className="settings-match-apply">
                     <input type="submit" value="Aplicar cambios"></input>

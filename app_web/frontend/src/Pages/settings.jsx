@@ -8,6 +8,7 @@ import ChatMenu from './settingsMenu/ChatMenu';
 import SoundMenu from './settingsMenu/SoundMenu';
 import GraphicsMenu from './settingsMenu/GraphicsMenu';
 import MatchMenu from './settingsMenu/MatchMenu';
+import HelpMenu from './settingsMenu/HelpMenu';
 
 /*
 TODO:
@@ -39,6 +40,8 @@ export function Settings() {
                 return <GraphicsMenu />;
             case 'Match':
                 return <MatchMenu />;
+            case 'Help':
+                return <HelpMenu />;
             default:
                 return <ProfileMenu />;
         }

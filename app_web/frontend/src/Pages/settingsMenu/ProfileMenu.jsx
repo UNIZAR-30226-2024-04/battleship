@@ -49,7 +49,7 @@ const ProfileMenu = () => {
                     <span>País</span>
                 </div>
                 <div className="settings-profile-country-input">
-                    <select onChange={handleChange}>
+                    <select name="country" onChange={handleChange}>
                         <option value=''>Seleccionar</option>
                         {countriesData.map(country => (
                         <option key={country.iso2} value={country.iso2}>
@@ -57,7 +57,6 @@ const ProfileMenu = () => {
                         </option>
                         ))}
                     </select>
-                    <input type="hidden" name="country" value={selectedCountry} />
                 </div>
                 <div className="settings-profile-about-header">
                     <span>Acerca de mí</span>

@@ -1,63 +1,69 @@
-import React from 'react';
+import React, {useState} from 'react';
 
 const SoundMenu = () => {
+    const [allowSound, setSound] = useState(false);
+    const [allowMusic, setMusic] = useState(false);
+    const [allowSFX, setSFX] = useState(false);
+
+    const handleToggleActive = (e) => {
+        switch (e.target.name){
+        case "allowSound":
+            setSound(!allowSound);
+            break;
+        case "allowMusic":
+            setMusic(!allowMusic);    
+            break;
+        case "allowSFX":
+            setSFX(!allowSFX);    
+            break;
+        default:
+        }
+    };
+
     return (
         <>
-            <div className="settings-profile-header">
-                <div className="settings-profile-img"> FOTO </div>
-                <div className="settings-profile-name">
-                    <span>Butanero Putero</span>
+            <form className="settings-passwd-body settings-menu-body" name="soundSettings" method="post" action="/backend/sound">
+                <div className="settings-password-currentpasswd-header">
+                    <span>Activar sonido</span>
                 </div>
-            </div>
-            <form className="settings-profile-body" name="userdata" method="post" action="/backend/">
-                <div className="settings-profile-body-user-header">
-                    <span>Nombre de usuario</span>
-                </div>
-                <div className="settings-profile-body-user-input">
+                <div className="settings-password-currentpasswd-input">
                     <input
-                        name="username"
-                        autoComplete="off"
-                        placeholder="Introduzca su nombre de usuario..."
-                        type="text"
-                        size="30"
-                    >        
-                    </input>
+                        type="checkbox"
+                        name="allowSound"
+                        value={allowSound}
+                        checked={allowSound}
+                        onChange={handleToggleActive}
+                    />  
+                    <input type="hidden" name="allowSound" value="false"/>
                 </div>
-                <div className="settings-profile-body-user-header">
-                    <span>Correo electrónico</span>
+                <div className="settings-password-newpasswd-header">
+                    <span>Activar música</span>
                 </div>
-                <div className="settings-profile-body-user-input">
+                <div className="settings-password-newpasswd-input">
                     <input
-                        name="email"
-                        autoComplete="on"
-                        placeholder="Introduzca su correo electrónico..."
-                        type="email"
-                        size="30"
-                    ></input>
+                        type="checkbox"
+                        name="allowMusic"
+                        value={allowMusic}
+                        checked={allowMusic}
+                        onChange={handleToggleActive}
+                    />
+                    <input type="hidden" name="allowMusic" value="false"/>
                 </div>
-                <div className="settings-profile-body-country-header">
-                    <span>País</span>
+                <div className="settings-password-confirmpasswd-header">
+                    <span>Activar efectos de sonido</span>
                 </div>
-                <div className="settings-profile-body-country-input">
-                    <select>
-                        <option value="spain">España</option>
-                        <option value="fool">Cataluña</option>
-                        <option value="benched">Andorra</option>
-                    </select>
+                <div className="settings-password-confirmpasswd-input">
+                    <input
+                        type="checkbox"
+                        name="allowSFX"
+                        value={allowSFX}
+                        checked={allowSFX}
+                        onChange={handleToggleActive}
+                    />
+                    <input type="hidden" name="allowSFX" value="false"/>
                 </div>
-                <div className="settings-profile-body-about-header">
-                    <span>Acerca de mí</span>
-                </div>
-                <div className="settings-profile-body-about-input">
-                    <textarea
-                        name="about"
-                        placeholder="Introduzca su descripción..."
-                        cols="28"
-                        rows="4"
-                    ></textarea>
-                </div>
-                <div className="settings-profile-body-apply">
-                    <input type="submit" value="Realizar cambios"></input>
+                <div className="settings-password-apply">
+                    <input type="submit" value="Aplicar cambios"></input>
                 </div>
             </form>
         </>
