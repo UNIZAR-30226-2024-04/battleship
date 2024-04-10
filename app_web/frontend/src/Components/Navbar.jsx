@@ -75,6 +75,8 @@ export function Navbar() {
                     <MenuItem onClick={() => navigate('/settings')}>Ajustes</MenuItem>
                     <MenuItem onClick={() => navigate('/profile')}>Perfil</MenuItem>
                     <MenuItem onClick={() => navigate('/social')}>Social</MenuItem>
+                    <MenuItem onClick={() => navigate('/register')}>Registo</MenuItem>
+                    <MenuItem onClick={() => navigate('/login')}>Login</MenuItem>
                 </Menu>
             </Sidebar>
         </div>

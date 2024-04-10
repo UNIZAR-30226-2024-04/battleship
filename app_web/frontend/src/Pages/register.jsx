@@ -8,10 +8,10 @@ export function Register() {
             <div className="register-container">
                 <div className="register-all-content">
                     <div className="register-banner-container">
-                        <span>Battleship</span>
+                        <span>Registrarse</span>
                     </div>
                     <form className="register-body" name="register" method="post" action="/backend/endpoint">
-                        <div className="register-username-header">
+                        <div className="register-username-header register-header">
                             <span>Nombre de usuario</span>
                         </div>
                         <div className="register-username-input">
@@ -24,7 +24,7 @@ export function Register() {
                             >        
                             </input>
                         </div>
-                        <div className="register-email-header">
+                        <div className="register-email-header register-header">
                             <span>Correo electrónico</span>
                         </div>
                         <div className="register-email-input">
@@ -36,7 +36,7 @@ export function Register() {
                                 size="30"
                             ></input>
                         </div>
-                        <div className="register-password-header">
+                        <div className="register-password-header register-header">
                             <span>Contraseña</span>
                         </div>
                         <div className="register-password-input">
@@ -44,12 +44,12 @@ export function Register() {
                                 name="password"
                                 autoComplete="off"
                                 placeholder="Introduzca su contraseña..."
-                                type="text"
+                                type="password"
                                 size="30"
                             >
                             </input>
                         </div>
-                        <div className="register-password-confirm-header">
+                        <div className="register-password-confirm-header register-header">
                             <span>Confirmar contraseña</span>
                         </div>
                         <div className="register-password-confirm-input">
@@ -57,12 +57,12 @@ export function Register() {
                                 name="password-confirm"
                                 autoComplete="off"
                                 placeholder="Introduzca su contraseña..."
-                                type="text"
+                                type="password"
                                 size="30"
                             >        
                             </input>
                         </div>
-                        <div className="settings-profile-body-apply">
+                        <div className="register-apply">
                             <input type="submit" value="Registrarse"></input>
                         </div>
                     </form>

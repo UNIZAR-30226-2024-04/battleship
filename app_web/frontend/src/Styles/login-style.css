@@ -1,9 +1,9 @@
-.register-page-container {
+.login-page-container {
     display: flex;
     color: white;
 }
 
-.register-container {
+.login-container {
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -11,7 +11,7 @@
     height: 100%;
 }
 
-.register-all-content {
+.login-all-content {
     display: flex;
     flex-direction: column;
     justify-content: left;
@@ -19,30 +19,28 @@
     padding-left: 10%;
 }
 
-.register-banner-container {
+.login-banner-container {
     display: flex;
     margin: 1.5em 0 2em 0;
     align-items: center;
 }
 
-.register-banner-container span {
+.login-banner-container span {
     font-weight: bold;
     font-size: 2.5em;
     text-align: left;
     padding-left: 0.25em;
 }
 
-.register-body {
-    display: flex;
-    flex-direction: column;
+.login-body {
     padding: 1em 0em 3em 2em;
     background-color: #1D3461;
 }
 
-.register-header {
+.login-header {
     margin-top: 1em;
 }
 
-.register-apply{
+.login-apply{
     margin-top: 2em;
 }

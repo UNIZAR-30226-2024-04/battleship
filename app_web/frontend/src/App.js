@@ -6,6 +6,7 @@ import { Profile } from './Pages/profile';
 import { Settings } from './Pages/settings';
 import { Social } from './Pages/social';
 import { Register } from './Pages/register';
+import { Login } from './Pages/login';
 
 
 function App() {
@@ -17,7 +18,9 @@ function App() {
           <Route path="/fleet" element={<Fleet/>}/>
           <Route path="/profile" element={<Profile/>}/>
           <Route path="/settings" element={<Settings/>}/>
-          <Route path="/social" element={<Register/>}/>
+          <Route path="/social" element={<Social/>}/>
+          <Route path="/register" element={<Register/>}/>
+          <Route path="/login" element={<Login/>}/>
         </Routes>
       </Router>
     </>
