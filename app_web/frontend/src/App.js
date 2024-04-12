@@ -7,6 +7,7 @@ import { Settings } from './Pages/settings';
 import { Social } from './Pages/social';
 import { Register } from './Pages/register';
 import { Login } from './Pages/login';
+import { Game } from './Pages/game';
 
 
 function App() {
@@ -21,6 +22,7 @@ function App() {
           <Route path="/social" element={<Social/>}/>
           <Route path="/register" element={<Register/>}/>
           <Route path="/login" element={<Login/>}/>
+          <Route path="/game" element={<Game/>}/>
         </Routes>
       </Router>
     </>

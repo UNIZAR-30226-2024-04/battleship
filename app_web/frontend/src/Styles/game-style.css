@@ -1,0 +1,33 @@
+.fleet-board-separator {
+    width: 20px;
+}
+
+.fleet-board1 {
+    background-color: rgb(0, 136, 255);
+    width: 50%;
+    height: auto;
+
+    /* visualize de grid separation between cells */
+    background-image: 
+        linear-gradient(blue 1px, transparent 1px),
+        linear-gradient(90deg, blue 1px, transparent 1px),
+        linear-gradient(blue 1px, transparent 1px),
+        linear-gradient(90deg, blue 1px, transparent 1px);
+    background-size: 10% 10%, 10% 10%, 10% 10%, 10% 10%;
+    background-position: -1px -1px, -1px -1px, -1px -1px, -1px -1px;
+}
+
+.fleet-board2 {
+    background-color: rgb(0, 136, 255);
+    width: 50%;
+    height: auto;
+
+    /* visualize de grid separation between cells */
+    background-image: 
+        linear-gradient(blue 1px, transparent 1px),
+        linear-gradient(90deg, blue 1px, transparent 1px),
+        linear-gradient(blue 1px, transparent 1px),
+        linear-gradient(90deg, blue 1px, transparent 1px);
+    background-size: 10% 10%, 10% 10%, 10% 10%, 10% 10%;
+    background-position: -1px -1px, -1px -1px, -1px -1px, -1px -1px;
+}
