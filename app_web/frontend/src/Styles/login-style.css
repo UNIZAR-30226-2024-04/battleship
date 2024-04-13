@@ -14,9 +14,8 @@
 .login-all-content {
     display: flex;
     flex-direction: column;
-    justify-content: left;
-    align-items: left;
-    padding-left: 10%;
+    justify-content: center;
+    align-items: center;
 }
 
 .login-banner-container {
@@ -33,11 +32,12 @@
 }
 
 .login-body {
-    padding: 1em 0em 3em 2em;
+    padding: 1em 2em 3em 2em;
     background-color: #1D3461;
 }
 
 .login-header {
+    width: fit-content;
     margin-top: 1em;
 }
 
