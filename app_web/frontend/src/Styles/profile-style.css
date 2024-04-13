@@ -5,6 +5,7 @@
 .profile-container {
     display: flex;
     justify-content: center;
+    margin-top: 3em;
     width: 100%;
     height: 100%;
     color: white;
@@ -74,7 +75,7 @@
 .profile-sidebar-stats-container {
     margin-left: 1.5em;
     background-color: #1D3461;
-    width: 12em;
+    width: 15em;
 }
 
 .profile-sidebar-stats-header {
@@ -87,6 +88,10 @@
     font-weight: bold;
 }
 
+.profile-sidebar-stats-content {
+    padding: 0 1em 0 1em;
+}
+
 .profile-sidebar-stat-value {
     float: right;
 }
@@ -94,7 +99,7 @@
 .profile-sidebar-friends-container {
     background-color: #1D3461;
     margin: 2em 0 0 1.5em;
-    width: 12em;
+    width: 15em;
 
     &> :last-child {
         border: 0;
