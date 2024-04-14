@@ -1,9 +1,11 @@
 const mongoose = require('mongoose');
 const {registrarUsuario, autenticarUsuario, eliminarUsuario, iniciarSesion, 
-  modificarDatosPersonales, obtenerUsuario, actualizarEstadisticas,
+  obtenerDatosPersonales, modificarDatosPersonales, obtenerUsuario, actualizarEstadisticas,
   actualizarPuntosExperiencia, modificarMazo, moverBarcoInicial,
   enviarSolicitudAmistad, eliminarSolicitudAmistad, agnadirAmigo, eliminarAmigo} = require('../controllers/perfilController');
+  const { barcosDisponibles } = require('../data/barco');
 const e = require('express');
+const Perfil = require('../models/perfilModel');
 const mongoURI = 'mongodb://localhost/BattleshipDB';
 mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true, 
   useCreateIndex: true, useFindAndModify: false});
@@ -16,7 +18,7 @@ console.log = function() {};
 describe('Registrar usuario', () => {
     beforeAll(async () => {
       const connection = mongoose.connection;
-      connection.dropDatabase();
+      await connection.dropDatabase();
     });
     it('Debería registrar correctamente un usuario', async () => {
         const req = { body: { nombreId: 'usuario', contraseña: 'Passwd1.',
@@ -86,7 +88,7 @@ describe('Registrar usuario', () => {
 describe('Autenticar usuario', () => {
   beforeAll(async () => {
     const connection = mongoose.connection;
-    connection.dropDatabase();
+    await connection.dropDatabase();
     const req = { body: { nombreId: 'usuario', contraseña: 'Passwd1.',
     correo: 'usuario@example.com' } };
     const res = { json: () => {}, status: function(s) { 
@@ -148,7 +150,7 @@ describe('Autenticar usuario', () => {
 describe('Eliminar usuario', () => {
   beforeAll(async () => {
     const connection = mongoose.connection;
-    connection.dropDatabase();
+    await connection.dropDatabase();
     const req = { body: { nombreId: 'usuario', contraseña: 'Passwd1.',
     correo: 'usuario@example.com' } };
     const res = { json: () => {}, status: function(s) { 
@@ -200,7 +202,7 @@ describe('Eliminar usuario', () => {
 describe('Iniciar sesión', () => {
     beforeAll(async () => {
       const connection = mongoose.connection;
-      connection.dropDatabase();
+      await connection.dropDatabase();
       const req = { body: { nombreId: 'usuario', contraseña: 'Passwd1.',
       correo: 'usuario@example.com' } };
       const res = { json: () => {}, status: function(s) { 
@@ -260,11 +262,63 @@ describe('Iniciar sesión', () => {
     });
 });
 
+// Test for obtenerDatosPersonales
+describe('Obtener datos personales', () => {
+    beforeAll(async () => {
+      const connection = mongoose.connection;
+      await connection.dropDatabase();
+      const req = { body: { nombreId: 'usuario', contraseña: 'Passwd1.',
+      correo: 'usuario@example.com' } };
+      const res = { json: () => {}, status: function(s) { 
+        this.statusCode = s; return this; }, send: () => {} };
+      try {
+        await registrarUsuario(req, res);
+      } catch (error) {}
+      expect(res.statusCode).toBe(undefined);
+    });
+    it('Debería obtener correctamente los datos personales de un usuario', async () => {
+        const req = { body: { nombreId: 'usuario'} };
+        const res = { json: () => {}, status: function(s) {
+          this.statusCode = s; return this; }, send: () => {} };
+        try {
+          await obtenerDatosPersonales(req, res);
+        } catch (error) {}
+        expect(res.statusCode).toBe(undefined);
+    });
+    it('Debería fallar al obtener los datos personales de un usuario con un campo extra', async () => {
+        const req = { body: { nombreId: 'usuario', extra: 1 } };
+        const res = { json: () => {}, status: function(s) {
+          this.statusCode = s; return this; }, send: () => {} };
+        try {
+          await obtenerDatosPersonales(req, res);
+        } catch (error) {}
+        expect(res.statusCode).toBe(400);
+    });
+    it('Debería fallar al obtener los datos personales de un usuario sin un campo', async () => {
+        const req = { body: {} };
+        const res = { json: () => {}, status: function(s) {
+          this.statusCode = s; return this; }, send: () => {} };
+        try {
+          await obtenerDatosPersonales(req, res);
+        } catch (error) {}
+        expect(res.statusCode).toBe(400);
+    });
+    it('Debería fallar al obtener los datos personales de un usuario con un nombreId no existente', async () => {
+        const req = { body: { nombreId: 'usuario1' } };
+        const res = { json: () => {}, status: function(s) {
+          this.statusCode = s; return this; }, send: () => {} };
+        try {
+          await obtenerDatosPersonales(req, res);
+        } catch (error) {}
+        expect(res.statusCode).toBe(404);
+    });
+});
+
 // Test for modificarDatosPersonales
 describe('Modificar datos personales', () => {
     beforeAll(async () => {
       const connection = mongoose.connection;
-      connection.dropDatabase();
+      await connection.dropDatabase();
       const req = { body: { nombreId: 'usuario', contraseña: 'Passwd1.',
       correo: 'usuario@example.com' } };
       const res = { json: () => {}, status: function(s) { 
@@ -286,6 +340,15 @@ describe('Modificar datos personales', () => {
     it('Debería modificar correctamente la contraseña de un usuario', async () => {
         const req = { body: { nombreId: 'usuario', contraseña: 'MODPasswd1.' } };
         const res = { json: () => {}, status: function(s) { 
+          this.statusCode = s; return this; }, send: () => {} };
+        try {
+          await modificarDatosPersonales(req, res);
+        } catch (error) {}
+        expect(res.statusCode).toBe(undefined);
+    });
+    it('Debería modificar correctamente el país de un usuario', async () => {
+        const req = { body: { nombreId: 'usuario', pais: 'España' } };
+        const res = { json: () => {}, status: function(s) {
           this.statusCode = s; return this; }, send: () => {} };
         try {
           await modificarDatosPersonales(req, res);
@@ -340,15 +403,22 @@ describe('Modificar datos personales', () => {
         } catch (error) {}
         expect(res.statusCode).toBe(404);
     });
+    it('Debería fallar al modificar los datos de un usuario con un país no existente', async () => {
+        const req = { body: { nombreId: 'usuario', pais: 'Pais' } };
+        const res = { json: () => {}, status: function(s) {
+          this.statusCode = s; return this; }, send: () => {} };
+        try {
+          await modificarDatosPersonales(req, res);
+        } catch (error) {}
+        expect(res.statusCode).toBe(400);
+    });
 });
-
-
 
 // Test for obtenerUsuario
 describe('Obtener usuario', () => {
     beforeAll(async () => {
       const connection = mongoose.connection;
-      connection.dropDatabase();
+      await connection.dropDatabase();
       const req = { body: { nombreId: 'usuario', contraseña: 'Passwd1.',
       correo: 'usuario@example.com' } };
       const res = { json: () => {}, status: function(s) { 
@@ -400,7 +470,7 @@ describe('Obtener usuario', () => {
 describe('Actualizar estadísticas', () => {
   beforeAll(async () => {
     const connection = mongoose.connection;
-    connection.dropDatabase();
+    await connection.dropDatabase();
     const req = { body: { nombreId: 'usuario1', contraseña: 'Passwd1.',
     correo: 'usuario1@example.com' } };
     const res = { json: () => {}, status: function(s) { 
@@ -542,7 +612,7 @@ describe('Actualizar estadísticas', () => {
 describe('Actualizar puntos de experiencia', () => {
   beforeAll(async () => {
     const connection = mongoose.connection;
-    connection.dropDatabase();
+    await connection.dropDatabase();
     const req = { body: { nombreId: 'usuario1', contraseña: 'Passwd1.',
     correo: 'usuario1@example.com' } };
     const res = { json: () => {}, status: function(s) { 
@@ -612,7 +682,7 @@ describe('Actualizar puntos de experiencia', () => {
 describe('Modificar mazo', () => {
   beforeAll(async () => {
     const connection = mongoose.connection;
-    connection.dropDatabase();
+    await connection.dropDatabase();
     const req = { body: { nombreId: 'usuario1', contraseña: 'Passwd1.',
     correo: 'usuario1@example.com' } };
     const res = { json: () => {}, status: function(s) { 
@@ -631,15 +701,9 @@ describe('Modificar mazo', () => {
       } catch (error) {}
       expect(res.statusCode).toBe(undefined);
 
-      const req2 = { body: { nombreId: 'usuario1'} };
-      const res2 = { json: function(_json) {this._json = _json; return this;}, status: function(s) { 
-        this.statusCode = s; return this; }, send: () => {} };
-      try {
-        await obtenerUsuario(req2, res2);
-      } catch (error) {}
-      expect(res2.statusCode).toBe(undefined);
-      expect(res2._json.mazoHabilidades[0]).toBe('Rafaga');
-      expect(res2._json.mazoHabilidades.length).toBe(1);
+      const perfil = await Perfil.findOne({nombreId: 'usuario1'});
+      expect(perfil.mazoHabilidades[0]).toBe('Rafaga');
+      expect(perfil.mazoHabilidades.length).toBe(1);
   });
   it('Debería modificar correctamente el mazo de un usuario con dos habilidades', async () => {
     const req = { body: { nombreId: 'usuario1', mazoHabilidades: ['Rafaga', 'Mina'] } };
@@ -650,16 +714,10 @@ describe('Modificar mazo', () => {
     } catch (error) {}
     expect(res.statusCode).toBe(undefined);
 
-    const req2 = { body: { nombreId: 'usuario1'} };
-    const res2 = { json: function(_json) {this._json = _json; return this;}, status: function(s) { 
-      this.statusCode = s; return this; }, send: () => {} };
-    try {
-      await obtenerUsuario(req2, res2);
-    } catch (error) {}
-    expect(res2.statusCode).toBe(undefined);
-    expect(res2._json.mazoHabilidades[0]).toBe('Rafaga');
-    expect(res2._json.mazoHabilidades[1]).toBe('Mina');
-    expect(res2._json.mazoHabilidades.length).toBe(2);
+    const perfil = await Perfil.findOne({nombreId: 'usuario1'});
+    expect(perfil.mazoHabilidades[0]).toBe('Rafaga');
+    expect(perfil.mazoHabilidades[1]).toBe('Mina');
+    expect(perfil.mazoHabilidades.length).toBe(2);
   });
   it("Debería modificar correctamente el mazo de un usuario con tres habilidades", async () => {
     const req = { body: { nombreId: 'usuario1', mazoHabilidades: ['Rafaga', 'Mina', 'Sonar'] } };
@@ -670,18 +728,11 @@ describe('Modificar mazo', () => {
     } catch (error) {}
     expect(res.statusCode).toBe(undefined);
 
-    const req2 = { body: { nombreId: 'usuario1'} };
-    const res2 = { json: function(_json) {this._json = _json; return this;}, status: function(s) { 
-      this.statusCode = s; return this; }, send: () => {} };
-    try {
-      await obtenerUsuario(req2, res2);
-    }
-    catch (error) {}
-    expect(res2.statusCode).toBe(undefined);
-    expect(res2._json.mazoHabilidades[0]).toBe('Rafaga');
-    expect(res2._json.mazoHabilidades[1]).toBe('Mina');
-    expect(res2._json.mazoHabilidades[2]).toBe('Sonar');
-    expect(res2._json.mazoHabilidades.length).toBe(3);
+    const perfil = await Perfil.findOne({nombreId: 'usuario1'});
+    expect(perfil.mazoHabilidades[0]).toBe('Rafaga');
+    expect(perfil.mazoHabilidades[1]).toBe('Mina');
+    expect(perfil.mazoHabilidades[2]).toBe('Sonar');
+    expect(perfil.mazoHabilidades.length).toBe(3);
   });
   it('Debería fallar al modificar el mazo de un usuario con un campo extra', async () => {
       const req = { body: { nombreId: 'usuario1', mazoHabilidades: ['Rafaga'], extra: 1 } };
@@ -743,7 +794,7 @@ describe('Modificar mazo', () => {
 describe('Mover barco inicial', () => {
   beforeAll(async () => {
     const connection = mongoose.connection;
-    connection.dropDatabase();
+    await connection.dropDatabase();
     const req = { body: { nombreId: 'usuario1', contraseña: 'Passwd1.',
     correo: 'usuario1@example.com' } };
     const res = { json: () => {}, status: function(s) { 
@@ -763,19 +814,11 @@ describe('Mover barco inicial', () => {
       catch (error) {}
       expect(res.statusCode).toBe(undefined);
 
-      const req2 = { body: { nombreId: 'usuario1'} };
-      const res2 = { json: function(_json) {this._json = _json; return this;}, status: function(s) { 
-        this.statusCode = s; return this; }, send: () => {} };
-      try {
-        await obtenerUsuario(req2, res2);
-      }
-      catch (error) {}
-      expect(res2.statusCode).toBe(undefined);
-      expect(res2._json.tableroInicial[0][0].i).toBe(3);
-      expect(res2._json.tableroInicial[0][0].j).toBe(3);
-      expect(res2._json.tableroInicial[0][1].i).toBe(3);
-      expect(res2._json.tableroInicial[0][1].j).toBe(4);
-
+      const perfil = await Perfil.findOne({nombreId: 'usuario1'});
+      expect(perfil.tableroInicial[0].coordenadas[0].i).toBe(3);
+      expect(perfil.tableroInicial[0].coordenadas[0].j).toBe(3);
+      expect(perfil.tableroInicial[0].coordenadas[1].i).toBe(3);
+      expect(perfil.tableroInicial[0].coordenadas[1].j).toBe(4);
   });
   it("Derbería rotar correctamente un barco inicial", async () => {
     const req = { body: { nombreId: 'usuario1', barcoId: 1, rotar: 1} };
@@ -786,20 +829,13 @@ describe('Mover barco inicial', () => {
     } catch (error) {}
     expect(res.statusCode).toBe(undefined);
 
-    const req2 = { body: { nombreId: 'usuario1'} };
-    const res2 = { json: function(_json) {this._json = _json; return this;}, status: function(s) { 
-      this.statusCode = s; return this; }, send: () => {} };
-    try {
-      await obtenerUsuario(req2, res2);
-    } catch (error) {}
-    expect(res2.statusCode).toBe(undefined);
-
-    expect(res2._json.tableroInicial[1][0].i).toBe(7);
-    expect(res2._json.tableroInicial[1][0].j).toBe(1);
-    expect(res2._json.tableroInicial[1][1].i).toBe(7);
-    expect(res2._json.tableroInicial[1][1].j).toBe(2);
-    expect(res2._json.tableroInicial[1][2].i).toBe(7);
-    expect(res2._json.tableroInicial[1][2].j).toBe(3);
+    const perfil = await Perfil.findOne({nombreId: 'usuario1'});
+    expect(perfil.tableroInicial[1].coordenadas[0].i).toBe(7);
+    expect(perfil.tableroInicial[1].coordenadas[0].j).toBe(1);
+    expect(perfil.tableroInicial[1].coordenadas[1].i).toBe(7);
+    expect(perfil.tableroInicial[1].coordenadas[1].j).toBe(2);
+    expect(perfil.tableroInicial[1].coordenadas[2].i).toBe(7);
+    expect(perfil.tableroInicial[1].coordenadas[2].j).toBe(3);
   });
   it("Debería rotar y trasladar correctamente un barco inicial", async () => {
     const req = { body: { nombreId: 'usuario1', barcoId: 3, iProaNueva: 1, jProaNueva: 6, rotar: 1} };
@@ -810,20 +846,13 @@ describe('Mover barco inicial', () => {
     } catch (error) {}
     expect(res.statusCode).toBe(undefined);
 
-    const req2 = { body: { nombreId: 'usuario1'} };
-    const res2 = { json: function(_json) {this._json = _json; return this;}, status: function(s) { 
-      this.statusCode = s; return this; }, send: () => {} };
-    try {
-      await obtenerUsuario(req2, res2);
-    } catch (error) {}
-    expect(res2.statusCode).toBe(undefined);
-
-    expect(res2._json.tableroInicial[3][0].i).toBe(1);
-    expect(res2._json.tableroInicial[3][0].j).toBe(6);
-    expect(res2._json.tableroInicial[3][1].i).toBe(1);
-    expect(res2._json.tableroInicial[3][1].j).toBe(7);
-    expect(res2._json.tableroInicial[3][2].i).toBe(1);
-    expect(res2._json.tableroInicial[3][2].j).toBe(8);
+    const perfil = await Perfil.findOne({nombreId: 'usuario1'});
+    expect(perfil.tableroInicial[3].coordenadas[0].i).toBe(1);
+    expect(perfil.tableroInicial[3].coordenadas[0].j).toBe(6);
+    expect(perfil.tableroInicial[3].coordenadas[1].i).toBe(1);
+    expect(perfil.tableroInicial[3].coordenadas[1].j).toBe(7);
+    expect(perfil.tableroInicial[3].coordenadas[2].i).toBe(1);
+    expect(perfil.tableroInicial[3].coordenadas[2].j).toBe(8);
   });
   it('Debería fallar al trasladar un barco inicial con un campo extra', async () => {
       const req = { body: { nombreId: 'usuario1', barcoId: 0, iProaNueva: 3, jProaNueva: 3, extra: 1 } };
@@ -915,32 +944,54 @@ describe('Mover barco inicial', () => {
     } catch (error) {}
     expect(res.statusCode).toBe(400);
   });
-  it('Debería fallar al trasladar un barco fuera del tablero', async () => {
+  it('Debería no actualizar al trasladar un barco fuera del tablero', async () => {
     const req = { body: { nombreId: 'usuario1', barcoId: 0, iProaNueva: 2, jProaNueva: 10 } };
     const res = { json: () => {}, status: function(s) { 
       this.statusCode = s; return this; }, send: () => {} };
     try {
       await moverBarcoInicial(req, res);
     } catch (error) {}
-    expect(res.statusCode).toBe(404);
+    expect(res.statusCode).toBe(undefined);
+
+    const perfil = await Perfil.findOne({nombreId: 'usuario1'});
+    expect(perfil.tableroInicial[0].coordenadas[0].i).toBe(3);
+    expect(perfil.tableroInicial[0].coordenadas[0].j).toBe(3);
+    expect(perfil.tableroInicial[0].coordenadas[1].i).toBe(3);
+    expect(perfil.tableroInicial[0].coordenadas[1].j).toBe(4);
   });
-  it('Debería fallar al rotar un barco fuera del tablero', async () => {
+  it('Debería no actualizar al rotar un barco fuera del tablero', async () => {
     const req = { body: { nombreId: 'usuario1', barcoId: 4, rotar: 1} };
     const res = { json: () => {}, status: function(s) { 
       this.statusCode = s; return this; }, send: () => {} };
     try {
       await moverBarcoInicial(req, res);
     } catch (error) {}
-    expect(res.statusCode).toBe(404);
+    expect(res.statusCode).toBe(undefined);
+    const perfil = await Perfil.findOne({nombreId: 'usuario1'});
+    expect(perfil.tableroInicial[4].coordenadas[0].i).toBe(10);
+    expect(perfil.tableroInicial[4].coordenadas[0].j).toBe(6);
+    expect(perfil.tableroInicial[4].coordenadas[1].i).toBe(10);
+    expect(perfil.tableroInicial[4].coordenadas[1].j).toBe(7);
+    expect(perfil.tableroInicial[4].coordenadas[2].i).toBe(10);
+    expect(perfil.tableroInicial[4].coordenadas[2].j).toBe(8);
+    expect(perfil.tableroInicial[4].coordenadas[3].i).toBe(10);
+    expect(perfil.tableroInicial[4].coordenadas[3].j).toBe(9);
+    expect(perfil.tableroInicial[4].coordenadas[4].i).toBe(10);
+    expect(perfil.tableroInicial[4].coordenadas[4].j).toBe(10);
   });
-  it('Debería fallar al trasladar un barco a una posición ocupada', async () => {
+  it('Debería no actualizar al trasladar un barco a una posición ocupada', async () => {
     const req = { body: { nombreId: 'usuario1', barcoId: 0, iProaNueva: 1, jProaNueva: 6 } };
     const res = { json: () => {}, status: function(s) { 
       this.statusCode = s; return this; }, send: () => {} };
     try {
       await moverBarcoInicial(req, res);
     } catch (error) {}
-    expect(res.statusCode).toBe(404);
+    expect(res.statusCode).toBe(undefined);
+    const perfil = await Perfil.findOne({nombreId: 'usuario1'});
+    expect(perfil.tableroInicial[0].coordenadas[0].i).toBe(3);
+    expect(perfil.tableroInicial[0].coordenadas[0].j).toBe(3);
+    expect(perfil.tableroInicial[0].coordenadas[1].i).toBe(3);
+    expect(perfil.tableroInicial[0].coordenadas[1].j).toBe(4);
   });
   it('Debería fallar al indicar un usuario no existente', async () => {
     const req = { body: { nombreId: 'usuario3', barcoId: 0, iProaNueva: 3, jProaNueva: 3 } };
@@ -957,7 +1008,7 @@ describe('Mover barco inicial', () => {
 describe('Enviar solicitud de amistad', () => {
   beforeAll(async () => {
     const connection = mongoose.connection;
-    connection.dropDatabase();
+    await connection.dropDatabase();
     const req = { body: { nombreId: 'usuario1', contraseña: 'Passwd1.',
     correo: 'usuario1@example.com' } };
     const res = { json: () => {}, status: function(s) { 
@@ -1009,14 +1060,10 @@ describe('Enviar solicitud de amistad', () => {
       } catch (error) {}
       expect(res.statusCode).toBe(undefined);
 
-      const req2 = { body: { nombreId: 'usuario2'} };
-      const res2 = { json: function(_json) {this._json = _json; return this;}, status: function(s) { 
-        this.statusCode = s; return this; }, send: () => {} };
-      try {
-        await obtenerUsuario(req2, res2);
-      } catch (error) {}
-      expect(res2.statusCode).toBe(undefined);
-      expect(res2._json.listaSolicitudes[0]).toBe('usuario1');
+      const perfil = await Perfil.findOne({nombreId: 'usuario2'});
+      expect(perfil.listaSolicitudes.length).toBe(1);
+      expect(perfil.listaSolicitudes[0]).toBe('usuario1');
+
   });
   it('Debería fallar al enviar una solicitud de amistad con un campo extra', async () => {
       const req = { body: { nombreId: 'usuario1', nombreIdAmigo: 'usuario3', extra: 1 } };
@@ -1087,7 +1134,7 @@ describe('Enviar solicitud de amistad', () => {
 describe('Eliminar solicitud de amistad', () => {
   beforeAll(async () => {
     const connection = mongoose.connection;
-    connection.dropDatabase();
+    await connection.dropDatabase();
     const req = { body: { nombreId: 'usuario1', contraseña: 'Passwd1.',
     correo: 'usuario1@example.com' } };
     const res = { json: () => {}, status: function(s) { 
@@ -1131,14 +1178,8 @@ describe('Eliminar solicitud de amistad', () => {
       } catch (error) {}
       expect(res.statusCode).toBe(undefined);
 
-      const req2 = { body: { nombreId: 'usuario3'} };
-      const res2 = { json: function(_json) {this._json = _json; return this;}, status: function(s) { 
-        this.statusCode = s; return this; }, send: () => {} };
-      try {
-        await obtenerUsuario(req2, res2);
-      } catch (error) {}
-      expect(res2.statusCode).toBe(undefined);
-      expect(res2._json.listaSolicitudes.length).toBe(0);
+      const perfil = await Perfil.findOne({nombreId: 'usuario3'});
+      expect(perfil.listaSolicitudes.length).toBe(0);
   });
   it('Debería fallar al eliminar una solicitud de amistad con un campo extra', async () => {
       const req = { body: { nombreId: 'usuario2', nombreIdAmigo: 'usuario3', extra: 1 } };
@@ -1196,12 +1237,11 @@ describe('Eliminar solicitud de amistad', () => {
   });
 });
 
-
 // Test for agnadirAmigo
 describe('Añadir amigo', () => {
   beforeAll(async () => {
     const connection = mongoose.connection;
-    connection.dropDatabase();
+    await connection.dropDatabase();
     const req = { body: { nombreId: 'usuario1', contraseña: 'Passwd1.',
     correo: 'usuario1@example.com' } };
     const res = { json: () => {}, status: function(s) { 
@@ -1245,15 +1285,10 @@ describe('Añadir amigo', () => {
       } catch (error) {}
       expect(res.statusCode).toBe(undefined);
 
-      const req2 = { body: { nombreId: 'usuario3'} };
-      const res2 = { json: function(_json) {this._json = _json; return this;}, status: function(s) { 
-        this.statusCode = s; return this; }, send: () => {} };
-      try {
-        await obtenerUsuario(req2, res2);
-      } catch (error) {}
-      expect(res2.statusCode).toBe(undefined);
-      expect(res2._json.listaAmigos[0]).toBe('usuario2');
-      expect(res2._json.listaSolicitudes.length).toBe(0);
+      const perfil = await Perfil.findOne({nombreId: 'usuario3'});
+      expect(perfil.listaAmigos.length).toBe(1);
+      expect(perfil.listaAmigos[0]).toBe('usuario2');
+      expect(perfil.listaSolicitudes.length).toBe(0);
   });
   it('Debería fallar al añadir un amigo con un campo extra', async () => {
       const req = { body: { nombreId: 'usuario2', nombreIdAmigo: 'usuario3', extra: 1 } };
@@ -1315,7 +1350,7 @@ describe('Añadir amigo', () => {
 describe('Eliminar amigo', () => {
   beforeAll(async () => {
     const connection = mongoose.connection;
-    connection.dropDatabase();
+    await connection.dropDatabase();
     const req = { body: { nombreId: 'usuario1', contraseña: 'Passwd1.',
     correo: 'usuario1@example.com' } };
     const res = { json: () => {}, status: function(s) { 
@@ -1367,14 +1402,8 @@ describe('Eliminar amigo', () => {
       } catch (error) {}
       expect(res.statusCode).toBe(undefined);
 
-      const req2 = { body: { nombreId: 'usuario3'} };
-      const res2 = { json: function(_json) {this._json = _json; return this;}, status: function(s) { 
-        this.statusCode = s; return this; }, send: () => {} };
-      try {
-        await obtenerUsuario(req2, res2);
-      } catch (error) {}
-      expect(res2.statusCode).toBe(undefined);
-      expect(res2._json.listaAmigos.length).toBe(0);
+      const perfil = await Perfil.findOne({nombreId: 'usuario3'});
+      expect(perfil.listaAmigos.length).toBe(0);
   });
   it('Debería fallar al eliminar un amigo con un campo extra', async () => {
       const req = { body: { nombreId: 'usuario2', nombreIdAmigo: 'usuario3', extra: 1 } };

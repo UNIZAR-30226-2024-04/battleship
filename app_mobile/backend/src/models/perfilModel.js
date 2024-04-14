@@ -105,6 +105,10 @@ const perfilSchema = new Schema({
   disparosFallados: { 
     type: Number, 
     default: 0 
+  },
+  codigoPartidaActual: {      // Código de la partida actual
+    type: Number,
+    default: -1
   }
 });
 

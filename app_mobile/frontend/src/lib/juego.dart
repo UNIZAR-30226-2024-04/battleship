@@ -33,12 +33,12 @@ class Juego {
   int numAtaquesJugador2 = 0;
   int indexHabilidad = 0;
   List<String> nombresBarcosEnOrden = ['patrullero', 'destructor', 'submarino', 'acorazado', 'portaaviones'];  // barcos en orden de tamaño creciente
-  String urlObtenerPerfil = 'http://localhost:8080/perfil/obtenerUsuario';
+  String urlObtenerTablero = 'http://localhost:8080/perfil/obtenerDatosPersonales';
   String urlMoverBarcoInicial = 'http://localhost:8080/perfil/moverBarcoInicial';
   String urlActualizarPartida = 'http://localhost:8080/partida/actualizarEstadoPartida';
   String urlCrearPartida = 'http://localhost:8080/partida/crearPartida';
   int codigo = 0;
-  int token = 0;
+  String tokenSesion = '';
 
   // Instancia privada y estática del singleton
   static final Juego _singleton = Juego._internal();
@@ -69,7 +69,7 @@ class Juego {
   }
 
   Future<void> inicializarBarcosJugador() async {
-    tablero_jugador1.barcos = await obtenerBarcos(AuthProvider().name, urlObtenerPerfil);
+    tablero_jugador1.barcos = await obtenerBarcos(AuthProvider().name, urlObtenerTablero);
   }
 
   Perfil getPerfilJugador() {
@@ -84,6 +84,23 @@ class Juego {
   factory Juego() {
     return _singleton;
   }
+
+  List<List<Offset>> getCoordinates(List<dynamic> inputList) {
+    List<List<Offset>> coordinates = [];
+
+    for (var item in inputList) {
+      List<Offset> tempList = [];
+      for (var key in item.keys) {
+        if (key != 'coordenadas') {
+          tempList.add(Offset(item[key]['i'].toDouble(), item[key]['j'].toDouble()));
+        }
+      }
+      coordinates.add(tempList);
+    }
+
+    return coordinates;
+  }
+
 
   List<Barco> procesaTableroBD(List<List<Offset>> tablero) {
     List<Barco> barcos = [];
@@ -105,6 +122,7 @@ class Juego {
       Uri.parse(url),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
+        'Authorization': 'Bearer $tokenSesion',
       },
       body: jsonEncode(<String, String>{
         'nombreId': usuario,
@@ -115,16 +133,13 @@ class Juego {
       var data = jsonDecode(response.body);
       var tableroInicial = data['tableroInicial'];
 
+      print(data);
       print(tableroInicial);
+      List<List<Offset>> coordenadas = getCoordinates(tableroInicial);
+      print(coordenadas);
+      print(procesaTableroBD(coordenadas));
 
-      // Extraer solo las propiedades 'i' y 'j'
-      var tableroExtraido = tableroInicial.map((fila) => 
-        fila.map((celda) => 
-          {'i': celda['i'], 'j': celda['j']}
-        ).toList()
-      ).toList();
-
-      return procesaTableroBD(dynamic2Offset(tableroExtraido));
+      return procesaTableroBD(coordenadas);
 
     } else {
       throw Exception('La solicitud ha fallado');
@@ -137,6 +152,7 @@ class Juego {
       uri,
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
+        'Authorization': 'Bearer $tokenSesion',
       },
       body: jsonEncode(<String, dynamic>{
         'nombreId': usuario,
@@ -332,7 +348,7 @@ class Juego {
       Uri.parse(urlCrearPartida),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
-        'Authorization': 'Bearer $token',
+        'Authorization': 'Bearer $tokenSesion',
       },
       body: jsonEncode(<String, String>{
         'nombreId1': getPerfilJugador().name,

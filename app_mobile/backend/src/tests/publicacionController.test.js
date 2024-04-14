@@ -18,8 +18,8 @@ console.log = function() {};
 describe('Crear publicacion', () => {
     beforeAll(async () => {
         const connection = mongoose.connection;
-        connection.dropDatabase();
-
+        await connection.dropDatabase();
+        
         const req = { body: { nombreId: 'usuario1', contraseña: 'Passwd1.',
         correo: 'usuario1@example.com' } };
         const res = { json: () => {}, status: function(s) { 
@@ -28,6 +28,9 @@ describe('Crear publicacion', () => {
           await registrarUsuario(req, res);
         } catch (error) {}
         expect(res.statusCode).toBe(undefined);
+
+        // Aumentar el nivel del usuario
+        await Perfil.updateOne({nombreId: 'usuario1'}, {puntosExperiencia: 20});
     });
     it('Debería crear una publicación correctamente con nivel 1', async () => {
         const req = { body: { nombreId: 'usuario1', tipoPublicacion: 0, nivel : 1 } };
@@ -255,7 +258,7 @@ describe('Crear publicacion', () => {
 describe('Obtener publicaciones', () => {
     beforeAll(async () => {
         const connection = mongoose.connection;
-        connection.dropDatabase();
+        await connection.dropDatabase();
         const req = { body: { nombreId: 'usuario1', contraseña: 'Passwd1.',
         correo: 'usuario1@example.com' } };
         const res = { json: () => {}, status: function(s) { 
@@ -277,12 +280,14 @@ describe('Obtener publicaciones', () => {
     });
     it('Debería obtener las publicaciones de un usuario correctamente', async () => {
         const req = { body: { nombreId: 'usuario1' } };
-        const res = { json: () => {}, status: function(s) { 
-          this.statusCode = s; return this; }, send: () => {} };
+        const res = { json: function(_json) { this._json = _json; return this;},
+            status: function(s) { this.statusCode = s; return this; }, send: () => {} };
         try {
             await getPublicacionesPerfil(req, res);
         } catch (error) {}
         expect(res.statusCode).toBe(undefined);
+        expect(res._json.length).toBe(1);
+        expect(res._json[0].publicacionId).toBe(publicacionId);
     });
     it('Debería fallar al obtener las publicaciones de un usuario inexistente', async () => {
         const req = { body: { nombreId: 'usuario2' } };
@@ -309,7 +314,7 @@ let publicacionId;
 describe('Reaccionar a publicación', () => {
     beforeAll(async () => {
         const connection = mongoose.connection;
-        connection.dropDatabase();
+        await connection.dropDatabase();
         const req = { body: { nombreId: 'usuario1', contraseña: 'Passwd1.',
         correo: 'usuario1@example.com' } };
         const res = { json: () => {}, status: function(s) { 
@@ -442,7 +447,7 @@ describe('Reaccionar a publicación', () => {
 describe('Eliminar publicación', () => {
     beforeAll(async () => {
         const connection = mongoose.connection;
-        connection.dropDatabase();
+        await connection.dropDatabase();
         const req = { body: { nombreId: 'usuario1', contraseña: 'Passwd1.',
         correo: 'usuario1@example.com' } };
         const res = { json: () => {}, status: function(s) { 

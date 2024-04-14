@@ -35,6 +35,7 @@ class _ColocarBarcosState extends State<ColocarBarcos> {
   }
 
   Future<bool> moverBarco(Barco barco, bool rotar) async {
+    print("VOY A MOVER BARCO CON POSICION: " + barco.barcoPosition.toString() + " Y ROTAR: " + rotar.toString() + " Y NOMBRE: " + AuthProvider().name + " Y INDEX: " + Juego().tablero_jugador.barcos.indexOf(barco).toString());
     return await Juego().moverBarco(Juego().urlMoverBarcoInicial, barco.barcoPosition, rotar, AuthProvider().name, Juego().tablero_jugador.barcos.indexOf(barco));
   }
 

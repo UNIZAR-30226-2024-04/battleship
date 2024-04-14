@@ -1,3 +1,5 @@
-module.exports = {
-    secret: "battleship-secret-key"
-  };
+const config = {
+  secret: "battleship-secret-key"
+};
+
+module.exports = config;

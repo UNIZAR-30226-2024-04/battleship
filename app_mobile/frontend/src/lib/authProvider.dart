@@ -46,7 +46,9 @@ class AuthProvider with ChangeNotifier {
       print("RESPUESTA OK");
       print(data);
       if (data != null) {
-        Juego().token = data['token'];
+        print("DATA NO NULL");
+        print(data['token']);
+        Juego().tokenSesion = data['token'];
         print("LOGIN CORRECTO");
         return true;
       }
@@ -76,7 +78,7 @@ class AuthProvider with ChangeNotifier {
       print("RESPUESTA OK");
       print(data);
       if (data != null) {
-        Juego().token = data['token'];
+        Juego().tokenSesion = data['token'];
         print("REGISTRO CORRECTO");
         return true;
       }
@@ -98,7 +100,6 @@ class AuthProvider with ChangeNotifier {
         notifyListeners(); // Notifica a los listeners que la variable ha cambiado
         return true;
     }
-
 
     print("Credenciales incorrectas");
 

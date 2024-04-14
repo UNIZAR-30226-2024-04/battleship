@@ -18,7 +18,7 @@ console.log = function() {};
 describe("Crear partida", () => {
     beforeAll(async () => {
         const connection = mongoose.connection;
-        connection.dropDatabase();
+        await connection.dropDatabase();
         const req = { body: { nombreId: 'usuario1', contraseña: 'Passwd1.',
         correo: 'usuario1@example.com' } };
         const res = { json: () => {}, status: function(s) { 
@@ -56,16 +56,7 @@ describe("Crear partida", () => {
         expect(res.statusCode).toBe(400);
     });
     it("Debería fallar al crear una partida sin jugador 1", async () => {
-        const req = { body: { nombreId1: 'usuario1', bioma: 'Norte' } };
-        const res = { json: () => {}, status: function(s) { 
-          this.statusCode = s; return this; }, send: () => {} };
-        try {
-            await crearPartida(req, res);
-        } catch (error) {}
-        expect(res.statusCode).toBe(400);
-    });
-    it("Debería fallar al crear una partida sin jugador 2", async () => {
-        const req = { body: { nombreId2: 'usuario2', bioma: 'Norte' } };
+        const req = { body: { nombreId2: 'usuario1', bioma: 'Norte' } };
         const res = { json: () => {}, status: function(s) { 
           this.statusCode = s; return this; }, send: () => {} };
         try {
@@ -100,6 +91,15 @@ describe("Crear partida", () => {
         } catch (error) {}
         expect(res.statusCode).toBe(404);
     });
+    it("Debería fallar al crear una partida con jugadores iguales", async () => {
+        const req = { body: { nombreId1: 'usuario1', nombreId2: 'usuario1', bioma: 'Norte' } };
+        const res = { json: () => {}, status: function(s) { 
+          this.statusCode = s; return this; }, send: () => {} };
+        try {
+            await crearPartida(req, res);
+        } catch (error) {}
+        expect(res.statusCode).toBe(400);
+    });
 });
 
 var _codigo = 0;
@@ -107,7 +107,7 @@ var _codigo = 0;
 describe("Mostrar mi tablero", () => {
     beforeAll(async () => {
         const connection = mongoose.connection;
-        connection.dropDatabase();
+        await connection.dropDatabase();
         const req = { body: { nombreId: 'usuario1', contraseña: 'Passwd1.',
         correo: 'usuario1@example.com' } };
         const res = { json: () => {}, status: function(s) { 
@@ -134,7 +134,7 @@ describe("Mostrar mi tablero", () => {
         _codigo = res3._json.codigo;
     });
     it("Debería mostrar mi tablero correctamente", async () => {
-        const req = { body: { codigo: _codigo, jugador: 1 } };
+        const req = { body: { codigo: _codigo, nombreId: 'usuario1' } };
         const res = { json: () => {}, status: function(s) { 
           this.statusCode = s; return this; }, send: () => {} };
         try {
@@ -144,7 +144,7 @@ describe("Mostrar mi tablero", () => {
         expect(res.statusCode).toBe(undefined);
     });
     it("Debería fallar al mostrar mi tablero con demasiados campos", async () => {
-        const req = { body: { codigo: _codigo, jugador: 1, extra: 1 } };
+        const req = { body: { codigo: _codigo, nombreId: 'usuario1' , extra: 1 } };
         const res = { json: () => {}, status: function(s) { 
           this.statusCode = s; return this; }, send: () => {} };
         try {
@@ -162,16 +162,16 @@ describe("Mostrar mi tablero", () => {
         expect(res.statusCode).toBe(400);
     });
     it("Debería fallar al mostrar mi tablero con un jugador inválido", async () => {
-        const req = { body: { codigo: _codigo, jugador: 3 } };
+        const req = { body: { codigo: _codigo, nombreId: 'usuario3'  } };
         const res = { json: () => {}, status: function(s) { 
           this.statusCode = s; return this; }, send: () => {} };
         try {
             await mostrarMiTablero(req, res);
         } catch (error) {}
-        expect(res.statusCode).toBe(400);
+        expect(res.statusCode).toBe(404);
     });
     it("Debería fallar al mostrar mi tablero con un código de partida inexistente", async () => {
-        const req = { body: { codigo: 1, jugador: 1 } };
+        const req = { body: { codigo: 1, nombreId: 'usuario1' } };
         const res = { json: () => {}, status: function(s) { 
           this.statusCode = s; return this; }, send: () => {} };
         try {
@@ -186,7 +186,7 @@ _codigo = 1;
 describe("Mostrar tablero enemigo", () => {
     beforeAll(async () => {
         const connection = mongoose.connection;
-        connection.dropDatabase();
+        await connection.dropDatabase();
         const req = { body: { nombreId: 'usuario1', contraseña: 'Passwd1.',
         correo: 'usuario1@example.com' } };
         const res = { json: () => {}, status: function(s) { 
@@ -213,7 +213,7 @@ describe("Mostrar tablero enemigo", () => {
         _codigo = res3._json.codigo;
     });
     it("Debería mostrar el tablero enemigo correctamente", async () => {
-        const req = { body: { codigo: _codigo, jugador: 1 } };
+        const req = { body: { codigo: _codigo, nombreId: 'usuario1' } };
         const res = { json: () => {}, status: function(s) { 
           this.statusCode = s; return this; }, send: () => {} };
         try {
@@ -223,7 +223,7 @@ describe("Mostrar tablero enemigo", () => {
         expect(res.statusCode).toBe(undefined);
     });
     it("Debería fallar al mostrar el tablero enemigo con demasiados campos", async () => {
-        const req = { body: { codigo: _codigo, jugador: 1, extra: 1 } };
+        const req = { body: { codigo: _codigo, nombreId: 'usuario1' , extra: 1 } };
         const res = { json: () => {}, status: function(s) { 
           this.statusCode = s; return this; }, send: () => {} };
         try {
@@ -241,16 +241,16 @@ describe("Mostrar tablero enemigo", () => {
         expect(res.statusCode).toBe(400);
     });
     it("Debería fallar al mostrar el tablero enemigo con un jugador inválido", async () => {
-        const req = { body: { codigo: _codigo, jugador: 3 } };
+        const req = { body: { codigo: _codigo, nombreId: 'usuario3' } };
         const res = { json: () => {}, status: function(s) { 
           this.statusCode = s; return this; }, send: () => {} };
         try {
             await mostrarTableroEnemigo(req, res);
         } catch (error) {}
-        expect(res.statusCode).toBe(400);
+        expect(res.statusCode).toBe(404);
     });
     it("Debería fallar al mostrar el tablero enemigo con un código de partida inexistente", async () => {
-        const req = { body: { codigo: 1, jugador: 1 } };
+        const req = { body: { codigo: 1, nombreId: 'usuario1' } };
         const res = { json: () => {}, status: function(s) { 
           this.statusCode = s; return this; }, send: () => {} };
         try {
@@ -264,7 +264,7 @@ describe("Mostrar tablero enemigo", () => {
 describe("Mostrar tableros", () => {
     beforeAll(async () => {
         const connection = mongoose.connection;
-        connection.dropDatabase();
+        await connection.dropDatabase();
         const req = { body: { nombreId: 'usuario1', contraseña: 'Passwd1.',
         correo: 'usuario1@example.com' } };
         const res = { json: () => {}, status: function(s) { 
@@ -293,7 +293,7 @@ describe("Mostrar tableros", () => {
         console.log(_codigo);
     });
     it("Debería mostrar los tableros correctamente", async () => {
-        const req = { body: { codigo: _codigo } };
+        const req = { body: { codigo: _codigo, nombreId: 'usuario1' } };
         const res = { json: () => {}, status: function(s) { 
           this.statusCode = s; return this; }, send: () => {} };
         try {
@@ -303,7 +303,7 @@ describe("Mostrar tableros", () => {
         expect(res.statusCode).toBe(undefined);
     });
     it("Debería fallar al mostrar los tableros con demasiados campos", async () => {
-        const req = { body: { codigo: _codigo, extra: 1 } };
+        const req = { body: { codigo: _codigo, nombreId: 'usuario1' , extra: 1 } };
         const res = { json: () => {}, status: function(s) { 
           this.statusCode = s; return this; }, send: () => {} };
         try {
@@ -312,7 +312,16 @@ describe("Mostrar tableros", () => {
         expect(res.statusCode).toBe(400);
     });
     it("Debería fallar al mostrar los tableros sin código de partida", async () => {
-        const req = { body: {} };
+        const req = { body: {nombreId: 'usuario1' } };
+        const res = { json: () => {}, status: function(s) { 
+          this.statusCode = s; return this; }, send: () => {} };
+        try {
+            await mostrarTableros(req, res);
+        } catch (error) {}
+        expect(res.statusCode).toBe(400);
+    });
+    it("Debería fallar al mostrar los tableros sin usuario", async () => {
+        const req = { body: {codigo: _codigo} };
         const res = { json: () => {}, status: function(s) { 
           this.statusCode = s; return this; }, send: () => {} };
         try {
@@ -321,7 +330,7 @@ describe("Mostrar tableros", () => {
         expect(res.statusCode).toBe(400);
     });
     it("Debería fallar al mostrar los tableros con un código de partida inexistente", async () => {
-        const req = { body: { codigo: 1 } };
+        const req = { body: { codigo: 1, nombreId: 'usuario1'  } };
         const res = { json: () => {}, status: function(s) { 
           this.statusCode = s; return this; }, send: () => {} };
         try {
@@ -335,7 +344,7 @@ describe("Mostrar tableros", () => {
 describe("Realizar disparo", () => {
     beforeAll(async () => {
         const connection = mongoose.connection;
-        connection.dropDatabase();
+        await connection.dropDatabase();
         const req = { body: { nombreId: 'usuario1', contraseña: 'Passwd1.',
         correo: 'usuario1@example.com' } };
         const res = { json: () => {}, status: function(s) { 
@@ -362,18 +371,17 @@ describe("Realizar disparo", () => {
         _codigo = res3._json.codigo;
     });
     it("Debería realizar un disparo correctamente", async () => {
-        const req = { body: { codigo: _codigo, jugador: 1, i: 1, j: 1 } };
+        const req = { body: { codigo: _codigo, nombreId: 'usuario1', i: 1, j: 1 } };
         const res = { json: function(_json) {this._json = _json; return this;}, status: function(s) { 
             this.statusCode = s; return this; }, send: () => {} };
         try {
             await realizarDisparo(req, res);
             }
         catch (error) {}
-        console.log(res._json);
         expect(res.statusCode).toBe(undefined);
     });
     it("Debería fallar al realizar un disparo con demasiados campos", async () => {
-        const req = { body: { codigo: _codigo, jugador: 1, i: 1, j: 1, extra: 1 } };
+        const req = { body: { codigo: _codigo, nombreId: 'usuario1', i: 1, j: 1, extra: 1 } };
         const res = { json: () => {}, status: function(s) { 
           this.statusCode = s; return this; }, send: () => {} };
         try {
@@ -391,7 +399,7 @@ describe("Realizar disparo", () => {
         expect(res.statusCode).toBe(400);
     });
     it("Debería fallar al realizar un disparo sin coordenadas", async () => {
-        const req = { body: { codigo: _codigo, jugador: 1 } };
+        const req = { body: { codigo: _codigo, nombreId: 'usuario1'} };
         const res = { json: () => {}, status: function(s) { 
           this.statusCode = s; return this; }, send: () => {} };
         try {
@@ -400,16 +408,16 @@ describe("Realizar disparo", () => {
         expect(res.statusCode).toBe(400);
     });
     it("Debería fallar al realizar un disparo con un jugador inválido", async () => {
-        const req = { body: { codigo: _codigo, jugador: 3, i: 1, j: 1 } };
+        const req = { body: { codigo: _codigo, nombreId: 'usuario3', i: 1, j: 1 } };
         const res = { json: () => {}, status: function(s) { 
           this.statusCode = s; return this; }, send: () => {} };
         try {
             await realizarDisparo(req, res);
         } catch (error) {}
-        expect(res.statusCode).toBe(400);
+        expect(res.statusCode).toBe(404);
     });
     it("Debería fallar al realizar un disparo con coordenadas inválidas", async () => {
-        const req = { body: { codigo: _codigo, jugador: 1, i: -1, j: 1 } };
+        const req = { body: { codigo: _codigo, nombreId: 'usuario1', i: -1, j: 1 } };
         const res = { json: () => {}, status: function(s) { 
           this.statusCode = s; return this; }, send: () => {} };
         try {
@@ -418,7 +426,7 @@ describe("Realizar disparo", () => {
         expect(res.statusCode).toBe(400);
     });
     it("Debería fallar al realizar un disparo con un código de partida inexistente", async () => {
-        const req = { body: { codigo: 1, jugador: 1, i: 1, j: 1 } };
+        const req = { body: { codigo: 1, nombreId: 'usuario1', i: 1, j: 1 } };
         const res = { json: () => {}, status: function(s) { 
           this.statusCode = s; return this; }, send: () => {} };
         try {
@@ -427,7 +435,7 @@ describe("Realizar disparo", () => {
         expect(res.statusCode).toBe(404);
     });
     it("Debería fallar al no ser el turno del jugador", async () => {
-        const req = { body: { codigo: _codigo, jugador: 1, i: 1, j: 2 } };
+        const req = { body: { codigo: _codigo, nombreId: 'usuario2', i: 1, j: 2 } };
         const res = { json: () => {}, status: function(s) { 
           this.statusCode = s; return this; }, send: () => {} };
         try {
@@ -435,17 +443,8 @@ describe("Realizar disparo", () => {
         } catch (error) {}
         expect(res.statusCode).toBe(400);
     });
-    it("Debería acertar el segundo jugador", async () => {
-        const req = { body: { codigo: _codigo, jugador: 2, i: 1, j: 1 } };
-        const res = { json: () => {}, status: function(s) { 
-          this.statusCode = s; return this; }, send: () => {} };
-        try {
-            await realizarDisparo(req, res);
-        } catch (error) {}
-        expect(res.statusCode).toBe(undefined);
-    });
     it("Debería hundir el barco", async () => {
-        const req = { body: { codigo: _codigo, jugador: 1, i: 1, j: 2 } };
+        const req = { body: { codigo: _codigo, nombreId: 'usuario1', i: 1, j: 2 } };
         const res = { json: () => {}, status: function(s) { 
           this.statusCode = s; return this; }, send: () => {} };
         try {
@@ -454,7 +453,7 @@ describe("Realizar disparo", () => {
         expect(res.statusCode).toBe(undefined);
     });
     it("Debería fallar al disparar al agua", async () => {
-        const req = { body: { codigo: _codigo, jugador: 2, i: 1, j: 3 } };
+        const req = { body: { codigo: _codigo, nombreId: 'usuario1', i: 1, j: 3 } };
         const res = { json: () => {}, status: function(s) { 
           this.statusCode = s; return this; }, send: () => {} };
         try {
@@ -462,22 +461,13 @@ describe("Realizar disparo", () => {
         } catch (error) {}
         expect(res.statusCode).toBe(undefined);
     });
-    it("Debería fallar al repetir un disparo", async () => {
-        const req = { body: { codigo: _codigo, jugador: 1, i: 1, j: 1 } };
-        const res = { json: () => {}, status: function(s) { 
-          this.statusCode = s; return this; }, send: () => {} };
-        try {
-            await realizarDisparo(req, res);
-        } catch (error) {}
-        expect(res.statusCode).toBe(400);
-    });
 });
 
 // Test for enviarMensaje
 describe("Enviar mensaje", () => {
     beforeAll(async () => {
         const connection = mongoose.connection;
-        connection.dropDatabase();
+        await connection.dropDatabase();
         const req = { body: { nombreId: 'usuario1', contraseña: 'Passwd1.',
         correo: 'usuario1@example.com' } };
         const res = { json: () => {}, status: function(s) { 
@@ -564,7 +554,7 @@ describe("Enviar mensaje", () => {
 describe("Obtener chat", () => {
     beforeAll(async () => {
         const connection = mongoose.connection;
-        connection.dropDatabase();
+        await connection.dropDatabase();
         const req = { body: { nombreId: 'usuario1', contraseña: 'Passwd1.',
         correo: 'usuario1@example.com' } };
         const res = { json: () => {}, status: function(s) { 

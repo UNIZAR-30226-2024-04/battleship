@@ -66,8 +66,7 @@ const partidaSchema = new Schema({
   },
   jugador2: { // Perfil del jugador 2
     type: mongoose.Schema.Types.ObjectId, 
-    ref: 'Perfil', 
-    required: true 
+    ref: 'Perfil'
   },
   tableroBarcos1: { // Lista barcos del jugador 1
     type: Tablero,
@@ -111,10 +110,9 @@ const partidaSchema = new Schema({
     enum: biomasDisponibles,
     required: true
   },
-  ganador: {  // Perfil del jugador ganador
-    type: mongoose.Schema.Types.ObjectId, 
-    ref: 'Perfil',
-    default: null // Valor predeterminado como null
+  ganador: {  // NombreId del jugador ganador
+    type: 'String',
+    default: ''
   }
 }, { timestamps: true }); // timestamps añade automáticamente campos para 'createdAt' y 'updatedAt'
 

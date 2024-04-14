@@ -42,21 +42,21 @@ router.post('/moverBarcoInicial', verificarToken, perfilController.moverBarcoIni
 // Ruta para modificar estadisticas
 router.post('/actualizarEstadisticas', verificarToken, perfilController.actualizarEstadisticas);
 // Ruta para modificar la experiencia
-router.post('/actualizarPuntosExperiencia', verificarToken, perfilController.actualizarEstadisticas);
+router.post('/actualizarPuntosExperiencia', verificarToken, perfilController.actualizarPuntosExperiencia);
 
 /*--------------------------------------------------------------------------------------------------------------------*/
 /*--------------------------------------------------- RED SOCIAL  ----------------------------------------------------*/
 /*--------------------------------------------------------------------------------------------------------------------*/
 
 // Ruta para obtener amigos
-//router.post('/obtenerAmigos', perfilController.obtenerAmigos);
+router.post('/obtenerAmigos', perfilController.obtenerAmigos);
 // Ruta para añadir amigos
 router.post('/agnadirAmigo', verificarToken, perfilController.agnadirAmigo);
 // Ruta para eliminar amigos
 router.post('/eliminarAmigo', verificarToken, perfilController.eliminarAmigo);
 // Ruta para enviar solicitudes de amistad
-router.post('/enviarSolicitud', verificarToken, perfilController.enviarSolicitudAmistad);
+router.post('/enviarSolicitudAmistad', verificarToken, perfilController.enviarSolicitudAmistad);
 // Ruta para eliminar solicitudes de amistad
-router.post('/eliminarSolicitud', verificarToken, perfilController.eliminarSolicitudAmistad);
+router.post('/eliminarSolicitudAmistad', verificarToken, perfilController.eliminarSolicitudAmistad);
 
 module.exports = router;
