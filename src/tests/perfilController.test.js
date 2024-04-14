@@ -3,6 +3,7 @@ const {registrarUsuario, autenticarUsuario, eliminarUsuario, iniciarSesion,
   obtenerDatosPersonales, modificarDatosPersonales, obtenerUsuario, actualizarEstadisticas,
   actualizarPuntosExperiencia, modificarMazo, moverBarcoInicial,
   enviarSolicitudAmistad, eliminarSolicitudAmistad, agnadirAmigo, eliminarAmigo} = require('../controllers/perfilController');
+  const { barcosDisponibles } = require('../data/barco');
 const e = require('express');
 const Perfil = require('../models/perfilModel');
 const mongoURI = 'mongodb://localhost/BattleshipDB';

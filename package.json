@@ -10,8 +10,8 @@
     "docs-gen": "npx jsdoc -c .jsdoc.json -r",
     "docs": "npm run docs-gen"
   },
-  "author": "rubejar",
-  "license": "None",
+  "author": "Hamilton Games",
+  "license": "MIT License",
   "dependencies": {
     "bcrypt": "^5.1.1",
     "express": "^4.18.2",
@@ -32,6 +32,6 @@
   },
   "keywords": [],
   "directories": {
-    "example": "examples"
+    "doc": "docs"
   }
 }
