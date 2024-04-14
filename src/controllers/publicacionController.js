@@ -198,7 +198,7 @@ exports.crearPublicacion = async (req, res) => {
 
 /**
  * @memberof module:publicacionController
- * @function getPublicacionesPerfil
+ * @function obtenerPublicaciones
  * @description Devuelve todas las publicaciones del perfil del usuario.
  * @param {Request} req - El objeto de solicitud HTTP.
  * @param {String} [req.body.nombreId] - El perfil debe existir en la base de datos.
@@ -209,7 +209,7 @@ exports.crearPublicacion = async (req, res) => {
  * const res = { json: (perfil) => { return perfil; } };
  * await getPublicacionesPerfil(req, res);
  */
-exports.getPublicacionesPerfil  = async (req, res) => { 
+exports.obtenerPublicaciones  = async (req, res) => { 
   try {
     const { nombreId, ...extraParam } = req.body;
     if (Object.keys(extraParam).length > 0) {

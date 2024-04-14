@@ -413,6 +413,7 @@ exports.eliminarUsuario = async (req, res) => {
  * @param {string} req.body.contraseña - La contraseña debe tener al menos 8 caracteres, 1 minúsucla, 1 mayúscula, 1 dígito y un caracter especial.
  * @param {string} req.body.correo - El correo debe tener un formato válido.
  * @param {Object} res - El objeto de respuesta HTTP.
+ * @param {Object} res.perfilDevuelto - perfil correspondiente al nombre y contraseña, sin la contraseña por seguridad.
  * @param {string} res.token - El token de sesión del perfil.
  * @example
  * perfil = { nombreId: 'usuario4', contraseña: 'Passwd4.', correo: 'usuario4@example.com' };
@@ -468,6 +469,7 @@ exports.registrarUsuario = async (req, res) => {  // Requiere nombreId (o _id), 
  * @param {string} [req.body.nombreId] - El perfil debe existir en la base de datos.
  * @param {string} req.body.contraseña
  * @param {Object} res - El objeto de respuesta HTTP.
+ * @param {Object} res.perfilDevuelto - perfil correspondiente al nombre y contraseña, sin la contraseña por seguridad.
  * @param {string} res.token - El token de sesión del perfil.
  * @example
  * perfil = { nombreId: 'usuario1', contraseña: 'Passwd1.'};
