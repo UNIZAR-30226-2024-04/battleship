@@ -1,7 +1,29 @@
 import { Navbar } from "../Components/Navbar";
 import '../Styles/login-style.css';
+import Cookies from 'universal-cookie';
+
+const iniciarSesionURI = 'http://localhost:8080/perfil/iniciarSesion';
+
+
 
 export function Login() {
+    const cookies = new Cookies();
+
+    async function handleSubmit(e) {
+        const request = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                nombreId: e.target[0].value,
+                contraseña: e.target[1].value,
+            })
+        };
+        const response = await fetch(iniciarSesionURI, request);
+        const data = await response.json();
+        cookies.set('JWT', data['token'], {path: '/'});
+        console.log(cookies.get('JWT'));
+    };
+
     return (
         <div className="login-page-container">
             <Navbar/>
@@ -10,15 +32,15 @@ export function Login() {
                     <div className="login-banner-container">
                         <span>Iniciar sesión</span>
                     </div>
-                    <form className="login-body" name="login" method="post" action="/backend/endpoint">
+                    <form className="login-body" onSubmit={handleSubmit}>
                         <div className="login-username-header login-header">
-                            <span>Email o usuario</span>
+                            <span>Usuario</span>
                         </div>
                         <div className="login-user-input">
                             <input
-                                name="user"
+                                name="nombreId"
                                 autoComplete="off"
-                                placeholder="Introduzca su email o usuario..."
+                                placeholder="Introduzca su usuario..."
                                 type="text"
                                 size="30"
                             >        
@@ -29,7 +51,7 @@ export function Login() {
                         </div>
                         <div className="login-password-input">
                             <input
-                                name="password"
+                                name="contraseña"
                                 autoComplete="off"
                                 placeholder="Introduzca su contraseña..."
                                 type="password"

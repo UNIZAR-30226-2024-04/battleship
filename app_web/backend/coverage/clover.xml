@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1713088085555" clover="3.2.0">
-  <project timestamp="1713088085555" name="All files">
+<coverage generated="1713107289199" clover="3.2.0">
+  <project timestamp="1713107289199" name="All files">
     <metrics statements="1115" coveredstatements="951" conditionals="560" coveredconditionals="470" methods="61" coveredmethods="43" elements="1736" coveredelements="1464" complexity="0" loc="1115" ncloc="1115" packages="4" files="17" classes="17"/>
     <package name="config">
       <metrics statements="2" coveredstatements="2" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
-      <file name="auth.config.js" path="/Users/luis01/Desktop/MATINF/Asignaturas/Proyecto_Software/battleship/app_web/backend/src/config/auth.config.js">
+      <file name="auth.config.js" path="/Users/ming/github_things/battleship/app_web/backend/src/config/auth.config.js">
         <metrics statements="2" coveredstatements="2" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
         <line num="1" count="3" type="stmt"/>
         <line num="5" count="3" type="stmt"/>
@@ -12,7 +12,7 @@
     </package>
     <package name="controllers">
       <metrics statements="1056" coveredstatements="892" conditionals="558" coveredconditionals="468" methods="60" coveredmethods="42"/>
-      <file name="partidaController.js" path="/Users/luis01/Desktop/MATINF/Asignaturas/Proyecto_Software/battleship/app_web/backend/src/controllers/partidaController.js">
+      <file name="partidaController.js" path="/Users/ming/github_things/battleship/app_web/backend/src/controllers/partidaController.js">
         <metrics statements="279" coveredstatements="220" conditionals="152" coveredconditionals="116" methods="28" coveredmethods="12"/>
         <line num="1" count="1" type="stmt"/>
         <line num="2" count="1" type="stmt"/>
@@ -294,7 +294,7 @@
         <line num="616" count="0" type="stmt"/>
         <line num="617" count="0" type="stmt"/>
       </file>
-      <file name="perfilController.js" path="/Users/luis01/Desktop/MATINF/Asignaturas/Proyecto_Software/battleship/app_web/backend/src/controllers/perfilController.js">
+      <file name="perfilController.js" path="/Users/ming/github_things/battleship/app_web/backend/src/controllers/perfilController.js">
         <metrics statements="569" coveredstatements="483" conditionals="316" coveredconditionals="267" methods="26" coveredmethods="25"/>
         <line num="1" count="3" type="stmt"/>
         <line num="2" count="3" type="stmt"/>
@@ -866,7 +866,7 @@
         <line num="1307" count="0" type="stmt"/>
         <line num="1308" count="0" type="stmt"/>
       </file>
-      <file name="publicacionController.js" path="/Users/luis01/Desktop/MATINF/Asignaturas/Proyecto_Software/battleship/app_web/backend/src/controllers/publicacionController.js">
+      <file name="publicacionController.js" path="/Users/ming/github_things/battleship/app_web/backend/src/controllers/publicacionController.js">
         <metrics statements="208" coveredstatements="189" conditionals="90" coveredconditionals="85" methods="6" coveredmethods="5"/>
         <line num="1" count="1" type="stmt"/>
         <line num="2" count="1" type="stmt"/>
@@ -1080,35 +1080,35 @@
     </package>
     <package name="data">
       <metrics statements="34" coveredstatements="34" conditionals="2" coveredconditionals="2" methods="1" coveredmethods="1"/>
-      <file name="barco.js" path="/Users/luis01/Desktop/MATINF/Asignaturas/Proyecto_Software/battleship/app_web/backend/src/data/barco.js">
+      <file name="barco.js" path="/Users/ming/github_things/battleship/app_web/backend/src/data/barco.js">
         <metrics statements="4" coveredstatements="4" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
         <line num="1" count="3" type="stmt"/>
         <line num="16" count="3" type="stmt"/>
         <line num="27" count="3" type="stmt"/>
         <line num="32" count="3" type="stmt"/>
       </file>
-      <file name="biomas.js" path="/Users/luis01/Desktop/MATINF/Asignaturas/Proyecto_Software/battleship/app_web/backend/src/data/biomas.js">
+      <file name="biomas.js" path="/Users/ming/github_things/battleship/app_web/backend/src/data/biomas.js">
         <metrics statements="2" coveredstatements="2" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
         <line num="15" count="1" type="stmt"/>
         <line num="17" count="1" type="stmt"/>
       </file>
-      <file name="climas.js" path="/Users/luis01/Desktop/MATINF/Asignaturas/Proyecto_Software/battleship/app_web/backend/src/data/climas.js">
+      <file name="climas.js" path="/Users/ming/github_things/battleship/app_web/backend/src/data/climas.js">
         <metrics statements="2" coveredstatements="2" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
         <line num="16" count="1" type="stmt"/>
         <line num="18" count="1" type="stmt"/>
       </file>
-      <file name="coordenada.js" path="/Users/luis01/Desktop/MATINF/Asignaturas/Proyecto_Software/battleship/app_web/backend/src/data/coordenada.js">
+      <file name="coordenada.js" path="/Users/ming/github_things/battleship/app_web/backend/src/data/coordenada.js">
         <metrics statements="3" coveredstatements="3" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
         <line num="13" count="3" type="stmt"/>
         <line num="26" count="3" type="stmt"/>
         <line num="32" count="3" type="stmt"/>
       </file>
-      <file name="habilidades.js" path="/Users/luis01/Desktop/MATINF/Asignaturas/Proyecto_Software/battleship/app_web/backend/src/data/habilidades.js">
+      <file name="habilidades.js" path="/Users/ming/github_things/battleship/app_web/backend/src/data/habilidades.js">
         <metrics statements="2" coveredstatements="2" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
         <line num="14" count="3" type="stmt"/>
         <line num="16" count="3" type="stmt"/>
       </file>
-      <file name="niveles.js" path="/Users/luis01/Desktop/MATINF/Asignaturas/Proyecto_Software/battleship/app_web/backend/src/data/niveles.js">
+      <file name="niveles.js" path="/Users/ming/github_things/battleship/app_web/backend/src/data/niveles.js">
         <metrics statements="10" coveredstatements="10" conditionals="2" coveredconditionals="2" methods="1" coveredmethods="1"/>
         <line num="14" count="1" type="stmt"/>
         <line num="24" count="5" type="stmt"/>
@@ -1121,24 +1121,24 @@
         <line num="32" count="5" type="stmt"/>
         <line num="35" count="1" type="stmt"/>
       </file>
-      <file name="paises.js" path="/Users/luis01/Desktop/MATINF/Asignaturas/Proyecto_Software/battleship/app_web/backend/src/data/paises.js">
+      <file name="paises.js" path="/Users/ming/github_things/battleship/app_web/backend/src/data/paises.js">
         <metrics statements="2" coveredstatements="2" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
         <line num="14" count="3" type="stmt"/>
         <line num="16" count="3" type="stmt"/>
       </file>
-      <file name="publicaciones.js" path="/Users/luis01/Desktop/MATINF/Asignaturas/Proyecto_Software/battleship/app_web/backend/src/data/publicaciones.js">
+      <file name="publicaciones.js" path="/Users/ming/github_things/battleship/app_web/backend/src/data/publicaciones.js">
         <metrics statements="2" coveredstatements="2" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
         <line num="17" count="1" type="stmt"/>
         <line num="25" count="1" type="stmt"/>
       </file>
-      <file name="reacciones.js" path="/Users/luis01/Desktop/MATINF/Asignaturas/Proyecto_Software/battleship/app_web/backend/src/data/reacciones.js">
+      <file name="reacciones.js" path="/Users/ming/github_things/battleship/app_web/backend/src/data/reacciones.js">
         <metrics statements="4" coveredstatements="4" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
         <line num="13" count="1" type="stmt"/>
         <line num="23" count="1" type="stmt"/>
         <line num="28" count="1" type="stmt"/>
         <line num="29" count="1" type="stmt"/>
       </file>
-      <file name="tablero.js" path="/Users/luis01/Desktop/MATINF/Asignaturas/Proyecto_Software/battleship/app_web/backend/src/data/tablero.js">
+      <file name="tablero.js" path="/Users/ming/github_things/battleship/app_web/backend/src/data/tablero.js">
         <metrics statements="3" coveredstatements="3" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
         <line num="14" count="3" type="stmt"/>
         <line num="17" count="3" type="stmt"/>
@@ -1147,7 +1147,7 @@
     </package>
     <package name="models">
       <metrics statements="23" coveredstatements="23" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
-      <file name="partidaModel.js" path="/Users/luis01/Desktop/MATINF/Asignaturas/Proyecto_Software/battleship/app_web/backend/src/models/partidaModel.js">
+      <file name="partidaModel.js" path="/Users/ming/github_things/battleship/app_web/backend/src/models/partidaModel.js">
         <metrics statements="9" coveredstatements="9" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
         <line num="1" count="1" type="stmt"/>
         <line num="5" count="1" type="stmt"/>
@@ -1159,7 +1159,7 @@
         <line num="121" count="1" type="stmt"/>
         <line num="122" count="1" type="stmt"/>
       </file>
-      <file name="perfilModel.js" path="/Users/luis01/Desktop/MATINF/Asignaturas/Proyecto_Software/battleship/app_web/backend/src/models/perfilModel.js">
+      <file name="perfilModel.js" path="/Users/ming/github_things/battleship/app_web/backend/src/models/perfilModel.js">
         <metrics statements="8" coveredstatements="8" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
         <line num="1" count="3" type="stmt"/>
         <line num="5" count="3" type="stmt"/>
@@ -1170,7 +1170,7 @@
         <line num="111" count="3" type="stmt"/>
         <line num="113" count="3" type="stmt"/>
       </file>
-      <file name="publicacionModel.js" path="/Users/luis01/Desktop/MATINF/Asignaturas/Proyecto_Software/battleship/app_web/backend/src/models/publicacionModel.js">
+      <file name="publicacionModel.js" path="/Users/ming/github_things/battleship/app_web/backend/src/models/publicacionModel.js">
         <metrics statements="6" coveredstatements="6" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
         <line num="1" count="1" type="stmt"/>
         <line num="5" count="1" type="stmt"/>

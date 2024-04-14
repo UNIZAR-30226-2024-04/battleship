@@ -1,7 +1,25 @@
 import { Navbar } from "../Components/Navbar";
 import '../Styles/register-style.css';
 
+
+/* Confirmar contraseña
+<input
+    name="password-confirm"
+    autoComplete="off"
+    placeholder="Introduzca su contraseña..."
+    type="password"
+    size="30"
+>        
+</input>
+*/
+
+
 export function Register() {
+
+    const handleSubmit = (e) => {
+        
+    }
+
     return (
         <div className="register-page-container">
             <Navbar/>
@@ -10,13 +28,15 @@ export function Register() {
                     <div className="register-banner-container">
                         <span>Registrarse</span>
                     </div>
-                    <form className="register-body" name="register" method="post" action="/backend/endpoint">
+                    <form className="register-body" name="register" method="post"
+                          action="http://localhost:8080/perfil/registrarUsuario"
+                          onSubmit={handleSubmit}>
                         <div className="register-username-header register-header">
                             <span>Nombre de usuario</span>
                         </div>
                         <div className="register-username-input">
                             <input
-                                name="username"
+                                name="nombreId"
                                 autoComplete="off"
                                 placeholder="Introduzca su nombre de usuario..."
                                 type="text"
@@ -29,7 +49,7 @@ export function Register() {
                         </div>
                         <div className="register-email-input">
                             <input
-                                name="email"
+                                name="correo"
                                 autoComplete="on"
                                 placeholder="Introduzca su correo electrónico..."
                                 type="email"
@@ -41,7 +61,7 @@ export function Register() {
                         </div>
                         <div className="register-password-input">
                             <input
-                                name="password"
+                                name="contraseña"
                                 autoComplete="off"
                                 placeholder="Introduzca su contraseña..."
                                 type="password"
@@ -53,14 +73,7 @@ export function Register() {
                             <span>Confirmar contraseña</span>
                         </div>
                         <div className="register-password-confirm-input">
-                            <input
-                                name="password-confirm"
-                                autoComplete="off"
-                                placeholder="Introduzca su contraseña..."
-                                type="password"
-                                size="30"
-                            >        
-                            </input>
+                            
                         </div>
                         <div className="register-apply">
                             <input type="submit" value="Registrarse"></input>
