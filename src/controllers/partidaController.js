@@ -1,7 +1,10 @@
 const Partida = require('../models/partidaModel');
 const Perfil = require('../models/perfilModel');
 const Coordenada = require('../data/coordenada')
+const Tablero = require('../data/tablero');
+const {barcosDisponibles} = require('../data/barco');
 const biomasDisponibles = require('../data/biomas');
+const {actualizarEstadisticas} = require('./perfilController');
 const tableroDim = Coordenada.i.max;  // Dimensiones del tablero
 /**
  * @module controllers/partida
@@ -65,23 +68,23 @@ function barcoColisiona(tablero, barco, barcoId) {
 // Function generarTableroAleatorio
 // Devuelve un tablero de barcos aleatorio
 function generarTableroAleatorio() {
-  const tablero = [];
+  let tablero = [];
   for (let barco of barcosDisponibles) {
     let barcoGenerado = false;
     while (!barcoGenerado) {
-      const orientacion = Math.random() < 0.5 ? 'horizontal' : 'vertical';
-      const i = Math.floor(Math.random() * tableroDim) + 1;
-      const j = Math.floor(Math.random() * tableroDim) + 1;
-      const coordenadas = [];
-      const barcoLongitud = barcosDisponibles.indexOf(barco) === 0 ? 2 : 
+      let orientacion = Math.random() < 0.5;
+      let i = Math.floor(Math.random() * tableroDim) + 1;
+      let j = Math.floor(Math.random() * tableroDim) + 1;
+      let coordenadas = [];
+      let barcoLongitud = barcosDisponibles.indexOf(barco) === 0 ? 2 : 
         barcosDisponibles.indexOf(barco) === 1 ? 3 :
         barcosDisponibles.indexOf(barco) === 2 ? 3 :
         barcosDisponibles.indexOf(barco) === 3 ? 4 : 5;
       for (let k = 0; k < barcoLongitud; k++) {
-        if (orientacion === 'horizontal') {
-          coordenadas.push(new Coordenada(i + k, j));
-        } else {
-          coordenadas.push(new Coordenada(i, j + k));
+        if (orientacion) { // Horizontal
+          coordenadas.push( { i: i + k, j, estado: 'Agua' });
+        } else { // Vertical
+          coordenadas.push( { i, j: j + k, estado: 'Agua' });
         }
       }
       // Comprobar si el barco colisiona con otros barcos
@@ -122,6 +125,7 @@ function generarDisparoAleatorio(disparosRealizados) {
  * @param {String} [req.body.nombreId1] - El nombreId del jugador 1
  * @param {String} [req.body.nombreId2] - El nombreId del jugador 2
  * @param {BiomasDisponibles} req.body.bioma - El bioma de la partida
+ * @param {Boolean} [req.body.amistosa] - Indica si la partida es amistosa, por defecto es false
  * @param {Partida} res - La partida creada
  * @param {Number} res.codigo - El código de la partida
  * @example 
@@ -131,7 +135,7 @@ function generarDisparoAleatorio(disparosRealizados) {
  */
 exports.crearPartida = async (req, res) => {
   try {
-    const { _id1, _id2, nombreId1, nombreId2, bioma = 'Mediterraneo', ...extraParam } = req.body;
+    const { _id1, _id2, nombreId1, nombreId2, bioma, amistosa = 'Mediterraneo', ...extraParam } = req.body;
     // Verificar si hay algún parámetro extra
     if (Object.keys(extraParam).length > 0) {
       res.status(400).send('Sobran parámetros, se espera nombreId1 (o _id1), nombreId2 (o _id2) y bioma');
@@ -188,10 +192,10 @@ exports.crearPartida = async (req, res) => {
     // Obtenemos los tableros de barcos de los jugadores y generamos un código único
     const tableroBarcos1 = jugador1.tableroInicial;
     let tableroBarcos2;
-    if (jugador2) {
-      tableroBarcos2 = jugador2.tableroInicial;
-    } else {
+    if (jugador2 === undefined) {
       tableroBarcos2 = generarTableroAleatorio();
+    } else {
+      tableroBarcos2 = jugador2.tableroInicial;
     }
     const codigo = generarCodigo();
     // Actualizamos los códigos de partida actuales de los jugadores
@@ -201,7 +205,7 @@ exports.crearPartida = async (req, res) => {
       jugador1, // Actualizar (jugador1 contiene los cambios)
       { new: true } // Para devolver el documento actualizado
     );
-    if (jugador2) {
+    if (jugador2 !== undefined) {
       jugador2.codigoPartidaActual = codigo;
       await Perfil.findOneAndUpdate(
         filtro2, // Filtrar
@@ -209,33 +213,20 @@ exports.crearPartida = async (req, res) => {
         { new: true } // Para devolver el documento actualizado
       );
     }
-    jugador1.contraseña = undefined;
-    jugador1.listaAmigos = undefined;
-    jugador1.solicitudesAmistad = undefined;
-    jugador1.correo = undefined;
-    jugador1.tableroInicial = undefined;
-    jugador1.mazoHabilidades = undefined;
-
-    if (jugador2) {
-      jugador2.contraseña = undefined;
-      jugador2.listaAmigos = undefined;
-      jugador2.solicitudesAmistad = undefined;
-      jugador2.correo = undefined;
-      jugador2.tableroInicial = undefined;
-      jugador2.mazoHabilidades = undefined;
-    }
 
     const partida = new Partida({ 
       codigo, 
-      jugador1, 
-      jugador2, 
+      nombreId1, 
+      nombreId2: (nombreId2 === undefined) ? undefined : nombreId2,
       tableroBarcos1,
       tableroBarcos2,
-      bioma
+      bioma,
+      amistosa: (amistosa === true) ? true : false
     });
+
     const partidaGuardada = await partida.save();
-    res.json(partidaGuardada); 
-    return partidaGuardada;
+    res.json({ codigo: partidaGuardada.codigo });
+    console.log('Partida creada con éxito');
   } catch (error) {
     res.status(500).send('Hubo un error');
     console.error('Hubo un error');
@@ -276,8 +267,11 @@ exports.mostrarMiTablero = async (req, res) => {
     const filtro = _id ? { _id: _id } : { codigo: codigo };
     const partida = await Partida.findOne(filtro);
     if (partida) {
-      const jugador1 = await Perfil.findById(partida.jugador1);
-      const jugador2 = await Perfil.findById(partida.jugador2);
+      const jugador1 = await Perfil.findOne({ nombreId: partida.nombreId1 });
+      const jugador2 = { nombreId: "IA" };
+      if (partida.nombreId2) {
+        jugador2 = await Perfil.findOne({ nombreId: partida.nombreId2 });
+      }
       // Comprobamos que el jugador está en la partida
       var jugador = 0;
       if (jugador1.nombreId === nombreId) {
@@ -342,8 +336,11 @@ exports.mostrarTableroEnemigo = async (req, res) => {
     const filtro = _id ? { _id: _id } : { codigo: codigo };
     const partida = await Partida.findOne(filtro);
     if (partida) {
-      const jugador1 = await Perfil.findById(partida.jugador1);
-      const jugador2 = await Perfil.findById(partida.jugador2);
+      const jugador1 = await Perfil.findOne({ nombreId: partida.nombreId1 });
+      const jugador2 = { nombreId: "IA" };
+      if (partida.nombreId2) {
+        jugador2 = await Perfil.findOne({ nombreId: partida.nombreId2 });
+      }
       // Comprobamos que el jugador está en la partida
       var jugador = 0;
       if (jugador1.nombreId === nombreId) {
@@ -407,8 +404,11 @@ exports.mostrarTableros = async (req, res) => {
     const filtro = _id ? { _id: _id } : { codigo: codigo };
     const partida = await Partida.findOne(filtro);
     if (partida) {      
-      const jugador1 = await Perfil.findById(partida.jugador1);
-      const jugador2 = await Perfil.findById(partida.jugador2);
+      const jugador1 = await Perfil.findOne({ nombreId: partida.nombreId1 });
+      const jugador2 = { nombreId: "IA" };
+      if (partida.nombreId2) {
+        jugador2 = await Perfil.findOne({ nombreId: partida.nombreId2 });
+      }
       // Comprobamos que el jugador está en la partida
       var jugador = 0;
       if (jugador1.nombreId === nombreId) {
@@ -479,9 +479,8 @@ exports.realizarDisparo = async (req, res) => {
       return;
     }
     // Verificar si alguno de los parámetros está ausente
-    if (!codigo && !_id || !nombreId || !i || !j) {
-      res.status(400).send('Falta alguno de los siguientes parámetros: codigo (o _id), jugador, i o j');
-      console.error("Falta alguno de los siguientes parámetros: codigo (o _id), jugador, i o j");
+    if ((!codigo && !_id) || !nombreId || !i || !j) {
+      res.status(400).send('Falta alguno de los siguientes parámetros: codigo (o _id), nombreId, i, j');
       return;
     }
     // Comprobar si i, j es casilla válida
@@ -494,8 +493,11 @@ exports.realizarDisparo = async (req, res) => {
     const filtro = _id ? { _id: _id } : { codigo: codigo };
     const partida = await Partida.findOne(filtro);
     if (partida) {
-      const jugador1 = await Perfil.findById(partida.jugador1);
-      const jugador2 = await Perfil.findById(partida.jugador2);
+      const jugador1 = await Perfil.findOne({ nombreId: partida.nombreId1 });
+      const jugador2 = { nombreId: "IA" };
+      if (partida.nombreId2) {
+        jugador2 = await Perfil.findOne({ nombreId: partida.nombreId2 });
+      }
       // Comprobamos que el jugador está en la partida
       var jugador = 0;
       if (jugador1.nombreId === nombreId) {
@@ -515,18 +517,31 @@ exports.realizarDisparo = async (req, res) => {
         return;
       }
 
-      const partidaContraIA = !partida.jugador2;
+      let estadisticasJugadores = [
+        { victoria: undefined, nuevosBarcosHundidos: 0, nuevosBarcosPerdidos: 0,
+          nuevosDisparosAcertados: 0, nuevosDisparosFallados: 0, nuevosTrofeos: 0,
+          nombreId: jugador1.nombreId },
+        { victoria: undefined, nuevosBarcosHundidos: 0, nuevosBarcosPerdidos: 0,
+          nuevosDisparosAcertados: 0, nuevosDisparosFallados: 0, nuevosTrofeos: 0,
+          nombreId: jugador2.nombreId }
+      ]
+
+      const partidaContraIA = !partida.nombreId2;
       // Realizar disparo
       let barcoDisparado = jugador === 1 ? dispararCoordenada(partida.tableroBarcos2, i, j) :
       dispararCoordenada(partida.tableroBarcos1, i, j);
       let disparo = { i, j, estado: 'Agua' };
-      if (barcoDisparado) { 
+      if (barcoDisparado) {
+        estadisticasJugadores[jugador - 1].nuevosDisparosAcertados++;
         disparo.estado = 'Tocado'; // Los disparos solo son Agua o Tocado
         if (barcoDisparado.coordenadas.every(coordenada => coordenada.estado === 'Tocado')) {
+          estadisticasJugadores[jugador - 1].nuevosBarcosHundidos++;
+          estadisticasJugadores[jugador === 1 ? 1 : 0].nuevosBarcosPerdidos++;
           barcoDisparado.coordenadas.map(coordenada => coordenada.estado = 'Hundido');
           disparo.estado = 'Hundido';
         }
       } else {  // Sólo cambia el turno si se falla el disparo
+        estadisticasJugadores[jugador - 1].nuevosDisparosFallados++;
         partida.contadorTurno++;
       }
       let disparosRealizados = jugador === 1 ? partida.disparosRealizados1 :
@@ -547,11 +562,18 @@ exports.realizarDisparo = async (req, res) => {
       }
 
       if (finPartida ) {
-        let jugador1 = await Perfil.findById(partida.jugador1);
-        let jugador2 = await Perfil.findById(partida.jugador2);
+        let jugador1 = await Perfil.findOne({ nombreId: partida.nombreId1 });
+        let jugador2 = {nombreId: 'IA'};
+        if (partida.nombreId2) {
+          jugador2 = await Perfil.findOne({ nombreId: partida.nombreId2 });
+        }
         if (jugador === 1) {
+          estadisticasJugadores[0].victoria = 1;
+          estadisticasJugadores[1].victoria = 0;
           partida.ganador = jugador1.nombreId;
         } else {
+          estadisticasJugadores[1].victoria = 1;
+          estadisticasJugadores[0].victoria = 0;
           partida.ganador = jugador2.nombreId;
         }
         jugador1.codigoPartidaActual = -1;
@@ -567,25 +589,43 @@ exports.realizarDisparo = async (req, res) => {
           { new: true } // Para devolver el documento actualizado
         );
       }
-      
-      if (partidaContraIA && disparo.estado === 'Agua' && !finPartida) {
-        const psoibleDisparoIA = generarDisparoAleatorio(partida.disparosRealizados2);
-        let barcoDisparadoIA = dispararCoordenada(partida.tableroBarcos1, 
-          posibleDisparoIA.i, posibleDisparoIA.j);
-          let disparoIA = { i: disparoIA.i, j: disparoIA.j, estado: 'Agua' };
-        if (barcoDisparadoIA) {
-          disparoIA.estado = 'Tocado';
-          barcoDisparadoIA.coordenadas.every(coordenada => coordenada.estado === 'Tocado') && 
-          barcoDisparadoIA.coordenadas.map(coordenada => coordenada.estado = 'Hundido') &&
-          (disparoIA.estado = 'Hundido');
-        }
-        partida.disparosRealizados2.push(disparoIA);
 
-        // Comprobar si la partida ha terminado
-        finPartidaIA = partida.tableroBarcos1.every(barco =>
-          barco.coordenadas.every(coordenada => coordenada.estado === 'Hundido'));
-        if (finPartidaIA) {
-          partida.ganador = 'IA';
+
+      let turnosIA = [];
+      if (partidaContraIA && disparo.estado === 'Agua' && !finPartida) {
+        console.log("Turno de la IA");
+        let juegaIA = true;
+        while (juegaIA) {
+          let posibleDisparoIA = generarDisparoAleatorio(partida.disparosRealizados2);
+          let barcoDisparadoIA = dispararCoordenada(partida.tableroBarcos1, 
+            posibleDisparoIA.i, posibleDisparoIA.j);
+            let disparoIA = { i: disparoIA.i, j: disparoIA.j, estado: 'Agua' };
+          if (barcoDisparadoIA) {
+            disparoIA.estado = 'Tocado';
+            if (barcoDisparado.coordenadas.every(coordenada => coordenada.estado === 'Tocado')) {
+              estadisticasJugadores[0].nuevosBarcosPerdidos++;
+              barcoDisparadoIA.coordenadas.map(coordenada => coordenada.estado = 'Hundido');
+              disparoIA.estado = 'Hundido';
+            }
+          }
+          partida.disparosRealizados2.push(disparoIA);
+
+          // Comprobar si la partida ha terminado
+          finPartidaIA = partida.tableroBarcos1.every(barco =>
+            barco.coordenadas.every(coordenada => coordenada.estado === 'Hundido'));
+          if (finPartidaIA) {
+            partida.ganador = 'IA';
+          }
+
+          let turnoIA = {
+            disparoRealizado: disparoIA,
+            barcoCoordenadas: (disparoIA.estado === 'Hundido') ? barcoDisparadoIA : undefined,
+            eventoOcurrido: undefined, // Evento ocurrido en la partida
+            finPartida: finPartidaIA,
+            clima: partida.clima
+          };
+          turnosIA.push(turnoIA);
+          juegaIA = disparoIA.estado !== 'Agua' && !finPartidaIA;
         }
       }
 
@@ -597,15 +637,8 @@ exports.realizarDisparo = async (req, res) => {
       );
 
       if (partidaModificada) {
-        let turnoIA = undefined;
         if (partidaContraIA && disparo.estado === 'Agua') {
-          turnoIA = {
-            disparoRealizado: disparoIA,
-            barcoCoordenadas: (disparoIA.estado === 'Hundido') ? barcoDisparadoIA : undefined,
-            eventoOcurrido: undefined, // Evento ocurrido en la partida
-            finPartida: finPartidaIA,
-            clima: partida.clima
-          }
+
         }
         const respuestaDisparo = {
           disparoRealizado: disparo,
@@ -613,8 +646,29 @@ exports.realizarDisparo = async (req, res) => {
           eventoOcurrido: undefined, // Evento ocurrido en la partida
           finPartida: finPartida,
           clima: partida.clima,
-          turnoIA: turnoIA
+          turnosIA: turnosIA
         };
+
+        // Actualizar estadisticas de los jugadores
+        let tempRes1 = { json: () => {}, status: function(s) { 
+          this.statusCode = s; return this;} };
+        await actualizarEstadisticas({ body: estadisticasJugadores[0] }, tempRes1);
+        if (tempRes1.statusCode !== undefined && tempRes1.statusCode !== 200) {
+          res.status(500).send('Hubo un error al actualizar las estadísticas');
+          console.error("Hubo un error al actualizar las estadísticas");
+          return;
+        }
+
+        if (!partidaContraIA) {
+          let tempRes2 = { json: () => {}, status: function(s) {
+            this.statusCode = s; return this;} };
+          await actualizarEstadisticas({ body: estadisticasJugadores[1] }, res);
+          if (tempRes2.statusCode !== undefined && tempRes2.statusCode !== 200) {
+            res.status(500).send('Hubo un error al actualizar las estadísticas');
+            console.error("Hubo un error al actualizar las estadísticas");
+            return;
+          }
+        }
         
         res.json(respuestaDisparo);
         console.log("Partida modificada con éxito");
@@ -673,11 +727,6 @@ exports.actualizarEstadoPartida = async (req, res) => {
   }
 };
 
-// Necesitamos alterar las estadisticas almacenadas en el perfil de los jugadores
-const { actualizarEstadisticas } = require('./perfilController');
-const Tablero = require('../data/tablero');
-const { coordenadas } = require('../data/barco');
-
 // Funcion para guardar las estadisticas de cada jugador al finalizar la partida
 // Devuelve las estadisticas de la partida de ambos jugadores
 /**
@@ -702,8 +751,8 @@ exports.actualizarEstadisticasFinales = async (req, res) => {
     if (partida) {
       // Actualizar estadisticas de los jugadores
       const estadisticasJ1 = {
-        nombreId: partida.jugador1,                             // Nombre del jugador 1
-        victoria: partida.ganador === partida.jugador1 ? 1 : 0, // 1 si ganó, 0 si perdió. 
+        nombreId: partida.nombreId1,                             // Nombre del jugador 1
+        victoria: partida.ganador === partida.nombreId1 ? 1 : 0, // 1 si ganó, 0 si perdió. 
         nuevosBarcosHundidos: partida.tableroBarcos2.filter(barco => barco.barcoHundido).length,
         nuevosBarcosPerdidos: partida.tableroBarcos1.filter(barco => barco.barcoHundido).length,
         nuevosDisparosAcertados: partida.disparosRealizados1.filter(disparo => disparo.resultado === 'Tocado' || disparo.resultado === 'Hundido').length,
@@ -711,8 +760,8 @@ exports.actualizarEstadisticasFinales = async (req, res) => {
         nuevosTrofeos: 20 // Place holder === TODO ELO
       };
       const estadisticasJ2 = {
-        nombreId: partida.jugador2,                             // Nombre del jugador 1
-        victoria: partida.ganador === partida.jugador2 ? 1 : 0, // 1 si ganó, 0 si perdió. 
+        nombreId: partida.nombreId2,                             // Nombre del jugador 1
+        victoria: partida.ganador === partida.nombreId2 ? 1 : 0, // 1 si ganó, 0 si perdió. 
         nuevosBarcosHundidos: partida.tableroBarcos1.filter(barco => barco.barcoHundido).length,
         nuevosBarcosPerdidos: partida.tableroBarcos2.filter(barco => barco.barcoHundido).length,
         nuevosDisparosAcertados: partida.disparosRealizados2.filter(disparo => disparo.resultado === 'Tocado' || disparo.resultado === 'Hundido').length,

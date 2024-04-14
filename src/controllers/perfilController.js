@@ -185,6 +185,7 @@ exports.obtenerUsuario = async (req, res) => {
       perfilDevuelto.tableroInicial = undefined; // No enviar el tablero inicial en la respuesta
       perfilDevuelto.mazoHabilidades = undefined; // No enviar el mazo de habilidades en la respuesta
       perfilDevuelto.correo = undefined; // No enviar el correo en la respuesta
+      perfilDevuelto._id = undefined; // No enviar el _id en la respuesta
       res.json(perfilDevuelto);
       console.log("Perfil obtenido con éxito");
     } else {
@@ -235,6 +236,22 @@ exports.obtenerDatosPersonales = async (req, res) => {
     if (perfil) {
       const perfilDevuelto = perfil;
       perfilDevuelto.contraseña = undefined; // No enviar la contraseña en la respuesta
+      perfilDevuelto._id = undefined; // No enviar el _id en la respuesta
+      // Para cada habilidad en el mazo, eliminar el _id
+      if (perfilDevuelto.mazoHabilidades) {
+        perfilDevuelto.mazoHabilidades.forEach(habilidad => {
+          habilidad._id = undefined;
+        });
+      }
+      // Para cada barco en el tablero, eliminar el _id y dentro de cada coordenada, eliminar el _id
+      if (perfilDevuelto.tableroInicial) {
+        perfilDevuelto.tableroInicial.forEach(barco => {
+          barco._id = undefined;
+          barco.coordenadas.forEach(coordenada => {
+            coordenada._id = undefined;
+          });
+        });
+      }
       res.json(perfilDevuelto);
       console.log("Datos personales obtenidos con éxito");
     } else {
@@ -412,6 +429,22 @@ exports.registrarUsuario = async (req, res) => {  // Requiere nombreId (o _id), 
       // Enviar el token como respuesta al cliente
       perfilDevuelto = perfil;
       perfilDevuelto.contraseña = undefined; // No enviar la contraseña en la respuesta
+      perfilDevuelto._id = undefined; // No enviar el _id en la respuesta
+      // Para cada habilidad en el mazo, eliminar el _id
+      if (perfilDevuelto.mazoHabilidades) {
+        perfilDevuelto.mazoHabilidades.forEach(habilidad => {
+          habilidad._id = undefined;
+        });
+      }
+      // Para cada barco en el tablero, eliminar el _id y dentro de cada coordenada, eliminar el _id
+      if (perfilDevuelto.tableroInicial) {
+        perfilDevuelto.tableroInicial.forEach(barco => {
+          barco._id = undefined;
+          barco.coordenadas.forEach(coordenada => {
+            coordenada._id = undefined;
+          });
+        });
+      }
       const data = {
         perfilDevuelto,
         token
@@ -451,6 +484,22 @@ exports.iniciarSesion = async (req, res) => { // Requiere nombreId (o _id) y con
       // Enviar el token como respuesta al cliente
       perfilDevuelto = perfil;
       perfilDevuelto.contraseña = undefined; // No enviar la contraseña en la respuesta
+      perfilDevuelto._id = undefined; // No enviar el _id en la respuesta
+      // Para cada habilidad en el mazo, eliminar el _id
+      if (perfilDevuelto.mazoHabilidades) {
+        perfilDevuelto.mazoHabilidades.forEach(habilidad => {
+          habilidad._id = undefined;
+        });
+      }
+      // Para cada barco en el tablero, eliminar el _id y dentro de cada coordenada, eliminar el _id
+      if (perfilDevuelto.tableroInicial) {
+        perfilDevuelto.tableroInicial.forEach(barco => {
+          barco._id = undefined;
+          barco.coordenadas.forEach(coordenada => {
+            coordenada._id = undefined;
+          });
+        });
+      }
       const data = {
         perfilDevuelto,
         token
@@ -817,8 +866,15 @@ exports.actualizarEstadisticas = async (req, res) => {
       console.error("Falta el nombreId o _id en la solicitud");
       return;
     }
+    if (victoria !== undefined) {
+      if (!esNumero(victoria) || (victoria !== 0 && victoria !== 1)) {
+        res.status(400).send('La victoria debe ser 0 o 1');
+        console.error("La victoria debe ser 0 o 1");
+        return;
+      }
+    }
     // Verificar que las estadísticas son numéricas
-    if (!esNumero(victoria) || !esNumero(nuevosBarcosHundidos) || !esNumero(nuevosBarcosPerdidos) || 
+    if (!esNumero(nuevosBarcosHundidos) || !esNumero(nuevosBarcosPerdidos) || 
       !esNumero(nuevosDisparosAcertados) || !esNumero(nuevosDisparosFallados) || !esNumero(nuevosTrofeos)) {
         res.status(400).send('Las estadísticas deben ser numéricas');
         console.error("Las estadísticas deben ser numéricas");
@@ -830,8 +886,8 @@ exports.actualizarEstadisticas = async (req, res) => {
       filtro, // Filtro para encontrar el perfil a modificar
       {
         $inc: {
-          partidasJugadas: 1,
-          partidasGanadas: victoria ? 1 : 0,
+          partidasJugadas: (victoria === undefined) ? 0 : 1,
+          partidasGanadas: (victoria === 1) ? 1 : 0,
           barcosHundidos: nuevosBarcosHundidos,
           barcosPerdidos: nuevosBarcosPerdidos,
           disparosAcertados: nuevosDisparosAcertados,

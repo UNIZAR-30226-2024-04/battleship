@@ -59,14 +59,12 @@ const partidaSchema = new Schema({
     default: []
   },
   contadorTurno: { type: Number, default: 1}, // Jugador 1 juga si es impar, jugador 2 si es par
-  jugador1: { // Perfil del jugador 1
-    type: mongoose.Schema.Types.ObjectId, 
-    ref: 'Perfil', 
+  nombreId1: { // Perfil del jugador 1
+    type: String, // NombreId del jugador
     required: true 
   },
-  jugador2: { // Perfil del jugador 2
-    type: mongoose.Schema.Types.ObjectId, 
-    ref: 'Perfil'
+  nombreId2: { // Perfil del jugador 2
+    type: String, // NombreId del jugador
   },
   tableroBarcos1: { // Lista barcos del jugador 1
     type: Tablero,
@@ -109,6 +107,10 @@ const partidaSchema = new Schema({
     type: String,
     enum: biomasDisponibles,
     required: true
+  },
+  amistosa: {  // Indica si la partida es amistosa o no
+    type: Boolean,
+    default: false
   },
   ganador: {  // NombreId del jugador ganador
     type: 'String',

@@ -1,11 +1,9 @@
 const mongoose = require('mongoose');
 const {crearPartida, mostrarMiTablero, mostrarTableroEnemigo,
     mostrarTableros, realizarDisparo, enviarMensaje, obtenerChat} = require('../controllers/partidaController');
-const {registrarUsuario, autenticarUsuario, eliminarUsuario, iniciarSesion, 
-    modificarDatosPersonales, obtenerUsuario, actualizarEstadisticas,
-    actualizarPuntosExperiencia, modificarMazo, moverBarcoInicial,
-    enviarSolicitudAmistad, eliminarSolicitudAmistad, agnadirAmigo, eliminarAmigo} = require('../controllers/perfilController');
-  
+const {registrarUsuario} = require('../controllers/perfilController');
+const Partida = require('../models/partidaModel');
+
 const mongoURI = 'mongodb://localhost/BattleshipDB';
 mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true, 
   useCreateIndex: true, useFindAndModify: false});
@@ -16,7 +14,7 @@ console.log = function() {};
 
 // Test for crearPartida
 describe("Crear partida", () => {
-    beforeAll(async () => {
+    beforeAll( async () => {
         const connection = mongoose.connection;
         await connection.dropDatabase();
         const req = { body: { nombreId: 'usuario1', contraseña: 'Passwd1.',
@@ -31,19 +29,26 @@ describe("Crear partida", () => {
         correo: 'usuario2@example.com' } };
         const res2 = { json: () => {}, status: function(s) { 
           this.statusCode = s; return this; }, send: () => {} };
-        try {
-          await registrarUsuario(req2, res2);
-        } catch (error) {}
-        expect(res2.statusCode).toBe(undefined);
+          try {
+            await registrarUsuario(req2, res2);
+          } catch (error) {}
+          expect(res2.statusCode).toBe(undefined);
+          const req3 = { body: { nombreId: 'usuario3', contraseña: 'Passwd3.',
+          correo: 'usuario3@example.com' } };
+          const res3 = { json: () => {}, status: function(s) { 
+            this.statusCode = s; return this; }, send: () => {} };
+          try {
+            await registrarUsuario(req3, res3);
+          } catch (error) {}
+          expect(res3.statusCode).toBe(undefined);
     });
-    it("Debería crear una partida correctamente", async () => {
-        const req = { body: { nombreId1: 'usuario1', nombreId2: 'usuario2', bioma: 'Norte' } };
-        const res = { json: () => {}, status: function(s) { 
-          this.statusCode = s; return this; }, send: () => {} };
+    it("Debería crear una partida correctamente contra la IA", async () => {
+        const req = { body: { nombreId1: 'usuario3', bioma: 'Norte' } };
+        const res = { json: function(_json) {this._json = _json; return this;}, status: function(s) {
+            this.statusCode = s; return this; }, send: () => {} };
         try {
             await crearPartida(req, res);
-            }
-        catch (error) {}
+        } catch (error) {}
         expect(res.statusCode).toBe(undefined);
     });
     it("Debería fallar al crear una partida con demasiados campos", async () => {
@@ -99,6 +104,16 @@ describe("Crear partida", () => {
             await crearPartida(req, res);
         } catch (error) {}
         expect(res.statusCode).toBe(400);
+    });
+    it("Debería crear una partida correctamente", async () => {
+      const req = { body: { nombreId1: 'usuario1', nombreId2: 'usuario2', bioma: 'Norte' } };
+      const res = { json: () => {}, status: function(s) { 
+        this.statusCode = s; return this; }, send: () => {} };
+      try {
+          await crearPartida(req, res);
+          }
+      catch (error) {}
+      expect(res.statusCode).toBe(undefined);
     });
 });
 
@@ -463,6 +478,70 @@ describe("Realizar disparo", () => {
     });
 });
 
+// Funcion que devuelve el barco (si existe) disparado en la coordenada (i, j).
+// Si no hay barco en la coordenada, devuelve null.
+function dispararCoordenada(tablero, i, j) {
+  for (let barco of tablero) {
+    for (let coordenada of barco.coordenadas) {
+      if (coordenada.i === i && coordenada.j === j) {
+        coordenada.estado = 'Tocado';
+        return barco;
+      }
+    }
+  }
+  return null;
+}
+
+// Test for realizarDisparo
+describe("Realizar disparo contra la IA", () => {
+    beforeAll(async () => {
+      const connection = mongoose.connection;
+      await connection.dropDatabase();
+      const req = { body: { nombreId: 'usuario1', contraseña: 'Passwd1.',
+      correo: 'usuario1@example.com' } };
+      const res = { json: () => {}, status: function(s) { 
+        this.statusCode = s; return this; }, send: () => {} };
+      try {
+        await registrarUsuario(req, res);
+      } catch (error) {}
+      expect(res.statusCode).toBe(undefined);
+
+      const req3 = { body: { nombreId1: 'usuario1', bioma: 'Norte' } };
+      const res3 = { json: function(_json) {this._json = _json; return this;}, status: function(s) {
+          this.statusCode = s; return this; }, send: () => {} };
+      try {
+          await crearPartida(req3, res3);
+      } catch (error) {}
+      expect(res3.statusCode).toBe(undefined);
+      _codigo = res3._json.codigo;
+  });
+  it("Debería realizar un disparo y responder la IA correctamente", async () => {
+      // Tomamos la partida
+      const partida = await Partida.findOne({codigo: _codigo});
+      // Buscamos una casilla sin barco de la IA
+      let i = 0;
+      let j = 0;
+      let encontrado = false;
+      while (!encontrado) {
+          i = Math.floor(Math.random() * 10);
+          j = Math.floor(Math.random() * 10);
+          const barco = dispararCoordenada(partida.tableroBarcos2, i, j);
+          if (!barco) break;
+      }
+
+      const req = { body: { codigo: _codigo, nombreId: 'usuario1', i: i, j: j } };
+      const res = { json: function(_json) {this._json = _json; return this;}, status: function(s) {
+          this.statusCode = s; return this; }, send: () => {} };
+      try {
+          await realizarDisparo(req, res);
+      } catch (error) {}
+      expect(res.statusCode).toBe(undefined);
+      expect(res._json.disparoRealizado.estado).toBe('Agua');
+      expect(res._json.turnosIA.length).toBeMoreThan(0);
+  });
+});
+
+
 // Test for enviarMensaje
 describe("Enviar mensaje", () => {
     beforeAll(async () => {
@@ -626,6 +705,6 @@ describe("Obtener chat", () => {
         expect(res.statusCode).toBe(404);
     });
     afterAll(() => {
-        mongoose.disconnect();
+      mongoose.disconnect();
     });
 });

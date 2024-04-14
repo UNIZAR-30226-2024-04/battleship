@@ -50,7 +50,7 @@ const perfilSchema = new Schema({
   pais: {                   // País de residencia del usuario
     type: String, 
     enum: paisesDisponibles,
-    default: 'Desconocido' 
+    default: ''
   },
   listaAmigos: {             // Lista de amigos del usuario
     type: [String],          // Lista de nombreId
