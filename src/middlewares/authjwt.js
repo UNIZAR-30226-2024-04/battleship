@@ -8,18 +8,22 @@ const verificarToken = async (req, res, next) => {
         token = token.slice(7, token.length);
     }
     if (!token) {
+        console.error('No se ha proporcionado un token');
         return res.status(403).send({ message: 'No se ha proporcionado un token' });
     }
     jwt.verify(token, config.secret, async (err, decoded) => {
         if (err) {
+            console.error('No autorizado');
             return res.status(401).send({ message: 'No autorizado' });
         }
         if (decoded.id !== req.body.nombreId) {
+            console.error('El token no corresponde al usuario');
             return res.status(401).send({ message: 'El token no corresponde al usuario' });
         }
 
         const perfil = await Perfil.findOne({ nombreId: decoded.id });
         if (!perfil) {
+            console.error('Perfil no encontrado');
             return res.status(404).send({ message: 'Perfil no encontrado' });
         }
         next();

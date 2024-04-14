@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const { crearPerfil } = require('../../controllers/perfilController');
+const { registrarUsuario } = require('../../controllers/perfilController');
 
 // Conexión a la base de datos
 mongoose.connect('mongodb://localhost/BattleshipDB')
@@ -21,13 +21,8 @@ mongoose.connect('mongodb://localhost/BattleshipDB')
       for (const perfil of perfiles) {
         const req = { body: perfil };
         const res = { json: () => {}, status: () => ({ send: () => {} }) }; // No hace nada
-        await crearPerfil(req, res); // Espera a que se complete la creación del perfil
+        await registrarUsuario(req, res); // Espera a que se complete la creación del perfil
       }
-
-      // Elimina los perfiles creados
-      const { eliminarPerfil } = require('../../controllers/perfilController');
-      await eliminarPerfil({ params: { nombreId: 'usuario1' } }, { json: () => {} });
-      await eliminarPerfil({ params: { nombreId: 'usuario2' } }, { json: () => {} });
       
     } catch (error) {
       console.error('Error en el test de crear perfil:', error);

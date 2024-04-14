@@ -11,9 +11,9 @@ const Coordenada = require('./coordenada');
  * @description Tipos de barco posibles, con sus respectivos nombres
  * @enum {String}
  * @readonly
- * @default ['Acorazado', 'Fragata', 'Submarino', 'Patrullera']
+ * @default ['Acorazado', 'Destructor', 'Submarino', 'Patrullera', 'Portaviones']]
  */
-const barcosDisponibles = ['Acorazado', 'Fragata', 'Submarino', 'Patrullera'];
+const barcosDisponibles = ['Acorazado', 'Destructor', 'Submarino', 'Patrullera', 'Portaviones'];
 
 /**
  * @typedef {Object} Barco

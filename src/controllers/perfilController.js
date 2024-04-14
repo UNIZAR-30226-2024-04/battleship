@@ -116,13 +116,13 @@ crearPerfil = async (req, res) => {
       {coordenadas: [{ i: 1, j: 1 }, { i: 1, j: 2 }],
        tipo: 'Acorazado'},
       {coordenadas: [{ i: 7, j: 1 }, { i: 8, j: 1 }, { i: 9, j: 1 }],
-       tipo: 'Fragata'},
+       tipo: 'Destructor'},
       {coordenadas: [{ i: 3, j: 10 }, { i: 4, j: 10 }, { i: 5, j: 10 }], 
        tipo: 'Submarino'},
       {coordenadas: [{ i: 3, j: 6 }, { i: 4, j: 6 }, { i: 5, j: 6 }, { i: 6, j: 6 }],
        tipo: 'Patrullera'},
       {coordenadas: [{ i: 10, j: 6 }, { i: 10, j: 7 }, { i: 10, j: 8 }, { i: 10, j: 9 }, { i: 10, j: 10 }], 
-       tipo: 'Acorazado'}
+       tipo: 'Portaviones'}
     ];
       
     
@@ -410,6 +410,7 @@ exports.registrarUsuario = async (req, res) => {  // Requiere nombreId (o _id), 
     const perfil = await crearPerfil(req, res);
     if (perfil) {
       const token = crearToken(perfil);
+      console.log(token);
       // Enviar el token como respuesta al cliente
       perfilDevuelto = perfil;
       perfilDevuelto.contraseña = undefined; // No enviar la contraseña en la respuesta

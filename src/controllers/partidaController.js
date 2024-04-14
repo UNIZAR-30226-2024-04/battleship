@@ -364,15 +364,15 @@ exports.realizarDisparo = async (req, res) => {
         barcoTocado.every(coordenada => coordenada.estado === 'Tocado') && 
         barcoTocado.map(coordenada => coordenada.estado = 'Hundido');    
         disparo.estado = 'Tocado'; // Los disparos solo son Agua o Tocado
+      } else {  // Sólo cambia el turno si se falla el disparo
+        // Actualizar el contador de turnos
+        partida.contadorTurno++;
+        // Pasamos el turno al otro jugador
+        //partida.turno = jugador === 1 ? 2 : 1;
       }
       disparosRealizados.push(disparo);
       jugador === 1 ? partida.disparosRealizados1 = disparosRealizados : partida.disparosRealizados2 = disparosRealizados;
       
-      // Actualizar el contador de turnos
-      partida.contadorTurno++;
-      // Pasamos el turno al otro jugador
-      //partida.turno = jugador === 1 ? 2 : 1;
-
       // Actualizar la partida
       const partidaModificada = await Partida.findOneAndUpdate(
         filtro, // Filtrar
