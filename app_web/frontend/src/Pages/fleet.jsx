@@ -23,14 +23,14 @@ import burstImg from '../Images/skills/rafaga.png';
 import sonarImg from '../Images/skills/sonar.png';
 import torpedoImg from '../Images/skills/torpedo.png';
 
-// Establecer la url de obtenerPerfil, moverBarcoInicial del backend
-const urlObtenerPerfil = 'http://localhost:8080/perfil/obtenerUsuario';
+// Establecer la url de obtenerDatosPersonales, moverBarcoInicial del backend
+const urlObtenerDatosPersonales = 'http://localhost:8080/perfil/obtenerDatosPersonales';
 const urlMoverBarcoInicial = 'http://localhost:8080/perfil/moverBarcoInicial';
 const urlModificarMazoHabilidades = 'http://localhost:8080/perfil/modificarMazo';
-
+const tokenManual = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6InVzdWFyaW8xIiwiaWF0IjoxNzEzMDg4MzQ5LCJleHAiOjE3MTMxNzQ3NDl9.U9i0nJ40EMTuXFj6ETAg6geioh5raqq3NIagL4Yb4Tw';
 
 function esBarcoHorizontal(barco) {
-    return barco[0].i === barco[1].i;
+    return barco.coordenadas[0].i === barco.coordenadas[1].i;
 }
 
 export function Fleet() {    
@@ -115,7 +115,8 @@ export function Fleet() {
                         fetch(urlMoverBarcoInicial, {
                             method: 'POST',
                             headers: {
-                            'Content-Type': 'application/json'
+                            'Content-Type': 'application/json',
+                            'authorization': tokenManual
                             },
                             body: JSON.stringify({ nombreId: 'usuario1',  barcoId: node.id-1, iProaNueva: node.y+1, jProaNueva: node.x+1})
                         })
@@ -141,11 +142,11 @@ export function Fleet() {
     }, []);
 
     const mostrarWidgetsTablero = (tablero) => {
-        addNewWidgetPos(1, "Patrol", tablero[0][0].j-1, tablero[0][0].i-1, esBarcoHorizontal(tablero[0]));
-        addNewWidgetPos(2, "Destroy", tablero[1][0].j-1, tablero[1][0].i-1, esBarcoHorizontal(tablero[1]));
-        addNewWidgetPos(3, "Sub", tablero[2][0].j-1, tablero[2][0].i-1, esBarcoHorizontal(tablero[2]));
-        addNewWidgetPos(4, "Bship", tablero[3][0].j-1, tablero[3][0].i-1, esBarcoHorizontal(tablero[3]));
-        addNewWidgetPos(5, "Aircraft", tablero[4][0].j-1, tablero[4][0].i-1, esBarcoHorizontal(tablero[4]));
+        addNewWidgetPos(1, "Patrol", tablero[0].coordenadas[0].j-1, tablero[0].coordenadas[0].i-1, esBarcoHorizontal(tablero[0]));
+        addNewWidgetPos(2, "Destroy", tablero[1].coordenadas[0].j-1, tablero[1].coordenadas[0].i-1, esBarcoHorizontal(tablero[1]));
+        addNewWidgetPos(3, "Sub", tablero[2].coordenadas[0].j-1, tablero[2].coordenadas[0].i-1, esBarcoHorizontal(tablero[2]));
+        addNewWidgetPos(4, "Bship", tablero[3].coordenadas[0].j-1, tablero[3].coordenadas[0].i-1, esBarcoHorizontal(tablero[3]));
+        addNewWidgetPos(5, "Aircraft", tablero[4].coordenadas[0].j-1, tablero[4].coordenadas[0].i-1, esBarcoHorizontal(tablero[4]));
         setCount(6);
     }
 
@@ -160,10 +161,11 @@ export function Fleet() {
     useEffect(() => {
         // Obtener el tablero inicial del perfil en la base de datos
         try {
-            fetch(urlObtenerPerfil, {
+            fetch(urlObtenerDatosPersonales, {
                 method: 'POST',
                 headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'authorization': tokenManual
                 },
                 body: JSON.stringify({ nombreId: 'usuario1' })
             })
@@ -174,6 +176,7 @@ export function Fleet() {
                 return response.json();
             })
             .then(data => {
+                console.log(data);
                 tableroInicial = data.tableroInicial;
                 // const tableroInicial = [
                 //     [{ i: 1, j: 1 }, { i: 1, j: 2 }],
@@ -252,7 +255,8 @@ export function Fleet() {
             fetch(urlMoverBarcoInicial, {
                 method: 'POST',
                 headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'authorization': tokenManual
                 },
                 body: JSON.stringify({ nombreId: 'usuario1',  barcoId: clickedNode.id-1, rotar: 1})
             })
@@ -300,7 +304,8 @@ export function Fleet() {
             fetch(urlModificarMazoHabilidades, {
                 method: 'POST',
                 headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'authorization': tokenManual
                 },
                 body: JSON.stringify({ nombreId: 'usuario1',  mazoHabilidades: skillQueue})
             })

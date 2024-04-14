@@ -1,17 +1,17 @@
 
 /** 
  * @module data/biomas
- * @description Tipo de dato Biomas
 */
 
 /**
  * @typedef {Array} BiomasDisponibles
  * @memberof module:data/biomas
- * @description Lista de biomas disponibles
+ * @description Lista de biomas disponibles, que se pueden seleccionar para jugar
  * @default ['Mediterraneo', 'Cantabrico', 'Norte', 'Bermudas']
+ * @readonly
+ * @enum {String}
  */
 
-// Lista de biomas disponibles
 const biomasDisponibles = ['Mediterraneo', 'Cantabrico', 'Norte', 'Bermudas'];
 
 module.exports = biomasDisponibles;

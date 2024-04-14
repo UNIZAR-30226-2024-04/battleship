@@ -25,13 +25,16 @@ import sonarImg from '../Images/skills/sonar.png';
 import torpedoImg from '../Images/skills/torpedo.png';
 
 // Establecer la url de obtenerPerfil, moverBarcoInicial del backend
-const urlObtenerPerfil = 'http://localhost:8080/perfil/obtenerUsuario';
+const urlObtenerDatosPersonales = 'http://localhost:8080/perfil/obtenerDatosPersonales';
 const urlMoverBarcoInicial = 'http://localhost:8080/perfil/moverBarcoInicial';
 const urlModificarMazoHabilidades = 'http://localhost:8080/perfil/modificarMazo';
+const urlCrearPartida = 'http://localhost:8080/partida/crearPartida';
+const tokenManual1 = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6InVzdWFyaW8xIiwiaWF0IjoxNzEzMDg4MzQ5LCJleHAiOjE3MTMxNzQ3NDl9.U9i0nJ40EMTuXFj6ETAg6geioh5raqq3NIagL4Yb4Tw';
+const tokenManual2 = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6InVzdWFyaW8yIiwiaWF0IjoxNzEzMDg4MzQ5LCJleHAiOjE3MTMxNzQ3NDl9.VY36pa0UsEoP5g3fDVOJWbhUAQ8_Tnn2xBIlC6Y-_v8';
 
 
 function esBarcoHorizontal(barco) {
-    return barco[0].i === barco[1].i;
+    return barco.coordenadas[0].i === barco.coordenadas[1].i;
 }
 
 export function Game() {    
@@ -69,6 +72,41 @@ export function Game() {
         if (skillQueue.includes(skillName)) {
             setSkillQueue(prevQueue => prevQueue.filter(skill => skill !== skillName));
         }
+    };
+
+    let [partidaInicializada, setPartidaInicializada] = useState(false); // Estado para saber si la partida ha sido inicializada
+
+    const inicializarPartida = () => {
+        if (!hayPartidaInicializada()) {
+            setPartidaInicializada(true);
+        } else {
+            // Creamos partida en bbdd
+            fetch(urlCrearPartida, {
+                method: 'POST',
+                headers: {
+                'Content-Type': 'application/json',
+                'authorization': tokenManual1
+                },
+                body: JSON.stringify({ nombreId1: 'usuario1', nombreId2: 'usuario2'})
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('La solicitud ha fallado');
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log(data);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+            
+        }
+    };
+
+    const hayPartidaInicializada = () => {
+        return partidaInicializada;
     };
 
     const boardDimension = 10;
@@ -141,7 +179,8 @@ export function Game() {
                         fetch(urlMoverBarcoInicial, {
                             method: 'POST',
                             headers: {
-                            'Content-Type': 'application/json'
+                            'Content-Type': 'application/json',
+                            'authorization': tokenManual1
                             },
                             body: JSON.stringify({ nombreId: 'usuario1',  barcoId: node.id-1, iProaNueva: node.y+1, jProaNueva: node.x+1})
                         })
@@ -167,11 +206,11 @@ export function Game() {
     }, []);
 
     const mostrarWidgetsTablero = (tablero, board) => {
-        addNewWidgetPos(1, "Patrol", tablero[0][0].j-1, tablero[0][0].i-1, esBarcoHorizontal(tablero[0]), board);
-        addNewWidgetPos(2, "Destroy", tablero[1][0].j-1, tablero[1][0].i-1, esBarcoHorizontal(tablero[1]), board);
-        addNewWidgetPos(3, "Sub", tablero[2][0].j-1, tablero[2][0].i-1, esBarcoHorizontal(tablero[2]), board);
-        addNewWidgetPos(4, "Bship", tablero[3][0].j-1, tablero[3][0].i-1, esBarcoHorizontal(tablero[3]), board);
-        addNewWidgetPos(5, "Aircraft", tablero[4][0].j-1, tablero[4][0].i-1, esBarcoHorizontal(tablero[4]), board);
+        addNewWidgetPos(1, "Patrol", tablero[0].coordenadas[0].j-1, tablero[0].coordenadas[0].i-1, esBarcoHorizontal(tablero[0]), board);
+        addNewWidgetPos(2, "Destroy", tablero[1].coordenadas[0].j-1, tablero[1].coordenadas[0].i-1, esBarcoHorizontal(tablero[1]), board);
+        addNewWidgetPos(3, "Sub", tablero[2].coordenadas[0].j-1, tablero[2].coordenadas[0].i-1, esBarcoHorizontal(tablero[2]), board);
+        addNewWidgetPos(4, "Bship", tablero[3].coordenadas[0].j-1, tablero[3].coordenadas[0].i-1, esBarcoHorizontal(tablero[3]), board);
+        addNewWidgetPos(5, "Aircraft", tablero[4].coordenadas[0].j-1, tablero[4].coordenadas[0].i-1, esBarcoHorizontal(tablero[4]), board);
         setCount(6);
     }
 
@@ -186,10 +225,11 @@ export function Game() {
     useEffect(() => {
         // Obtener el tablero inicial del perfil en la base de datos
         try {
-            fetch(urlObtenerPerfil, {
+            fetch(urlObtenerDatosPersonales, {
                 method: 'POST',
                 headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'authorization': tokenManual1
                 },
                 body: JSON.stringify({ nombreId: 'usuario1' })
             })
@@ -231,11 +271,14 @@ export function Game() {
     // Este efecto se ejecuta cuando myBoard cambia
     useEffect(() => {
         // Obtener el tablero inicial del perfil en la base de datos
+        console.log(hayPartidaInicializada());
+        inicializarPartida();
         try {
-            fetch(urlObtenerPerfil, {
+            fetch(urlObtenerDatosPersonales, {
                 method: 'POST',
                 headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'authorization': tokenManual2
                 },
                 body: JSON.stringify({ nombreId: 'usuario2' })
             })
@@ -246,6 +289,7 @@ export function Game() {
                 return response.json();
             })
             .then(data => {
+                console.log(data);
                 tableroInicial = data.tableroInicial;
                 // const tableroInicial = [
                 //     [{ i: 1, j: 1 }, { i: 1, j: 2 }],
@@ -321,7 +365,8 @@ export function Game() {
             fetch(urlModificarMazoHabilidades, {
                 method: 'POST',
                 headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'authorization': tokenManual1
                 },
                 body: JSON.stringify({ nombreId: 'usuario1',  mazoHabilidades: skillQueue})
             })
