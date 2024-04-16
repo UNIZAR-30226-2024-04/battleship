@@ -43,7 +43,8 @@ function esNumero(numero) {
 // Funcion para crear un token de sesión
 function crearToken(perfil) {
   // Si el nombre de usuario y la contraseña son válidos, generar un token JWT
-  const token = jwt.sign({id: perfil.nombreId}, config.secret, 
+  const salt = crypto.randomBytes(16).toString('hex'); // Generar una clave secreta aleatoria
+  const token = jwt.sign({id: perfil.nombreId, salt: salt }, config.secret, 
     { algorithm: 'HS256', expiresIn: 86400 }); // Expira en 24 horas
   return token;
 }

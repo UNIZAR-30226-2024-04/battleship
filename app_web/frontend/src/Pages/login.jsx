@@ -5,7 +5,6 @@ import Cookies from 'universal-cookie';
 const iniciarSesionURI = 'http://localhost:8080/perfil/iniciarSesion';
 
 
-
 export function Login() {
     const cookies = new Cookies();
 
@@ -18,12 +17,36 @@ export function Login() {
                 contraseña: e.target[1].value,
             })
         };
-        const response = await fetch(iniciarSesionURI, request);
-        const data = await response.json();
-        cookies.set('JWT', data['token'], {path: '/'});
-        console.log(cookies.get('JWT'));
-    };
-
+        //const response = await fetch(iniciarSesionURI, request);
+        //const data = await response.json();
+        try {
+            fetch(iniciarSesionURI, request)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('La solicitud ha fallado');
+                }
+                return response.json();
+            })
+            .then(data => {
+                cookies.remove('JWT');
+                cookies.remove('nombreId');
+                console.log('data:');
+                console.log(data);
+                console.log('token:');
+                console.log(data['token']);
+                console.log('nombreId:');
+                console.log(data['perfilDevuelto']['nombreId']);
+                cookies.set('JWT', data['token'], {path: '/'});
+                cookies.set('nombreId', data['perfilDevuelto']['nombreId'], {path: '/'});
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    }
+    
     return (
         <div className="login-page-container">
             <Navbar/>
@@ -32,7 +55,7 @@ export function Login() {
                     <div className="login-banner-container">
                         <span>Iniciar sesión</span>
                     </div>
-                    <form className="login-body" onSubmit={handleSubmit}>
+                    <form className="login-body" onSubmit={() => handleSubmit}>
                         <div className="login-username-header login-header">
                             <span>Usuario</span>
                         </div>
@@ -68,3 +91,24 @@ export function Login() {
         </div>
     );
 }
+
+/*
+try {
+            fetch(iniciarSesionURI, request)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('La solicitud ha fallado');
+                }
+                return response.json();
+            })
+            .then(data => {
+                cookies.set('JWT', data['token'], {path: '/'});
+                console.log(cookies.get('JWT'));
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        } catch (error) {
+            console.error('Error:', error);
+        }
+*/

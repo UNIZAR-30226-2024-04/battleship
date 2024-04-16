@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Navbar } from "../Components/Navbar";
 import { GridStack } from 'gridstack';
+import Cookies from "universal-cookie";
 import '../Styles/fleet-style.css';
 import 'gridstack/dist/gridstack.min.css';
 import 'gridstack/dist/gridstack-extra.min.css';
@@ -27,13 +28,25 @@ import torpedoImg from '../Images/skills/torpedo.png';
 const urlObtenerDatosPersonales = 'http://localhost:8080/perfil/obtenerDatosPersonales';
 const urlMoverBarcoInicial = 'http://localhost:8080/perfil/moverBarcoInicial';
 const urlModificarMazoHabilidades = 'http://localhost:8080/perfil/modificarMazo';
-const tokenManual = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6InVzdWFyaW8xIiwiaWF0IjoxNzEzMDg4MzQ5LCJleHAiOjE3MTMxNzQ3NDl9.U9i0nJ40EMTuXFj6ETAg6geioh5raqq3NIagL4Yb4Tw';
+
+const cookies = new Cookies();
 
 function esBarcoHorizontal(barco) {
     return barco.coordenadas[0].i === barco.coordenadas[1].i;
 }
 
 export function Fleet() {    
+    // Obtener el token de la cookie
+
+    // Recuperar el valor de las cookies
+    const tokenCookie = cookies.get('JWT');
+    const nombreIdCookie = cookies.get('nombreId');
+    // Imprimir el token en consola
+    console.log('tokenCookie:');
+    console.log(tokenCookie);
+    console.log('nombreIdCookie:');
+    console.log(nombreIdCookie);
+    
     // Contiene el tamaño y nombre de los barcos a usar
     const shipInfo = {
         'Aircraft': { size: 5, name: "Aircraft", img: aircraftImg, imgRotated: aircraftImgRotated},
@@ -116,9 +129,9 @@ export function Fleet() {
                             method: 'POST',
                             headers: {
                             'Content-Type': 'application/json',
-                            'authorization': tokenManual
+                            'authorization': tokenCookie
                             },
-                            body: JSON.stringify({ nombreId: 'usuario1',  barcoId: node.id-1, iProaNueva: node.y+1, jProaNueva: node.x+1})
+                            body: JSON.stringify({ nombreId: nombreIdCookie,  barcoId: node.id-1, iProaNueva: node.y+1, jProaNueva: node.x+1})
                         })
                         .then(response => {
                             if (!response.ok) {
@@ -165,9 +178,9 @@ export function Fleet() {
                 method: 'POST',
                 headers: {
                 'Content-Type': 'application/json',
-                'authorization': tokenManual
+                'authorization': tokenCookie
                 },
-                body: JSON.stringify({ nombreId: 'usuario1' })
+                body: JSON.stringify({ nombreId: nombreIdCookie })
             })
             .then(response => {
                 if (!response.ok) {
@@ -256,9 +269,9 @@ export function Fleet() {
                 method: 'POST',
                 headers: {
                 'Content-Type': 'application/json',
-                'authorization': tokenManual
+                'authorization': tokenCookie
                 },
-                body: JSON.stringify({ nombreId: 'usuario1',  barcoId: clickedNode.id-1, rotar: 1})
+                body: JSON.stringify({ nombreId: nombreIdCookie,  barcoId: clickedNode.id-1, rotar: 1})
             })
             .then(response => {
                 if (!response.ok) {
@@ -305,9 +318,9 @@ export function Fleet() {
                 method: 'POST',
                 headers: {
                 'Content-Type': 'application/json',
-                'authorization': tokenManual
+                'authorization': tokenCookie
                 },
-                body: JSON.stringify({ nombreId: 'usuario1',  mazoHabilidades: skillQueue})
+                body: JSON.stringify({ nombreId: nombreIdCookie,  mazoHabilidades: skillQueue})
             })
             .then(response => {
                 if (!response.ok) {
@@ -319,7 +332,7 @@ export function Fleet() {
                 console.error('Error:', error);
             });
         }
-    }, [skillQueue]);
+    }, [skillQueue, nombreIdCookie, tokenCookie]);
 
 
     return (
