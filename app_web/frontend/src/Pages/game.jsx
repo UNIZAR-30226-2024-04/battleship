@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Navbar } from "../Components/Navbar";
 import { GridStack } from 'gridstack';
+import Cookies from "universal-cookie";
 import '../Styles/fleet-style.css';
 import '../Styles/game-style.css';
 import 'gridstack/dist/gridstack.min.css';
@@ -33,11 +34,19 @@ const tokenManual1 = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6InVzdWFyaW8xI
 const tokenManual2 = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6InVzdWFyaW8yIiwiaWF0IjoxNzEzMDg4MzQ5LCJleHAiOjE3MTMxNzQ3NDl9.VY36pa0UsEoP5g3fDVOJWbhUAQ8_Tnn2xBIlC6Y-_v8';
 
 
+const cookies = new Cookies();
+
+
 function esBarcoHorizontal(barco) {
     return barco.coordenadas[0].i === barco.coordenadas[1].i;
 }
 
 export function Game() {    
+
+    // Obtener el token y nombreId del usuario
+    const tokenCookie = cookies.get('JWT');
+    const nombreId1Cookie = cookies.get('nombreId');
+
     // Contiene el tamaño y nombre de los barcos a usar
     const shipInfo = {
         'Aircraft': { size: 5, name: "Aircraft", img: aircraftImg, imgRotated: aircraftImgRotated},
@@ -76,7 +85,7 @@ export function Game() {
 
     let [partidaInicializada, setPartidaInicializada] = useState(false); // Estado para saber si la partida ha sido inicializada
 
-    const inicializarPartida = () => {
+    const inicializarPartidaOffline = () => {
         if (!hayPartidaInicializada()) {
             setPartidaInicializada(true);
         } else {
@@ -85,9 +94,9 @@ export function Game() {
                 method: 'POST',
                 headers: {
                 'Content-Type': 'application/json',
-                'authorization': tokenManual1
+                'authorization': tokenCookie
                 },
-                body: JSON.stringify({ nombreId1: 'usuario1', nombreId2: 'usuario2'})
+                body: JSON.stringify({ nombreId1: nombreId1Cookie, bioma: 'Mediterraneo'}) // TO DO: biomas!!!
             })
             .then(response => {
                 if (!response.ok) {
@@ -154,55 +163,6 @@ export function Game() {
             
         }, '.grid-stack.fleet-board2');
         setOpponentBoard(opponentBoard); // Almacenar la instancia de GridStack en el estado
-
-        if (myBoard) {
-            // Agregar un listener para el evento 'change'
-            myBoard.on('change', (event, nodes) => {
-                // nodes es un array de objetos que contienen la información actualizada de los widgets
-                // Aquí puedes acceder a node.x, node.y, node.w y node.h para cada widget
-                nodes.forEach(node => {
-                    // cansole.log('Widget ID:', node.id);
-                    // cansole.log('New X position:', node.x);
-                    // cansole.log('New Y position:', node.y);
-                    // cansole.log('New width:', node.w);
-                    // cansole.log('New height:', node.h);
-                    // cansole.log('New orientation:', node.info);
-
-                    // Restablecer la info del widget a noRotated
-                    if (node.info === "rotated") {
-                        node.info = "noRotated"; 
-                        // Notar que esto hace que se capture de nuevo en el evento
-                        // 'change' pero el resto de los atributos no cambian
-                    } else {
-                        node.info = "noRotated";
-                        // Aquí editar el tablero en la base de datos
-                        fetch(urlMoverBarcoInicial, {
-                            method: 'POST',
-                            headers: {
-                            'Content-Type': 'application/json',
-                            'authorization': tokenManual1
-                            },
-                            body: JSON.stringify({ nombreId: 'usuario1',  barcoId: node.id-1, iProaNueva: node.y+1, jProaNueva: node.x+1})
-                        })
-                        .then(response => {
-                            if (!response.ok) {
-                                throw new Error('La solicitud ha fallado');
-                            }
-                            return response.json();
-                        })
-                        .then(data => {
-                            if (data) {
-                                borrarWidgetsTablero(myBoard);
-                                mostrarWidgetsTablero(data.tableroInicial, myBoard);
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
-                        });
-                    }
-                })
-            });
-        }
     }, []);
 
     const mostrarWidgetsTablero = (tablero, board) => {
@@ -229,9 +189,9 @@ export function Game() {
                 method: 'POST',
                 headers: {
                 'Content-Type': 'application/json',
-                'authorization': tokenManual1
+                'authorization': tokenCookie
                 },
-                body: JSON.stringify({ nombreId: 'usuario1' })
+                body: JSON.stringify({ nombreId: nombreId1Cookie })
             })
             .then(response => {
                 if (!response.ok) {
@@ -272,13 +232,13 @@ export function Game() {
     useEffect(() => {
         // Obtener el tablero inicial del perfil en la base de datos
         console.log(hayPartidaInicializada());
-        inicializarPartida();
+        inicializarPartidaOffline();
         try {
             fetch(urlObtenerDatosPersonales, {
                 method: 'POST',
                 headers: {
                 'Content-Type': 'application/json',
-                'authorization': tokenManual2
+                'authorization': tokenCookie
                 },
                 body: JSON.stringify({ nombreId: 'usuario2' })
             })
@@ -366,9 +326,9 @@ export function Game() {
                 method: 'POST',
                 headers: {
                 'Content-Type': 'application/json',
-                'authorization': tokenManual1
+                'authorization': tokenCookie
                 },
-                body: JSON.stringify({ nombreId: 'usuario1',  mazoHabilidades: skillQueue})
+                body: JSON.stringify({ nombreId: nombreId1Cookie,  mazoHabilidades: skillQueue})
             })
             .then(response => {
                 if (!response.ok) {

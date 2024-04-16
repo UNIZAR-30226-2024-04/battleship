@@ -42,10 +42,10 @@ export function Fleet() {
     const tokenCookie = cookies.get('JWT');
     const nombreIdCookie = cookies.get('nombreId');
     // Imprimir el token en consola
-    console.log('tokenCookie:');
-    console.log(tokenCookie);
-    console.log('nombreIdCookie:');
-    console.log(nombreIdCookie);
+    // console.log('tokenCookie:');
+    // console.log(tokenCookie);
+    // console.log('nombreIdCookie:');
+    // console.log(nombreIdCookie);
     
     // Contiene el tamaño y nombre de los barcos a usar
     const shipInfo = {
