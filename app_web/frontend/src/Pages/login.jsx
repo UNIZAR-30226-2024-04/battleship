@@ -35,12 +35,12 @@ export function Login() {
             console.log('Respuesta del servidor:', responseData);
             cookies.remove('JWT');
             cookies.remove('nombreId');
-            cookies.set('JWT', data['token'], {path: '/'});
+            cookies.set('JWT', responseData['token'], {path: '/'});
             console.log('token:');
-            console.log(data['token']);
-            cookies.set('nombreId', data['perfilDevuelto']['nombreId'], {path: '/'});
+            console.log(responseData['token']);
+            cookies.set('nombreId', responseData['perfilDevuelto']['nombreId'], {path: '/'});
             console.log('nombreId:');
-            console.log(data['perfilDevuelto']['nombreId']);
+            console.log(responseData['perfilDevuelto']['nombreId']);
             // Aquí puedes manejar la respuesta, como actualizar el estado del componente o redirigir al usuario
         } catch (error) {
             console.error('Error en la solicitud:', error);
@@ -118,7 +118,7 @@ export function Login() {
                     <div className="login-banner-container">
                         <span>Iniciar sesión</span>
                     </div>
-                    <form className="login-body" name="login" method="post" onSubmit={() => handleSubmit}>
+                    <form className="login-body" name="login" method="post" onSubmit={handleSubmit}>
                         <div className="login-username-header login-header">
                             <span>Usuario</span>
                         </div>
