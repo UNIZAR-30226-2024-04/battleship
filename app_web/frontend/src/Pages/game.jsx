@@ -33,12 +33,9 @@ const urlMoverBarcoInicial = 'http://localhost:8080/perfil/moverBarcoInicial';
 const urlModificarMazoHabilidades = 'http://localhost:8080/perfil/modificarMazo';
 const urlCrearPartida = 'http://localhost:8080/partida/crearPartida';
 const urlRealizarDisparo = 'http://localhost:8080/partida/realizarDisparo';
-const tokenManual1 = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6InVzdWFyaW8xIiwiaWF0IjoxNzEzMDg4MzQ5LCJleHAiOjE3MTMxNzQ3NDl9.U9i0nJ40EMTuXFj6ETAg6geioh5raqq3NIagL4Yb4Tw';
-const tokenManual2 = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6InVzdWFyaW8yIiwiaWF0IjoxNzEzMDg4MzQ5LCJleHAiOjE3MTMxNzQ3NDl9.VY36pa0UsEoP5g3fDVOJWbhUAQ8_Tnn2xBIlC6Y-_v8';
-
+const urlMostrarTableros = 'http://localhost:8080/partida/mostrarTableros';
 
 const cookies = new Cookies();
-let idPartida;
 
 
 function esBarcoHorizontal(barco) {
@@ -61,7 +58,12 @@ export function Game() {
         'Patrol': { size: 2, name: "Patrol", img: patrolImg, imgRotated: patrolImgRotated},
     };
 
-    let tableroInicial = [];
+    // Datos partida
+    let idPartida;
+    let tablero1;
+    let tablero2;
+    let disparos1;
+    let disparos2;
 
     // cola fifo para las skills de tamaño 3
     let [skillQueue, setSkillQueue] = useState(["null"]); // Estado para la cola de habilidades
@@ -110,8 +112,12 @@ export function Game() {
                 return response.json();
             })
             .then(data => {
-                console.log(data);
+                console.log('Partida creada:');
                 idPartida = data.partida.idPartida;
+                console.log(data.partida.idPartida);
+                tablero1 = data.partida.tablero1;
+                tablero2 = data.partida.tablero2;
+                console.log('tableros guardados');
             })
             .catch(error => {
                 console.error('Error:', error);
@@ -194,13 +200,16 @@ export function Game() {
     useEffect(() => {
         // Obtener el tablero inicial del perfil en la base de datos
         try {
-            fetch(urlObtenerDatosPersonales, {
+            console.log('Obteniendo tablero inicial...');
+            console.log('idPartida:', idPartida);
+            console.log('nombreId:', nombreId1Cookie);
+            fetch(urlMostrarTableros, {
                 method: 'POST',
                 headers: {
                 'Content-Type': 'application/json',
                 'authorization': tokenCookie
                 },
-                body: JSON.stringify({ nombreId: nombreId1Cookie })
+                body: JSON.stringify({ codigo: idPartida, nombreId: nombreId1Cookie})
             })
             .then(response => {
                 if (!response.ok) {
@@ -209,7 +218,10 @@ export function Game() {
                 return response.json();
             })
             .then(data => {
-                tableroInicial = data.tableroInicial;
+                tablero1 = data.tableroBarcos1;
+                disparos1 = data.disparosRealizados1;
+                tablero2 = data.tableroBarcos2;
+                disparos2 = data.disparosRealizados2;
                 // const tableroInicial = [
                 //     [{ i: 1, j: 1 }, { i: 1, j: 2 }],
                 //     [{ i: 7, j: 1 }, { i: 8, j: 1 }, { i: 9, j: 1 }],
@@ -218,65 +230,9 @@ export function Game() {
                 //     [{ i: 10, j: 6 }, { i: 10, j: 7 }, { i: 10, j: 8 }, { i: 10, j: 9 }, { i: 10, j: 10 }]
                 //   ];
                 borrarWidgetsTablero(myBoard);
-                mostrarWidgetsTablero(tableroInicial, myBoard);
-                if (data.mazoHabilidades) {
-                    if (isSkillEnqueued("null")) {
-                        setSkillQueue([]);
-                    }
-                    for (let i = 0; i < data.mazoHabilidades.length; i++) {
-                        enqueueSkill(data.mazoHabilidades[i]);
-                    }
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            });
-        } catch (error) {
-            console.error('Error:', error);
-        }
-        
-    }, [myBoard]);
-
-    // Este efecto se ejecuta cuando myBoard cambia
-    useEffect(() => {
-        // Obtener el tablero inicial del perfil en la base de datos
-        console.log(hayPartidaInicializada());
-        inicializarPartidaOffline();
-        try {
-            fetch(urlObtenerDatosPersonales, {
-                method: 'POST',
-                headers: {
-                'Content-Type': 'application/json',
-                'authorization': tokenCookie
-                },
-                body: JSON.stringify({ nombreId: 'usuario2' })
-            })
-            .then(response => {
-                if (!response.ok) {
-                throw new Error('La solicitud ha fallado');
-                }
-                return response.json();
-            })
-            .then(data => {
-                console.log(data);
-                tableroInicial = data.tableroInicial;
-                // const tableroInicial = [
-                //     [{ i: 1, j: 1 }, { i: 1, j: 2 }],
-                //     [{ i: 7, j: 1 }, { i: 8, j: 1 }, { i: 9, j: 1 }],
-                //     [{ i: 3, j: 10 }, { i: 4, j: 10 }, { i: 5, j: 10 }],
-                //     [{ i: 3, j: 6 }, { i: 4, j: 6 }, { i: 5, j: 6 }, { i: 6, j: 6 }],
-                //     [{ i: 10, j: 6 }, { i: 10, j: 7 }, { i: 10, j: 8 }, { i: 10, j: 9 }, { i: 10, j: 10 }]
-                //   ];
+                mostrarWidgetsTablero(tablero1, myBoard);
                 borrarWidgetsTablero(opponentBoard);
-                mostrarWidgetsTablero(tableroInicial, opponentBoard);
-                if (data.mazoHabilidades) {
-                    if (isSkillEnqueued("null")) {
-                        setSkillQueue([]);
-                    }
-                    for (let i = 0; i < data.mazoHabilidades.length; i++) {
-                        enqueueSkill(data.mazoHabilidades[i]);
-                    }
-                }
+                mostrarWidgetsTablero(tablero2, opponentBoard);
             })
             .catch(error => {
                 console.error('Error:', error);
@@ -285,8 +241,7 @@ export function Game() {
             console.error('Error:', error);
         }
         
-    }, [opponentBoard]);
-    
+    }, [myBoard, opponentBoard]);
 
 
     // Función que añade un elemento a la cuadrícula
