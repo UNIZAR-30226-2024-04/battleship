@@ -8,11 +8,11 @@ mongoose.connect('mongodb://localhost/BattleshipDB')
     try {
       // Lista de partidas a crear
       const partidas = [
-        {nombreId1: 'usuario1', nombreId2: 'usuario2', bioma: 'Norte'}, 
-        {nombreId1: 'usuario1', nombreId2: 'usuario2', bioma: 'Norte', extra: 1},  // Sobran campos
-        {nombreId1: 'usuario1', bioma: 'Norte'}, // Falta un jugador
-        {nombreId1: 'usuario1', nombreId2: 'usuario2', bioma: 'Murcia'},  // Bioma no disponible
-        {nombreId1: 'usuario1', nombreId2: 'usuario5', bioma: 'Norte'} // No existe un jugador
+        {nombreId1: 'usuario1', bioma: 'Norte'}, 
+        // {nombreId1: 'usuario1', nombreId2: 'usuario2', bioma: 'Norte', extra: 1},  // Sobran campos
+        // {nombreId1: 'usuario1', bioma: 'Norte'}, // Jugador ya en partida
+        // {nombreId1: 'usuario1', nombreId2: 'usuario2', bioma: 'Murcia'},  // Bioma no disponible
+        // {nombreId1: 'usuario1', nombreId2: 'usuario5', bioma: 'Norte'} // No existe un jugador
       ];
       // Itera sobre la lista de partidas y crea cada una
       for (const partida of partidas) {

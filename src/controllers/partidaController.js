@@ -43,19 +43,11 @@ function dispararCoordenada(tablero, i, j) {
 }
 
 // Función para verificar si el barco que irá en la posición barcoId colisiona con otros barcos
-function barcoColisiona(tablero, barco, barcoId) {
+function barcoColisionaPrevios(tablero, barcoCoordenadas, barcoId) {
+  if (tablero.length === 0) return false;
   for (let i = 0; i < barcoId; i++) { // Recorrer los otros barcos
     for (const coordenada of tablero[i].coordenadas) {
-      for (const nuevaCoordenada of barco) {
-        if (coordenada.i === nuevaCoordenada.i && coordenada.j === nuevaCoordenada.j) {
-          return true; // Hay colisión
-        }
-      }
-    }
-  }
-  for (let i = barcoId + 1; i < tablero.length; i++) {
-    for (const coordenada of tablero[i].coordenadas) { // Recorrer los otros barcos
-      for (const nuevaCoordenada of barco) {
+      for (const nuevaCoordenada of barcoCoordenadas) {
         if (coordenada.i === nuevaCoordenada.i && coordenada.j === nuevaCoordenada.j) {
           return true; // Hay colisión
         }
@@ -70,31 +62,33 @@ function barcoColisiona(tablero, barco, barcoId) {
 function generarTableroAleatorio() {
   let tablero = [];
   for (let barco of barcosDisponibles) {
-    let barcoGenerado = false;
-    while (!barcoGenerado) {
+    let barcoId = barcosDisponibles.indexOf(barco);
+    let barcoLongitud = barcoId === 0 ? 2 : barcoId === 1 ? 3 :
+      barcoId === 2 ? 3 : barcoId === 3 ? 4 : 5;
+    while (true) {
+      // Definir orientación y coordenadas iniciales
       let orientacion = Math.random() < 0.5;
-      let i = Math.floor(Math.random() * tableroDim) + 1;
-      let j = Math.floor(Math.random() * tableroDim) + 1;
+      if (orientacion) { // Horizontal
+        i = Math.floor(Math.random() * tableroDim) + 1;
+        j = Math.floor(Math.random() * (tableroDim - barcoLongitud + 1)) + 1;
+      } else { // Vertical
+        i = Math.floor(Math.random() * (tableroDim - barcoLongitud + 1)) + 1;
+        j = Math.floor(Math.random() * tableroDim) + 1;
+      }
+      // Completa las coordenadas del barco
       let coordenadas = [];
-      let barcoLongitud = barcosDisponibles.indexOf(barco) === 0 ? 2 : 
-        barcosDisponibles.indexOf(barco) === 1 ? 3 :
-        barcosDisponibles.indexOf(barco) === 2 ? 3 :
-        barcosDisponibles.indexOf(barco) === 3 ? 4 : 5;
       for (let k = 0; k < barcoLongitud; k++) {
         if (orientacion) { // Horizontal
-          coordenadas.push( { i: i + k, j, estado: 'Agua' });
-        } else { // Vertical
           coordenadas.push( { i, j: j + k, estado: 'Agua' });
+        } else { // Vertical
+          coordenadas.push( { i: i + k, j, estado: 'Agua' });
         }
       }
-      // Comprobar si el barco colisiona con otros barcos
-      for (let i = 0; i < tablero.length; i++) {
-        if (barcoColisiona(tablero, coordenadas, i)) {
-          continue;
-        }
+      // Comprueba si el barco colisiona con otros barcos
+      if (!barcoColisionaPrevios(tablero, coordenadas, barcoId)) {
+        tablero.push({ coordenadas: coordenadas, tipo: barco });
+        break;
       }
-      tablero.push({ coordenadas: coordenadas, tipo: barco });
-      barcoGenerado = true;
     }
   }
   return tablero;
@@ -135,7 +129,7 @@ function generarDisparoAleatorio(disparosRealizados) {
  */
 exports.crearPartida = async (req, res) => {
   try {
-    const { _id1, _id2, nombreId1, nombreId2, bioma, amistosa = 'Mediterraneo', ...extraParam } = req.body;
+    const { _id1, _id2, nombreId1, nombreId2, bioma = 'Mediterraneo', amistosa, ...extraParam } = req.body;
     // Verificar si hay algún parámetro extra
     if (Object.keys(extraParam).length > 0) {
       res.status(400).send('Sobran parámetros, se espera nombreId1 (o _id1), nombreId2 (o _id2) y bioma');
@@ -213,15 +207,14 @@ exports.crearPartida = async (req, res) => {
         { new: true } // Para devolver el documento actualizado
       );
     }
-
     const partida = new Partida({ 
       codigo, 
       nombreId1, 
-      nombreId2: (nombreId2 === undefined) ? undefined : nombreId2,
+      nombreId2,
       tableroBarcos1,
       tableroBarcos2,
       bioma,
-      amistosa: (amistosa === true) ? true : false
+      amistosa
     });
 
     const partidaGuardada = await partida.save();
