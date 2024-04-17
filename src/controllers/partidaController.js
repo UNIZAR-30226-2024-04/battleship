@@ -261,7 +261,7 @@ exports.mostrarMiTablero = async (req, res) => {
     const partida = await Partida.findOne(filtro);
     if (partida) {
       const jugador1 = await Perfil.findOne({ nombreId: partida.nombreId1 });
-      const jugador2 = { nombreId: "IA" };
+      let jugador2 = { nombreId: "IA" };
       if (partida.nombreId2) {
         jugador2 = await Perfil.findOne({ nombreId: partida.nombreId2 });
       }
@@ -330,7 +330,7 @@ exports.mostrarTableroEnemigo = async (req, res) => {
     const partida = await Partida.findOne(filtro);
     if (partida) {
       const jugador1 = await Perfil.findOne({ nombreId: partida.nombreId1 });
-      const jugador2 = { nombreId: "IA" };
+      let jugador2 = { nombreId: "IA" };
       if (partida.nombreId2) {
         jugador2 = await Perfil.findOne({ nombreId: partida.nombreId2 });
       }
@@ -398,7 +398,7 @@ exports.mostrarTableros = async (req, res) => {
     const partida = await Partida.findOne(filtro);
     if (partida) {      
       const jugador1 = await Perfil.findOne({ nombreId: partida.nombreId1 });
-      const jugador2 = { nombreId: "IA" };
+      let jugador2 = { nombreId: "IA" };
       if (partida.nombreId2) {
         jugador2 = await Perfil.findOne({ nombreId: partida.nombreId2 });
       }
@@ -487,7 +487,7 @@ exports.realizarDisparo = async (req, res) => {
     const partida = await Partida.findOne(filtro);
     if (partida) {
       const jugador1 = await Perfil.findOne({ nombreId: partida.nombreId1 });
-      const jugador2 = { nombreId: "IA" };
+      let jugador2 = { nombreId: "IA" };
       if (partida.nombreId2) {
         jugador2 = await Perfil.findOne({ nombreId: partida.nombreId2 });
       }
