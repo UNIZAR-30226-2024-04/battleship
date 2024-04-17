@@ -1,0 +1,17 @@
+#tablero {
+    position: absolute;
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    grid-template-rows: repeat(10, 1fr);
+    gap: 0;
+    width: 100%;
+    height: 100%;
+    border: 1px solid rgb(0, 245, 74);
+    z-index: 100;
+}
+  
+
+.casilla:hover {
+background-color: rgba(73, 73, 81, 0.771); /* Puedes cambiar el color aquí */
+}
+  

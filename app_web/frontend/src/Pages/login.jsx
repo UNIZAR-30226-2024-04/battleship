@@ -4,6 +4,7 @@ import Cookies from 'universal-cookie';
 
 const iniciarSesionURI = 'http://localhost:8080/perfil/iniciarSesion';
 
+
 export function Login() {
     const handleSubmit = async (e) => {
         e.preventDefault(); // Previene el comportamiento por defecto del formulario
@@ -109,7 +110,20 @@ export function Login() {
         //     console.error('Error:', error);
         // }
     //}
-    
+
+    /*
+                    <ToastContainer
+                    position="top-right"
+                    autoClose={5000}
+                    hideProgressBar={false}
+                    newestOnTop={false}
+                    closeOnClick
+                    rtl={false}
+                    pauseOnFocusLoss
+                    draggable
+                    pauseOnHover
+                />
+    */
     return (
         <div className="login-page-container">
             <Navbar/>

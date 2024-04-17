@@ -7,6 +7,8 @@ import '../Styles/game-style.css';
 import 'gridstack/dist/gridstack.min.css';
 import 'gridstack/dist/gridstack-extra.min.css';
 
+import Tablero from '../Resources/Tablero';
+
 import aircraftImg from '../Images/fleet/portaaviones.png';
 import destroyImg from '../Images/fleet/destructor.png';
 import patrolImg from '../Images/fleet/patrullero.png';
@@ -30,11 +32,13 @@ const urlObtenerDatosPersonales = 'http://localhost:8080/perfil/obtenerDatosPers
 const urlMoverBarcoInicial = 'http://localhost:8080/perfil/moverBarcoInicial';
 const urlModificarMazoHabilidades = 'http://localhost:8080/perfil/modificarMazo';
 const urlCrearPartida = 'http://localhost:8080/partida/crearPartida';
+const urlRealizarDisparo = 'http://localhost:8080/partida/realizarDisparo';
 const tokenManual1 = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6InVzdWFyaW8xIiwiaWF0IjoxNzEzMDg4MzQ5LCJleHAiOjE3MTMxNzQ3NDl9.U9i0nJ40EMTuXFj6ETAg6geioh5raqq3NIagL4Yb4Tw';
 const tokenManual2 = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6InVzdWFyaW8yIiwiaWF0IjoxNzEzMDg4MzQ5LCJleHAiOjE3MTMxNzQ3NDl9.VY36pa0UsEoP5g3fDVOJWbhUAQ8_Tnn2xBIlC6Y-_v8';
 
 
 const cookies = new Cookies();
+let idPartida;
 
 
 function esBarcoHorizontal(barco) {
@@ -46,6 +50,7 @@ export function Game() {
     // Obtener el token y nombreId del usuario
     const tokenCookie = cookies.get('JWT');
     const nombreId1Cookie = cookies.get('nombreId');
+    
 
     // Contiene el tamaño y nombre de los barcos a usar
     const shipInfo = {
@@ -106,6 +111,7 @@ export function Game() {
             })
             .then(data => {
                 console.log(data);
+                idPartida = data.partida.idPartida;
             })
             .catch(error => {
                 console.error('Error:', error);
@@ -123,6 +129,9 @@ export function Game() {
     const [myBoard, setMyBoard] = useState(null); // Estado para almacenar la instancia de GridStack
     const [opponentBoard, setOpponentBoard] = useState(null); // Estado para almacenar la instancia de GridStack
     const [count, setCount] = useState(0); // Estado para contar widgets
+
+
+
 
     // Este efecto se ejecuta solo una vez después del montaje inicial del componente
     useEffect(() => {
@@ -312,9 +321,25 @@ export function Game() {
         // saber en qué celda del tablero rival se ha clickado
         const cell = event.target;
         const cellId = cell.id;
+        console.log('Celda:', cellId);
         if (cellId) {
-            // TO-DO: Implementar disparos
-            console.log('Celda:', cellId);
+            const response = fetch(urlRealizarDisparo, {
+                method: 'POST',
+                headers: {
+                'Content-Type': 'application/json',
+                'authorization': tokenCookie
+                },
+                body: JSON.stringify({ idPartida: idPartida, nombreId: nombreId1Cookie, i: cellId[1], j: cellId[3]})
+                
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const responseData = response.json(); // Suponiendo que el backend devuelve JSON
+            console.log('Respuesta del servidor al disparar:', responseData);
+            
         }
 
     };
@@ -352,7 +377,9 @@ export function Game() {
                         ¡A batallar!
                     </h1>
                     <div className="fleet-main-content-container">
-                        <div className="grid-stack fleet-board1"></div>
+                        <div className="grid-stack fleet-board1">
+                            <Tablero id="tablero" className='tablero-overlay' />
+                        </div>
                         <div className="fleet-board-separator"></div>
                         <div className="grid-stack fleet-board2" onClick={handleItemClick}></div>
                     </div>
