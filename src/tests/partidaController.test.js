@@ -7,7 +7,8 @@ const Partida = require('../models/partidaModel');
 const mongoURI = 'mongodb://localhost/BattleshipDB';
 mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true, 
   useCreateIndex: true, useFindAndModify: false});
-
+const Coordenada = require('../data/coordenada')
+const tableroDim = Coordenada.i.max;  // Dimensiones del tablero
 // redirect console.log and console.error to /dev/null
 console.error = function() {};
 console.log = function() {};
@@ -523,9 +524,9 @@ describe("Realizar disparo contra la IA", () => {
       let j = 0;
       let encontrado = false;
       while (!encontrado) {
-          i = Math.floor(Math.random() * 10);
-          j = Math.floor(Math.random() * 10);
-          const barco = dispararCoordenada(partida.tableroBarcos2, i, j);
+          i = Math.floor(Math.random() * tableroDim) + 1;
+          j = Math.floor(Math.random() * tableroDim) + 1;
+          let barco = dispararCoordenada(partida.tableroBarcos2, i, j);
           if (!barco) break;
       }
 
@@ -537,7 +538,7 @@ describe("Realizar disparo contra la IA", () => {
       } catch (error) {}
       expect(res.statusCode).toBe(undefined);
       expect(res._json.disparoRealizado.estado).toBe('Agua');
-      expect(res._json.turnosIA.length).toBeMoreThan(0);
+      expect(res._json.turnosIA.length).toBeGreaterThan(0);
   });
 });
 

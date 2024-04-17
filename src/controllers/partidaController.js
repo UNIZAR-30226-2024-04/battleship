@@ -1,6 +1,6 @@
 const Partida = require('../models/partidaModel');
 const Perfil = require('../models/perfilModel');
-const Coordenada = require('../data/coordenada')
+const Coordenada = require('../data/coordenada');
 const Tablero = require('../data/tablero');
 const {barcosDisponibles} = require('../data/barco');
 const biomasDisponibles = require('../data/biomas');
@@ -486,7 +486,7 @@ exports.realizarDisparo = async (req, res) => {
     const filtro = _id ? { _id: _id } : { codigo: codigo };
     const partida = await Partida.findOne(filtro);
     if (partida) {
-      const jugador1 = await Perfil.findOne({ nombreId: partida.nombreId1 });
+      let jugador1 = await Perfil.findOne({ nombreId: partida.nombreId1 });
       let jugador2 = { nombreId: "IA" };
       if (partida.nombreId2) {
         jugador2 = await Perfil.findOne({ nombreId: partida.nombreId2 });
@@ -555,11 +555,6 @@ exports.realizarDisparo = async (req, res) => {
       }
 
       if (finPartida ) {
-        let jugador1 = await Perfil.findOne({ nombreId: partida.nombreId1 });
-        let jugador2 = {nombreId: 'IA'};
-        if (partida.nombreId2) {
-          jugador2 = await Perfil.findOne({ nombreId: partida.nombreId2 });
-        }
         if (jugador === 1) {
           estadisticasJugadores[0].victoria = 1;
           estadisticasJugadores[1].victoria = 0;
@@ -592,7 +587,7 @@ exports.realizarDisparo = async (req, res) => {
           let posibleDisparoIA = generarDisparoAleatorio(partida.disparosRealizados2);
           let barcoDisparadoIA = dispararCoordenada(partida.tableroBarcos1, 
             posibleDisparoIA.i, posibleDisparoIA.j);
-            let disparoIA = { i: disparoIA.i, j: disparoIA.j, estado: 'Agua' };
+          let disparoIA = { i: posibleDisparoIA.i, j: posibleDisparoIA.j, estado: 'Agua' };
           if (barcoDisparadoIA) {
             disparoIA.estado = 'Tocado';
             if (barcoDisparado.coordenadas.every(coordenada => coordenada.estado === 'Tocado')) {
@@ -604,7 +599,7 @@ exports.realizarDisparo = async (req, res) => {
           partida.disparosRealizados2.push(disparoIA);
 
           // Comprobar si la partida ha terminado
-          finPartidaIA = partida.tableroBarcos1.every(barco =>
+          let finPartidaIA = partida.tableroBarcos1.every(barco =>
             barco.coordenadas.every(coordenada => coordenada.estado === 'Hundido'));
           if (finPartidaIA) {
             partida.ganador = 'IA';
@@ -618,6 +613,7 @@ exports.realizarDisparo = async (req, res) => {
             clima: partida.clima
           };
           turnosIA.push(turnoIA);
+          console.log('turnosIA:',turnosIA.length);
           juegaIA = disparoIA.estado !== 'Agua' && !finPartidaIA;
         }
       }
