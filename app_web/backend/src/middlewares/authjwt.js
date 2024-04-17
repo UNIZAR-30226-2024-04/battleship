@@ -16,7 +16,8 @@ const verificarToken = async (req, res, next) => {
             console.error('No autorizado');
             return res.status(401).send({ message: 'No autorizado' });
         }
-        if (decoded.id !== req.body.nombreId && decoded.id !== req.body.nombreId1) {
+        const nombreId = (req.body.nombreId ? req.body.nombreId : req.body.nombreId1)
+        if (decoded.id !== nombreId) {
             console.error('El token no corresponde al usuario');
             return res.status(401).send({ message: 'El token no corresponde al usuario' });
         }

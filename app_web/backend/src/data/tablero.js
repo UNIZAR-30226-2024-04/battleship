@@ -11,9 +11,9 @@
  * @example { barcos: [ { coordenadas: [ { x: 1, y: 1 }, { x: 1, y: 2 } ] } ] }
  */
 
-const Barco = require('./barco');
+const {Barco} = require('./barco');
 
 // Definir el tipo de datos Tablero
 const Tablero = [Barco];
-    
+
 module.exports = Tablero;

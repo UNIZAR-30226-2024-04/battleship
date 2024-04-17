@@ -6,7 +6,7 @@ const habilidadesDisponibles = require('../data/habilidades')
 const paisesDisponibles = require('../data/paises')
 const Coordenada = require('../data/coordenada');
 const config = require('../config/auth.config');
-const { coordenadas } = require('../data/barco');
+const {barcosDisponibles} = require('../data/barco');
 /**
  * @module controllers/perfil
  * @description Funciones para el manejo de perfiles de usuario.
@@ -43,8 +43,7 @@ function esNumero(numero) {
 // Funcion para crear un token de sesión
 function crearToken(perfil) {
   // Si el nombre de usuario y la contraseña son válidos, generar un token JWT
-  const salt = crypto.randomBytes(16).toString('hex'); // Generar una clave secreta aleatoria
-  const token = jwt.sign({id: perfil.nombreId, salt: salt }, config.secret, 
+  const token = jwt.sign({id: perfil.nombreId}, config.secret, 
     { algorithm: 'HS256', expiresIn: 86400 }); // Expira en 24 horas
   return token;
 }
@@ -115,17 +114,16 @@ crearPerfil = async (req, res) => {
     // Notación matricial
     const tableroInicial = [
       {coordenadas: [{ i: 1, j: 1 }, { i: 1, j: 2 }],
-       tipo: 'Acorazado'},
+       tipo: barcosDisponibles[0]},
       {coordenadas: [{ i: 7, j: 1 }, { i: 8, j: 1 }, { i: 9, j: 1 }],
-       tipo: 'Destructor'},
+       tipo: barcosDisponibles[1]},
       {coordenadas: [{ i: 3, j: 10 }, { i: 4, j: 10 }, { i: 5, j: 10 }], 
-       tipo: 'Submarino'},
+       tipo: barcosDisponibles[2]},
       {coordenadas: [{ i: 3, j: 6 }, { i: 4, j: 6 }, { i: 5, j: 6 }, { i: 6, j: 6 }],
-       tipo: 'Patrullera'},
+       tipo: barcosDisponibles[3]},
       {coordenadas: [{ i: 10, j: 6 }, { i: 10, j: 7 }, { i: 10, j: 8 }, { i: 10, j: 9 }, { i: 10, j: 10 }], 
-       tipo: 'Portaviones'}
+       tipo: barcosDisponibles[4]}
     ];
-      
     
     // Creación del perfil en la base de datos
     const nuevoPerfil = new Perfil({
@@ -187,6 +185,7 @@ exports.obtenerUsuario = async (req, res) => {
       perfilDevuelto.tableroInicial = undefined; // No enviar el tablero inicial en la respuesta
       perfilDevuelto.mazoHabilidades = undefined; // No enviar el mazo de habilidades en la respuesta
       perfilDevuelto.correo = undefined; // No enviar el correo en la respuesta
+      perfilDevuelto._id = undefined; // No enviar el _id en la respuesta
       res.json(perfilDevuelto);
       console.log("Perfil obtenido con éxito");
     } else {
@@ -237,6 +236,22 @@ exports.obtenerDatosPersonales = async (req, res) => {
     if (perfil) {
       const perfilDevuelto = perfil;
       perfilDevuelto.contraseña = undefined; // No enviar la contraseña en la respuesta
+      perfilDevuelto._id = undefined; // No enviar el _id en la respuesta
+      // Para cada habilidad en el mazo, eliminar el _id
+      if (perfilDevuelto.mazoHabilidades) {
+        perfilDevuelto.mazoHabilidades.forEach(habilidad => {
+          habilidad._id = undefined;
+        });
+      }
+      // Para cada barco en el tablero, eliminar el _id y dentro de cada coordenada, eliminar el _id
+      if (perfilDevuelto.tableroInicial) {
+        perfilDevuelto.tableroInicial.forEach(barco => {
+          barco._id = undefined;
+          barco.coordenadas.forEach(coordenada => {
+            coordenada._id = undefined;
+          });
+        });
+      }
       res.json(perfilDevuelto);
       console.log("Datos personales obtenidos con éxito");
     } else {
@@ -398,6 +413,7 @@ exports.eliminarUsuario = async (req, res) => {
  * @param {string} req.body.contraseña - La contraseña debe tener al menos 8 caracteres, 1 minúsucla, 1 mayúscula, 1 dígito y un caracter especial.
  * @param {string} req.body.correo - El correo debe tener un formato válido.
  * @param {Object} res - El objeto de respuesta HTTP.
+ * @param {Object} res.perfilDevuelto - perfil correspondiente al nombre y contraseña, sin la contraseña por seguridad.
  * @param {string} res.token - El token de sesión del perfil.
  * @example
  * perfil = { nombreId: 'usuario4', contraseña: 'Passwd4.', correo: 'usuario4@example.com' };
@@ -411,10 +427,25 @@ exports.registrarUsuario = async (req, res) => {  // Requiere nombreId (o _id), 
     const perfil = await crearPerfil(req, res);
     if (perfil) {
       const token = crearToken(perfil);
-      console.log(token);
       // Enviar el token como respuesta al cliente
       perfilDevuelto = perfil;
       perfilDevuelto.contraseña = undefined; // No enviar la contraseña en la respuesta
+      perfilDevuelto._id = undefined; // No enviar el _id en la respuesta
+      // Para cada habilidad en el mazo, eliminar el _id
+      if (perfilDevuelto.mazoHabilidades) {
+        perfilDevuelto.mazoHabilidades.forEach(habilidad => {
+          habilidad._id = undefined;
+        });
+      }
+      // Para cada barco en el tablero, eliminar el _id y dentro de cada coordenada, eliminar el _id
+      if (perfilDevuelto.tableroInicial) {
+        perfilDevuelto.tableroInicial.forEach(barco => {
+          barco._id = undefined;
+          barco.coordenadas.forEach(coordenada => {
+            coordenada._id = undefined;
+          });
+        });
+      }
       const data = {
         perfilDevuelto,
         token
@@ -438,6 +469,7 @@ exports.registrarUsuario = async (req, res) => {  // Requiere nombreId (o _id), 
  * @param {string} [req.body.nombreId] - El perfil debe existir en la base de datos.
  * @param {string} req.body.contraseña
  * @param {Object} res - El objeto de respuesta HTTP.
+ * @param {Object} res.perfilDevuelto - perfil correspondiente al nombre y contraseña, sin la contraseña por seguridad.
  * @param {string} res.token - El token de sesión del perfil.
  * @example
  * perfil = { nombreId: 'usuario1', contraseña: 'Passwd1.'};
@@ -454,6 +486,22 @@ exports.iniciarSesion = async (req, res) => { // Requiere nombreId (o _id) y con
       // Enviar el token como respuesta al cliente
       perfilDevuelto = perfil;
       perfilDevuelto.contraseña = undefined; // No enviar la contraseña en la respuesta
+      perfilDevuelto._id = undefined; // No enviar el _id en la respuesta
+      // Para cada habilidad en el mazo, eliminar el _id
+      if (perfilDevuelto.mazoHabilidades) {
+        perfilDevuelto.mazoHabilidades.forEach(habilidad => {
+          habilidad._id = undefined;
+        });
+      }
+      // Para cada barco en el tablero, eliminar el _id y dentro de cada coordenada, eliminar el _id
+      if (perfilDevuelto.tableroInicial) {
+        perfilDevuelto.tableroInicial.forEach(barco => {
+          barco._id = undefined;
+          barco.coordenadas.forEach(coordenada => {
+            coordenada._id = undefined;
+          });
+        });
+      }
       const data = {
         perfilDevuelto,
         token
@@ -820,8 +868,15 @@ exports.actualizarEstadisticas = async (req, res) => {
       console.error("Falta el nombreId o _id en la solicitud");
       return;
     }
+    if (victoria !== undefined) {
+      if (!esNumero(victoria) || (victoria !== 0 && victoria !== 1)) {
+        res.status(400).send('La victoria debe ser 0 o 1');
+        console.error("La victoria debe ser 0 o 1");
+        return;
+      }
+    }
     // Verificar que las estadísticas son numéricas
-    if (!esNumero(victoria) || !esNumero(nuevosBarcosHundidos) || !esNumero(nuevosBarcosPerdidos) || 
+    if (!esNumero(nuevosBarcosHundidos) || !esNumero(nuevosBarcosPerdidos) || 
       !esNumero(nuevosDisparosAcertados) || !esNumero(nuevosDisparosFallados) || !esNumero(nuevosTrofeos)) {
         res.status(400).send('Las estadísticas deben ser numéricas');
         console.error("Las estadísticas deben ser numéricas");
@@ -833,8 +888,8 @@ exports.actualizarEstadisticas = async (req, res) => {
       filtro, // Filtro para encontrar el perfil a modificar
       {
         $inc: {
-          partidasJugadas: 1,
-          partidasGanadas: victoria ? 1 : 0,
+          partidasJugadas: (victoria === undefined) ? 0 : 1,
+          partidasGanadas: (victoria === 1) ? 1 : 0,
           barcosHundidos: nuevosBarcosHundidos,
           barcosPerdidos: nuevosBarcosPerdidos,
           disparosAcertados: nuevosDisparosAcertados,

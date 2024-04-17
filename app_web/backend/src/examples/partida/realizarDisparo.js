@@ -6,20 +6,20 @@ mongoose.connect('mongodb://localhost/BattleshipDB')
   .then(async () => {
     console.log('Conectado a MongoDB...');
     try {
-      const codigo = 666531997202;
+      const codigo = 587819398598;
       // Lista de disparos realizados a crear
       const disparos = [
-        {codigo: codigo, jugador: 1, i: 1, j: 1}, // Tocado
-        {codigo: codigo, jugador: 1, i: 1, j: 2}, // No es el turno del jugador
-        {codigo: codigo, jugador: 2, i: 1, j: 1}, 
-        {codigo: codigo, jugador: 1, i: 1, j: 2}, // Hundido
-        {codigo: codigo, jugador: 2, i: 1, j: 3}, // Agua
-        {codigo: codigo, jugador: 1, i: 1, j: 1}, // Repetido
-        {codigo: codigo, jugador: 1, i: 1, j: 3, extra: 1}, // Sobran campos
-        {jugador: 1, i: 1, j: 3}, // Faltan campos
-        {codigo: codigo, jugador: 3, i: 1, j: 3}, // Jugador inválido
-        {codigo: codigo, jugador: 1, i: -1, j: 11}, // Disparo inválido
-        {codigo: 1, jugador: 1, i: 1, j: 3}, // Partida no existente
+        // {codigo: codigo, nombreId: 1, i: 1, j: 1}, // Tocado
+        // {codigo: codigo, nombreId: 1, i: 1, j: 2}, // No es el turno del jugador
+        // {codigo: codigo, nombreId: 2, i: 1, j: 1}, 
+        // {codigo: codigo, nombreId: 1, i: 1, j: 2}, // Hundido
+        {codigo: codigo, nombreId: 'usuario1', i: 1, j: 3}, // Agua
+        // {codigo: codigo, nombreId: 1, i: 1, j: 1}, // Repetido
+        // {codigo: codigo, nombreId: 1, i: 1, j: 3, extra: 1}, // Sobran campos
+        // {nombreId: 1, i: 1, j: 3}, // Faltan campos
+        // {codigo: codigo, nombreId: 3, i: 1, j: 3}, // nombreId inválido
+        // {codigo: codigo, nombreId: 1, i: -1, j: 11}, // Disparo inválido
+        // {codigo: 1, nombreId: 1, i: 1, j: 3}, // Partida no existente
       ];
 
       // Itera sobre la lista de disparos y los genera

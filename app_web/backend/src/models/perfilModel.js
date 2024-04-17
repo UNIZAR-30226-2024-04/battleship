@@ -50,7 +50,7 @@ const perfilSchema = new Schema({
   pais: {                   // País de residencia del usuario
     type: String, 
     enum: paisesDisponibles,
-    default: 'Desconocido' 
+    default: ''
   },
   listaAmigos: {             // Lista de amigos del usuario
     type: [String],          // Lista de nombreId
@@ -105,6 +105,10 @@ const perfilSchema = new Schema({
   disparosFallados: { 
     type: Number, 
     default: 0 
+  },
+  codigoPartidaActual: {      // Código de la partida actual
+    type: Number,
+    default: -1
   }
 });
 

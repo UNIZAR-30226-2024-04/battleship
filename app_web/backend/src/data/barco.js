@@ -11,9 +11,9 @@ const Coordenada = require('./coordenada');
  * @description Tipos de barco posibles, con sus respectivos nombres
  * @enum {String}
  * @readonly
- * @default ['Acorazado', 'Destructor', 'Submarino', 'Patrullera', 'Portaviones']]
+ * @default ['Patrullero', 'Destructor', 'Submarino', 'Acorazado', 'Portaviones']
  */
-const barcosDisponibles = ['Acorazado', 'Destructor', 'Submarino', 'Patrullera', 'Portaviones'];
+const barcosDisponibles = ['Patrullero', 'Destructor', 'Submarino', 'Acorazado', 'Portaviones'];
 
 /**
  * @typedef {Object} Barco
@@ -29,4 +29,5 @@ const Barco = {
     tipo: { type: String, required: true, enum: barcosDisponibles }
 };
   
-module.exports = Barco;
+module.exports.Barco = Barco;
+module.exports.barcosDisponibles = barcosDisponibles;
