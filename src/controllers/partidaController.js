@@ -586,8 +586,8 @@ exports.realizarDisparo = async (req, res) => {
         console.log("Turno de la IA");
         let juegaIA = true;
         while (juegaIA) {
-          let posibleDisparoIA = generarDisparoAleatorio(partida.disparosRealizados2);
-          let barcoDisparadoIA = dispararCoordenada(partida.tableroBarcos1, 
+          let posibleDisparoIA = generarDisparoAleatorio(partidaActual.disparosRealizados2);
+          let barcoDisparadoIA = dispararCoordenada(partidaActual.tableroBarcos1, 
             posibleDisparoIA.i, posibleDisparoIA.j);
           let disparoIA = { i: posibleDisparoIA.i, j: posibleDisparoIA.j, estado: 'Agua' };
           if (barcoDisparadoIA) {
