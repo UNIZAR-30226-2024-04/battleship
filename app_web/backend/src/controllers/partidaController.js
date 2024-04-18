@@ -120,7 +120,7 @@ function generarDisparoAleatorio(disparosRealizados) {
  * @param {String} [req.body.nombreId2] - El nombreId del jugador 2
  * @param {BiomasDisponibles} req.body.bioma - El bioma de la partida
  * @param {Boolean} [req.body.amistosa] - Indica si la partida es amistosa, por defecto es false
- * @param {Partida} res - La partida creada
+ * @param {Object} res - El objeto despuesta HTTP con el codigo de la partida creada TODO: CAMBIAR ESTO EN BACKEND
  * @param {Number} res.codigo - El código de la partida
  * @example 
  * peticion = { body: { nombreId1: 'jugador1', nombreId2: 'jugador2', bioma: 'Mediterraneo' } }
@@ -129,7 +129,7 @@ function generarDisparoAleatorio(disparosRealizados) {
  */
 exports.crearPartida = async (req, res) => {
   try {
-    const { _id1, _id2, nombreId1, nombreId2, bioma = 'Mediterraneo', amistosa, ...extraParam } = req.body;
+    const { _id1, _id2, nombreId1, nombreId2, bioma = 'Mediterraneo', amistosa = true, ...extraParam } = req.body;
     // Verificar si hay algún parámetro extra
     if (Object.keys(extraParam).length > 0) {
       res.status(400).send('Sobran parámetros, se espera nombreId1 (o _id1), nombreId2 (o _id2) y bioma');
@@ -217,12 +217,12 @@ exports.crearPartida = async (req, res) => {
       amistosa
     });
 
-    const partidaGuardada = await partida.save();
+    const partidaGuardada = await partida.save(); // ESTA LINEA DA FALLO COJONES
     res.json({ codigo: partidaGuardada.codigo });
     console.log('Partida creada con éxito');
   } catch (error) {
-    res.status(500).send('Hubo un error');
-    console.error('Hubo un error');
+    res.status(500).send('Hubo un error creando la partida');
+    console.error('Hubo un error creando la partida');
   }
 };
 

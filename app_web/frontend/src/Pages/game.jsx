@@ -93,9 +93,10 @@ export function Game() {
     let [partidaInicializada, setPartidaInicializada] = useState(false); // Estado para saber si la partida ha sido inicializada
 
     const inicializarPartidaOffline = () => {
-        if (!hayPartidaInicializada()) {
-            setPartidaInicializada(true);
+        if (hayPartidaInicializada()) {
+            console.log('Ya hay partida creada:');
         } else {
+            console.log('Creando partida...');
             // Creamos partida en bbdd
             fetch(urlCrearPartida, {
                 method: 'POST',
@@ -103,7 +104,7 @@ export function Game() {
                 'Content-Type': 'application/json',
                 'authorization': tokenCookie
                 },
-                body: JSON.stringify({ nombreId1: nombreId1Cookie, bioma: 'Mediterraneo'}) // TO DO: biomas!!!
+                body: JSON.stringify({ nombreId1: nombreId1Cookie, bioma: 'Mediterraneo', amistosa: true}) // TO DO: biomas!!!
             })
             .then(response => {
                 if (!response.ok) {
@@ -113,11 +114,9 @@ export function Game() {
             })
             .then(data => {
                 console.log('Partida creada:');
-                idPartida = data.partida.idPartida;
-                console.log(data.partida.idPartida);
-                tablero1 = data.partida.tablero1;
-                tablero2 = data.partida.tablero2;
-                console.log('tableros guardados');
+                idPartida = data.codigo;
+                console.log(idPartida);
+                setPartidaInicializada(true);
             })
             .catch(error => {
                 console.error('Error:', error);
@@ -137,10 +136,13 @@ export function Game() {
     const [count, setCount] = useState(0); // Estado para contar widgets
 
 
-
-
     // Este efecto se ejecuta solo una vez después del montaje inicial del componente
     useEffect(() => {
+
+        // TODO: Mira si venimos de partida offline o online
+        // inicializarPartidaOnline();
+        inicializarPartidaOffline();
+
         // Inicializamos el tablero propio con las siguientes propiedades
         const myBoard = GridStack.init({
             float: true,
@@ -198,47 +200,51 @@ export function Game() {
 
     // Este efecto se ejecuta cuando myBoard cambia
     useEffect(() => {
-        // Obtener el tablero inicial del perfil en la base de datos
-        try {
-            console.log('Obteniendo tablero inicial...');
-            console.log('idPartida:', idPartida);
-            console.log('nombreId:', nombreId1Cookie);
-            fetch(urlMostrarTableros, {
-                method: 'POST',
-                headers: {
-                'Content-Type': 'application/json',
-                'authorization': tokenCookie
-                },
-                body: JSON.stringify({ codigo: idPartida, nombreId: nombreId1Cookie})
-            })
-            .then(response => {
-                if (!response.ok) {
-                throw new Error('La solicitud ha fallado');
-                }
-                return response.json();
-            })
-            .then(data => {
-                tablero1 = data.tableroBarcos1;
-                disparos1 = data.disparosRealizados1;
-                tablero2 = data.tableroBarcos2;
-                disparos2 = data.disparosRealizados2;
-                // const tableroInicial = [
-                //     [{ i: 1, j: 1 }, { i: 1, j: 2 }],
-                //     [{ i: 7, j: 1 }, { i: 8, j: 1 }, { i: 9, j: 1 }],
-                //     [{ i: 3, j: 10 }, { i: 4, j: 10 }, { i: 5, j: 10 }],
-                //     [{ i: 3, j: 6 }, { i: 4, j: 6 }, { i: 5, j: 6 }, { i: 6, j: 6 }],
-                //     [{ i: 10, j: 6 }, { i: 10, j: 7 }, { i: 10, j: 8 }, { i: 10, j: 9 }, { i: 10, j: 10 }]
-                //   ];
-                borrarWidgetsTablero(myBoard);
-                mostrarWidgetsTablero(tablero1, myBoard);
-                borrarWidgetsTablero(opponentBoard);
-                mostrarWidgetsTablero(tablero2, opponentBoard);
-            })
-            .catch(error => {
+        if(!hayPartidaInicializada()) {
+            console.log('Intenta cargar tableros, hay que esperar a que se cree la partida...');
+        } else {
+            // Obtener el tablero inicial del perfil en la base de datos
+            try {
+                console.log('Obteniendo tablero inicial...');
+                console.log('idPartida:', idPartida);
+                console.log('nombreId:', nombreId1Cookie);
+                fetch(urlMostrarTableros, {
+                    method: 'POST',
+                    headers: {
+                    'Content-Type': 'application/json',
+                    'authorization': tokenCookie
+                    },
+                    body: JSON.stringify({ codigo: idPartida, nombreId: nombreId1Cookie})
+                })
+                .then(response => {
+                    if (!response.ok) {
+                    throw new Error('La solicitud ha fallado');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    tablero1 = data.tableroBarcos1;
+                    disparos1 = data.disparosRealizados1;
+                    tablero2 = data.tableroBarcos2;
+                    disparos2 = data.disparosRealizados2;
+                    // const tableroInicial = [
+                    //     [{ i: 1, j: 1 }, { i: 1, j: 2 }],
+                    //     [{ i: 7, j: 1 }, { i: 8, j: 1 }, { i: 9, j: 1 }],
+                    //     [{ i: 3, j: 10 }, { i: 4, j: 10 }, { i: 5, j: 10 }],
+                    //     [{ i: 3, j: 6 }, { i: 4, j: 6 }, { i: 5, j: 6 }, { i: 6, j: 6 }],
+                    //     [{ i: 10, j: 6 }, { i: 10, j: 7 }, { i: 10, j: 8 }, { i: 10, j: 9 }, { i: 10, j: 10 }]
+                    //   ];
+                    borrarWidgetsTablero(myBoard);
+                    mostrarWidgetsTablero(tablero1, myBoard);
+                    borrarWidgetsTablero(opponentBoard);
+                    mostrarWidgetsTablero(tablero2, opponentBoard);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            } catch (error) {
                 console.error('Error:', error);
-            });
-        } catch (error) {
-            console.error('Error:', error);
+            }
         }
         
     }, [myBoard, opponentBoard]);
