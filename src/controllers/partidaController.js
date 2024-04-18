@@ -7,11 +7,15 @@ const biomasDisponibles = require('../data/biomas');
 const {actualizarEstadisticas} = require('./perfilController');
 const tableroDim = Coordenada.i.max;  // Dimensiones del tablero
 /**
- * @module controllers/partida
- * @description Controlador para las partidas
- * @see module:partidaModel
- * @requires module:partidaModel
- * @requires module:perfilModel
+ * @module partida
+ * @description Gestión de partidas
+ * @requires module:perfil
+ * @requires module:data~barcosDisponibles
+ * @requires module:data~climasDisponibles
+ * @requires module:data~biomasDisponibles
+ * @requires module:data~Coordenada
+ * @requires module:data~Tablero
+ * 
  */
 
 // ------------------------------------------ //
@@ -34,8 +38,10 @@ function dispararCoordenada(tablero, i, j) {
   for (let barco of tablero) {
     for (let coordenada of barco.coordenadas) {
       if (coordenada.i === i && coordenada.j === j) {
-        coordenada.estado = 'Tocado';
-        return barco;
+        if (coordenada.estado === 'Agua') {
+          coordenada.estado = 'Tocado';
+          return barco;
+        } else return null;
       }
     }
   }
@@ -438,6 +444,15 @@ exports.mostrarTableros = async (req, res) => {
 };
 
 /**
+ * @typedef {Object} TurnoIA
+ * @property {Object} disparoRealizado - El disparo realizado por la IA
+ * @property {Object} [barcoCoordenadas] - Las coordenadas del barco disparado por la IA, si se ha hundido
+ * @property {String} eventoOcurrido - El evento ocurrido en la partida
+ * @property {Boolean} finPartida - Indica si la partida ha terminado
+ * @property {String} clima - El clima de la partida
+ */
+
+/**
  * @function realizarDisparo
  * @description Realiza un disparo en la coordenada (i, j) del enemigo y actualiza el estado de la partida
  * @param {Object} req - El objeto de solicitud HTTP
@@ -452,13 +467,7 @@ exports.mostrarTableros = async (req, res) => {
  * @param {String} res.eventoOcurrido - El evento ocurrido en la partida
  * @param {Boolean} res.finPartida - Indica si la partida ha terminado
  * @param {String} res.clima - El clima de la partida
- * @param {Object} [res.turnoIA] - El turno de la IA, si la partida es contra la IA
- * @param {Object} res.turnoIA.disparoRealizado - El disparo realizado por la IA
- * @param {Object} [res.turnoIA.barcoCoordenadas] - Las coordenadas del barco disparado por la IA, si se ha hundido
- * @param {String} res.turnoIA.eventoOcurrido - El evento ocurrido en la partida
- * @param {Boolean} res.turnoIA.finPartida - Indica si la partida ha terminado
- * @param {String} res.turnoIA.clima - El clima de la partida
- * @returns {Partida} La partida modificada
+ * @param {TurnoIA[]} [res.turnosIA] - Los turnos de la IA, si la partida es contra la IA
  * @example
  * peticion = { body: { codigo: '1234567890', nombreId: 'jugador1', i: 1, j: 1 } }
  * respuesta = { json: () => {} }
@@ -529,10 +538,19 @@ exports.realizarDisparo = async (req, res) => {
       if (barcoDisparado) {
         estadisticasJugadores[jugador - 1].nuevosDisparosAcertados++;
         disparo.estado = 'Tocado'; // Los disparos solo son Agua o Tocado
-        if (barcoDisparado.coordenadas.every(coordenada => coordenada.estado === 'Tocado')) {
+        let hundido = true;
+        for (let coord of barcoDisparado.coordenadas) {
+          if (coord.estado === 'Agua') {
+            hundido = false;
+            break;
+          }
+        }
+        if (hundido) {
           estadisticasJugadores[jugador - 1].nuevosBarcosHundidos++;
           estadisticasJugadores[jugador === 1 ? 1 : 0].nuevosBarcosPerdidos++;
-          barcoDisparado.coordenadas.map(coordenada => coordenada.estado = 'Hundido');
+          for (let coord of barcoDisparado.coordenadas) {
+            coord.estado = 'Hundido';
+          }
           disparo.estado = 'Hundido';
         }
       } else {  // Sólo cambia el turno si se falla el disparo
@@ -580,11 +598,12 @@ exports.realizarDisparo = async (req, res) => {
         );
       }
 
-
+      
       let turnosIA = [];
       if (partidaContraIA && disparo.estado === 'Agua' && !finPartida) {
-        console.log("Turno de la IA");
+        console.log('Turno de la IA');
         let juegaIA = true;
+        let num = 1;
         while (juegaIA) {
           let posibleDisparoIA = generarDisparoAleatorio(partidaActual.disparosRealizados2);
           let barcoDisparadoIA = dispararCoordenada(partidaActual.tableroBarcos1, 
@@ -592,11 +611,22 @@ exports.realizarDisparo = async (req, res) => {
           let disparoIA = { i: posibleDisparoIA.i, j: posibleDisparoIA.j, estado: 'Agua' };
           if (barcoDisparadoIA) {
             disparoIA.estado = 'Tocado';
-            if (barcoDisparado.coordenadas.every(coordenada => coordenada.estado === 'Tocado')) {
+            let hundido = true;
+            for (let coord of barcoDisparadoIA.coordenadas) {
+              if (coord.estado === 'Agua') {
+                hundido = false;
+                break;
+              }
+            }
+            if (hundido) {
               estadisticasJugadores[0].nuevosBarcosPerdidos++;
-              barcoDisparadoIA.coordenadas.map(coordenada => coordenada.estado = 'Hundido');
+              for (let coord of barcoDisparadoIA.coordenadas) {
+                coord.estado = 'Hundido';
+              }
               disparoIA.estado = 'Hundido';
             }
+          } else {
+            partidaActual.contadorTurno++;
           }
           partidaActual.disparosRealizados2.push(disparoIA);
 
@@ -615,11 +645,10 @@ exports.realizarDisparo = async (req, res) => {
             clima: partidaActual.clima
           };
           turnosIA.push(turnoIA);
-          console.log('turnosIA:',turnosIA.length);
           juegaIA = disparoIA.estado !== 'Agua' && !finPartidaIA;
         }
       }
-
+      console.log('Disparo realizado con éxito');
       // Actualizar la partida
       const partidaModificada = await Partida.findOneAndUpdate(
         filtro, // Filtrar

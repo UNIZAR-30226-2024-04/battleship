@@ -1,12 +1,7 @@
-/** 
- * @module data/tablero
- * @requires module:data/barco
-*/
-
 /**
+ * @memberof module:data
  * @typedef {Object} Tablero
  * @property {Barco[]} barcos
- * @memberof module:data/tablero
  * @description Tipo de dato Tablero, formado por un array de barcos
  * @example { barcos: [ { coordenadas: [ { x: 1, y: 1 }, { x: 1, y: 2 } ] } ] }
  */

@@ -36,15 +36,6 @@ router.post('/modificarMazo', verificarToken, perfilController.modificarMazo);
 router.post('/moverBarcoInicial', verificarToken, perfilController.moverBarcoInicial);
 
 /*--------------------------------------------------------------------------------------------------------------------*/
-/*--------------------------------------------- PERFIL POST PARTIDA  -------------------------------------------------*/
-/*--------------------------------------------------------------------------------------------------------------------*/
-
-// Ruta para modificar estadisticas
-router.post('/actualizarEstadisticas', verificarToken, perfilController.actualizarEstadisticas);
-// Ruta para modificar la experiencia
-router.post('/actualizarPuntosExperiencia', verificarToken, perfilController.actualizarPuntosExperiencia);
-
-/*--------------------------------------------------------------------------------------------------------------------*/
 /*--------------------------------------------------- RED SOCIAL  ----------------------------------------------------*/
 /*--------------------------------------------------------------------------------------------------------------------*/
 
@@ -54,6 +45,8 @@ router.post('/obtenerAmigos', perfilController.obtenerAmigos);
 router.post('/agnadirAmigo', verificarToken, perfilController.agnadirAmigo);
 // Ruta para eliminar amigos
 router.post('/eliminarAmigo', verificarToken, perfilController.eliminarAmigo);
+// Ruta para obtener solicitudes de amistad
+router.post('/obtenerSolicitudesAmistad', verificarToken, perfilController.obtenerSolicitudesAmistad);
 // Ruta para enviar solicitudes de amistad
 router.post('/enviarSolicitudAmistad', verificarToken, perfilController.enviarSolicitudAmistad);
 // Ruta para eliminar solicitudes de amistad

@@ -7,7 +7,7 @@ const Partida = require('../models/partidaModel');
 const mongoURI = 'mongodb://localhost/BattleshipDB';
 mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true, 
   useCreateIndex: true, useFindAndModify: false});
-const Coordenada = require('../data/coordenada')
+const Coordenada = require('../data/coordenada');
 const tableroDim = Coordenada.i.max;  // Dimensiones del tablero
 // redirect console.log and console.error to /dev/null
 console.error = function() {};
@@ -540,6 +540,45 @@ describe("Realizar disparo contra la IA", () => {
       expect(res._json.disparoRealizado.estado).toBe('Agua');
       expect(res._json.turnosIA.length).toBeGreaterThan(0);
   });
+  it("Debería disparar hasta acabar la partida ganando o perder contra la IA", async () => {
+      let coord_x = 1;
+      let coord_y = 1;
+      let fin = false;
+      // Disparamos a todas las casillas de la IA
+      while (!fin) {
+          let req = { body: { codigo: _codigo, nombreId: 'usuario1', i: coord_x, j: coord_y } };
+          let res = { json: function(_json) {this._json = _json; return this;}, status: function(s) {
+              this.statusCode = s; return this; }, send: () => {} };
+          try {
+              await realizarDisparo(req, res);
+          } catch (error) {}
+          expect(res.statusCode).toBe(undefined);
+          if (res._json.finPartida) {
+              fin = true;
+          } else {
+            // Comprobamos que la IA no ha ganado
+            for (let turnoIA of res._json.turnosIA) {
+              if (turnoIA.finPartida) {
+                fin = true;
+                break;
+              }
+            }
+
+            // Buscamos la siguiente casilla a disparar
+            if (coord_x < tableroDim) {
+              coord_x++;
+            } else {
+              coord_x = 1;
+              coord_y++;
+            }
+
+            // Comprobamos que no se ha acabado la partida
+            if (coord_y > tableroDim) {
+              expect(true).toBe(false);
+            }
+      }
+    }
+  });
 });
 
 
@@ -674,7 +713,6 @@ describe("Obtener chat", () => {
         try {
             await obtenerChat(req, res);
         } catch (error) {}
-        console.log(res._json);
         expect(res.statusCode).toBe(undefined);
         expect(res._json[0].mensaje).toBe("Esto es una prueba");
     });

@@ -1,13 +1,8 @@
 const Coordenada = require('./coordenada');
 
-/** 
- * @module data/barco
- * @requires module:data/coordenada
-*/
-
 /**
- * @const {String} TipoBarco
- * @memberof module:data/barco
+ * @memberof module:data
+ * @const {String} barcosDisponibles
  * @description Tipos de barco posibles, con sus respectivos nombres
  * @enum {String}
  * @readonly
@@ -16,6 +11,7 @@ const Coordenada = require('./coordenada');
 const barcosDisponibles = ['Patrullero', 'Destructor', 'Submarino', 'Acorazado', 'Portaviones'];
 
 /**
+ * @memberof module:data
  * @typedef {Object} Barco
  * @property {Coordenada[]} coordenadas.required - Coordenadas del barco
  * @property {barcosDisponibles} tipo.required - Tipo de barco

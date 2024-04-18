@@ -1,11 +1,6 @@
-
-/** 
- * @module data/habilidades
-*/
-
 /**
+ * @memberof module:data
  * @const {Array} habilidadesDisponibles
- * @memberof module:data/habilidades
  * @description Lista de habilidades disponibles a utilizar por los jugadores
  * @default ['Rafaga', 'Recargado', 'Sonar', 'Mina', 'Teledirigido']
  * @readonly
