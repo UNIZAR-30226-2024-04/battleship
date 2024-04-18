@@ -1,11 +1,11 @@
 import React from 'react';
 import './Tablero.css';
 
-const Tablero = () => {
+const Tablero = ({onCellClick}) => {
     const casillas = Array.from({ length: 100 }, (_, index) => index); // Array de 100 elementos
 
     const handleClick = (fila, columna) => {
-        console.log("Se ha disparado en: (", fila, ", ", columna, ")");
+        onCellClick(fila, columna)
     };
 
     return (

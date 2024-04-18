@@ -1,8 +1,46 @@
+import React, {useState, useEffect} from 'react';
+import Cookies from 'universal-cookie';
 import { Navbar } from "../Components/Navbar";
 import Flag from 'react-world-flags'
 import '../Styles/profile-style.css';
 
-export function Profile() {
+const Profile = () => {
+    const cookies = new Cookies();
+
+    const [profileData, setprofileData] = useState({
+        uname: '',
+        country: '',
+        exp: '',
+        elo: '',
+        sunkenShips: '',
+        lostShips: '',
+        nMatches: '',
+        nWins: '',
+        winrate: '',
+        hitShots: '',
+        missShots: '',
+    });
+
+    useEffect(() => {
+    const profileCookie = cookies.get('perfil');
+    if (profileCookie) {
+        setprofileData({
+        uname: profileCookie['nombreId'] || '0',
+        country: profileCookie['pais'] || 'Nada',
+        exp: profileCookie['puntosExperiencia'] || '0',
+        elo: profileCookie['trofeos'] || '0',
+        sunkenShips: profileCookie['barcosHundidos'] || '0',
+        lostShips: profileCookie['barcosPerdidos'] || '0',
+        nMatches: profileCookie['partidasJugadas'] || '0',
+        nWins: profileCookie['partidasGanadas'] || '0',
+        winrate: profileCookie['partidasGanadas'] / profileCookie['partidasJugadas'] || '0',
+        hitShots: profileCookie['disparosAcertados'] || '0',
+        missShots: profileCookie['disparosFallados'] || '0',
+        });
+    }
+    }, [cookies]);
+
+
     return (
         <div className="profile-page-container">
             <Navbar/>
@@ -15,11 +53,11 @@ export function Profile() {
                             </div>
                             <div className="profile-banner-info">
                                 <div className="profile-banner-first-row">
-                                    <span>Butanero Putero</span>
+                                    <span>{profileData.uname}</span>
                                     <Flag code={ "ES" } height="25em" fallback={ <span>Nada</span> }/>
                                 </div>
                                 <div className="profile-banner-second-row">
-                                    <span>Butanero de oficio putero por vicio</span>
+                                    <span>Puntos de experiencia: {profileData.exp}</span>
                                 </div>
                             </div>
                         </div>
@@ -55,31 +93,35 @@ export function Profile() {
                             <div className="profile-sidebar-stats-content">
                                 <div className="profile-sidebar-stat-elo">
                                     <span className="profile-sidebar-stat-header">Elo</span>
-                                    <span className="profile-sidebar-stat-value">1800</span>
+                                    <span className="profile-sidebar-stat-value">{profileData.elo}</span>
                                 </div>
                                 <div className="profile-sidebar-stat-matches">
                                     <span className="profile-sidebar-stat-header">Partidas</span>
-                                    <span className="profile-sidebar-stat-value">143</span>
+                                    <span className="profile-sidebar-stat-value">{profileData.nMatches}</span>
                                 </div>
                                 <div className="profile-sidebar-stat-win">
                                     <span className="profile-sidebar-stat-header">Victorias</span>
-                                    <span className="profile-sidebar-stat-value">100</span>
+                                    <span className="profile-sidebar-stat-value">{profileData.nWins}</span>
                                 </div>
-                                <div className="profile-sidebar-stat-loss">
-                                    <span className="profile-sidebar-stat-header">Derrotas</span>
-                                    <span className="profile-sidebar-stat-value">43</span>
+                                <div className="profile-sidebar-stat-winrate">
+                                    <span className="profile-sidebar-stat-header">Tasa de victorias</span>
+                                    <span className="profile-sidebar-stat-value">{profileData.winrate}</span>
                                 </div>
                                 <div className="profile-sidebar-stat-sunkenships">
                                     <span className="profile-sidebar-stat-header">Barcos hundidos</span>
-                                    <span className="profile-sidebar-stat-value">524</span>
+                                    <span className="profile-sidebar-stat-value">{profileData.sunkenShips}</span>
                                 </div>
-                                <div className="profile-sidebar-stat-winrate">
-                                    <span className="profile-sidebar-stat-header">Ratio de victorias</span>
-                                    <span className="profile-sidebar-stat-value">52%</span>
+                                <div className="profile-sidebar-stat-lostships">
+                                    <span className="profile-sidebar-stat-header">Barcos perdidos</span>
+                                    <span className="profile-sidebar-stat-value">{profileData.lostShips}</span>
                                 </div>
-                                <div className="profile-sidebar-stat-ability">
-                                    <span className="profile-sidebar-stat-header">Habilidad favorita</span>
-                                    <span className="profile-sidebar-stat-value">Misil</span>
+                                <div className="profile-sidebar-stat-hitshots">
+                                    <span className="profile-sidebar-stat-header">Disparos acertados</span>
+                                    <span className="profile-sidebar-stat-value">{profileData.hitShots}</span>
+                                </div>
+                                <div className="profile-sidebar-stat-missshots">
+                                    <span className="profile-sidebar-stat-header">Disparos fallados</span>
+                                    <span className="profile-sidebar-stat-value">{profileData.missShots}</span>
                                 </div>
                             </div>
                         </div>
@@ -121,3 +163,5 @@ export function Profile() {
         </div>
     );
 }
+
+export default Profile;

@@ -36,12 +36,10 @@ export function Login() {
             console.log('Respuesta del servidor:', responseData);
             cookies.remove('JWT');
             cookies.remove('nombreId');
+            cookies.remove('perfil');
             cookies.set('JWT', responseData['token'], {path: '/'});
-            console.log('token:');
-            console.log(responseData['token']);
-            cookies.set('nombreId', responseData['perfilDevuelto']['nombreId'], {path: '/'});
-            console.log('nombreId:');
-            console.log(responseData['perfilDevuelto']['nombreId']);
+
+            cookies.set('perfil', responseData['perfilDevuelto'], {path: '/'});
             // Aquí puedes manejar la respuesta, como actualizar el estado del componente o redirigir al usuario
         } catch (error) {
             console.error('Error en la solicitud:', error);

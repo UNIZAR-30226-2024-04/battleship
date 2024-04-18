@@ -3,7 +3,7 @@ import { HashRouter as Router, Routes, Route } from 'react-router-dom';
 import Cookies from 'universal-cookie';
 import { Home }  from './Pages/home';
 import { Fleet } from './Pages/fleet';
-import { Profile } from './Pages/profile';
+import  Profile from './Pages/profile';
 import { Settings } from './Pages/settings';
 import { Social } from './Pages/social';
 import { Register } from './Pages/register';

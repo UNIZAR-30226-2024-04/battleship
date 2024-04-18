@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Navbar } from "../Components/Navbar";
 import { GridStack } from 'gridstack';
 import Cookies from "universal-cookie";
@@ -42,11 +42,19 @@ function esBarcoHorizontal(barco) {
     return barco.coordenadas[0].i === barco.coordenadas[1].i;
 }
 
-export function Game() {    
+export function Game() {
+    const [lastClickedCell, setLastClickedCell] = useState(null);
+
+    const handleClickedCell = (fila, columna) => {
+        // Hacer la petición al backend utilizando las coordenadas de la celda
+        // Aquí puedes hacer tu lógica para la petición al backend
+        console.log(`Celda clickeada: Fila ${fila}, Columna ${columna}`);
+        setLastClickedCell({ fila, columna });
+    };
 
     // Obtener el token y nombreId del usuario
     const tokenCookie = cookies.get('JWT');
-    const nombreId1Cookie = cookies.get('nombreId');
+    const nombreId1Cookie = cookies.get('perfil')['nombreId'];
     
 
     // Contiene el tamaño y nombre de los barcos a usar
@@ -339,7 +347,7 @@ export function Game() {
                     </h1>
                     <div className="fleet-main-content-container">
                         <div className="grid-stack fleet-board1">
-                            <Tablero id="tablero" className='tablero-overlay' />
+                            <Tablero id="tablero" onCellClick={handleClickedCell} />
                         </div>
                         <div className="fleet-board-separator"></div>
                         <div className="grid-stack fleet-board2" onClick={handleItemClick}></div>
