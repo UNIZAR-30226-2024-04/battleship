@@ -22,23 +22,23 @@ const Profile = () => {
     });
 
     useEffect(() => {
-    const profileCookie = cookies.get('perfil');
-    if (profileCookie) {
-        setprofileData({
-        uname: profileCookie['nombreId'] || '0',
-        country: profileCookie['pais'] || 'Nada',
-        exp: profileCookie['puntosExperiencia'] || '0',
-        elo: profileCookie['trofeos'] || '0',
-        sunkenShips: profileCookie['barcosHundidos'] || '0',
-        lostShips: profileCookie['barcosPerdidos'] || '0',
-        nMatches: profileCookie['partidasJugadas'] || '0',
-        nWins: profileCookie['partidasGanadas'] || '0',
-        winrate: profileCookie['partidasGanadas'] / profileCookie['partidasJugadas'] || '0',
-        hitShots: profileCookie['disparosAcertados'] || '0',
-        missShots: profileCookie['disparosFallados'] || '0',
-        });
-    }
-    }, [cookies]);
+        const profileCookie = cookies.get('perfil');
+        if (profileCookie) {
+            setprofileData({
+                uname: profileCookie['nombreId'] || '0',
+                country: profileCookie['pais'] || 'Nada',
+                exp: profileCookie['puntosExperiencia'] || '0',
+                elo: profileCookie['trofeos'] || '0',
+                sunkenShips: profileCookie['barcosHundidos'] || '0',
+                lostShips: profileCookie['barcosPerdidos'] || '0',
+                nMatches: profileCookie['partidasJugadas'] || '0',
+                nWins: profileCookie['partidasGanadas'] || '0',
+                winrate: profileCookie['partidasGanadas'] / profileCookie['partidasJugadas'] || '0',
+                hitShots: profileCookie['disparosAcertados'] || '0',
+                missShots: profileCookie['disparosFallados'] || '0',
+            });
+        }
+    }, []);
 
 
     return (
