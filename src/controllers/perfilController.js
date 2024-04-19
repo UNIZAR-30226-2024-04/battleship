@@ -827,20 +827,12 @@ exports.moverBarcoInicial = async (req, res) => {
     if (moverBarco(barco.coordenadas, iProaNueva, jProaNueva, rotar)) {
       // Verificar que la nueva posición del barco no colisiona con otros barcos
       if (barcoColisiona(tableroInicial, barco.coordenadas, barcoId)) {
-        let tableroDevuelto = {
-          fueraTablero: false,
-          colisiona: true
-        }
-        res.json(tableroDevuelto);
+        res.json({ tableroDevuelto: undefined, fueraTablero: false, colisiona: true });
         console.log("El movimiento del barco colisiona con otros barcos");
         return;
       }
     } else {
-      let tableroDevuelto = {
-        fueraTablero: true,
-        colisiona: false
-      }
-      res.json(tableroDevuelto);
+      res.json({ tableroDevuelto: undefined, fueraTablero: true, colisiona: false });
       console.log("El movimiento del barco se sale del tablero");
       return;
     }
@@ -863,9 +855,7 @@ exports.moverBarcoInicial = async (req, res) => {
           coordenada._id = undefined;
         });
       });
-      tableroDevuelto.fueraTablero = false;
-      tableroDevuelto.colisiona = false;
-      res.json(tableroDevuelto);
+      res.json( { tableroDevuelto, fueraTablero: false, colisiona: false } );
       console.log("Tablero inicial modificado con éxito");
     } else {
       res.status(404).send('No se ha encontrado el perfil a modificar');
