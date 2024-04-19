@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const {registrarUsuario, autenticarUsuario, eliminarUsuario, iniciarSesion, 
   obtenerDatosPersonales, modificarDatosPersonales, obtenerUsuario, actualizarEstadisticas,
-  actualizarPuntosExperiencia, modificarMazo, moverBarcoInicial,
+  actualizarPuntosExperiencia, modificarMazo, moverBarcoInicial, 
   enviarSolicitudAmistad, eliminarSolicitudAmistad, agnadirAmigo, eliminarAmigo} = require('../controllers/perfilController');
   const { barcosDisponibles } = require('../data/barco');
 const e = require('express');
@@ -605,6 +605,28 @@ describe('Actualizar estadísticas', () => {
         await actualizarEstadisticas(req, res);
       } catch (error) {}
       expect(res.statusCode).toBe(404);
+  });
+  it('Debería actualizar correctamente las estadísticas sin victoria', async () => {
+    const req = { body: { nombreId: 'usuario1', nuevosBarcosHundidos: 1,
+    nuevosBarcosPerdidos: 1, nuevosDisparosAcertados: 1, nuevosDisparosFallados: 1 } };
+    const res = { json: () => {}, status: function(s) { 
+      this.statusCode = s; return this; }, send: () => {} };
+    try {
+      await actualizarEstadisticas(req, res);
+    } catch (error) {}
+    expect(res.statusCode).toBe(undefined);
+
+    const req2 = { body: { nombreId: 'usuario1'} };
+    const res2 = { json: function(_json) {this._json = _json; return this;}, status: function(s) { 
+      this.statusCode = s; return this; }, send: () => {} };
+    try {
+      await obtenerUsuario(req2, res2);
+    } catch (error) {}
+    expect(res2.statusCode).toBe(undefined);
+    expect(res2._json.partidasJugadas).toBe(4);
+    expect(res2._json.partidasGanadas).toBe(2);
+    expect(res2._json.barcosHundidos).toBe(4);
+    expect(res2._json.barcosPerdidos).toBe(5);
   });
 });
 

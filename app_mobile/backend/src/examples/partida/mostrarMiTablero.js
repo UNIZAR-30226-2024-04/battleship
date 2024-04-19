@@ -7,17 +7,21 @@ mongoose.connect('mongodb://localhost/BattleshipDB')
     console.log('Conectado a MongoDB...');
     try {
       // Lista de partidas a crear
+      codigo = 983509919397;  // (Escribir el código de una partida existente)
       const partidas = [
-        {codigo: 591028408640, jugador: 1}, // (Escribir el código de una partida existente)
-        {codigo: 591028408640, jugador: 1, extra: 1},  // Sobran campos
-        {codigo: 591028408640, jugador: 3}, // Jugador inválido
-        {codigo: 1, jugador: 1} // No existe la partida
+        {codigo: codigo, nombreId: 'usuario1'}, 
+        // {codigo: codigo, nombreId: 'usuario1', extra: 1},  // Sobran campos
+        // {codigo: codigo, nombreId: 'aaaaa'}, // Jugador inválido
+        // {codigo: 1, nombreId: 'usuario1'} // No existe la partida
       ];
       // Itera sobre la lista de partidas y crea cada una
       for (const partida of partidas) {
         const req = { body: partida };
+        // const res = { json: function(_json) {this._json = _json; return this;}, status: function(s) { 
+        //   this.statusCode = s; return this; }, send: () => {} };
         const res = { json: () => {}, status: () => ({ send: () => {} }) }; // No hace nada
         await mostrarMiTablero(req, res);
+        //console.log(res.statusCode);
       }
     } catch (error) {
       console.error('Error en el test de mostrar+ mi Tablero:', error);

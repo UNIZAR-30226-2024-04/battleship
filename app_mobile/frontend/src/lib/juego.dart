@@ -1,5 +1,4 @@
 import 'package:battleship/authProvider.dart';
-import 'package:battleship/comun.dart';
 import 'package:battleship/tablero.dart';
 import 'package:flutter/material.dart';
 import 'barco.dart';
@@ -32,7 +31,6 @@ class Juego {
   int numAtaquesJugador1 = 0;
   int numAtaquesJugador2 = 0;
   int indexHabilidad = 0;
-  List<String> nombresBarcosEnOrden = ['patrullero', 'destructor', 'submarino', 'acorazado', 'portaaviones'];  // barcos en orden de tamaño creciente
   String urlObtenerTablero = 'http://localhost:8080/perfil/obtenerDatosPersonales';
   String urlMoverBarcoInicial = 'http://localhost:8080/perfil/moverBarcoInicial';
   String urlActualizarPartida = 'http://localhost:8080/partida/actualizarEstadoPartida';
@@ -88,25 +86,34 @@ class Juego {
   List<List<Offset>> getCoordinates(List<dynamic> inputList) {
     List<List<Offset>> coordinates = [];
 
-    for (var item in inputList) {
-      List<Offset> tempList = [];
-      for (var key in item.keys) {
-        if (key != 'coordenadas') {
-          tempList.add(Offset(item[key]['i'].toDouble(), item[key]['j'].toDouble()));
-        }
+    for (var barco in inputList) {
+      List<dynamic> coordenadas = barco['coordenadas'];
+      List<Offset> coordenadasBarco = [];
+      for (var coordenada in coordenadas) {
+        coordenadasBarco.add(Offset(coordenada['i'].toDouble(), coordenada['j'].toDouble()));
       }
-      coordinates.add(tempList);
+      coordinates.add(coordenadasBarco);
     }
 
     return coordinates;
   }
 
+  List<String> getNames(List<dynamic> inputList) {
+    List<String> nombresBarcos = [];
 
-  List<Barco> procesaTableroBD(List<List<Offset>> tablero) {
+    for (var barco in inputList) {
+      nombresBarcos.add(barco['tipo'].toLowerCase());
+    }
+
+    return nombresBarcos;
+  }
+
+
+  List<Barco> procesaTableroBD(List<List<Offset>> tablero, List<String> nombres) {
     List<Barco> barcos = [];
 
     for (int i = 0; i < numBarcos; i++) {
-      String nombre = nombresBarcosEnOrden[i];
+      String nombre = nombres[i];
       Offset barcoPos = Offset(tablero[i][0].dx, tablero[i][0].dy);
       int long = tablero[i].length;
       bool rotado = tablero[i][0].dy == tablero[i][1].dy ? true : false;
@@ -131,15 +138,18 @@ class Juego {
 
     if (response.statusCode == 200) {
       var data = jsonDecode(response.body);
-      var tableroInicial = data['tableroInicial'];
+
+      Map<String, dynamic> userMap = jsonDecode(response.body);
+      List<dynamic> tableroInicial = userMap['tableroInicial'];
 
       print(data);
       print(tableroInicial);
       List<List<Offset>> coordenadas = getCoordinates(tableroInicial);
       print(coordenadas);
-      print(procesaTableroBD(coordenadas));
+      List<String> nombres = getNames(tableroInicial);
+      print(procesaTableroBD(coordenadas, nombres));
 
-      return procesaTableroBD(coordenadas);
+      return procesaTableroBD(coordenadas, nombres);
 
     } else {
       throw Exception('La solicitud ha fallado');
@@ -165,12 +175,11 @@ class Juego {
 
     if (response.statusCode == 200) {
       var data = jsonDecode(response.body);
-      var tableroInicial = data['tableroInicial'];
-      if (tableroInicial != null) {
+      print(data);
+      if(data.isNotEmpty) {
         print("BARCO MOVIDO");
         return true;
       }
-
       return false;
     } else {
       return false;

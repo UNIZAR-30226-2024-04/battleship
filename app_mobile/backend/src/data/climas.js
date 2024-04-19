@@ -1,11 +1,6 @@
-
-/** 
- * @module data/climas
-*/
-
 /**
- * @typedef {Array} climasDisponibles
- * @memberof module:data/climas
+ * @memberof module:data
+ * @const {Array} climasDisponibles
  * @description Lista de climas disponibles, que varían a lo largo de la partida
  * @default ['Calma', 'Viento', 'Tormenta', 'Niebla']
  * @readonly

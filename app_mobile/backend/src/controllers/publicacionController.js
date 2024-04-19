@@ -2,10 +2,10 @@ const Publicacion = require('../models/publicacionModel');
 const Perfil = require('../models/perfilModel');
 const publicacionesPredeterminadas = require('../data/publicaciones');
 const { calcularNivel } = require('../data/niveles');
-const {posiblesReacciones} = require('../data/reacciones');
+const {reaccionesDisponibles} = require('../data/reacciones');
 
 /**
- * @module controllers/publicacion
+ * @module publicacion
  * @description Controlador para la gestión de publicaciones.
  */
 
@@ -24,7 +24,7 @@ function generarCodigo() {
 
 
 /**
- * @memberof module:publicacionController
+ * @memberof module:publicacion
  * @function crearPublicacion
  * @description Crea una nueva publicación en el perfil del usuario especificado.
  * @param {Request} req - El objeto de solicitud HTTP.
@@ -197,8 +197,8 @@ exports.crearPublicacion = async (req, res) => {
 };
 
 /**
- * @memberof module:publicacionController
- * @function getPublicacionesPerfil
+ * @memberof module:publicacion
+ * @function obtenerPublicaciones
  * @description Devuelve todas las publicaciones del perfil del usuario.
  * @param {Request} req - El objeto de solicitud HTTP.
  * @param {String} [req.body.nombreId] - El perfil debe existir en la base de datos.
@@ -209,7 +209,7 @@ exports.crearPublicacion = async (req, res) => {
  * const res = { json: (perfil) => { return perfil; } };
  * await getPublicacionesPerfil(req, res);
  */
-exports.getPublicacionesPerfil  = async (req, res) => { 
+exports.obtenerPublicaciones  = async (req, res) => { 
   try {
     const { nombreId, ...extraParam } = req.body;
     if (Object.keys(extraParam).length > 0) {
@@ -238,7 +238,7 @@ exports.getPublicacionesPerfil  = async (req, res) => {
 };
 
 /**
- * @memberof module:publicacionController
+ * @memberof module:publicacion
  * @function reaccionarPublicacion
  * @description Añade una reacción a una publicación identificada por su id, dado un usuario y una reacción predefinida.
  * @param {Request} req - El objeto de solicitud HTTP.
@@ -282,7 +282,7 @@ exports.reaccionarPublicacion = async (req, res) => {
       return;
     }
     // La reacción debe estar en el rango de reacciones disponibles
-    if (reaccionId < 0 || reaccionId >= posiblesReacciones.length) {
+    if (reaccionId < 0 || reaccionId >= reaccionesDisponibles.length) {
       res.status(400).send({message: "La reacción no es válida"});
       console.error("La reacción no es válida");
       return;
@@ -303,7 +303,7 @@ exports.reaccionarPublicacion = async (req, res) => {
     
     const reaccionIndex = publicacion.reacciones.findIndex(r => r.nombreId === nombreId);
     // Si no existe reaccion por parte del usuario, la añadimos
-    const estado = posiblesReacciones[reaccionId];
+    const estado = reaccionesDisponibles[reaccionId];
     if (reaccionIndex === -1) {
       publicacion.reacciones[publicacion.reacciones.length] = { nombreId: nombreId, estado: estado };
     } else {
@@ -324,7 +324,7 @@ exports.reaccionarPublicacion = async (req, res) => {
 
 
 /**
- * @memberof module:publicacionController
+ * @memberof module:publicacion
  * @function eliminarPublicacion
  * @description Elimina una publicación de un usuario identificada por su id.
  * @param {Request} req - El objeto de solicitud HTTP.

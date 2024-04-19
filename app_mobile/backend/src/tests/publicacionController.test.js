@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const {registrarUsuario} = require('../controllers/perfilController');
 const Perfil = require('../models/perfilModel');
 const Publicacion = require('../models/publicacionModel');
-const {crearPublicacion, getPublicacionesPerfil, 
+const {crearPublicacion, obtenerPublicaciones, 
     reaccionarPublicacion, eliminarPublicacion} = require('../controllers/publicacionController');
 const e = require('express');
 
@@ -254,7 +254,7 @@ describe('Crear publicacion', () => {
     });
 });
 
-// Test for getPublicacionesPerfil
+// Test for obtenerPublicaciones
 describe('Obtener publicaciones', () => {
     beforeAll(async () => {
         const connection = mongoose.connection;
@@ -283,7 +283,7 @@ describe('Obtener publicaciones', () => {
         const res = { json: function(_json) { this._json = _json; return this;},
             status: function(s) { this.statusCode = s; return this; }, send: () => {} };
         try {
-            await getPublicacionesPerfil(req, res);
+            await obtenerPublicaciones(req, res);
         } catch (error) {}
         expect(res.statusCode).toBe(undefined);
         expect(res._json.length).toBe(1);
@@ -294,7 +294,7 @@ describe('Obtener publicaciones', () => {
         const res = { json: () => {}, status: function(s) { 
           this.statusCode = s; return this; }, send: () => {} };
         try {
-            await getPublicacionesPerfil(req, res);
+            await obtenerPublicaciones(req, res);
         } catch (error) {}
         expect(res.statusCode).toBe(404);
     });
@@ -303,7 +303,7 @@ describe('Obtener publicaciones', () => {
         const res = { json: () => {}, status: function(s) { 
           this.statusCode = s; return this; }, send: () => {} };
         try {
-            await getPublicacionesPerfil(req, res);
+            await obtenerPublicaciones(req, res);
         } catch (error) {}
         expect(res.statusCode).toBe(400);
     });

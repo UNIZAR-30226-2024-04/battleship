@@ -4,6 +4,8 @@ import 'botones.dart';
 import 'comun.dart';
 import 'habilidad.dart';
 import 'main.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class Perfil extends StatefulWidget {
   String _email = '';
@@ -20,6 +22,7 @@ class Perfil extends StatefulWidget {
   final AuthProvider _authProvider = AuthProvider();
   List<Habilidad> _habilidades = [];  // habilidades desbloqueadas
   List<Habilidad> _habilidadesSeleccionadas = [];  // habilidades seleccionadas para la partida
+  String urlEliminarUsuario = 'http://localhost:8080/perfil/eliminarUsuario';
 
   Perfil(name, {super.key, turno = 1}) {
     _name = name;
@@ -81,6 +84,7 @@ class _PerfilState extends State<Perfil> {
                     _buildStats(),
                     _buildSettings(),
                     buildActionButton(context, () => _handlePressed(context, AuthProvider()), 'Cerrar Sesión'),
+                    buildTextButton(context, () => _handleEliminarCuentaPressed(context), 'Eliminar cuenta'),
                   ],
                 ),
               ),
@@ -91,6 +95,43 @@ class _PerfilState extends State<Perfil> {
       ),
     );
   }
+
+
+  void eliminarCuenta() async {
+    var response = await http.post(
+      Uri.parse(widget.urlEliminarUsuario),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(<String, String>{
+        'nombreId': widget._name,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      var data = jsonDecode(response.body);
+      print(data);
+      if (data != null) {
+        print("CUENTA ELIMINADA");
+        AuthProvider().logOut();
+      }
+
+    } else {
+      throw Exception('La solicitud ha fallado');
+    }
+  }
+
+  void _handleEliminarCuentaPressed(BuildContext context) {
+    eliminarCuenta();
+    Navigator.pushReplacement(
+      context,
+      PageRouteBuilder(
+        pageBuilder: (context, animation1, animation2) => Principal(),
+        transitionDuration: const Duration(seconds: 0),
+      ),
+    );
+  }
+
 
   Widget _buildUserInfo() {
     return Column(
