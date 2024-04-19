@@ -236,8 +236,8 @@ exports.crearPartida = async (req, res) => {
  * @param {Number} [req.body.codigo] - El codigo de la partida
  * @param {String} req.body.nombreId - El nombreId del jugador
  * @param {Object} res - El tablero de barcos y los disparos realizados del jugador
- * @param {Tablero} res.tableroBarcos - El tablero de barcos del jugador
- * @param {Coordenada[]} res.disparosRealizados - Los disparos realizados por el jugador
+ * @param {Tablero} res.tableroBarcos - El tablero de barcos del jugador y su estado actual
+ * @param {Coordenada[]} res.disparosEnemigos - Los disparos realizados por el jugador enemigo
  * @example
  * peticion = { body: { codigo: '1234567890', jugador: 1 } }
  * respuesta = { json: () => {} }
@@ -280,7 +280,7 @@ exports.mostrarMiTablero = async (req, res) => {
       }
       const tableroDisparos = {
         tableroBarcos: jugador === 1 ? partidaActual.tableroBarcos1 : partidaActual.tableroBarcos2,
-        disparosRealizados: jugador === 1 ? partidaActual.disparosRealizados2 : partidaActual.disparosRealizados1
+        disparosEnemigos: jugador === 1 ? partidaActual.disparosRealizados2 : partidaActual.disparosRealizados1
       };
       console.log('Mi tablero obtenido con éxito');
       res.json(tableroDisparos);
@@ -306,7 +306,8 @@ exports.mostrarMiTablero = async (req, res) => {
  * @param {String} [req.body.codigo] - El codigo de la partida
  * @param {String} req.body.nombreId - El nombreId del jugador
  * @param {Object} res - El objeto de respuesta HTTP
- * @returns {Tablero} El tablero de barcos del jugador enemigo
+ * @param {Coordenada[]} res.misDisparos - Los disparos realizados por mi
+ * @param {Coordenada[]} res.barcosHundidos - Los barcos del enemigo hundidos por mi
  * @example
  * peticion = { body: { codigo: '1234567890', jugador: 1 } }
  * respuesta = { json: () => {} }
@@ -347,13 +348,23 @@ exports.mostrarTableroEnemigo = async (req, res) => {
         console.error('El jugador no está en la partida');
         return;
       }
-      const tablero = {
-        tableroBarcos: jugador === 1 ? partidaActual.disparosRealizados1 : partidaActual.disparosRealizados2
+
+      // Obtengo los barcos hundidos en el tablero enemigo
+      let listaBarcosHundidos = [];
+      for (let barco of jugador === 1 ? partidaActual.tableroBarcos2 : partidaActual.tableroBarcos1) {
+        if (barco.coordenadas.some(coordenada => coordenada.estado === 'Hundido')) {
+          barcosHundidos.push(barco);
+        }
+      }
+
+      const disparosBarcos = {
+        misDisparos: jugador === 1 ? partidaActual.disparosRealizados1 : partidaActual.disparosRealizados2,
+        barcosHundidos: listaBarcosHundidos
       };
       console.log('Tablero enemigo obtenido con éxito');
-      res.json(tablero);
-      console.log(tablero);
-      return tablero;
+      res.json(disparosBarcos);
+      console.log(disparosBarcos);
+      return disparosBarcos;
     } else {
       res.status(404).send('Partida no encontrada');
       console.error('Partida no encontrada');
@@ -374,7 +385,10 @@ exports.mostrarTableroEnemigo = async (req, res) => {
  * @param {String} [req.body.codigo] - El codigo de la partida
  * @param {String} req.body.nombreId - El nombreId del jugador
  * @param {Object} res - El objeto de respuesta HTTP
- * @returns {Object} Los tableros y disparos realizados de ambos jugadores
+ * @param {Tablero} res.tableroBarcos - El tablero de barcos del jugador y su estado actual
+ * @param {Coordenada[]} res.disparosEnemigos - Los disparos realizados por el jugador enemigo
+ * @param {Coordenada[]} res.misDisparos - Los disparos realizados por mi
+ * @param {Coordenada[]} res.barcosHundidos - Los barcos del enemigo hundidos por mi
  * @example
  * peticion = { body: { codigo: '1234567890' } }
  * respuesta = { json: () => {} }
@@ -415,11 +429,20 @@ exports.mostrarTableros = async (req, res) => {
         console.error('El jugador no está en la partida');
         return;
       }
+
+      // Obtengo los barcos hundidos en el tablero enemigo
+      let listaBarcosHundidos = [];
+      for (let barco of jugador === 1 ? partidaActual.tableroBarcos2 : partidaActual.tableroBarcos1) {
+        if (barco.coordenadas.some(coordenada => coordenada.estado === 'Hundido')) {
+          barcosHundidos.push(barco);
+        }
+      }
+
       const tableros = {
-        tableroBarcos1: partidaActual.tableroBarcos1,
-        tableroBarcos2: partidaActual.tableroBarcos2,
-        disparosRealizados1: partidaActual.disparosRealizados1,
-        disparosRealizados2: partidaActual.disparosRealizados2
+        tableroBarcos: jugador === 1 ? partidaActual.tableroBarcos1 : partidaActual.tableroBarcos2,
+        disparosEnemigos: jugador === 1 ? partidaActual.disparosRealizados2 : partidaActual.disparosRealizados1,
+        misDisparos: jugador === 1 ? partidaActual.disparosRealizados1 : partidaActual.disparosRealizados2,
+        barcosHundidos: listaBarcosHundidos
       };
       console.log('Tableros obtenidos con éxito');
       res.json(tableros);

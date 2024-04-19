@@ -121,10 +121,10 @@ export function Game() {
                 return response.json();
             })
             .then(data => {
+                setPartidaInicializada(true);
                 console.log('Partida creada:');
                 idPartida = data.codigo;
                 console.log(idPartida);
-                setPartidaInicializada(true);
             })
             .catch(error => {
                 console.error('Error:', error);
@@ -231,10 +231,10 @@ export function Game() {
                     return response.json();
                 })
                 .then(data => {
-                    tablero1 = data.tableroBarcos1;
-                    disparos1 = data.disparosRealizados1;
-                    tablero2 = data.tableroBarcos2;
-                    disparos2 = data.disparosRealizados2;
+                    tablero1 = data.tableroBarcos;
+                    disparos1 = data.misDisparos;
+                    tablero2 = data.barcosHundidos;
+                    disparos2 = data.disparosEnemigos;
                     // const tableroInicial = [
                     //     [{ i: 1, j: 1 }, { i: 1, j: 2 }],
                     //     [{ i: 7, j: 1 }, { i: 8, j: 1 }, { i: 9, j: 1 }],
@@ -244,8 +244,12 @@ export function Game() {
                     //   ];
                     borrarWidgetsTablero(myBoard);
                     mostrarWidgetsTablero(tablero1, myBoard);
-                    borrarWidgetsTablero(opponentBoard);
-                    mostrarWidgetsTablero(tablero2, opponentBoard);
+
+                    // TO-DO: Mostrar tablero del oponente 
+                    // (No los barcos directamente, sino las celdas donde se ha disparado y los hundidos)
+                    
+                    //borrarWidgetsTablero(opponentBoard);
+                    //mostrarWidgetsTablero(tablero2, opponentBoard);
                 })
                 .catch(error => {
                     console.error('Error:', error);
