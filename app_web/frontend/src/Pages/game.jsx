@@ -98,20 +98,20 @@ export function Game() {
 
             switch (data['disparoRealizado'].estado) {
                 case "Tocado":
-                    if (casilla.childElementCount === 0) {
+                    if (casilla.childElementCount === 0) {  // Solo 1 img
                         imgX.src = explosionImg;
                         casilla.appendChild(imgX);
                     }
                     break;
                 case "Hundido":
-                    if (casilla.childElementCount === 0) {
+                    if (casilla.childElementCount === 0) { // Solo 1 img
                         imgX.src = explosionImg;
                         casilla.appendChild(imgX);
                         //mostrarBarcoPorDebajo();
                     }
                     break;
                 case "Agua":
-                    if (casilla.childElementCount === 0) {
+                    if (casilla.childElementCount === 0) {  // Solo 1 img
                         imgX.src = crossImg;
                         casilla.appendChild(imgX);
                         crossList.push(locationCasilla);
