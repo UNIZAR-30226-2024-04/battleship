@@ -112,6 +112,17 @@ function generarDisparoAleatorio(disparosRealizados) {
   return { i, j };
 }
 
+function calcularActualizacionELO(elo1, elo2, resultado) {
+  const k = 64;
+  const esperado1 = 1 / (1 + Math.pow(10, (elo2 - elo1) / 400));
+  const esperado2 = 1 / (1 + Math.pow(10, (elo1 - elo2) / 400));
+  let nuevosTrofeos1 = k * (resultado - esperado1);
+  let nuevosTrofeos2 = k * (1 - resultado - esperado2);
+  if (elo1 < 100 && nuevosTrofeos1 < 0) nuevosTrofeos1 -= nuevosTrofeos1 * 0.5;
+  if (elo2 < 100 && nuevosTrofeos2 < 0) nuevosTrofeos2 -= nuevosTrofeos2 * 0.5;
+  return [nuevosTrofeos1|0, nuevosTrofeos2|0];
+}
+  
 // -------------------------------------------- //
 // -------------- PARTIDA BASICA -------------- //
 // -------------------------------------------- //
@@ -242,8 +253,8 @@ exports.crearPartida = async (req, res) => {
  * @param {Number} [req.body.codigo] - El codigo de la partida
  * @param {String} req.body.nombreId - El nombreId del jugador
  * @param {Object} res - El tablero de barcos y los disparos realizados del jugador
- * @param {Tablero} res.tableroBarcos - El tablero de barcos del jugador
- * @param {Coordenada[]} res.disparosRealizados - Los disparos realizados por el jugador
+ * @param {Tablero} res.tableroBarcos - El tablero de barcos del jugador y su estado actual
+ * @param {Coordenada[]} res.disparosEnemigos - Los disparos realizados por el jugador enemigo
  * @example
  * peticion = { body: { codigo: '1234567890', jugador: 1 } }
  * respuesta = { json: () => {} }
@@ -286,7 +297,7 @@ exports.mostrarMiTablero = async (req, res) => {
       }
       const tableroDisparos = {
         tableroBarcos: jugador === 1 ? partidaActual.tableroBarcos1 : partidaActual.tableroBarcos2,
-        disparosRealizados: jugador === 1 ? partidaActual.disparosRealizados2 : partidaActual.disparosRealizados1
+        disparosEnemigos: jugador === 1 ? partidaActual.disparosRealizados2 : partidaActual.disparosRealizados1
       };
       console.log('Mi tablero obtenido con éxito');
       res.json(tableroDisparos);
@@ -312,7 +323,8 @@ exports.mostrarMiTablero = async (req, res) => {
  * @param {String} [req.body.codigo] - El codigo de la partida
  * @param {String} req.body.nombreId - El nombreId del jugador
  * @param {Object} res - El objeto de respuesta HTTP
- * @returns {Tablero} El tablero de barcos del jugador enemigo
+ * @param {Coordenada[]} res.misDisparos - Los disparos realizados por mi
+ * @param {Coordenada[]} res.barcosHundidos - Los barcos del enemigo hundidos por mi
  * @example
  * peticion = { body: { codigo: '1234567890', jugador: 1 } }
  * respuesta = { json: () => {} }
@@ -353,13 +365,23 @@ exports.mostrarTableroEnemigo = async (req, res) => {
         console.error('El jugador no está en la partida');
         return;
       }
-      const tablero = {
-        tableroBarcos: jugador === 1 ? partidaActual.disparosRealizados1 : partidaActual.disparosRealizados2
+
+      // Obtengo los barcos hundidos en el tablero enemigo
+      let listaBarcosHundidos = [];
+      for (let barco of jugador === 1 ? partidaActual.tableroBarcos2 : partidaActual.tableroBarcos1) {
+        if (barco.coordenadas.some(coordenada => coordenada.estado === 'Hundido')) {
+          barcosHundidos.push(barco);
+        }
+      }
+
+      const disparosBarcos = {
+        misDisparos: jugador === 1 ? partidaActual.disparosRealizados1 : partidaActual.disparosRealizados2,
+        barcosHundidos: listaBarcosHundidos
       };
       console.log('Tablero enemigo obtenido con éxito');
-      res.json(tablero);
-      console.log(tablero);
-      return tablero;
+      res.json(disparosBarcos);
+      console.log(disparosBarcos);
+      return disparosBarcos;
     } else {
       res.status(404).send('Partida no encontrada');
       console.error('Partida no encontrada');
@@ -380,7 +402,10 @@ exports.mostrarTableroEnemigo = async (req, res) => {
  * @param {String} [req.body.codigo] - El codigo de la partida
  * @param {String} req.body.nombreId - El nombreId del jugador
  * @param {Object} res - El objeto de respuesta HTTP
- * @returns {Object} Los tableros y disparos realizados de ambos jugadores
+ * @param {Tablero} res.tableroBarcos - El tablero de barcos del jugador y su estado actual
+ * @param {Coordenada[]} res.disparosEnemigos - Los disparos realizados por el jugador enemigo
+ * @param {Coordenada[]} res.misDisparos - Los disparos realizados por mi
+ * @param {Coordenada[]} res.barcosHundidos - Los barcos del enemigo hundidos por mi
  * @example
  * peticion = { body: { codigo: '1234567890' } }
  * respuesta = { json: () => {} }
@@ -421,11 +446,20 @@ exports.mostrarTableros = async (req, res) => {
         console.error('El jugador no está en la partida');
         return;
       }
+
+      // Obtengo los barcos hundidos en el tablero enemigo
+      let listaBarcosHundidos = [];
+      for (let barco of jugador === 1 ? partidaActual.tableroBarcos2 : partidaActual.tableroBarcos1) {
+        if (barco.coordenadas.some(coordenada => coordenada.estado === 'Hundido')) {
+          barcosHundidos.push(barco);
+        }
+      }
+
       const tableros = {
-        tableroBarcos1: partidaActual.tableroBarcos1,
-        tableroBarcos2: partidaActual.tableroBarcos2,
-        disparosRealizados1: partidaActual.disparosRealizados1,
-        disparosRealizados2: partidaActual.disparosRealizados2
+        tableroBarcos: jugador === 1 ? partidaActual.tableroBarcos1 : partidaActual.tableroBarcos2,
+        disparosEnemigos: jugador === 1 ? partidaActual.disparosRealizados2 : partidaActual.disparosRealizados1,
+        misDisparos: jugador === 1 ? partidaActual.disparosRealizados1 : partidaActual.disparosRealizados2,
+        barcosHundidos: listaBarcosHundidos
       };
       console.log('Tableros obtenidos con éxito');
       res.json(tableros);
@@ -670,8 +704,28 @@ exports.realizarDisparo = async (req, res) => {
         };
 
         // Actualizar estadisticas de los jugadores
+        let nuevosTrofeos = [0, 0];
         let tempRes1 = { json: () => {}, status: function(s) { 
           this.statusCode = s; return this;} };
+        // Actualizar ptos de experiencia y ELO si la partida no es amistosa
+        if (!partidaActual.amistosa) {
+          estadisticasJugadores[0].nuevosTrofeos = 
+            (estadisticasJugadores[0].victoria === 1) ? 20 : 0; // Place holder === TODO ELO
+          let experienciaJ1 = 1*estadisticasJugadores[0].nuevosDisparosAcertados 
+          + 0.25*estadisticasJugadores[0].nuevosDisparosFallados 
+          + 5*estadisticasJugadores[0].nuevosBarcosHundidos
+          + 10*estadisticasJugadores[0].victoria;
+          nuevosTrofeos  = calcularActualizacionELOs(jugador1.trofeos, jugador2.trofeos,
+            estadisticasJugadores[0].victoria);
+          estadisticasJugadores[0].nuevosTrofeos = nuevosTrofeos[0];
+          await actualizarPuntosExperiencia({ body: { nombreId: estadisticasJugadores[0].nombreId, 
+            nuevosPuntosExperiencia: experienciaJ1 } }, tempRes1);
+          if (tempRes1.statusCode !== undefined && tempRes1.statusCode !== 200) {
+            res.status(500).send('Hubo un error al actualizar los puntos de experiencia');
+            console.error("Hubo un error al actualizar los puntos de experiencia");
+            return;
+          }
+        }
         await actualizarEstadisticas({ body: estadisticasJugadores[0] }, tempRes1);
         if (tempRes1.statusCode !== undefined && tempRes1.statusCode !== 200) {
           res.status(500).send('Hubo un error al actualizar las estadísticas');
@@ -679,9 +733,26 @@ exports.realizarDisparo = async (req, res) => {
           return;
         }
 
+
         if (!partidaContraIA) {
           let tempRes2 = { json: () => {}, status: function(s) {
             this.statusCode = s; return this;} };
+          // Las partidas amistosas no cuentan para la experiencia ni para los trofeos
+          if (!partidaActual.amistosa) {
+            estadisticasJugadores[1].nuevosTrofeos = 20; // Place holder === TODO ELO
+            let experienciaJ2 = 1*estadisticasJugadores[1].nuevosDisparosAcertados
+            + 0.25*estadisticasJugadores[1].nuevosDisparosFallados
+            + 5*estadisticasJugadores[1].nuevosBarcosHundidos
+            + 10*estadisticasJugadores[1].victoria;
+            estadisticasJugadores[1].nuevosTrofeos = nuevosTrofeos[1];
+            await actualizarPuntosExperiencia({ body: { nombreId: estadisticasJugadores[1].nombreId,
+              nuevosPuntosExperiencia: experienciaJ2 } }, tempRes2);
+            if (tempRes2.statusCode !== undefined && tempRes2.statusCode !== 200) {
+              res.status(500).send('Hubo un error al actualizar los puntos de experiencia');
+              console.error("Hubo un error al actualizar los puntos de experiencia");
+              return;
+            }
+          }
           await actualizarEstadisticas({ body: estadisticasJugadores[1] }, res);
           if (tempRes2.statusCode !== undefined && tempRes2.statusCode !== 200) {
             res.status(500).send('Hubo un error al actualizar las estadísticas');
@@ -706,46 +777,6 @@ exports.realizarDisparo = async (req, res) => {
   }
 };
 
-
-// Actualizar estado de la partida tras un disparo o habilidad del adversario
-// Devuelve mi tablero y los disparos realizados
-/**
- * @function actualizarEstadoPartida
- * @description Actualiza el estado de la partida tras un disparo o habilidad del adversario
- * @param {Object} req - El objeto de solicitud HTTP
- * @param {String} [req.body._id] - El id de la partida, si no se proporciona se espera el codigo
- * @param {String} [req.body.codigo] - El codigo de la partida
- * @param {Number} req.body.jugador - El número del jugador (1 o 2)
- * @param {Object[]} req.body.tablero - El tablero de barcos del jugador
- * @param {Object[]} req.body.disparos - Los disparos realizados por el jugador
- * @param {Object} res - El objeto de respuesta HTTP
- * @returns {Partida} La partida modificada
- * @example
- * peticion = { body: { codigo: '1234567890', jugador: 1, tablero: [], disparos: [] } }
- * respuesta = { json: () => {} }
- * await actualizarEstadoPartida(peticion, respuesta)
- */
-exports.actualizarEstadoPartida = async (req, res) => {
-  try {
-    const { codigo, jugador } = req.body;
-    const partidaActual = await Partida.findById(codigo);
-    if (partidaActual) {
-      if (jugador === 1) {
-        partidaActual.tableroBarcos1 = tablero;
-        partidaActual.disparosRealizados1 = disparos;
-      } else {
-        partidaActual.tableroBarcos2 = tablero;
-        partidaActual.disparosRealizados2 = disparos;
-      }
-      const partidaGuardada = await partidaActual.save();
-      res.json(partidaGuardada);
-    } else {
-      res.status(404).send('Partida no encontrada');
-    }
-  } catch (error) {
-    res.status(500).send('Hubo un error');
-  }
-};
 
 // Funcion para guardar las estadisticas de cada jugador al finalizar la partida
 // Devuelve las estadisticas de la partida de ambos jugadores
