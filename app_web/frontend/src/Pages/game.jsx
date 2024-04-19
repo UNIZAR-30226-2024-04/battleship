@@ -7,7 +7,7 @@ import '../Styles/game-style.css';
 import 'gridstack/dist/gridstack.min.css';
 import 'gridstack/dist/gridstack-extra.min.css';
 
-import Tablero from '../Resources/Tablero';
+import Tablero from '../Components/Tablero';
 
 import aircraftImg from '../Images/fleet/portaaviones.png';
 import destroyImg from '../Images/fleet/destructor.png';
@@ -26,6 +26,9 @@ import missileImg from '../Images/skills/misil.png';
 import burstImg from '../Images/skills/rafaga.png';
 import sonarImg from '../Images/skills/sonar.png';
 import torpedoImg from '../Images/skills/torpedo.png';
+
+import crossImg from '../Images/ingame/cross.png';
+import explosionImg from '../Images/ingame/explosion.png';
 
 // Establecer la url de obtenerPerfil, moverBarcoInicial del backend
 const urlObtenerDatosPersonales = 'http://localhost:8080/perfil/obtenerDatosPersonales';
@@ -82,6 +85,28 @@ export function Game() {
         })
         .then(data => {
             console.log('Respuesta del servidor al disparar:', data);
+
+            let imgX;
+            const keyCasilla = fila*10 + columna;
+            const casilla = document.querySelector(`#tablero .casilla[key="${keyCasilla}"]`);
+            console.log(casilla);
+            switch (data['disparoRealizado'].estado) {
+                case "Tocado":
+                    imgX = document.createElement('img').src = explosionImg;
+                    casilla.keyCasilla.appendChild(imgX);
+                    break;
+                case "Hundido":
+                    imgX = document.createElement('img').src = explosionImg;
+                    casilla.keyCasilla.appendChild(imgX);
+                    //mostrarBarcoPorDebajo();
+                    break;
+                case "Agua":
+                    imgX = document.createElement('img').src = crossImg;
+                    casilla.keyCasilla.appendChild(imgX);
+                    break;
+                default:
+                    console.log("Error: disparo mal hecho -1 para backend");
+            }
         })
         .catch(error => {
             console.error('Error:', error);
