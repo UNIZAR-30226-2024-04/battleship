@@ -37,6 +37,21 @@ const urlMostrarTableros = 'http://localhost:8080/partida/mostrarTableros';
 
 const cookies = new Cookies();
 
+// function Mutex() {
+//     // Estado para controlar si el recurso está bloqueado o no
+//     const [isLocked, setIsLocked] = useState(false);
+  
+//     // Función para bloquear el recurso
+//     const lockResource = () => {
+//       setIsLocked(true);
+//     };
+  
+//     // Función para desbloquear el recurso
+//     const unlockResource = () => {
+//       setIsLocked(false);
+//     };
+// }
+
 
 function esBarcoHorizontal(barco) {
     return barco.coordenadas[0].i === barco.coordenadas[1].i;
@@ -46,10 +61,31 @@ export function Game() {
     const [lastClickedCell, setLastClickedCell] = useState(null);
 
     const handleClickedCell = (fila, columna) => {
-        // Hacer la petición al backend utilizando las coordenadas de la celda
-        // Aquí puedes hacer tu lógica para la petición al backend
         console.log(`Celda clickeada: Fila ${fila}, Columna ${columna}`);
         setLastClickedCell({ fila, columna });
+        // Hacer la petición al backend utilizando las coordenadas de la celda
+        // Aquí puedes hacer tu lógica para la petición al backend
+        fetch(urlRealizarDisparo, {
+            method: 'POST',
+            headers: {
+            'Content-Type': 'application/json',
+            'authorization': tokenCookie
+            },
+            body: JSON.stringify({ codigo:idPartida, nombreId: nombreId1Cookie, i: fila, j: columna})
+        })
+        .then(response => {
+            if (!response.ok) {
+                console.log('Respuesta del servidor al disparar:', response);
+                throw new Error('Realizar Disparo ha fallado');
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Respuesta del servidor al disparar:', data);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
     };
 
     // Obtener el token y nombreId del usuario
@@ -67,7 +103,7 @@ export function Game() {
     };
 
     // Datos partida
-    let idPartida;
+    let [idPartida, setIdPartida] = useState(null);
     let tablero1;
     let tablero2;
     let disparos1;
@@ -100,10 +136,11 @@ export function Game() {
 
     let [partidaInicializada, setPartidaInicializada] = useState(false); // Estado para saber si la partida ha sido inicializada
 
-    const inicializarPartidaOffline = () => {
+    async function inicializarPartidaOffline() {
         if (hayPartidaInicializada()) {
             console.log('Ya hay partida creada:');
         } else {
+            setPartidaInicializada(true);
             console.log('Creando partida...');
             // Creamos partida en bbdd
             fetch(urlCrearPartida, {
@@ -116,18 +153,19 @@ export function Game() {
             })
             .then(response => {
                 if (!response.ok) {
+                    setPartidaInicializada(false);
                     throw new Error('La solicitud ha fallado');
                 }
                 return response.json();
             })
             .then(data => {
-                setPartidaInicializada(true);
                 console.log('Partida creada:');
-                idPartida = data.codigo;
+                setIdPartida(data.codigo);
                 console.log(idPartida);
             })
             .catch(error => {
                 console.error('Error:', error);
+                setPartidaInicializada(false);
             });
             
         }
@@ -146,48 +184,52 @@ export function Game() {
 
     // Este efecto se ejecuta solo una vez después del montaje inicial del componente
     useEffect(() => {
+        // Buscamos sincronizar las llamadas
+        const fetchData = async () => {
+            // TODO: Mira si venimos de partida offline o online
+            // inicializarPartidaOnline();
+            await inicializarPartidaOffline();
+            console.log('POST partida inicializada:');
 
-        // TODO: Mira si venimos de partida offline o online
-        // inicializarPartidaOnline();
-        inicializarPartidaOffline();
+            // Inicializamos el tablero propio con las siguientes propiedades
+            const myBoard = GridStack.init({
+                float: true,
+                column: boardDimension,     // coordenadas indexadas a 0..9
+                row: boardDimension,        // coordenadas indexadas a 0..9
+                removable: false,            // eliminar widgets si se sacan del tablero
+                acceptWidgets: true,        // acepta widgets de otros tableros
+                disableResize: true,        // quita icono de resize en cada widget
+                resizable: {},               // no se puede redimensionar
+                animate: false,              // animación al añadir o mover widgets
+                //cellHeight: "80px", // Establecer la altura de cada celda en 50px
+                // No permitir arrastrar ni mover widgets
+                draggable: {
+                    enabled: false
+                },
+                disableDrag: true,
+            }, '.grid-stack.fleet-board1');
+            setMyBoard(myBoard); // Almacenar la instancia de GridStack en el estado
 
-        // Inicializamos el tablero propio con las siguientes propiedades
-        const myBoard = GridStack.init({
-            float: true,
-            column: boardDimension,     // coordenadas indexadas a 0..9
-            row: boardDimension,        // coordenadas indexadas a 0..9
-            removable: false,            // eliminar widgets si se sacan del tablero
-            acceptWidgets: true,        // acepta widgets de otros tableros
-            disableResize: true,        // quita icono de resize en cada widget
-            resizable: {},               // no se puede redimensionar
-            animate: false,              // animación al añadir o mover widgets
-            //cellHeight: "80px", // Establecer la altura de cada celda en 50px
-            // No permitir arrastrar ni mover widgets
-            draggable: {
-                enabled: false
-            },
-            disableDrag: true,
-        }, '.grid-stack.fleet-board1');
-        setMyBoard(myBoard); // Almacenar la instancia de GridStack en el estado
-
-        // Inicializamos el tablero del oponente con las siguientes propiedades
-        const opponentBoard = GridStack.init({
-            float: true,
-            column: boardDimension,     // coordenadas indexadas a 0..9
-            row: boardDimension,        // coordenadas indexadas a 0..9
-            removable: false,            // eliminar widgets si se sacan del tablero
-            acceptWidgets: true,        // acepta widgets de otros tableros
-            disableResize: true,        // quita icono de resize en cada widget
-            resizable: {},               // no se puede redimensionar
-            animate: false,              // animación al añadir o mover widgets
-            //cellHeight: "80px", // Establecer la altura de cada celda en 50px
-            draggable: {
-                enabled: false
-            },
-            disableDrag: true,
-            
-        }, '.grid-stack.fleet-board2');
-        setOpponentBoard(opponentBoard); // Almacenar la instancia de GridStack en el estado
+            // Inicializamos el tablero del oponente con las siguientes propiedades
+            const opponentBoard = GridStack.init({
+                float: true,
+                column: boardDimension,     // coordenadas indexadas a 0..9
+                row: boardDimension,        // coordenadas indexadas a 0..9
+                removable: false,            // eliminar widgets si se sacan del tablero
+                acceptWidgets: true,        // acepta widgets de otros tableros
+                disableResize: true,        // quita icono de resize en cada widget
+                resizable: {},               // no se puede redimensionar
+                animate: false,              // animación al añadir o mover widgets
+                //cellHeight: "80px", // Establecer la altura de cada celda en 50px
+                draggable: {
+                    enabled: false
+                },
+                disableDrag: true,
+                
+            }, '.grid-stack.fleet-board2');
+            setOpponentBoard(opponentBoard); // Almacenar la instancia de GridStack en el estado
+        };
+        fetchData();
     }, []);
 
     const mostrarWidgetsTablero = (tablero, board) => {
@@ -235,19 +277,13 @@ export function Game() {
                     disparos1 = data.misDisparos;
                     tablero2 = data.barcosHundidos;
                     disparos2 = data.disparosEnemigos;
-                    // const tableroInicial = [
-                    //     [{ i: 1, j: 1 }, { i: 1, j: 2 }],
-                    //     [{ i: 7, j: 1 }, { i: 8, j: 1 }, { i: 9, j: 1 }],
-                    //     [{ i: 3, j: 10 }, { i: 4, j: 10 }, { i: 5, j: 10 }],
-                    //     [{ i: 3, j: 6 }, { i: 4, j: 6 }, { i: 5, j: 6 }, { i: 6, j: 6 }],
-                    //     [{ i: 10, j: 6 }, { i: 10, j: 7 }, { i: 10, j: 8 }, { i: 10, j: 9 }, { i: 10, j: 10 }]
-                    //   ];
+
                     borrarWidgetsTablero(myBoard);
                     mostrarWidgetsTablero(tablero1, myBoard);
 
                     // TO-DO: Mostrar tablero del oponente 
                     // (No los barcos directamente, sino las celdas donde se ha disparado y los hundidos)
-                    
+
                     //borrarWidgetsTablero(opponentBoard);
                     //mostrarWidgetsTablero(tablero2, opponentBoard);
                 })
@@ -260,6 +296,56 @@ export function Game() {
         }
         
     }, [myBoard, opponentBoard]);
+
+
+    // Este efecto se ejecuta cuando myBoard cambia
+    useEffect(() => {
+        if(!idPartida) {
+            console.log('No hay idPartida');
+        } else {
+            // Obtener el tablero inicial del perfil en la base de datos
+            try {
+                console.log('Obteniendo tablero inicial...');
+                console.log('idPartida:', idPartida);
+                console.log('nombreId:', nombreId1Cookie);
+                fetch(urlMostrarTableros, {
+                    method: 'POST',
+                    headers: {
+                    'Content-Type': 'application/json',
+                    'authorization': tokenCookie
+                    },
+                    body: JSON.stringify({ codigo: idPartida, nombreId: nombreId1Cookie})
+                })
+                .then(response => {
+                    if (!response.ok) {
+                    throw new Error('La solicitud ha fallado');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    tablero1 = data.tableroBarcos;
+                    disparos1 = data.misDisparos;
+                    tablero2 = data.barcosHundidos;
+                    disparos2 = data.disparosEnemigos;
+
+                    borrarWidgetsTablero(myBoard);
+                    mostrarWidgetsTablero(tablero1, myBoard);
+
+                    // TO-DO: Mostrar tablero del oponente 
+                    // (No los barcos directamente, sino las celdas donde se ha disparado y los hundidos)
+
+                    //borrarWidgetsTablero(opponentBoard);
+                    //mostrarWidgetsTablero(tablero2, opponentBoard);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+        
+    }, [idPartida]);
 
 
     // Función que añade un elemento a la cuadrícula
@@ -288,34 +374,34 @@ export function Game() {
     };
 
 
-    // Función para manejar el clic izquierdo (disparos)
-    const handleItemClick = (event) => {
-        // TO-DO: Implementar disparos
-        // saber en qué celda del tablero rival se ha clickado
-        const cell = event.target;
-        const cellId = cell.id;
-        console.log('Celda:', cellId);
-        if (cellId) {
-            const response = fetch(urlRealizarDisparo, {
-                method: 'POST',
-                headers: {
-                'Content-Type': 'application/json',
-                'authorization': tokenCookie
-                },
-                body: JSON.stringify({ idPartida: idPartida, nombreId: nombreId1Cookie, i: cellId[1], j: cellId[3]})
+    // // Función para manejar el clic izquierdo (disparos)
+    // const handleItemClick = (event) => {
+    //     // TO-DO: Implementar disparos
+    //     // saber en qué celda del tablero rival se ha clickado
+    //     const cell = event.target;
+    //     const cellId = cell.id;
+    //     console.log('Celda:', cellId);
+    //     if (cellId) {
+    //         const response = fetch(urlRealizarDisparo, {
+    //             method: 'POST',
+    //             headers: {
+    //             'Content-Type': 'application/json',
+    //             'authorization': tokenCookie
+    //             },
+    //             body: JSON.stringify({ idPartida: idPartida, nombreId: nombreId1Cookie, i: cellId[1], j: cellId[3]})
                 
-            });
+    //         });
             
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
+    //         if (!response.ok) {
+    //             throw new Error(`HTTP error! status: ${response.status}`);
+    //         }
             
-            const responseData = response.json(); // Suponiendo que el backend devuelve JSON
-            console.log('Respuesta del servidor al disparar:', responseData);
+    //         const responseData = response.json(); // Suponiendo que el backend devuelve JSON
+    //         console.log('Respuesta del servidor al disparar:', responseData);
             
-        }
+    //     }
 
-    };
+    // };
 
     useEffect(() => {
         if (!(skillQueue.length > 0 && skillQueue[0] === "null")) {
@@ -350,11 +436,11 @@ export function Game() {
                         ¡A batallar!
                     </h1>
                     <div className="fleet-main-content-container">
-                        <div className="grid-stack fleet-board1">
+                        <div className="grid-stack fleet-board1"></div>
+                        <div className="fleet-board-separator"></div>
+                        <div className="grid-stack fleet-board2" /*onClick={handleItemClick}*/>
                             <Tablero id="tablero" onCellClick={handleClickedCell} />
                         </div>
-                        <div className="fleet-board-separator"></div>
-                        <div className="grid-stack fleet-board2" onClick={handleItemClick}></div>
                     </div>
                 </div>
             </div>

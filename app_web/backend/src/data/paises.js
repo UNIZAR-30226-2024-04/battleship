@@ -1,11 +1,7 @@
 
-/** 
- * @module data/paises
-*/
-
 /**
+ * @memberof module:data
  * @const {Array} paisesDisponibles
- * @memberof module:data/paises
  * @description Lista de paises disponibles para seleccionar en el perfil de usuario
  * @default ['', 'España', 'Portugal', 'Reino Unido', 'Francia']
  * @readonly

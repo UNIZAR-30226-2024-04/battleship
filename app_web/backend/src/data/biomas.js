@@ -1,11 +1,8 @@
 
-/** 
- * @module data/biomas
-*/
 
 /**
- * @typedef {Array} BiomasDisponibles
- * @memberof module:data/biomas
+ * @const {Array} biomasDisponibles
+ * @memberof module:data
  * @description Lista de biomas disponibles, que se pueden seleccionar para jugar
  * @default ['Mediterraneo', 'Cantabrico', 'Norte', 'Bermudas']
  * @readonly

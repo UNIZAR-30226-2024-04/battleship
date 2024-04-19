@@ -1,11 +1,20 @@
 const got = require('got');
 const mongoose = require('mongoose');
+const { base } = require('../models/partidaModel');
+const paisesDisponibles = require('../data/paises');
+const habilidadesDisponibles = require('../data/habilidades');
 
 // definir las URI a testear
-const registrarUsuarioURI = 'http://localhost:8080/perfil/registrarUsuario';
-const iniciarSesionURI = 'http://localhost:8080/perfil/iniciarSesion';
-const obtenerUsuarioURI = 'http://localhost:8080/perfil/obtenerUsuario';
-const obtenerDatosPersonalesURI = 'http://localhost:8080/perfil/obtenerDatosPersonales';
+const baseURI = 'http://localhost:8080';
+const basePerfilURI = baseURI + '/perfil';
+const registrarUsuarioURI = basePerfilURI + '/registrarUsuario';
+const iniciarSesionURI = basePerfilURI + '/iniciarSesion';
+const obtenerUsuarioURI = basePerfilURI + '/obtenerUsuario';
+const obtenerDatosPersonalesURI = basePerfilURI + '/obtenerDatosPersonales';
+const modificarDatosPersonalesURI = basePerfilURI + '/modificarDatosPersonales';
+const modificarMazoURI = basePerfilURI + '/modificarMazo';
+const moverBarcoInicialURI = basePerfilURI + '/moverBarcoInicial';
+const eliminarUsuarioURI = basePerfilURI + '/eliminarUsuario';
 
 // definir las credenciales de prueba
 const credenciales = {
@@ -79,6 +88,65 @@ describe('Pruebas de integración', function() {
             expect(response.statusCode).toBe(200);
             expect(response.body.nombreId).toBe(credenciales.nombreId);
             expect(response.body.correo).toBe(credenciales.correo);
+        });
+    });
+    it('Modificar datos personales mediante la ruta', async () => {
+        await got.post(modificarDatosPersonalesURI, {
+            json: {
+                nombreId: credenciales.nombreId,
+                correo: "temp" + credenciales.correo,
+                pais: paisesDisponibles[1]
+            }, headers: { "Authorization": `Bearer ${token}` }
+        })
+        .then(response => {
+            response.body = JSON.parse(response.body);
+            expect(response.statusCode).toBe(200);
+            expect(response.body.nombreId).toBe(credenciales.nombreId);
+            expect(response.body.correo).toBe("temp" + credenciales.correo);
+            expect(response.body.pais).toBe(paisesDisponibles[1]);
+        });
+    });
+    it('Modificar mazo mediante la ruta', async () => {
+        await got.post(modificarMazoURI, {
+            json: {
+                nombreId: credenciales.nombreId,
+                mazoHabilidades: [habilidadesDisponibles[0]]
+            }, headers: { "Authorization": `Bearer ${token}` }
+        })
+        .then(response => {
+            response.body = JSON.parse(response.body);
+            expect(response.statusCode).toBe(200);
+            expect(response.body.length).toBe(1);
+            expect(response.body[0]).toStrictEqual(habilidadesDisponibles[0]);
+        });
+    });
+    it('Mover barco inicial mediante la ruta', async () => {
+        await got.post(moverBarcoInicialURI, {
+            json: {
+                nombreId: credenciales.nombreId,
+                iProaNueva: 9,
+                jProaNueva: 9,
+                rotar: 0
+            }, headers: { "Authorization": `Bearer ${token}` }
+        })
+        .then(response => {
+            response.body = JSON.parse(response.body);
+            expect(response.statusCode).toBe(200);
+            expect(response.body.length).toBe(5);
+            expect(response.body[0].coordenadas[0].i).toBe(9);
+            expect(response.body[0].coordenadas[0].j).toBe(9);
+        });
+    });
+    it('Eliminar usuario mediante la ruta', async () => {
+        await got.post(eliminarUsuarioURI, {
+            json: {
+                nombreId: credenciales.nombreId
+            }, headers: { "Authorization": `Bearer ${token}` }
+        })
+        .then(response => {
+            response.body = JSON.parse(response.body);
+            expect(response.statusCode).toBe(200);
+            expect(response.body.mensaje).toBe('Perfil eliminado correctamente');
         });
     });
     afterAll(() => {

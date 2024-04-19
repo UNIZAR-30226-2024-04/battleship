@@ -5,15 +5,10 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const Reaccion = require('../data/reacciones');
 
-/**
- * @module models/publicacionModel
- * @description Modelo de Publicacion
- * @requires mongoose
- * @requires data/reacciones
- */
 
 /**
  * @typedef {Object} Publicacion
+ * @memberof module:publicacion
  * @property {String} publicacionId - Identificador de la publicación
  * @property {String} usuario - Usuario que publica
  * @property {String} texto - Texto de la publicación

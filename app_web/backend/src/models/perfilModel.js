@@ -8,19 +8,11 @@ const paisesDisponibles = require('../data/paises');
 const Tablero = require('../data/tablero');
 
 /**
- * @module models/perfilModel
- * @description Modelo de Perfil
- * @requires mongoose
- * @requires data/habilidades
- * @requires data/paises
- * @requires data/tablero
- */
-
-/**
  * @typedef {Object} Perfil
+ * @memberof module:perfil
  * @property {String} nombreId - Nombre de usuario
  * @property {String} contraseña - Contraseña usuario
- * @property {String} pais - País de residencia del usuario
+ * @property {paisesDisponibles} pais - País de residencia del usuario
  * @property {String[]} listaAmigos - Lista de amigos del usuario
  * @property {String[]} listaSolicitudes - Lista de solicitudes de amistad
  * @property {Number} trofeos - Trofeos del usuario (ELO)
@@ -34,6 +26,10 @@ const Tablero = require('../data/tablero');
  * @property {Number} barcosPerdidos - Total de barcos perdidos
  * @property {Number} disparosAcertados - Total de disparos acertados
  * @property {Number} disparosFallados - Total de disparos fallados
+ * @property {Number} codigoPartidaActual - Código de la partida actual
+ * @description Tipo de dato Perfil, formado por los datos de un usuario
+ * @requires module:data~paisesDisponibles
+ * @requires module:data~habilidadesDisponibles
  */
 
 // Perfil Schema

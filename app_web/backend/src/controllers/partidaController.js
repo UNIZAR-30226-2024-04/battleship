@@ -7,11 +7,15 @@ const biomasDisponibles = require('../data/biomas');
 const {actualizarEstadisticas} = require('./perfilController');
 const tableroDim = Coordenada.i.max;  // Dimensiones del tablero
 /**
- * @module controllers/partida
- * @description Controlador para las partidas
- * @see module:partidaModel
- * @requires module:partidaModel
- * @requires module:perfilModel
+ * @module partida
+ * @description Gestión de partidas
+ * @requires module:perfil
+ * @requires module:data~barcosDisponibles
+ * @requires module:data~climasDisponibles
+ * @requires module:data~biomasDisponibles
+ * @requires module:data~Coordenada
+ * @requires module:data~Tablero
+ * 
  */
 
 // ------------------------------------------ //
@@ -34,8 +38,10 @@ function dispararCoordenada(tablero, i, j) {
   for (let barco of tablero) {
     for (let coordenada of barco.coordenadas) {
       if (coordenada.i === i && coordenada.j === j) {
-        coordenada.estado = 'Tocado';
-        return barco;
+        if (coordenada.estado === 'Agua') {
+          coordenada.estado = 'Tocado';
+          return barco;
+        } else return null;
       }
     }
   }
@@ -106,6 +112,17 @@ function generarDisparoAleatorio(disparosRealizados) {
   return { i, j };
 }
 
+function calcularActualizacionELO(elo1, elo2, resultado) {
+  const k = 64;
+  const esperado1 = 1 / (1 + Math.pow(10, (elo2 - elo1) / 400));
+  const esperado2 = 1 / (1 + Math.pow(10, (elo1 - elo2) / 400));
+  let nuevosTrofeos1 = k * (resultado - esperado1);
+  let nuevosTrofeos2 = k * (1 - resultado - esperado2);
+  if (elo1 < 100 && nuevosTrofeos1 < 0) nuevosTrofeos1 -= nuevosTrofeos1 * 0.5;
+  if (elo2 < 100 && nuevosTrofeos2 < 0) nuevosTrofeos2 -= nuevosTrofeos2 * 0.5;
+  return [nuevosTrofeos1|0, nuevosTrofeos2|0];
+}
+  
 // -------------------------------------------- //
 // -------------- PARTIDA BASICA -------------- //
 // -------------------------------------------- //
@@ -461,6 +478,15 @@ exports.mostrarTableros = async (req, res) => {
 };
 
 /**
+ * @typedef {Object} TurnoIA
+ * @property {Object} disparoRealizado - El disparo realizado por la IA
+ * @property {Object} [barcoCoordenadas] - Las coordenadas del barco disparado por la IA, si se ha hundido
+ * @property {String} eventoOcurrido - El evento ocurrido en la partida
+ * @property {Boolean} finPartida - Indica si la partida ha terminado
+ * @property {String} clima - El clima de la partida
+ */
+
+/**
  * @function realizarDisparo
  * @description Realiza un disparo en la coordenada (i, j) del enemigo y actualiza el estado de la partida
  * @param {Object} req - El objeto de solicitud HTTP
@@ -475,13 +501,7 @@ exports.mostrarTableros = async (req, res) => {
  * @param {String} res.eventoOcurrido - El evento ocurrido en la partida
  * @param {Boolean} res.finPartida - Indica si la partida ha terminado
  * @param {String} res.clima - El clima de la partida
- * @param {Object} [res.turnoIA] - El turno de la IA, si la partida es contra la IA
- * @param {Object} res.turnoIA.disparoRealizado - El disparo realizado por la IA
- * @param {Object} [res.turnoIA.barcoCoordenadas] - Las coordenadas del barco disparado por la IA, si se ha hundido
- * @param {String} res.turnoIA.eventoOcurrido - El evento ocurrido en la partida
- * @param {Boolean} res.turnoIA.finPartida - Indica si la partida ha terminado
- * @param {String} res.turnoIA.clima - El clima de la partida
- * @returns {Partida} La partida modificada
+ * @param {TurnoIA[]} [res.turnosIA] - Los turnos de la IA, si la partida es contra la IA
  * @example
  * peticion = { body: { codigo: '1234567890', nombreId: 'jugador1', i: 1, j: 1 } }
  * respuesta = { json: () => {} }
@@ -552,10 +572,19 @@ exports.realizarDisparo = async (req, res) => {
       if (barcoDisparado) {
         estadisticasJugadores[jugador - 1].nuevosDisparosAcertados++;
         disparo.estado = 'Tocado'; // Los disparos solo son Agua o Tocado
-        if (barcoDisparado.coordenadas.every(coordenada => coordenada.estado === 'Tocado')) {
+        let hundido = true;
+        for (let coord of barcoDisparado.coordenadas) {
+          if (coord.estado === 'Agua') {
+            hundido = false;
+            break;
+          }
+        }
+        if (hundido) {
           estadisticasJugadores[jugador - 1].nuevosBarcosHundidos++;
           estadisticasJugadores[jugador === 1 ? 1 : 0].nuevosBarcosPerdidos++;
-          barcoDisparado.coordenadas.map(coordenada => coordenada.estado = 'Hundido');
+          for (let coord of barcoDisparado.coordenadas) {
+            coord.estado = 'Hundido';
+          }
           disparo.estado = 'Hundido';
         }
       } else {  // Sólo cambia el turno si se falla el disparo
@@ -603,11 +632,12 @@ exports.realizarDisparo = async (req, res) => {
         );
       }
 
-
+      
       let turnosIA = [];
       if (partidaContraIA && disparo.estado === 'Agua' && !finPartida) {
-        console.log("Turno de la IA");
+        console.log('Turno de la IA');
         let juegaIA = true;
+        let num = 1;
         while (juegaIA) {
           let posibleDisparoIA = generarDisparoAleatorio(partidaActual.disparosRealizados2);
           let barcoDisparadoIA = dispararCoordenada(partidaActual.tableroBarcos1, 
@@ -615,11 +645,22 @@ exports.realizarDisparo = async (req, res) => {
           let disparoIA = { i: posibleDisparoIA.i, j: posibleDisparoIA.j, estado: 'Agua' };
           if (barcoDisparadoIA) {
             disparoIA.estado = 'Tocado';
-            if (barcoDisparado.coordenadas.every(coordenada => coordenada.estado === 'Tocado')) {
+            let hundido = true;
+            for (let coord of barcoDisparadoIA.coordenadas) {
+              if (coord.estado === 'Agua') {
+                hundido = false;
+                break;
+              }
+            }
+            if (hundido) {
               estadisticasJugadores[0].nuevosBarcosPerdidos++;
-              barcoDisparadoIA.coordenadas.map(coordenada => coordenada.estado = 'Hundido');
+              for (let coord of barcoDisparadoIA.coordenadas) {
+                coord.estado = 'Hundido';
+              }
               disparoIA.estado = 'Hundido';
             }
+          } else {
+            partidaActual.contadorTurno++;
           }
           partidaActual.disparosRealizados2.push(disparoIA);
 
@@ -638,11 +679,10 @@ exports.realizarDisparo = async (req, res) => {
             clima: partidaActual.clima
           };
           turnosIA.push(turnoIA);
-          console.log('turnosIA:',turnosIA.length);
           juegaIA = disparoIA.estado !== 'Agua' && !finPartidaIA;
         }
       }
-
+      console.log('Disparo realizado con éxito');
       // Actualizar la partida
       const partidaModificada = await Partida.findOneAndUpdate(
         filtro, // Filtrar
@@ -664,8 +704,28 @@ exports.realizarDisparo = async (req, res) => {
         };
 
         // Actualizar estadisticas de los jugadores
+        let nuevosTrofeos = [0, 0];
         let tempRes1 = { json: () => {}, status: function(s) { 
           this.statusCode = s; return this;} };
+        // Actualizar ptos de experiencia y ELO si la partida no es amistosa
+        if (!partidaActual.amistosa) {
+          estadisticasJugadores[0].nuevosTrofeos = 
+            (estadisticasJugadores[0].victoria === 1) ? 20 : 0; // Place holder === TODO ELO
+          let experienciaJ1 = 1*estadisticasJugadores[0].nuevosDisparosAcertados 
+          + 0.25*estadisticasJugadores[0].nuevosDisparosFallados 
+          + 5*estadisticasJugadores[0].nuevosBarcosHundidos
+          + 10*estadisticasJugadores[0].victoria;
+          nuevosTrofeos  = calcularActualizacionELOs(jugador1.trofeos, jugador2.trofeos,
+            estadisticasJugadores[0].victoria);
+          estadisticasJugadores[0].nuevosTrofeos = nuevosTrofeos[0];
+          await actualizarPuntosExperiencia({ body: { nombreId: estadisticasJugadores[0].nombreId, 
+            nuevosPuntosExperiencia: experienciaJ1 } }, tempRes1);
+          if (tempRes1.statusCode !== undefined && tempRes1.statusCode !== 200) {
+            res.status(500).send('Hubo un error al actualizar los puntos de experiencia');
+            console.error("Hubo un error al actualizar los puntos de experiencia");
+            return;
+          }
+        }
         await actualizarEstadisticas({ body: estadisticasJugadores[0] }, tempRes1);
         if (tempRes1.statusCode !== undefined && tempRes1.statusCode !== 200) {
           res.status(500).send('Hubo un error al actualizar las estadísticas');
@@ -673,9 +733,26 @@ exports.realizarDisparo = async (req, res) => {
           return;
         }
 
+
         if (!partidaContraIA) {
           let tempRes2 = { json: () => {}, status: function(s) {
             this.statusCode = s; return this;} };
+          // Las partidas amistosas no cuentan para la experiencia ni para los trofeos
+          if (!partidaActual.amistosa) {
+            estadisticasJugadores[1].nuevosTrofeos = 20; // Place holder === TODO ELO
+            let experienciaJ2 = 1*estadisticasJugadores[1].nuevosDisparosAcertados
+            + 0.25*estadisticasJugadores[1].nuevosDisparosFallados
+            + 5*estadisticasJugadores[1].nuevosBarcosHundidos
+            + 10*estadisticasJugadores[1].victoria;
+            estadisticasJugadores[1].nuevosTrofeos = nuevosTrofeos[1];
+            await actualizarPuntosExperiencia({ body: { nombreId: estadisticasJugadores[1].nombreId,
+              nuevosPuntosExperiencia: experienciaJ2 } }, tempRes2);
+            if (tempRes2.statusCode !== undefined && tempRes2.statusCode !== 200) {
+              res.status(500).send('Hubo un error al actualizar los puntos de experiencia');
+              console.error("Hubo un error al actualizar los puntos de experiencia");
+              return;
+            }
+          }
           await actualizarEstadisticas({ body: estadisticasJugadores[1] }, res);
           if (tempRes2.statusCode !== undefined && tempRes2.statusCode !== 200) {
             res.status(500).send('Hubo un error al actualizar las estadísticas');
@@ -700,46 +777,6 @@ exports.realizarDisparo = async (req, res) => {
   }
 };
 
-
-// Actualizar estado de la partida tras un disparo o habilidad del adversario
-// Devuelve mi tablero y los disparos realizados
-/**
- * @function actualizarEstadoPartida
- * @description Actualiza el estado de la partida tras un disparo o habilidad del adversario
- * @param {Object} req - El objeto de solicitud HTTP
- * @param {String} [req.body._id] - El id de la partida, si no se proporciona se espera el codigo
- * @param {String} [req.body.codigo] - El codigo de la partida
- * @param {Number} req.body.jugador - El número del jugador (1 o 2)
- * @param {Object[]} req.body.tablero - El tablero de barcos del jugador
- * @param {Object[]} req.body.disparos - Los disparos realizados por el jugador
- * @param {Object} res - El objeto de respuesta HTTP
- * @returns {Partida} La partida modificada
- * @example
- * peticion = { body: { codigo: '1234567890', jugador: 1, tablero: [], disparos: [] } }
- * respuesta = { json: () => {} }
- * await actualizarEstadoPartida(peticion, respuesta)
- */
-exports.actualizarEstadoPartida = async (req, res) => {
-  try {
-    const { codigo, jugador } = req.body;
-    const partidaActual = await Partida.findById(codigo);
-    if (partidaActual) {
-      if (jugador === 1) {
-        partidaActual.tableroBarcos1 = tablero;
-        partidaActual.disparosRealizados1 = disparos;
-      } else {
-        partidaActual.tableroBarcos2 = tablero;
-        partidaActual.disparosRealizados2 = disparos;
-      }
-      const partidaGuardada = await partidaActual.save();
-      res.json(partidaGuardada);
-    } else {
-      res.status(404).send('Partida no encontrada');
-    }
-  } catch (error) {
-    res.status(500).send('Hubo un error');
-  }
-};
 
 // Funcion para guardar las estadisticas de cada jugador al finalizar la partida
 // Devuelve las estadisticas de la partida de ambos jugadores

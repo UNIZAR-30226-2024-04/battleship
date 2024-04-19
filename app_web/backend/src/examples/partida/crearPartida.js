@@ -18,8 +18,10 @@ mongoose.connect('mongodb://localhost/BattleshipDB')
       // Itera sobre la lista de partidas y crea cada una
       for (const partida of partidas) {
         const req = { body: partida };
-        const res = { json: () => {}, status: () => ({ send: () => {} }) }; // No hace nada
+        let res = { json: function(_json) {this._json = _json; return this;}, status: function(s) {
+          this.statusCode = s; return this; }, send: () => {} };
         await crearPartida(req, res); // Espera a que se complete la creación del partida
+        console.log('Partida creada:', res._json);
       }
     } catch (error) {
       console.error('Error en el test de crear partida:', error);

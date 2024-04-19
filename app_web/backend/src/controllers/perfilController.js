@@ -8,13 +8,11 @@ const Coordenada = require('../data/coordenada');
 const config = require('../config/auth.config');
 const {barcosDisponibles} = require('../data/barco');
 /**
- * @module controllers/perfil
+ * @module perfil
  * @description Funciones para el manejo de perfiles de usuario.
- * @see module:perfilModel
  * @requires bcrypt
  * @requires jsonwebtoken
  * @requires config
- * @requires module:perfilModel
  * 
  */
 const tableroDim = Coordenada.i.max;  // Dimensiones del tablero
@@ -144,7 +142,7 @@ crearPerfil = async (req, res) => {
 
 
 /**
- * @memberof module:perfilController
+ * @memberof module:perfil
  * @function obtenerUsuario
  * @description Obtiene un perfil identificado por _id o nombreId.
  * @param {Object} req - El objeto de solicitud HTTP.
@@ -200,7 +198,7 @@ exports.obtenerUsuario = async (req, res) => {
 };
 
 /**
- * @memberof module:perfilController
+ * @memberof module:perfil
  * @function obtenerDatosPersonales
  * @description Obtiene los datos personales de un perfil identificado por _id o nombreId.
  * @param {Object} req - El objeto de solicitud HTTP.
@@ -267,7 +265,7 @@ exports.obtenerDatosPersonales = async (req, res) => {
 
 
 /**
- * @memberof module:perfilController
+ * @memberof module:perfil
  * @function modificarDatosPersonales
  * @description Modifica la contraseña y/o el correo de un perfil identificado por _id o nombreId.
  * @param {Object} req - El objeto de solicitud HTTP.
@@ -337,7 +335,10 @@ exports.modificarDatosPersonales = async (req, res) => {
 
     // Verificar si el perfil existe y enviar la respuesta al cliente
     if (perfilModificado) {
-      res.json(perfilModificado);
+      let perfilDevuelto = perfilModificado;
+      perfilDevuelto.contraseña = undefined; // No enviar la contraseña en la respuesta
+      perfilDevuelto._id = undefined; // No enviar el _id en la respuesta
+      res.json(perfilDevuelto);
       console.log("Perfil modificado con éxito");
     } else {
       res.status(404).send('No se ha encontrado el perfil a modificar');
@@ -352,7 +353,7 @@ exports.modificarDatosPersonales = async (req, res) => {
 
 
 /**
- * @memberof module:perfilController
+ * @memberof module:perfil
  * @function eliminarUsuario
  * @description Elimina un perfil de usuario identificado por _id o nombreId.
  * @param {Object} req - El objeto de solicitud HTTP.
@@ -404,7 +405,7 @@ exports.eliminarUsuario = async (req, res) => {
 /*--------------------------------------------------------------------------------------------------------------------*/
 
 /**
- * @memberof module:perfilController
+ * @memberof module:perfil
  * @function registrarUsuario
  * @description Devuelve un token de sesión del perfil identificado por _id o nombreId si es creado con éxito.
  * @param {Object} req - El objeto de solicitud HTTP.
@@ -461,7 +462,7 @@ exports.registrarUsuario = async (req, res) => {  // Requiere nombreId (o _id), 
 
 
 /**
- * @memberof module:perfilController
+ * @memberof module:perfil
  * @function iniciarSesion
  * @description Devuelve un token de sesión del perfil identificado por _id o nombreId si la contraseña es correcta.
  * @param {Object} req - El objeto de solicitud HTTP.
@@ -519,21 +520,21 @@ exports.iniciarSesion = async (req, res) => { // Requiere nombreId (o _id) y con
 };
 
 
-/**
- * @memberof module:perfilController
- * @function autenticarUsuario
- * @description Devuelve un perfil identificado por _id o nombreId si la contraseña es correcta. Devuelve null en caso contrario.
- * @param {Object} req - El objeto de solicitud HTTP.
- * @param {string} [req.body._id] - El perfil debe existir en la base de datos.
- * @param {string} [req.body.nombreId] - El perfil debe existir en la base de datos.
- * @param {string} req.body.contraseña
- * @param {Object} res - El objeto de respuesta HTTP.
- * @example
- * perfil = { nombreId: 'usuario1', contraseña: 'Passwd1.'};
- * const req = { body: perfil };
- * const res = { json: () => {}, status: () => ({ send: () => {} }) }; // No hace nada
- * await autenticarUsuario(req, res);
- */
+// /**
+//  * @memberof module:perfil
+//  * @function autenticarUsuario
+//  * @description Devuelve un perfil identificado por _id o nombreId si la contraseña es correcta. Devuelve null en caso contrario.
+//  * @param {Object} req - El objeto de solicitud HTTP.
+//  * @param {string} [req.body._id] - El perfil debe existir en la base de datos.
+//  * @param {string} [req.body.nombreId] - El perfil debe existir en la base de datos.
+//  * @param {string} req.body.contraseña
+//  * @param {Object} res - El objeto de respuesta HTTP.
+//  * @example
+//  * perfil = { nombreId: 'usuario1', contraseña: 'Passwd1.'};
+//  * const req = { body: perfil };
+//  * const res = { json: () => {}, status: () => ({ send: () => {} }) }; // No hace nada
+//  * await autenticarUsuario(req, res);
+//  */
 exports.autenticarUsuario = async (req, res) => { // Requiere nombreId y contraseña
   try {
     // Extraer los parámetros del cuerpo de la solicitud
@@ -579,14 +580,15 @@ exports.autenticarUsuario = async (req, res) => { // Requiere nombreId y contras
 /*--------------------------------------------------------------------------------------------------------------------*/
 
 /**
- * @memberof module:perfilController
+ * @memberof module:perfil
  * @function modificarMazo
  * @description Modifica el mazo de un perfil identificado por _id o nombreId.
  * @param {Object} req - El objeto de solicitud HTTP con body.
  * @param {string} [req.body._id] - El perfil debe existir en la base de datos.
  * @param {string} [req.body.nombreId] - El perfil debe existir en la base de datos.
- * @param {string[]} [req.body.mazoHabilidades = []] - El mazo debe contener a lo sumo 3 habilidades de las disponibles ['Rafaga', 'Recargado', 'Sonar', 'Mina', 'Teledirigido'].
+ * @param {habilidadesDisponibles[]} [req.body.mazoHabilidades = []] - El mazo debe contener a lo sumo 3 habilidades de las disponibles ['Rafaga', 'Recargado', 'Sonar', 'Mina', 'Teledirigido'].
  * @param {Object} res - El objeto de respuesta HTTP.
+ * @param {habilidadesDisponibles[]} res - El mazo de habilidades modificado.
  * @example
  * perfil = { nombreId: 'usuario1', mazoHabilidades: ['Rafaga', 'Mina', 'Sonar']};
  * const req = { body: perfil };
@@ -644,7 +646,8 @@ exports.modificarMazo = async (req, res) => {
 
     // Verificar si el perfil existe y enviar la respuesta al cliente
     if (perfilModificado) {
-      res.json(perfilModificado);
+      let mazoDevuelto = perfilModificado.mazoHabilidades;
+      res.json(mazoDevuelto);
       console.log("Mazo modificado con éxito");
     } else {
       res.status(404).send('No se ha encontrado el perfil a modificar');
@@ -725,7 +728,7 @@ function barcoColisiona(tablero, barco, barcoId) {
 }
 
 /**
- * @memberof module:perfilController
+ * @memberof module:perfil
  * @function moverBarcoInicial
  * @description Mueve y/o rota el barco indicado por barcoId en el tablero inicial de un perfil identificado por _id o nombreId.
  * Para trasladar el barco se indica la nueva posición de la proa (parte izquierda si el barco es horizontal o parte superior si es 
@@ -738,6 +741,7 @@ function barcoColisiona(tablero, barco, barcoId) {
  * @param {number} [req.body.jProaNueva] - Debe estar entre 1 y 10.
  * @param {number} [req.body.rotar] - Debe ser 0 (equivalente a omitirlo) o 1.
  * @param {Object} res - El objeto de respuesta HTTP.
+ * @param {Tablero} res.tableroDevuelto - Tablero inicial modificado.
  * @example
  * perfil = { nombreId: 'usuario1', barcoId: 3, iProaNueva: 1, jProaNueva: 6, rotar: 1 };
  * const req = { body: perfil };
@@ -812,7 +816,8 @@ exports.moverBarcoInicial = async (req, res) => {
     );
     // Verificar si el perfil existe y enviar la respuesta al cliente
     if (perfilModificado) {
-      res.json(perfilModificado);
+      let tableroDevuelto = perfilModificado.tableroInicial;
+      res.json(tableroDevuelto);
       console.log("Tablero inicial modificado con éxito");
     } else {
       res.status(404).send('No se ha encontrado el perfil a modificar');
@@ -828,29 +833,29 @@ exports.moverBarcoInicial = async (req, res) => {
 /*--------------------------------------------- PERFIL POST PARTIDA  -------------------------------------------------*/
 /*--------------------------------------------------------------------------------------------------------------------*/
 
-/**
- * @memberof module:perfilController
- * @function actualizarEstadisticas
- * @description Actualiza las estadísticas de un perfil identificado por _id o nombreId. Las nuevas estadísticas indicadas 
- * incrementan a las existentes en la base de datos. Los nuevos trofeos se suman si victoria es 1 y se restan si victoria es 0.
- * Normalmente, se llama con una funcion similar que pertenece al modulo de partida.
- * @param {Object} req - El objeto de solicitud HTTP.
- * @param {string} [req.body._id] - El perfil debe existir en la base de datos.
- * @param {string} [req.body.nombreId] - El perfil debe existir en la base de datos.
- * @param {number} req.body.victoria - Debe ser 0 o 1.
- * @param {number} req.body.nuevosBarcosHundidos
- * @param {number} req.body.nuevosBarcosPerdidos
- * @param {number} req.body.nuevosDisparosAcertados
- * @param {number} req.body.nuevosDisparosFallados
- * @param {number} [req.body.nuevosTrofeos = 0]
- * @param {Object} res - El objeto de respuesta HTTP.
- * @example
- * perfil = { nombreId: 'usuario1', victoria: 1, nuevosBarcosHundidos: 1, nuevosBarcosPerdidos:1, 
-            nuevosDisparosAcertados: 1, nuevosDisparosFallados: 1, nuevosTrofeos: 30};
- * const req = { body: perfil };
- * const res = { json: () => {}, status: () => ({ send: () => {} }) }; // No hace nada
- * await actualizarEstadisticas(req, res);
- */
+// /**
+//  * @memberof module:perfil
+//  * @function actualizarEstadisticas
+//  * @description Actualiza las estadísticas de un perfil identificado por _id o nombreId. Las nuevas estadísticas indicadas 
+//  * incrementan a las existentes en la base de datos. Los nuevos trofeos se suman si victoria es 1 y se restan si victoria es 0.
+//  * Normalmente, se llama con una funcion similar que pertenece al modulo de partida.
+//  * @param {Object} req - El objeto de solicitud HTTP.
+//  * @param {string} [req.body._id] - El perfil debe existir en la base de datos.
+//  * @param {string} [req.body.nombreId] - El perfil debe existir en la base de datos.
+//  * @param {number} req.body.victoria - Debe ser 0 o 1.
+//  * @param {number} req.body.nuevosBarcosHundidos
+//  * @param {number} req.body.nuevosBarcosPerdidos
+//  * @param {number} req.body.nuevosDisparosAcertados
+//  * @param {number} req.body.nuevosDisparosFallados
+//  * @param {number} [req.body.nuevosTrofeos = 0]
+//  * @param {Object} res - El objeto de respuesta HTTP.
+//  * @example
+//  * perfil = { nombreId: 'usuario1', victoria: 1, nuevosBarcosHundidos: 1, nuevosBarcosPerdidos:1, 
+//             nuevosDisparosAcertados: 1, nuevosDisparosFallados: 1, nuevosTrofeos: 30};
+//  * const req = { body: perfil };
+//  * const res = { json: () => {}, status: () => ({ send: () => {} }) }; // No hace nada
+//  * await actualizarEstadisticas(req, res);
+//  */
 exports.actualizarEstadisticas = async (req, res) => {
   try {
     // Extracción de parámetros del cuerpo de la solicitud
@@ -915,22 +920,22 @@ exports.actualizarEstadisticas = async (req, res) => {
   }
 };
 
-/**
- * @memberof module:perfilController
- * @function actualizarPuntosExperiencia
- * @description Actualiza los puntos de experiencia de un perfil identificado por _id o nombreId. Los nuevos puntos de experiencia 
- * indicados incrementan a los existentes en la base de datos.
- * @param {Object} req - El objeto de solicitud HTTP.
- * @param {string} [req.body._id] - El perfil debe existir en la base de datos.
- * @param {string} [req.body.nombreId] - El perfil debe existir en la base de datos.
- * @param {number} req.body.nuevosPuntosExperiencia
- * @param {Object} res - El objeto de respuesta HTTP.
- * @example
- * perfil = { nombreId: 'usuario1', nuevosPuntosExperiencia: 10};
- * const req = { body: perfil };
- * const res = { json: () => {}, status: () => ({ send: () => {} }) }; // No hace nada
- * await actualizarPuntosExperiencia(req, res);
- */
+// /**
+//  * @memberof module:perfil
+//  * @function actualizarPuntosExperiencia
+//  * @description Actualiza los puntos de experiencia de un perfil identificado por _id o nombreId. Los nuevos puntos de experiencia 
+//  * indicados incrementan a los existentes en la base de datos.
+//  * @param {Object} req - El objeto de solicitud HTTP.
+//  * @param {string} [req.body._id] - El perfil debe existir en la base de datos.
+//  * @param {string} [req.body.nombreId] - El perfil debe existir en la base de datos.
+//  * @param {number} req.body.nuevosPuntosExperiencia
+//  * @param {Object} res - El objeto de respuesta HTTP.
+//  * @example
+//  * perfil = { nombreId: 'usuario1', nuevosPuntosExperiencia: 10};
+//  * const req = { body: perfil };
+//  * const res = { json: () => {}, status: () => ({ send: () => {} }) }; // No hace nada
+//  * await actualizarPuntosExperiencia(req, res);
+//  */
 exports.actualizarPuntosExperiencia = async (req, res) => {
   try {
     // Extracción de parámetros del cuerpo de la solicitud
@@ -984,7 +989,7 @@ exports.actualizarPuntosExperiencia = async (req, res) => {
 /*--------------------------------------------------------------------------------------------------------------------*/
 
 /**
- * @memberof module:perfilController
+ * @memberof module:perfil
  * @function agnadirAmigos
  * @description Acepta una solicitud de amistad de un perfil identificado por nombreIdAmigo en el perfil identificado por _id o nombreId.
  * Añade el nombreIdAmigo a la lista de amigos del perfil y viceversa.
@@ -1075,7 +1080,7 @@ exports.agnadirAmigo = async (req, res) => {
 
 /**
  * 
- * @memberof module:perfilController
+ * @memberof module:perfil
  * @function obtenerAmigos
  * @description Obtiene la lista de amigos de un perfil identificado por _id o nombreId.
  * @param {Object} req - El objeto de solicitud HTTP.
@@ -1123,7 +1128,7 @@ exports.obtenerAmigos = async (req, res) => {
 
 
 /**
- * @memberof module:perfilController
+ * @memberof module:perfil
  * @function eliminarAmigo
  * @description Elimina un amigo del perfil identificado por _id o nombreId.
  * @param {Object} req - El objeto de solicitud HTTP.
@@ -1200,7 +1205,7 @@ exports.eliminarAmigo = async (req, res) => {
 }
 
 /**
- * @memberof module:perfilController
+ * @memberof module:perfil
  * @function enviarSolicitudAmistad
  * @description Envia una solicitud de amistad a un perfil identificado por nombreIdAmigo desde el perfil identificado por _id o nombreId.
  * Añade el nombreId a la lista de solicitudes del perfil.
@@ -1293,7 +1298,54 @@ exports.enviarSolicitudAmistad = async (req, res) => {
 }
 
 /**
- * @memberof module:perfilController
+ * @memberof module:perfil
+ * @function obtenerSolicitudesAmistad
+ * @description Obtiene la lista de solicitudes de amistad de un perfil identificado por _id o nombreId.
+ * @param {Object} req - El objeto de solicitud HTTP.
+ * @param {string} [req.body._id] - El perfil debe existir en la base de datos.
+ * @param {string} [req.body.nombreId] - El perfil debe existir en la base de datos.
+ * @param {Object} res - El objeto de respuesta HTTP.
+ * @example
+ * perfil = { nombreId: 'usuario1'};
+ * const req = { body: perfil };
+ * const res = { json: () => {}, status: () => ({ send: () => {} }) }; // No hace nada
+ * await obtenerSolicitudesAmistad(req, res);
+ */
+exports.obtenerSolicitudesAmistad = async (req, res) => {
+  try {
+    // Extraer los parámetros del cuerpo de la solicitud
+    const { _id, nombreId, ...extraParam } = req.body;
+    // Verificar si hay algún parámetro extra
+    if (Object.keys(extraParam).length > 0) {
+      res.status(400).send('Sobran parámetros, se espera _id (o nombreId)');
+      console.error("Sobran parámetros, se espera _id (o nombreId)");
+      return;
+    }
+    // Verificar si alguno de los parámetros está ausente
+    if (!nombreId && !_id) {
+      res.status(400).send('Falta el nombreId (o _id) en la solicitud');
+      console.error("Falta el nombreId (o _id) en la solicitud");
+      return;
+    }
+    // Buscar el perfil en la base de datos
+    const filtro = _id ? { _id: _id } : { nombreId: nombreId };
+    const perfil = await Perfil.findOne(filtro);
+    if (!perfil) {
+      res.status(404).send('No se ha encontrado el perfil');
+      console.error("No se ha encontrado el perfil");
+      return;
+    }
+    // Verificar si el perfil existe y enviar la respuesta al cliente
+    res.json(perfil.listaSolicitudes);
+    console.log("Solicitudes de amistad obtenidas con éxito", perfil.listaSolicitudes);
+  } catch (error) {
+    res.status(500).send('Hubo un error');
+    console.error("Error al obtener solicitudes de amistad", error);
+  }
+}
+
+/**
+ * @memberof module:perfil
  * @function eliminarSolicitudAmistad
  * @description Elimina una solicitud de amistad de un perfil identificado por nombreIdAmigo en el perfil identificado por _id o nombreId.
  * Elimina el nombreIdAmigo de la lista de solicitudes del perfil.

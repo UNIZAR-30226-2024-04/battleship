@@ -8,32 +8,23 @@ const climasDisponibles = require('../data/climas');
 const Tablero = require('../data/tablero');
 const Coordenada = require('../data/coordenada');
 
-/**
- * @module models/partidaModel
- * @description Modelo de Partida
- * @requires mongoose
- * @requires data/biomas
- * @requires data/climas
- * @requires data/tablero
- * @requires data/coordenada
- * @requires data/perfil
- * @requires models/perfilModel
- */
 
 /**
  * @typedef {Object} mensajeChat
+ * @memberof module:chat
  * @property {String} mensaje - Mensaje del chat
  * @property {String} autor - Autor del mensaje
  * @property {Date} timestamp - Fecha y hora del mensaje
  */
 
 /**
+ * @memberof module:partida
  * @typedef {Object} Partida
  * @property {Number} codigo - Identificador de la partida
  * @property {mensajeChat[]} chat - Lista de mensajes del chat
  * @property {Number} contadorTurno - Jugador 1 juga si es impar, jugador 2 si es par
- * @property {Perfil} jugador1 - Perfil del jugador 1
- * @property {Perfil} jugador2 - Perfil del jugador 2
+ * @property {String} nombreId1 - Identificador del jugador 1
+ * @property {String} nombreId2 - Identificador del jugador 2
  * @property {Tablero} tableroBarcos1 - Lista barcos del jugador 1
  * @property {Tablero} tableroBarcos2 - Lista barcos del jugador 2
  * @property {Coordenada[]} disparosRealizados1 - Lista con los disparos realizados por J1
@@ -44,7 +35,8 @@ const Coordenada = require('../data/coordenada');
  * @property {Coordenada[]} minas1 - Lista con las minas colocadas por J1
  * @property {Coordenada[]} minas2 - Lista con las minas colocadas por J2
  * @property {String} bioma - Bioma en el que se va a jugar la partida y que se caracteriza por una mayor probabilidad de clima
- * @property {Perfil} ganador - Perfil del jugador ganador
+ * @property {Boolean} amistosa - Indica si la partida es amistosa o no
+ * @property {String} ganador - NombreId del jugador ganador
  */
 
 // Partida Schema
