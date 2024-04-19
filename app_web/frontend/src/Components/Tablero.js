@@ -25,13 +25,29 @@ const Tablero = ({onCellClick}) => {
         return null;
     };
 
-    // ...
 
     return (
         <div id="tablero">
             {casillas.map((index) => (
                 <div
                     key={index}
+                    location={index}
+                    className="casilla"
+                    onClick={() => {
+                        const fila = Math.floor(index / 10) + 1; // Calcula la fila
+                        const columna = (index % 10) + 1; // Calcula la columna
+                        handleClick(fila, columna);
+                    }}
+                />
+            ))}
+        </div>
+    );
+/*
+    return (
+        <div id="tablero">
+            {casillas.map((index) => (
+                <div
+                    location={index}
                     className="casilla"
                     onClick={() => {
                         const fila = Math.floor(index / 10) + 1; // Calcula la fila
@@ -44,6 +60,7 @@ const Tablero = ({onCellClick}) => {
             ))}
         </div>
     );
+*/
 };
 
 export default Tablero;

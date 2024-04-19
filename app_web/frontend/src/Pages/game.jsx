@@ -87,17 +87,35 @@ export function Game() {
         .then(data => {
             console.log('Respuesta del servidor al disparar:', data);
 
-            let imgX;
-            const keyCasilla = (fila-1)*10 + columna - 1;
+            const locationCasilla = (fila-1)*10 + columna - 1;
+            const casilla = document.querySelector(`#tablero .casilla[location="${locationCasilla}"]`);
             // console.log(casilla);
+
+            let imgX = document.createElement('img');
+            imgX.style.width = '100%';
+            imgX.style.height = '100%';
+            imgX.style.objectFit = 'cover';
+
             switch (data['disparoRealizado'].estado) {
                 case "Tocado":
+                    if (casilla.childElementCount === 0) {
+                        imgX.src = explosionImg;
+                        casilla.appendChild(imgX);
+                    }
                     break;
                 case "Hundido":
-                    //mostrarBarcoPorDebajo();
+                    if (casilla.childElementCount === 0) {
+                        imgX.src = explosionImg;
+                        casilla.appendChild(imgX);
+                        //mostrarBarcoPorDebajo();
+                    }
                     break;
                 case "Agua":
-                    crossList.push(keyCasilla);
+                    if (casilla.childElementCount === 0) {
+                        imgX.src = crossImg;
+                        casilla.appendChild(imgX);
+                        crossList.push(locationCasilla);
+                    }
                     // relanzar el return de Game
 
                     break;
