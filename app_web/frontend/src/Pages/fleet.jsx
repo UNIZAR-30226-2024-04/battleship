@@ -137,8 +137,10 @@ export function Fleet() {
                         })
                         .then(data => {
                             if (data) {
-                                borrarWidgetsTablero();
-                                mostrarWidgetsTablero(data.tableroInicial);
+                                if (!(data.colisiona) && !(data.fueraTablero)) {
+                                    borrarWidgetsTablero();
+                                    mostrarWidgetsTablero(data.tableroDevuelto);
+                                }
                             }
                         })
                         .catch(error => {
@@ -276,7 +278,7 @@ export function Fleet() {
                 return response.json();
             })
             .then(data => {
-                if (data) {
+                if (!(data.colisiona) && !(data.fueraTablero)) {
                     // Rotamos figura widget
                     const rotatedWidget = {
                         id: clickedNode.id,      // id para identificar el widget

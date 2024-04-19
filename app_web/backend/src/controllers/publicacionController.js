@@ -28,8 +28,8 @@ function generarCodigo() {
  * @function crearPublicacion
  * @description Crea una nueva publicación en el perfil del usuario especificado.
  * @param {Request} req - El objeto de solicitud HTTP.
- * @param {String} [req.body.nombreId] - El perfil debe existir en la base de datos.
- * @param {Number} [req.body.tipoPublicacion] - El tipo de publicación debe ser un número entero.
+ * @param {String} req.body.nombreId - El perfil debe existir en la base de datos.
+ * @param {Number} req.body.tipoPublicacion - El tipo de publicación debe ser un número entero.
  * @param {Number} [req.body.nivel] - El nivel debe ser un número entero.
  * @param {Number} [req.body.trofeos] - Los trofeos deben ser un número entero.
  * @param {Number} [req.body.partidasGanadas] - Las partidas ganadas deben ser un número entero.
@@ -94,7 +94,7 @@ exports.crearPublicacion = async (req, res) => {
           return;
         }
         // Comprobamos que el nivel del usuario sea al menos el nivel de la publicación
-        nivelReal = calcularNivel(perfil.puntosExperiencia);
+        [nivelReal, restantes, puntos] = calcularNivel(perfil.puntosExperiencia);
         if (nivelReal < nivel || nivel < 0) {
           res.status(400).send({message: "El nivel de la publicación es superior al nivel del usuario"});
           console.error("El nivel de la publicación es superior al nivel del usuario");
@@ -201,7 +201,7 @@ exports.crearPublicacion = async (req, res) => {
  * @function obtenerPublicaciones
  * @description Devuelve todas las publicaciones del perfil del usuario.
  * @param {Request} req - El objeto de solicitud HTTP.
- * @param {String} [req.body.nombreId] - El perfil debe existir en la base de datos.
+ * @param {String} req.body.nombreId - El perfil debe existir en la base de datos.
  * @param {Publicacion[]} res - Lista de publicaciones del perfil.
  * @example
  * perfil = { nombreId: 'usuario1' };
@@ -242,9 +242,9 @@ exports.obtenerPublicaciones  = async (req, res) => {
  * @function reaccionarPublicacion
  * @description Añade una reacción a una publicación identificada por su id, dado un usuario y una reacción predefinida.
  * @param {Request} req - El objeto de solicitud HTTP.
- * @param {String} [req.body.publicacionId] - La publicación debe existir en la base de datos.
- * @param {String} [req.body.nombreId] - El perfil debe existir en la base de datos.
- * @param {Number} [req.body.reaccionId] - La reacción debe ser un número entero.
+ * @param {String} req.body.publicacionId - La publicación debe existir en la base de datos.
+ * @param {String} req.body.nombreId - El perfil debe existir en la base de datos.
+ * @param {Number} req.body.reaccionId - La reacción debe ser un número entero.
  * @param {Publicacion} res - La publicación con la reacción añadida.
  * @example
  * reaccion = { publicacionId: '123', nombreId: 'usuario1', reaccionId: 0 };
@@ -328,8 +328,8 @@ exports.reaccionarPublicacion = async (req, res) => {
  * @function eliminarPublicacion
  * @description Elimina una publicación de un usuario identificada por su id.
  * @param {Request} req - El objeto de solicitud HTTP.
- * @param {String} [req.body.publicacionId] - La publicación debe existir en la base de datos.
- * @param {String} [req.body.nombreId] - El perfil debe existir en la base de datos.
+ * @param {String} req.body.publicacionId - La publicación debe existir en la base de datos.
+ * @param {String} req.body.nombreId - El perfil debe existir en la base de datos.
  * @param {Response} res - El objeto de respuesta HTTP.
  * @param {String} res.message - Mensaje de confirmación.
  * @example
