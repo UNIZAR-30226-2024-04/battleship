@@ -7,6 +7,7 @@ const paisesDisponibles = require('../data/paises')
 const Coordenada = require('../data/coordenada');
 const config = require('../config/auth.config');
 const {barcosDisponibles} = require('../data/barco');
+const { calcularNivel } = require('../data/niveles');
 /**
  * @module perfil
  * @description Funciones para el manejo de perfiles de usuario.
@@ -146,8 +147,7 @@ crearPerfil = async (req, res) => {
  * @function obtenerUsuario
  * @description Obtiene un perfil identificado por _id o nombreId.
  * @param {Object} req - El objeto de solicitud HTTP.
- * @param {string} [req.body._id] - El perfil debe existir en la base de datos.
- * @param {string} [req.body.nombreId] - El perfil debe existir en la base de datos.
+ * @param {string} req.body.nombreId - El perfil debe existir en la base de datos.
  * @param {Object} res - El objeto de respuesta HTTP.
  * @example
  * perfil = { nombreId: 'usuario1'};
@@ -158,25 +158,25 @@ crearPerfil = async (req, res) => {
 exports.obtenerUsuario = async (req, res) => {
   try {
     // Extraer el nombreId del parámetro de la solicitud
-    const { _id, nombreId, ...extraParam } = req.body;
+    const { nombreId, ...extraParam } = req.body;
     // Verificar si hay algún parámetro extra
     if (Object.keys(extraParam).length > 0) {
-      res.status(400).send('Sobran parámetros, se espera nombreId (o _id)');
-      console.error("Sobran parámetros, se espera nombreId (o _id)");
+      res.status(400).send('Sobran parámetros, se espera nombreId');
+      console.error("Sobran parámetros, se espera nombreId");
       return;
     }
     // Verificar si alguno de los parámetros está ausente
-    if (!nombreId && !_id) {
-      res.status(400).send('Falta el nombreId o _id en la solicitud');
-      console.error("Falta el nombreId o _id en la solicitud");
+    if (!nombreId) {
+      res.status(400).send('Falta el nombreId en la solicitud');
+      console.error("Falta el nombreId en la solicitud");
       return;
     }
     // Buscar el perfil en la base de datos
-    const filtro = _id ? { _id: _id } : { nombreId: nombreId };
+    const filtro = { nombreId: nombreId };
     const perfil = await Perfil.findOne(filtro);
     // Verificar si el perfil existe y enviar la respuesta al cliente
     if (perfil) {
-      const perfilDevuelto = perfil;
+      let perfilDevuelto = perfil;
       perfilDevuelto.contraseña = undefined; // No enviar la contraseña en la respuesta
       perfilDevuelto.listaAmigos = undefined; // No enviar la lista de amigos en la respuesta
       perfilDevuelto.listaSolicitudes = undefined; // No enviar la lista de solicitudes en la respuesta
@@ -184,6 +184,11 @@ exports.obtenerUsuario = async (req, res) => {
       perfilDevuelto.mazoHabilidades = undefined; // No enviar el mazo de habilidades en la respuesta
       perfilDevuelto.correo = undefined; // No enviar el correo en la respuesta
       perfilDevuelto._id = undefined; // No enviar el _id en la respuesta
+      let nivel, restantes, puntosNivel;
+      [nivel, restantes, puntosNivel] = calcularNivel(perfil.puntosExperiencia);
+      perfilDevuelto.nivel = nivel;
+      perfilDevuelto.puntosExperienciaRestantes = restantes;
+      perfilDevuelto.puntosExperienciaSiguienteNivel = puntosNivel;
       res.json(perfilDevuelto);
       console.log("Perfil obtenido con éxito");
     } else {
@@ -202,8 +207,7 @@ exports.obtenerUsuario = async (req, res) => {
  * @function obtenerDatosPersonales
  * @description Obtiene los datos personales de un perfil identificado por _id o nombreId.
  * @param {Object} req - El objeto de solicitud HTTP.
- * @param {string} [req.body._id] - El perfil debe existir en la base de datos.
- * @param {string} [req.body.nombreId] - El perfil debe existir en la base de datos.
+ * @param {string} req.body.nombreId - El perfil debe existir en la base de datos.
  * @param {Object} res - El objeto de respuesta HTTP.
  * @example
  * perfil = { nombreId: 'usuario1'};
@@ -214,25 +218,25 @@ exports.obtenerUsuario = async (req, res) => {
 exports.obtenerDatosPersonales = async (req, res) => {
   try {
     // Extraer el nombreId del parámetro de la solicitud
-    const { _id, nombreId, ...extraParam } = req.body;
+    const { nombreId, ...extraParam } = req.body;
     // Verificar si hay algún parámetro extra
     if (Object.keys(extraParam).length > 0) {
-      res.status(400).send('Sobran parámetros, se espera nombreId (o _id)');
-      console.error("Sobran parámetros, se espera nombreId (o _id)");
+      res.status(400).send('Sobran parámetros, se espera nombreId');
+      console.error("Sobran parámetros, se espera nombreId");
       return;
     }
     // Verificar si alguno de los parámetros está ausente
-    if (!nombreId && !_id) {
-      res.status(400).send('Falta el nombreId o _id en la solicitud');
-      console.error("Falta el nombreId o _id en la solicitud");
+    if (!nombreId) {
+      res.status(400).send('Falta el nombreId en la solicitud');
+      console.error("Falta el nombreId en la solicitud");
       return;
     }
     // Buscar el perfil en la base de datos
-    const filtro = _id ? { _id: _id } : { nombreId: nombreId };
+    const filtro = { nombreId: nombreId };
     const perfil = await Perfil.findOne(filtro);
     // Verificar si el perfil existe y enviar la respuesta al cliente
     if (perfil) {
-      const perfilDevuelto = perfil;
+      let perfilDevuelto = perfil;
       perfilDevuelto.contraseña = undefined; // No enviar la contraseña en la respuesta
       perfilDevuelto._id = undefined; // No enviar el _id en la respuesta
       // Para cada habilidad en el mazo, eliminar el _id
@@ -250,6 +254,11 @@ exports.obtenerDatosPersonales = async (req, res) => {
           });
         });
       }
+      let nivel, restantes, puntosNivel;
+      [nivel, restantes, puntosNivel] = calcularNivel(perfil.puntosExperiencia);
+      perfilDevuelto.nivel = nivel;
+      perfilDevuelto.puntosExperienciaRestantes = restantes;
+      perfilDevuelto.puntosExperienciaSiguienteNivel = puntosNivel;
       res.json(perfilDevuelto);
       console.log("Datos personales obtenidos con éxito");
     } else {
@@ -269,8 +278,7 @@ exports.obtenerDatosPersonales = async (req, res) => {
  * @function modificarDatosPersonales
  * @description Modifica la contraseña y/o el correo de un perfil identificado por _id o nombreId.
  * @param {Object} req - El objeto de solicitud HTTP.
- * @param {string} [req.body._id] - El perfil debe existir en la base de datos.
- * @param {string} [req.body.nombreId] - El perfil debe existir en la base de datos.
+ * @param {string} req.body.nombreId - El perfil debe existir en la base de datos.
  * @param {string} [req.body.contraseña] - La contraseña debe tener al menos 8 caracteres, 1 minúsucla, 1 mayúscula, 1 dígito y un caracter especial.
  * @param {string} [req.body.correo] - El correo debe tener un formato válido.
  * @param {string} [req.body.pais] - El pais debe estar en la lista de paises disponibles.
@@ -284,17 +292,17 @@ exports.obtenerDatosPersonales = async (req, res) => {
 exports.modificarDatosPersonales = async (req, res) => {
   try {
     // Extracción de parámetros del cuerpo de la solicitud
-    const { _id, nombreId, contraseña, correo, pais, ...extraParam } = req.body;
+    const { nombreId, contraseña, correo, pais, ...extraParam } = req.body;
     // Verificar si hay algún parámetro extra
     if (Object.keys(extraParam).length > 0) {
-      res.status(400).send('Sobran parámetros, se espera nombreId (o _id), contraseña y/o correo');
-      console.error("Sobran parámetros, se espera nombreId (o _id), contraseña y/o correo");
+      res.status(400).send('Sobran parámetros, se espera nombreId, contraseña y/o correo');
+      console.error("Sobran parámetros, se espera nombreId, contraseña y/o correo");
       return;
     }
     // Verificar si alguno de los parámetros está ausente
-    if (!nombreId && !_id) {
-      res.status(400).send('Falta el nombreId o _id en la solicitud');
-      console.error("Falta el nombreId o _id en la solicitud");
+    if (!nombreId) {
+      res.status(400).send('Falta el nombreId en la solicitud');
+      console.error("Falta el nombreId en la solicitud");
       return;
     }
     // Comprobar que la contraseña cumple con los requisitos
@@ -320,7 +328,7 @@ exports.modificarDatosPersonales = async (req, res) => {
       hashContraseña = await bcrypt.hash(contraseña, 10); // 10 es el número de saltos de hashing
     }
     // Buscar y actualizar el perfil en la base de datos
-    const filtro = _id ? { _id: _id } : { nombreId: nombreId };
+    const filtro = { nombreId: nombreId };
     const perfilModificado = await Perfil.findOneAndUpdate(
       filtro, // Filtro para encontrar el perfil a modificar
       {
@@ -338,6 +346,21 @@ exports.modificarDatosPersonales = async (req, res) => {
       let perfilDevuelto = perfilModificado;
       perfilDevuelto.contraseña = undefined; // No enviar la contraseña en la respuesta
       perfilDevuelto._id = undefined; // No enviar el _id en la respuesta
+      // Para cada habilidad en el mazo, eliminar el _id
+      if (perfilDevuelto.mazoHabilidades) {
+        perfilDevuelto.mazoHabilidades.forEach(habilidad => {
+          habilidad._id = undefined;
+        });
+      }
+      // Para cada barco en el tablero, eliminar el _id y dentro de cada coordenada, eliminar el _id
+      if (perfilDevuelto.tableroInicial) {
+        perfilDevuelto.tableroInicial.forEach(barco => {
+          barco._id = undefined;
+          barco.coordenadas.forEach(coordenada => {
+            coordenada._id = undefined;
+          });
+        });
+      }
       res.json(perfilDevuelto);
       console.log("Perfil modificado con éxito");
     } else {
@@ -357,8 +380,7 @@ exports.modificarDatosPersonales = async (req, res) => {
  * @function eliminarUsuario
  * @description Elimina un perfil de usuario identificado por _id o nombreId.
  * @param {Object} req - El objeto de solicitud HTTP.
- * @param {string} [req.body._id] - El perfil debe existir en la base de datos.
- * @param {string} [req.body.nombreId] - El perfil debe existir en la base de datos.
+ * @param {string} req.body.nombreId - El perfil debe existir en la base de datos.
  * @param {Object} res - El objeto de respuesta HTTP.
  * @example
  * perfil = { nombreId: 'usuario1'};
@@ -369,21 +391,21 @@ exports.modificarDatosPersonales = async (req, res) => {
 exports.eliminarUsuario = async (req, res) => {
   try {
     // Extraer el nombreId del parámetro de la solicitud
-    const { _id, nombreId, ...extraParam } = req.body;
+    const { nombreId, ...extraParam } = req.body;
     // Verificar si hay algún parámetro extra
     if (Object.keys(extraParam).length > 0) {
-      res.status(400).send('Sobran parámetros, se espera nombreId (o _id)');
-      console.error("Sobran parámetros, se espera nombreId (o _id)");
+      res.status(400).send('Sobran parámetros, se espera nombreId');
+      console.error("Sobran parámetros, se espera nombreId");
       return;
     }
     // Verificar si alguno de los parámetros está ausente
-    if (!nombreId && !_id) {
-      res.status(400).send('Falta el nombreId o _id en la solicitud');
-      console.error("Falta el nombreId o _id en la solicitud");
+    if (!nombreId) {
+      res.status(400).send('Falta el nombreId en la solicitud');
+      console.error("Falta el nombreId en la solicitud");
       return;
     }
     // Buscar y eliminar el perfil de la base de datos
-    const filtro = _id ? { _id: _id } : { nombreId: nombreId };
+    const filtro = { nombreId: nombreId };
     const resultado = await Perfil.deleteOne(filtro);
     // Verificar si se eliminó el perfil y enviar la respuesta al cliente
     if (resultado.deletedCount > 0) {
@@ -409,8 +431,7 @@ exports.eliminarUsuario = async (req, res) => {
  * @function registrarUsuario
  * @description Devuelve un token de sesión del perfil identificado por _id o nombreId si es creado con éxito.
  * @param {Object} req - El objeto de solicitud HTTP.
- * @param {string} [req.body._id] - El perfil debe existir en la base de datos.
- * @param {string} [req.body.nombreId] - El perfil debe existir en la base de datos.
+ * @param {string} req.body.nombreId - El perfil debe existir en la base de datos.
  * @param {string} req.body.contraseña - La contraseña debe tener al menos 8 caracteres, 1 minúsucla, 1 mayúscula, 1 dígito y un caracter especial.
  * @param {string} req.body.correo - El correo debe tener un formato válido.
  * @param {Object} res - El objeto de respuesta HTTP.
@@ -429,7 +450,7 @@ exports.registrarUsuario = async (req, res) => {  // Requiere nombreId (o _id), 
     if (perfil) {
       const token = crearToken(perfil);
       // Enviar el token como respuesta al cliente
-      perfilDevuelto = perfil;
+      let perfilDevuelto = perfil;
       perfilDevuelto.contraseña = undefined; // No enviar la contraseña en la respuesta
       perfilDevuelto._id = undefined; // No enviar el _id en la respuesta
       // Para cada habilidad en el mazo, eliminar el _id
@@ -447,6 +468,10 @@ exports.registrarUsuario = async (req, res) => {  // Requiere nombreId (o _id), 
           });
         });
       }
+      [nivel, restantes, puntosNivel] = calcularNivel(perfil.puntosExperiencia);
+      perfilDevuelto.nivel = nivel;
+      perfilDevuelto.puntosExperienciaRestantes = restantes;
+      perfilDevuelto.puntosExperienciaSiguienteNivel = puntosNivel;
       const data = {
         perfilDevuelto,
         token
@@ -466,8 +491,7 @@ exports.registrarUsuario = async (req, res) => {  // Requiere nombreId (o _id), 
  * @function iniciarSesion
  * @description Devuelve un token de sesión del perfil identificado por _id o nombreId si la contraseña es correcta.
  * @param {Object} req - El objeto de solicitud HTTP.
- * @param {string} [req.body._id] - El perfil debe existir en la base de datos.
- * @param {string} [req.body.nombreId] - El perfil debe existir en la base de datos.
+ * @param {string} req.body.nombreId - El perfil debe existir en la base de datos.
  * @param {string} req.body.contraseña
  * @param {Object} res - El objeto de respuesta HTTP.
  * @param {Object} res.perfilDevuelto - perfil correspondiente al nombre y contraseña, sin la contraseña por seguridad.
@@ -503,6 +527,10 @@ exports.iniciarSesion = async (req, res) => { // Requiere nombreId (o _id) y con
           });
         });
       }
+      [nivel, restantes, puntosNivel] = calcularNivel(perfil.puntosExperiencia);
+      perfilDevuelto.nivel = nivel;
+      perfilDevuelto.puntosExperienciaRestantes = restantes;
+      perfilDevuelto.puntosExperienciaSiguienteNivel = puntosNivel;
       const data = {
         perfilDevuelto,
         token
@@ -525,8 +553,7 @@ exports.iniciarSesion = async (req, res) => { // Requiere nombreId (o _id) y con
 //  * @function autenticarUsuario
 //  * @description Devuelve un perfil identificado por _id o nombreId si la contraseña es correcta. Devuelve null en caso contrario.
 //  * @param {Object} req - El objeto de solicitud HTTP.
-//  * @param {string} [req.body._id] - El perfil debe existir en la base de datos.
-//  * @param {string} [req.body.nombreId] - El perfil debe existir en la base de datos.
+//  * @param {string} req.body.nombreId - El perfil debe existir en la base de datos.
 //  * @param {string} req.body.contraseña
 //  * @param {Object} res - El objeto de respuesta HTTP.
 //  * @example
@@ -538,21 +565,21 @@ exports.iniciarSesion = async (req, res) => { // Requiere nombreId (o _id) y con
 exports.autenticarUsuario = async (req, res) => { // Requiere nombreId y contraseña
   try {
     // Extraer los parámetros del cuerpo de la solicitud
-    const { _id, nombreId, contraseña, ...extraParam } = req.body;
+    const { nombreId, contraseña, ...extraParam } = req.body;
     // Verificar si hay algún parámetro extra
     if (Object.keys(extraParam).length > 0) {
-      res.status(400).send('Sobran parámetros, se espera nombreId (o _id) y contraseña');
-      console.error("Sobran parámetros, se espera nombreId (o _id) y contraseña");
+      res.status(400).send('Sobran parámetros, se espera nombreId y contraseña');
+      console.error("Sobran parámetros, se espera nombreId y contraseña");
       return;
     }
     // Verificar si alguno de los parámetros está ausente
-    if (!nombreId && !_id || !contraseña) {
-      res.status(400).send('Falta el nombreId (o _id) o la contraseña en la solicitud');
-      console.error("Falta el nombreId (o _id) y la contraseña en la solicitud");
+    if (!nombreId || !contraseña) {
+      res.status(400).send('Falta el nombreId o la contraseña en la solicitud');
+      console.error("Falta el nombreId y la contraseña en la solicitud");
       return;
     }
     // Buscar el perfil en la base de datos
-    const filtro = _id ? { _id: _id } : { nombreId: nombreId };
+    const filtro = { nombreId: nombreId };
     const perfil = await Perfil.findOne(filtro);
     if (perfil) {
       // Verificar la contraseña
@@ -584,8 +611,7 @@ exports.autenticarUsuario = async (req, res) => { // Requiere nombreId y contras
  * @function modificarMazo
  * @description Modifica el mazo de un perfil identificado por _id o nombreId.
  * @param {Object} req - El objeto de solicitud HTTP con body.
- * @param {string} [req.body._id] - El perfil debe existir en la base de datos.
- * @param {string} [req.body.nombreId] - El perfil debe existir en la base de datos.
+ * @param {string} req.body.nombreId - El perfil debe existir en la base de datos.
  * @param {habilidadesDisponibles[]} [req.body.mazoHabilidades = []] - El mazo debe contener a lo sumo 3 habilidades de las disponibles ['Rafaga', 'Recargado', 'Sonar', 'Mina', 'Teledirigido'].
  * @param {Object} res - El objeto de respuesta HTTP.
  * @param {habilidadesDisponibles[]} res - El mazo de habilidades modificado.
@@ -598,17 +624,17 @@ exports.autenticarUsuario = async (req, res) => { // Requiere nombreId y contras
 exports.modificarMazo = async (req, res) => {
   try {
     // Extracción de parámetros del cuerpo de la solicitud
-    const { _id, nombreId, mazoHabilidades = [], ...extraParam } = req.body;
+    const { nombreId, mazoHabilidades = [], ...extraParam } = req.body;
     // Verificar si hay algún parámetro extra
     if (Object.keys(extraParam).length > 0) {
-      res.status(400).send('Sobran parámetros, se espera nombreId (o _id) y mazoHabilidades');
-      console.error("Sobran parámetros, se espera nombreId (o _id) y mazoHabilidades");
+      res.status(400).send('Sobran parámetros, se espera nombreId y mazoHabilidades');
+      console.error("Sobran parámetros, se espera nombreId y mazoHabilidades");
       return;
     }
     // Verificar si alguno de los parámetros está ausente
-    if (!nombreId && !_id) {
-      res.status(400).send('Falta el nombreId o _id en la solicitud');
-      console.error("Falta el nombreId o _id en la solicitud");
+    if (!nombreId) {
+      res.status(400).send('Falta el nombreId en la solicitud');
+      console.error("Falta el nombreId en la solicitud");
       return;
     }
     // Verificar si mazoHabilidades es un array y tiene como máximo 3 elementos
@@ -633,7 +659,7 @@ exports.modificarMazo = async (req, res) => {
       return;
     }
     // Buscar y actualizar el perfil en la base de datos
-    const filtro = _id ? { _id: _id } : { nombreId: nombreId };
+    const filtro = { nombreId: nombreId };
     const perfilModificado = await Perfil.findOneAndUpdate(
       filtro, // Filtro para encontrar el perfil a modificar
       {
@@ -647,6 +673,9 @@ exports.modificarMazo = async (req, res) => {
     // Verificar si el perfil existe y enviar la respuesta al cliente
     if (perfilModificado) {
       let mazoDevuelto = perfilModificado.mazoHabilidades;
+      mazoDevuelto.forEach(habilidad => {
+        habilidad._id = undefined;
+      });
       res.json(mazoDevuelto);
       console.log("Mazo modificado con éxito");
     } else {
@@ -734,14 +763,15 @@ function barcoColisiona(tablero, barco, barcoId) {
  * Para trasladar el barco se indica la nueva posición de la proa (parte izquierda si el barco es horizontal o parte superior si es 
  * vertical) con iProaNueva, jProaNueva. Para rotar el barco se escribe 1 en rotar.
  * @param {Object} req - El objeto de solicitud HTTP.
- * @param {string} [req.body._id] - El perfil debe existir en la base de datos.
- * @param {string} [req.body.nombreId] - El perfil debe existir en la base de datos.
+ * @param {string} req.body.nombreId - El perfil debe existir en la base de datos.
  * @param {number} [req.body.barcoId = 0] - Debe estar entre 0 y el número de barcos - 1 (entre 0 y 4 en el juego base).
  * @param {number} [req.body.iProaNueva] - Debe estar entre 1 y 10.
  * @param {number} [req.body.jProaNueva] - Debe estar entre 1 y 10.
  * @param {number} [req.body.rotar] - Debe ser 0 (equivalente a omitirlo) o 1.
- * @param {Object} res - El objeto de respuesta HTTP.
+ * @param {Object} res - El objeto de respuesta HTTP, devuelto como JSON.
  * @param {Tablero} res.tableroDevuelto - Tablero inicial modificado.
+ * @param {boolean} res.tableroDevuelto.fueraTablero - Indica si el barco se sale del tablero.
+ * @param {boolean} res.tableroDevuelto.colisiona - Indica si el barco colisiona con otros barcos.
  * @example
  * perfil = { nombreId: 'usuario1', barcoId: 3, iProaNueva: 1, jProaNueva: 6, rotar: 1 };
  * const req = { body: perfil };
@@ -751,17 +781,17 @@ function barcoColisiona(tablero, barco, barcoId) {
 exports.moverBarcoInicial = async (req, res) => {
   try {
     // Extracción de parámetros del cuerpo de la solicitud
-    const { _id, nombreId, barcoId = 0, iProaNueva, jProaNueva, rotar, ...extraParam } = req.body;  // Consideramos proa la coordenada más izda/arriba si barco horizontal/vertical
+    const { nombreId, barcoId = 0, iProaNueva, jProaNueva, rotar, ...extraParam } = req.body;  // Consideramos proa la coordenada más izda/arriba si barco horizontal/vertical
     // Verificar si hay algún parámetro extra
     if (Object.keys(extraParam).length > 0) {
-      res.status(400).send('Sobran parámetros, se espera nombreId (o _id), barcoId, iProaNueva, jProaNueva y/o rotar');
-      console.error("Sobran parámetros, se espera nombreId (o _id), barcoId, iProaNueva, jProaNueva y/o rotar");
+      res.status(400).send('Sobran parámetros, se espera nombreId, barcoId, iProaNueva, jProaNueva y/o rotar');
+      console.error("Sobran parámetros, se espera nombreId, barcoId, iProaNueva, jProaNueva y/o rotar");
       return;
     }
     // Verificar si alguno de los parámetros está ausente
-    if (!nombreId && !_id) {
-      res.status(400).send('Falta el nombreId o _id en la solicitud');
-      console.error("Falta el nombreId o _id en la solicitud");
+    if (!nombreId ) {
+      res.status(400).send('Falta el nombreId en la solicitud');
+      console.error("Falta el nombreId en la solicitud");
       return;
     }
     // Verificar que los parámetros del movimiento son numéricos
@@ -778,7 +808,7 @@ exports.moverBarcoInicial = async (req, res) => {
       return;
     }
     // Buscar el perfil en la base de datos y obtener su tableroInicial
-    const filtro = _id ? { _id: _id } : { nombreId: nombreId };
+    const filtro = { nombreId: nombreId };
     const perfil = await Perfil.findOne(filtro);
     if (!perfil) {
       res.status(404).send('No se ha encontrado el perfil a modificar');
@@ -797,10 +827,20 @@ exports.moverBarcoInicial = async (req, res) => {
     if (moverBarco(barco.coordenadas, iProaNueva, jProaNueva, rotar)) {
       // Verificar que la nueva posición del barco no colisiona con otros barcos
       if (barcoColisiona(tableroInicial, barco.coordenadas, barcoId)) {
+        let tableroDevuelto = {
+          fueraTablero: false,
+          colisiona: true
+        }
+        res.json(tableroDevuelto);
         console.log("El movimiento del barco colisiona con otros barcos");
         return;
       }
     } else {
+      let tableroDevuelto = {
+        fueraTablero: true,
+        colisiona: false
+      }
+      res.json(tableroDevuelto);
       console.log("El movimiento del barco se sale del tablero");
       return;
     }
@@ -817,6 +857,14 @@ exports.moverBarcoInicial = async (req, res) => {
     // Verificar si el perfil existe y enviar la respuesta al cliente
     if (perfilModificado) {
       let tableroDevuelto = perfilModificado.tableroInicial;
+      tableroDevuelto.forEach(barco => {
+        barco._id = undefined;
+        barco.coordenadas.forEach(coordenada => {
+          coordenada._id = undefined;
+        });
+      });
+      tableroDevuelto.fueraTablero = false;
+      tableroDevuelto.colisiona = false;
       res.json(tableroDevuelto);
       console.log("Tablero inicial modificado con éxito");
     } else {
@@ -840,8 +888,7 @@ exports.moverBarcoInicial = async (req, res) => {
 //  * incrementan a las existentes en la base de datos. Los nuevos trofeos se suman si victoria es 1 y se restan si victoria es 0.
 //  * Normalmente, se llama con una funcion similar que pertenece al modulo de partida.
 //  * @param {Object} req - El objeto de solicitud HTTP.
-//  * @param {string} [req.body._id] - El perfil debe existir en la base de datos.
-//  * @param {string} [req.body.nombreId] - El perfil debe existir en la base de datos.
+//  * @param {string} req.body.nombreId - El perfil debe existir en la base de datos.
 //  * @param {number} req.body.victoria - Debe ser 0 o 1.
 //  * @param {number} req.body.nuevosBarcosHundidos
 //  * @param {number} req.body.nuevosBarcosPerdidos
@@ -859,18 +906,18 @@ exports.moverBarcoInicial = async (req, res) => {
 exports.actualizarEstadisticas = async (req, res) => {
   try {
     // Extracción de parámetros del cuerpo de la solicitud
-    const { _id, nombreId, victoria, nuevosBarcosHundidos, nuevosBarcosPerdidos, nuevosDisparosAcertados, 
+    const {nombreId, victoria, nuevosBarcosHundidos, nuevosBarcosPerdidos, nuevosDisparosAcertados, 
       nuevosDisparosFallados, nuevosTrofeos = 0, ...extraParam} = req.body; // Por defecto, no hay trofeos en juego
     // Verificar si hay algún parámetro extra
     if (Object.keys(extraParam).length > 0) {
-      res.status(400).send('Sobran parámetros, se espera nombreId (o _id), victoria, nuevosBarcosHundidos, nuevosBarcosPerdidos, nuevosDisparosAcertados, nuevosDisparosFallados y nuevosTrofeos');
-      console.error("Sobran parámetros, se espera nombreId (o _id), victoria, nuevosBarcosHundidos, nuevosBarcosPerdidos, nuevosDisparosAcertados, nuevosDisparosFallados y nuevosTrofeos");
+      res.status(400).send('Sobran parámetros, se espera nombreId, victoria, nuevosBarcosHundidos, nuevosBarcosPerdidos, nuevosDisparosAcertados, nuevosDisparosFallados y nuevosTrofeos');
+      console.error("Sobran parámetros, se espera nombreId, victoria, nuevosBarcosHundidos, nuevosBarcosPerdidos, nuevosDisparosAcertados, nuevosDisparosFallados y nuevosTrofeos");
       return;
     }
     // Verificar si alguno de los parámetros está ausente
-    if (!nombreId && !_id) {
-      res.status(400).send('Falta el nombreId o _id en la solicitud');
-      console.error("Falta el nombreId o _id en la solicitud");
+    if (!nombreId ) {
+      res.status(400).send('Falta el nombreId en la solicitud');
+      console.error("Falta el nombreId en la solicitud");
       return;
     }
     if (victoria !== undefined) {
@@ -888,7 +935,7 @@ exports.actualizarEstadisticas = async (req, res) => {
         return;
     }
     // Buscar y actualizar el perfil en la base de datos
-    const filtro = _id ? { _id: _id } : { nombreId: nombreId };
+    const filtro = { nombreId: nombreId };
     const perfilModificado = await Perfil.findOneAndUpdate(
       filtro, // Filtro para encontrar el perfil a modificar
       {
@@ -899,14 +946,23 @@ exports.actualizarEstadisticas = async (req, res) => {
           barcosPerdidos: nuevosBarcosPerdidos,
           disparosAcertados: nuevosDisparosAcertados,
           disparosFallados: nuevosDisparosFallados,
-          trofeos: victoria ? nuevosTrofeos : -nuevosTrofeos
+          trofeos: nuevosTrofeos
         }
       },
       { new: true } // Para devolver el documento actualizado
     );
     // Verificar si el perfil existe y enviar la respuesta al cliente
     if (perfilModificado) {
-      res.json(perfilModificado);
+      let perfilDevuelto = { nombreId: perfilModificado.nombreId,
+        partidasJugadas: perfilModificado.partidasJugadas,
+        partidasGanadas: perfilModificado.partidasGanadas,
+        barcosHundidos: perfilModificado.barcosHundidos,
+        barcosPerdidos: perfilModificado.barcosPerdidos,
+        disparosAcertados: perfilModificado.disparosAcertados,
+        disparosFallados: perfilModificado.disparosFallados,
+        trofeos: perfilModificado.trofeos
+      };
+      res.json(perfilDevuelto);
       console.log("Perfil modificado con éxito");
     } else {
       res.status(404).send('No se ha encontrado el perfil a actualizar');
@@ -926,8 +982,7 @@ exports.actualizarEstadisticas = async (req, res) => {
 //  * @description Actualiza los puntos de experiencia de un perfil identificado por _id o nombreId. Los nuevos puntos de experiencia 
 //  * indicados incrementan a los existentes en la base de datos.
 //  * @param {Object} req - El objeto de solicitud HTTP.
-//  * @param {string} [req.body._id] - El perfil debe existir en la base de datos.
-//  * @param {string} [req.body.nombreId] - El perfil debe existir en la base de datos.
+//  * @param {string} req.body.nombreId - El perfil debe existir en la base de datos.
 //  * @param {number} req.body.nuevosPuntosExperiencia
 //  * @param {Object} res - El objeto de respuesta HTTP.
 //  * @example
@@ -939,17 +994,17 @@ exports.actualizarEstadisticas = async (req, res) => {
 exports.actualizarPuntosExperiencia = async (req, res) => {
   try {
     // Extracción de parámetros del cuerpo de la solicitud
-    const { _id, nombreId, nuevosPuntosExperiencia, ...extraParam } = req.body;
+    const { nombreId, nuevosPuntosExperiencia, ...extraParam } = req.body;
     // Verificar si hay algún parámetro extra
     if (Object.keys(extraParam).length > 0) {
-      res.status(400).send('Sobran parámetros, se espera nombreId (o _id) y nuevosPuntosExperiencia');
-      console.error("Sobran parámetros, se espera nombreId (o _id) y nuevosPuntosExperiencia");
+      res.status(400).send('Sobran parámetros, se espera nombreId y nuevosPuntosExperiencia');
+      console.error("Sobran parámetros, se espera nombreId y nuevosPuntosExperiencia");
       return;
     }
     // Verificar si alguno de los parámetros está ausente
-    if (!nombreId && !_id) {
-      res.status(400).send('Falta el nombreId o _id en la solicitud');
-      console.error("Falta el nombreId o _id en la solicitud");
+    if (!nombreId) {
+      res.status(400).send('Falta el nombreId en la solicitud');
+      console.error("Falta el nombreId en la solicitud");
       return;
     }
     // Verificar que la experiencia es numérica
@@ -959,7 +1014,7 @@ exports.actualizarPuntosExperiencia = async (req, res) => {
         return;
     }
     // Buscar y actualizar el perfil en la base de datos
-    const filtro = _id ? { _id: _id } : { nombreId: nombreId };
+    const filtro = { nombreId: nombreId };
     const perfilModificado = await Perfil.findOneAndUpdate(
       filtro, // Filtro para encontrar el perfil a modificar
       {
@@ -971,7 +1026,9 @@ exports.actualizarPuntosExperiencia = async (req, res) => {
     );
     // Verificar si el perfil existe y enviar la respuesta al cliente
     if (perfilModificado) {
-      res.json(perfilModificado);
+      let perfilDevuelto = { nombreId: perfilModificado.nombreId,
+        puntosExperiencia: perfilModificado.puntosExperiencia };
+      res.json(perfilDevuelto);
       console.log("Perfil modificado con éxito");
     } else {
       res.status(404).send('No se ha encontrado el perfil a actualizar');
@@ -994,10 +1051,9 @@ exports.actualizarPuntosExperiencia = async (req, res) => {
  * @description Acepta una solicitud de amistad de un perfil identificado por nombreIdAmigo en el perfil identificado por _id o nombreId.
  * Añade el nombreIdAmigo a la lista de amigos del perfil y viceversa.
  * @param {Object} req - El objeto de solicitud HTTP.
- * @param {string} [req.body._id] - El perfil debe existir en la base de datos.
- * @param {string} [req.body.nombreId] - El perfil debe existir en la base de datos.
+ * @param {string} req.body.nombreId - El perfil debe existir en la base de datos.
  * @param {string} req.body.nombreIdAmigo - El amigo debe existir en la base de datos.
- * @param {Object} res - El objeto de respuesta HTTP.
+ * @param {String[]} res - El objeto de respuesta HTTP, formado por la lista de amigos (nombreId) actualizada.
  * @example
  * perfil = { nombreId: 'usuario1', nombreIdAmigo: 'usuario2'};
  * const req = { body: perfil };
@@ -1007,21 +1063,21 @@ exports.actualizarPuntosExperiencia = async (req, res) => {
 exports.agnadirAmigo = async (req, res) => {
   try {
     // Extraer los parámetros del cuerpo de la solicitud
-    const {_id, nombreId, nombreIdAmigo, ...extraParam} = req.body;
+    const {nombreId, nombreIdAmigo, ...extraParam} = req.body;
     // Verificar si hay algún parámetro extra
     if (Object.keys(extraParam).length > 0) {
-      res.status(400).send('Sobran parámetros, se espera _id (o nombreId) y nombreIdAmigo');
-      console.error("Sobran parámetros, se espera _id (o nombreId) y nombreIdAmigo");
+      res.status(400).send('Sobran parámetros, se espera nombreId y nombreIdAmigo');
+      console.error("Sobran parámetros, se espera nombreId y nombreIdAmigo");
       return;
     }
     // Verificar si alguno de los parámetros está ausente
-    if (!nombreId && !_id || !nombreIdAmigo) {
-      res.status(400).send('Falta el nombreId (o _id) o el nombreIdAmigo en la solicitud');
-      console.error("Falta el nombreId (o _id) o el nombreIdAmigo en la solicitud");
+    if (!nombreId || !nombreIdAmigo) {
+      res.status(400).send('Falta el nombreId o el nombreIdAmigo en la solicitud');
+      console.error("Falta el nombreId o el nombreIdAmigo en la solicitud");
       return;
     }
     // Buscar el perfil en la base de datos
-    const filtro = _id ? { _id: _id } : { nombreId: nombreId };
+    const filtro = { nombreId: nombreId };
     const perfil = await Perfil.findOne(filtro);
     if (!perfil) {
       res.status(404).send('No se ha encontrado el perfil a modificar');
@@ -1065,8 +1121,10 @@ exports.agnadirAmigo = async (req, res) => {
     const amigoModificado = await amigo.save();
     // Verificar si el perfil existe y enviar la respuesta al cliente
     if (perfilModificado && amigoModificado) {
-      res.json(perfilModificado);
-      console.log("Amigo añadido con éxito", perfilModificado);
+      let listaAmigosDevuelta = perfilModificado.listaAmigos;
+      listaAmigosDevuelta._id = undefined;
+      res.json(listaAmigosDevuelta);
+      console.log("Amigo añadido con éxito");
     } else {
       res.status(404).send('No se ha podido añaadir el amigo');
       console.error("No se ha podido añadir el amigo");
@@ -1084,9 +1142,8 @@ exports.agnadirAmigo = async (req, res) => {
  * @function obtenerAmigos
  * @description Obtiene la lista de amigos de un perfil identificado por _id o nombreId.
  * @param {Object} req - El objeto de solicitud HTTP.
- * @param {string} [req.body._id] - El perfil debe existir en la base de datos.
- * @param {string} [req.body.nombreId] - El perfil debe existir en la base de datos.
- * @param {Object} res - El objeto de respuesta HTTP.
+ * @param {string} req.body.nombreId - El perfil debe existir en la base de datos.
+ * @param {String[]} res - El objeto de respuesta HTTP, formado por la lista de amigos (nombreId).
  * @example
  * perfil = { nombreId: 'usuario1'};
  * const req = { body: perfil };
@@ -1096,21 +1153,21 @@ exports.agnadirAmigo = async (req, res) => {
 exports.obtenerAmigos = async (req, res) => {
   try {
     // Extraer los parámetros del cuerpo de la solicitud
-    const { _id, nombreId, ...extraParam } = req.body;
+    const { nombreId, ...extraParam } = req.body;
     // Verificar si hay algún parámetro extra
     if (Object.keys(extraParam).length > 0) {
-      res.status(400).send('Sobran parámetros, se espera _id (o nombreId)');
-      console.error("Sobran parámetros, se espera _id (o nombreId)");
+      res.status(400).send('Sobran parámetros, se espera nombreId');
+      console.error("Sobran parámetros, se espera nombreId");
       return;
     }
     // Verificar si alguno de los parámetros está ausente
-    if (!nombreId && !_id) {
-      res.status(400).send('Falta el nombreId (o _id) en la solicitud');
-      console.error("Falta el nombreId (o _id) en la solicitud");
+    if (!nombreId) {
+      res.status(400).send('Falta el nombreId  en la solicitud');
+      console.error("Falta el nombreId en la solicitud");
       return;
     }
     // Buscar el perfil en la base de datos
-    const filtro = _id ? { _id: _id } : { nombreId: nombreId };
+    const filtro = { nombreId: nombreId };
     const perfil = await Perfil.findOne(filtro);
     if (!perfil) {
       res.status(404).send('No se ha encontrado el perfil');
@@ -1118,8 +1175,10 @@ exports.obtenerAmigos = async (req, res) => {
       return;
     }
     // Verificar si el perfil existe y enviar la respuesta al cliente
-    res.json(perfil.listaAmigos);
-    console.log("Amigos obtenidos con éxito", perfil.listaAmigos);
+    let listaAmigosDevuelta = perfil.listaAmigos;
+    listaAmigosDevuelta._id = undefined;
+    res.json(listaAmigosDevuelta);
+    console.log("Amigos obtenidos con éxito");
   } catch (error) {
     res.status(500).send('Hubo un error');
     console.error("Error al obtener amigos", error);
@@ -1132,10 +1191,9 @@ exports.obtenerAmigos = async (req, res) => {
  * @function eliminarAmigo
  * @description Elimina un amigo del perfil identificado por _id o nombreId.
  * @param {Object} req - El objeto de solicitud HTTP.
- * @param {string} [req.body._id] - El perfil debe existir en la base de datos.
- * @param {string} [req.body.nombreId] - El perfil debe existir en la base de datos.
+ * @param {string} req.body.nombreId - El perfil debe existir en la base de datos.
  * @param {string} req.body.nombreIdAmigo - El amigo debe existir en la base de datos.
- * @param {Object} res - El objeto de respuesta HTTP.
+ * @param {String[]} res - El objeto de respuesta HTTP, formado por la lista de amigos (nombreId) actualizada.
  * @example
  * perfil = { nombreId: 'usuario1', nombreIdAmigo: 'usuario2'};
  * const req = { body: perfil };
@@ -1145,21 +1203,21 @@ exports.obtenerAmigos = async (req, res) => {
 exports.eliminarAmigo = async (req, res) => {
   try {
     // Extraer los parámetros del cuerpo de la solicitud
-    const { _id, nombreId, nombreIdAmigo, ...extraParam } = req.body;
+    const { nombreId, nombreIdAmigo, ...extraParam } = req.body;
     // Verificar si hay algún parámetro extra
     if (Object.keys(extraParam).length > 0) {
-      res.status(400).send('Sobran parámetros, se espera _id (o nombreId) y nombreIdAmigo');
-      console.error("Sobran parámetros, se espera _id (o nombreId) y nombreIdAmigo");
+      res.status(400).send('Sobran parámetros, se espera o nombreId y nombreIdAmigo');
+      console.error("Sobran parámetros, se espera nombreId y nombreIdAmigo");
       return;
     }
     // Verificar si alguno de los parámetros está ausente
-    if (!nombreId && !_id || !nombreIdAmigo) {
-      res.status(400).send('Falta el nombreId (o _id) o el nombreIdAmigo en la solicitud');
-      console.error("Falta el nombreId (o _id) o el nombreIdAmigo en la solicitud");
+    if (!nombreId || !nombreIdAmigo) {
+      res.status(400).send('Falta el nombreId o el nombreIdAmigo en la solicitud');
+      console.error("Falta el nombreId o el nombreIdAmigo en la solicitud");
       return;
     }
     // Buscar el perfil en la base de datos
-    const filtro = _id ? { _id: _id } : { nombreId: nombreId };
+    const filtro = { nombreId: nombreId };
 
     const perfil = await Perfil.findOne(filtro);
     if (!perfil) {
@@ -1191,8 +1249,10 @@ exports.eliminarAmigo = async (req, res) => {
     const amigoModificado = await amigo.save();
     // Verificar si el perfil existe y enviar la respuesta al cliente
     if (perfilModificado && amigoModificado) {
-      res.json(perfilModificado);
-      console.log("Amigo eliminado con éxito", perfilModificado);
+      let listaAmigosDevuelta = perfilModificado.listaAmigos;
+      listaAmigosDevuelta._id = undefined;
+      res.json(listaAmigosDevuelta);
+      console.log("Amigo eliminado con éxito");
     } else {
       res.status(404).send('No se ha encontrado el perfil a modificar');
       console.error("No se ha encontrado el perfil a modificar");
@@ -1210,10 +1270,9 @@ exports.eliminarAmigo = async (req, res) => {
  * @description Envia una solicitud de amistad a un perfil identificado por nombreIdAmigo desde el perfil identificado por _id o nombreId.
  * Añade el nombreId a la lista de solicitudes del perfil.
  * @param {Object} req - El objeto de solicitud HTTP.
- * @param {string} [req.body._id] - El perfil debe existir en la base de datos.
- * @param {string} [req.body.nombreId] - El perfil debe existir en la base de datos.
+ * @param {string} req.body.nombreId - El perfil debe existir en la base de datos.
  * @param {string} req.body.nombreIdAmigo - El amigo debe existir en la base de datos.
- * @param {Object} res - El objeto de respuesta HTTP.
+ * @param {Object} res - El objeto de respuesta HTTP
  * @example
  * perfil = { nombreId: 'usuario1', nombreIdAmigo: 'usuario2'};
  * const req = { body: perfil };
@@ -1223,17 +1282,17 @@ exports.eliminarAmigo = async (req, res) => {
 exports.enviarSolicitudAmistad = async (req, res) => {
   try {
     // Extraer los parámetros del cuerpo de la solicitud
-    const { _id, nombreId, nombreIdAmigo, ...extraParam } = req.body;
+    const { nombreId, nombreIdAmigo, ...extraParam } = req.body;
     // Verificar si hay algún parámetro extra
     if (Object.keys(extraParam).length > 0) {
-      res.status(400).send('Sobran parámetros, se espera _id (o nombreId) y nombreIdAmigo');
-      console.error("Sobran parámetros, se espera _id (o nombreId) y nombreIdAmigo");
+      res.status(400).send('Sobran parámetros, se espera nombreId y nombreIdAmigo');
+      console.error("Sobran parámetros, se espera nombreId y nombreIdAmigo");
       return;
     }
     // Verificar si alguno de los parámetros está ausente
-    if (!nombreId && !_id || !nombreIdAmigo) {
-      res.status(400).send('Falta el nombreId (o _id) o el nombreIdAmigo en la solicitud');
-      console.error("Falta el nombreId (o _id) o el nombreIdAmigo en la solicitud");
+    if (!nombreId || !nombreIdAmigo) {
+      res.status(400).send('Falta el nombreId  o el nombreIdAmigo en la solicitud');
+      console.error("Falta el nombreId o el nombreIdAmigo en la solicitud");
       return;
     }
     // Verificar si el perfil y el amigo son el mismo
@@ -1243,7 +1302,7 @@ exports.enviarSolicitudAmistad = async (req, res) => {
       return;
     }
     // Buscar el perfil en la base de datos
-    const filtro = _id ? { _id: _id } : { nombreId: nombreId };
+    const filtro = { nombreId: nombreId };
     const perfil = await Perfil.findOne(filtro);
     if (!perfil) {
       res.status(404).send('No se ha encontrado el perfil a modificar');
@@ -1284,8 +1343,7 @@ exports.enviarSolicitudAmistad = async (req, res) => {
     const perfilModificado = await amigo.save();
     // Verificar si el perfil existe y enviar la respuesta al cliente
     if (perfilModificado) {
-      res.json(perfilModificado);
-      console.log("Solicitud de amistad enviada con éxito", perfilModificado);
+      console.log("Solicitud de amistad enviada con éxito");
     } else {
       res.status(404).send('No se ha podido enviar la solicitud de amistad');
       console.error("No se ha podido enviar la solicitud de amistad");
@@ -1302,9 +1360,8 @@ exports.enviarSolicitudAmistad = async (req, res) => {
  * @function obtenerSolicitudesAmistad
  * @description Obtiene la lista de solicitudes de amistad de un perfil identificado por _id o nombreId.
  * @param {Object} req - El objeto de solicitud HTTP.
- * @param {string} [req.body._id] - El perfil debe existir en la base de datos.
- * @param {string} [req.body.nombreId] - El perfil debe existir en la base de datos.
- * @param {Object} res - El objeto de respuesta HTTP.
+ * @param {string} req.body.nombreId - El perfil debe existir en la base de datos.
+ * @param {String[]} res - El objeto de respuesta HTTP, formado por la lista de solicitudes (nombreId).
  * @example
  * perfil = { nombreId: 'usuario1'};
  * const req = { body: perfil };
@@ -1314,21 +1371,21 @@ exports.enviarSolicitudAmistad = async (req, res) => {
 exports.obtenerSolicitudesAmistad = async (req, res) => {
   try {
     // Extraer los parámetros del cuerpo de la solicitud
-    const { _id, nombreId, ...extraParam } = req.body;
+    const { nombreId, ...extraParam } = req.body;
     // Verificar si hay algún parámetro extra
     if (Object.keys(extraParam).length > 0) {
-      res.status(400).send('Sobran parámetros, se espera _id (o nombreId)');
-      console.error("Sobran parámetros, se espera _id (o nombreId)");
+      res.status(400).send('Sobran parámetros, se espera nombreId');
+      console.error("Sobran parámetros, se espera nombreId");
       return;
     }
     // Verificar si alguno de los parámetros está ausente
-    if (!nombreId && !_id) {
-      res.status(400).send('Falta el nombreId (o _id) en la solicitud');
-      console.error("Falta el nombreId (o _id) en la solicitud");
+    if (!nombreId) {
+      res.status(400).send('Falta el nombreId en la solicitud');
+      console.error("Falta el nombreId en la solicitud");
       return;
     }
     // Buscar el perfil en la base de datos
-    const filtro = _id ? { _id: _id } : { nombreId: nombreId };
+    const filtro = { nombreId: nombreId };
     const perfil = await Perfil.findOne(filtro);
     if (!perfil) {
       res.status(404).send('No se ha encontrado el perfil');
@@ -1336,8 +1393,10 @@ exports.obtenerSolicitudesAmistad = async (req, res) => {
       return;
     }
     // Verificar si el perfil existe y enviar la respuesta al cliente
-    res.json(perfil.listaSolicitudes);
-    console.log("Solicitudes de amistad obtenidas con éxito", perfil.listaSolicitudes);
+    let listaSolicitudes = perfil.listaSolicitudes;
+    listaSolicitudes._id = undefined;
+    res.json(listaSolicitudes);
+    console.log("Solicitudes de amistad obtenidas con éxito");
   } catch (error) {
     res.status(500).send('Hubo un error');
     console.error("Error al obtener solicitudes de amistad", error);
@@ -1350,10 +1409,9 @@ exports.obtenerSolicitudesAmistad = async (req, res) => {
  * @description Elimina una solicitud de amistad de un perfil identificado por nombreIdAmigo en el perfil identificado por _id o nombreId.
  * Elimina el nombreIdAmigo de la lista de solicitudes del perfil.
  * @param {Object} req - El objeto de solicitud HTTP.
- * @param {string} [req.body._id] - El perfil debe existir en la base de datos.
- * @param {string} [req.body.nombreId] - El perfil debe existir en la base de datos.
+ * @param {string} req.body.nombreId - El perfil debe existir en la base de datos.
  * @param {string} req.body.nombreIdAmigo - El amigo debe existir en la base de datos.
- * @param {Object} res - El objeto de respuesta HTTP.
+ * @param {String[]} res - El objeto de respuesta HTTP, formado por la lista de solicitudes (nombreId) actualizada.
  * @example
  * perfil = { nombreId: 'usuario1', nombreIdAmigo: 'usuario2'};
  * const req = { body: perfil };
@@ -1363,21 +1421,21 @@ exports.obtenerSolicitudesAmistad = async (req, res) => {
 exports.eliminarSolicitudAmistad = async (req, res) => {
   try {
     // Extraer los parámetros del cuerpo de la solicitud
-    const { _id, nombreId, nombreIdAmigo, ...extraParam } = req.body;
+    const { nombreId, nombreIdAmigo, ...extraParam } = req.body;
     // Verificar si hay algún parámetro extra
     if (Object.keys(extraParam).length > 0) {
-      res.status(400).send('Sobran parámetros, se espera _id (o nombreId) y nombreIdAmigo');
-      console.error("Sobran parámetros, se espera _id (o nombreId) y nombreIdAmigo");
+      res.status(400).send('Sobran parámetros, se espera o nombreId y nombreIdAmigo');
+      console.error("Sobran parámetros, se espera nombreId y nombreIdAmigo");
       return;
     }
     // Verificar si alguno de los parámetros está ausente
-    if (!nombreId && !_id || !nombreIdAmigo) {
-      res.status(400).send('Falta el nombreId (o _id) o el nombreIdAmigo en la solicitud');
-      console.error("Falta el nombreId (o _id) o el nombreIdAmigo en la solicitud");
+    if (!nombreId || !nombreIdAmigo) {
+      res.status(400).send('Falta el nombreId o el nombreIdAmigo en la solicitud');
+      console.error("Falta el nombreId o el nombreIdAmigo en la solicitud");
       return;
     }
     // Buscar el perfil en la base de datos
-    const filtro = _id ? { _id: _id } : { nombreId: nombreId };
+    const filtro = { nombreId: nombreId };
 
     const perfil = await Perfil.findOne(filtro);
     if (!perfil) {
@@ -1405,7 +1463,9 @@ exports.eliminarSolicitudAmistad = async (req, res) => {
     // Verificar si el perfil existe y enviar la respuesta al cliente
     if (perfilModificado) {
       res.json(perfilModificado);
-      console.log("Solicitud de amistad eliminada con éxito", perfilModificado);
+      let listaSolicitudes = perfilModificado.listaSolicitudes;
+      listaSolicitudes._id = undefined;
+      console.log("Solicitud de amistad eliminada con éxito");
     } else {
       res.status(404).send('No se ha podido eliminar la solicitud de amistad');
       console.error("No se ha podido eliminar la solicitud de amistad");
@@ -1416,31 +1476,3 @@ exports.eliminarSolicitudAmistad = async (req, res) => {
     console.error("Error al eliminar solicitud de amistad", error);
   }
 }
-    
-
-
-// // SEGURIDAD
-// // RESPUESTA DE LA API:
-
-// app.get('/api/perfiles/:id', async (req, res) => {
-//   try {
-//     const perfil = await Perfil.findById(req.body.id).select('-contraseña');
-//     // El método .select('-contraseña') asegura que la contraseña NO se incluya en la respuesta, haciendo ese campo "privado".
-//     if (!perfil) {
-//       return res.status(404).send('Perfil no encontrado');
-//     }
-//     res.send(perfil);
-//   } catch (error) {
-//     res.status(500).send('Error al obtener el perfil');
-//   }
-// });
-
-// // ENCRIPTACION
-// const bcrypt = require('bcrypt');
-
-// // Durante el registro o actualización de contraseña
-// perfilSchema.pre('save', async function (next) {
-//   if (!this.isModified('contraseña')) return next();
-//   this.contraseña = await bcrypt.hash(this.contraseña, 12);
-//   next();
-// });
