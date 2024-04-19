@@ -4,6 +4,8 @@ import { Navbar } from "../Components/Navbar";
 import Flag from 'react-world-flags'
 import '../Styles/profile-style.css';
 
+const urlObtenerEstadisticas = 'http://localhost:8080/perfil/obtenerUsuario';
+
 const Profile = () => {
     const cookies = new Cookies();
 
@@ -22,22 +24,49 @@ const Profile = () => {
     });
 
     useEffect(() => {
-        const profileCookie = cookies.get('perfil');
-        if (profileCookie) {
-            setprofileData({
-                uname: profileCookie['nombreId'] || '0',
-                country: profileCookie['pais'] || 'Nada',
-                exp: profileCookie['puntosExperiencia'] || '0',
-                elo: profileCookie['trofeos'] || '0',
-                sunkenShips: profileCookie['barcosHundidos'] || '0',
-                lostShips: profileCookie['barcosPerdidos'] || '0',
-                nMatches: profileCookie['partidasJugadas'] || '0',
-                nWins: profileCookie['partidasGanadas'] || '0',
-                winrate: profileCookie['partidasGanadas'] / profileCookie['partidasJugadas'] || '0',
-                hitShots: profileCookie['disparosAcertados'] || '0',
-                missShots: profileCookie['disparosFallados'] || '0',
-            });
-        }
+        const fetchUserData = async () => {
+            try {
+                const profileCookie = cookies.get('perfil');
+
+                const response = await fetch(urlObtenerEstadisticas, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ nombreId: profileCookie['nombreId'] })
+                })
+                .then(response => {
+                    if (!response.ok) {
+                    throw new Error('La solicitud de obtener estadísticas ha fallado');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log(data);
+                    
+                    setprofileData({
+                        uname: profileCookie['nombreId'] || '0',
+                        country: profileCookie['pais'] || 'Nada',
+                        exp: data['puntosExperiencia'] || '0',
+                        elo: data['trofeos'] || '0',
+                        sunkenShips: data['barcosHundidos'] || '0',
+                        lostShips: data['barcosPerdidos'] || '0',
+                        nMatches: data['partidasJugadas'] || '0',
+                        nWins: data['partidasGanadas'] || '0',
+                        winrate: 100 * (data['partidasGanadas'] / data['partidasJugadas']) || '0',
+                        hitShots: data['disparosAcertados'] || '0',
+                        missShots: data['disparosFallados'] || '0',
+                    });
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        };
+
+        fetchUserData();
     }, []);
 
 
@@ -105,7 +134,7 @@ const Profile = () => {
                                 </div>
                                 <div className="profile-sidebar-stat-winrate">
                                     <span className="profile-sidebar-stat-header">Tasa de victorias</span>
-                                    <span className="profile-sidebar-stat-value">{profileData.winrate}</span>
+                                    <span className="profile-sidebar-stat-value">{profileData.winrate} %</span>
                                 </div>
                                 <div className="profile-sidebar-stat-sunkenships">
                                     <span className="profile-sidebar-stat-header">Barcos hundidos</span>
