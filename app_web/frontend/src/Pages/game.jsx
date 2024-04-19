@@ -8,6 +8,7 @@ import 'gridstack/dist/gridstack.min.css';
 import 'gridstack/dist/gridstack-extra.min.css';
 
 import Tablero from '../Components/Tablero';
+import { crossList } from '../Components/Tablero';
 
 import aircraftImg from '../Images/fleet/portaaviones.png';
 import destroyImg from '../Images/fleet/destructor.png';
@@ -87,22 +88,18 @@ export function Game() {
             console.log('Respuesta del servidor al disparar:', data);
 
             let imgX;
-            const keyCasilla = fila*10 + columna;
-            const casilla = document.querySelector(`#tablero .casilla[key="${keyCasilla}"]`);
-            console.log(casilla);
+            const keyCasilla = (fila-1)*10 + columna - 1;
+            // console.log(casilla);
             switch (data['disparoRealizado'].estado) {
                 case "Tocado":
-                    imgX = document.createElement('img').src = explosionImg;
-                    casilla.keyCasilla.appendChild(imgX);
                     break;
                 case "Hundido":
-                    imgX = document.createElement('img').src = explosionImg;
-                    casilla.keyCasilla.appendChild(imgX);
                     //mostrarBarcoPorDebajo();
                     break;
                 case "Agua":
-                    imgX = document.createElement('img').src = crossImg;
-                    casilla.keyCasilla.appendChild(imgX);
+                    crossList.push(keyCasilla);
+                    // relanzar el return de Game
+
                     break;
                 default:
                     console.log("Error: disparo mal hecho -1 para backend");
@@ -464,7 +461,7 @@ export function Game() {
                         <div className="grid-stack fleet-board1"></div>
                         <div className="fleet-board-separator"></div>
                         <div className="grid-stack fleet-board2" /*onClick={handleItemClick}*/>
-                            <Tablero id="tablero" onCellClick={handleClickedCell} />
+                            <Tablero id="tablero" onCellClick={handleClickedCell}/>
                         </div>
                     </div>
                 </div>

@@ -1,5 +1,6 @@
 {
     "devDependencies": {
+        "@types/cookie-parser": "^1.4.7",
         "concurrently": "^8.2.2"
     },
     "scripts": {
@@ -10,6 +11,7 @@
     "dependencies": {
         "@types/node": "^20.11.17",
         "http": "^0.0.1-security",
-        "react-world-flags": "^1.6.0"
+        "react-world-flags": "^1.6.0",
+        "universal-cookie": "^7.1.4"
     }
 }

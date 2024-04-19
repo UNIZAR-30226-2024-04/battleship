@@ -31,3 +31,10 @@
     background-size: 10% 10%, 10% 10%, 10% 10%, 10% 10%;
     background-position: -1px -1px, -1px -1px, -1px -1px, -1px -1px;
 }
+
+.cross {
+    width: 50%;
+    height: 50%;
+    margin-left: 25%;
+    margin-top: 25%;
+}

@@ -64,7 +64,8 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@babel/plugin-proposal-private-property-in-object": "^7.21.11"
+    "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
+    "@types/cookie-parser": "^1.4.7"
   },
   "browser": {
     "fs": false,
