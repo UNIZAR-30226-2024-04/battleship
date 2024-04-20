@@ -55,6 +55,17 @@ const cookies = new Cookies();
 //     };
 // }
 
+/*
+function timeout(delay) {
+    return new Promise( res => setTimeout(res, delay) );
+}
+*/
+/*
+async function example() {
+    await timeout(1000); // for 1 sec delay
+}
+*/
+
 
 function esBarcoHorizontal(barco) {
     return barco.coordenadas[0].i === barco.coordenadas[1].i;
@@ -87,8 +98,7 @@ export function Game() {
             console.log('Respuesta del servidor al disparar:', data);
 
             const locationCasilla = (fila-1)*10 + columna - 1;
-            const casilla = document.querySelector(`#tablero .casilla[location="${locationCasilla}"]`);
-            // console.log(casilla);
+            const casilla = document.querySelector(`#rivalTablero .casilla[location="${locationCasilla}"]`);
 
             let imgX = document.createElement('img');
             imgX.style.width = '50%';
@@ -117,14 +127,62 @@ export function Game() {
                         imgX.style.opacity = '0.7';
                         casilla.appendChild(imgX);
                     }
-                    // relanzar el return de Game
-
                     break;
                 default:
                     console.log("Error: disparo mal hecho -1 para backend");
             }
             if(data['barcoCoordenadas']) {
                 mostrarBarcosHundidos([data['barcoCoordenadas']], opponentBoard);
+            }
+
+            // Representar las jugadas de la IA
+            const turnosIA = data['turnosIA'];
+            for (let i = 0; i < turnosIA.length; i++) {
+                const disparoIA = turnosIA[i].disparoRealizado;
+                const filaIA = disparoIA.i;
+                const columnaIA = disparoIA.j;
+                const estadoIA = disparoIA.estado;
+
+                const locationCasillaIA = (filaIA-1)*10 + columnaIA - 1;
+                const casillaIA = document.querySelector(`#miTablero .casilla[location="${locationCasillaIA}"]`);
+
+                let imgXIA = document.createElement('img');
+                imgXIA.style.width = '50%';
+                imgXIA.style.height = '50%';
+                imgXIA.style.marginLeft = '25%';
+                imgXIA.style.marginTop = '25%';
+                imgXIA.style.objectFit = 'cover';
+
+                switch (estadoIA) {
+                    case "Tocado":
+                        if (casillaIA.childElementCount === 0) {  // Solo 1 img
+                            imgXIA.src = explosionImg;
+                            casillaIA.appendChild(imgXIA);
+                        }
+                        break;
+                    case "Hundido":
+                        if (casillaIA.childElementCount === 0) { // Solo 1 img
+                            imgXIA.src = explosionImg;
+                            casillaIA.appendChild(imgXIA);
+                            //mostrar Barco Por Debajo
+                            
+                        }
+                        break;
+                    case "Agua":
+                        if (casillaIA.childElementCount === 0) {  // Solo 1 img
+                            imgXIA.src = crossImg;
+                            imgXIA.style.opacity = '0.7';
+                            casillaIA.appendChild(imgXIA);
+                        }
+
+                        break;
+                    default:
+                        console.log("Error: disparo mal hecho -1 para backend");
+                }
+                console.log('Barco hundido:', turnosIA[i].barcoCoordenadas);
+                if(turnosIA[i].barcoCoordenadas) {
+                    mostrarBarcosHundidos2(turnosIA[i].barcoCoordenadas, myBoard);
+                }
             }
         })
         .catch(error => {
@@ -305,11 +363,16 @@ export function Game() {
     }, []);
 
     const mostrarWidgetsTablero = (tablero, board) => {
-        addNewWidgetPos(1, "Patrol", tablero[0].coordenadas[0].j-1, tablero[0].coordenadas[0].i-1, esBarcoHorizontal(tablero[0]), board);
-        addNewWidgetPos(2, "Destroy", tablero[1].coordenadas[0].j-1, tablero[1].coordenadas[0].i-1, esBarcoHorizontal(tablero[1]), board);
-        addNewWidgetPos(3, "Sub", tablero[2].coordenadas[0].j-1, tablero[2].coordenadas[0].i-1, esBarcoHorizontal(tablero[2]), board);
-        addNewWidgetPos(4, "Bship", tablero[3].coordenadas[0].j-1, tablero[3].coordenadas[0].i-1, esBarcoHorizontal(tablero[3]), board);
-        addNewWidgetPos(5, "Aircraft", tablero[4].coordenadas[0].j-1, tablero[4].coordenadas[0].i-1, esBarcoHorizontal(tablero[4]), board);
+        addNewWidgetPos(1, "Patrol", tablero[0].coordenadas[0].j-1, tablero[0].coordenadas[0].i-1, esBarcoHorizontal(tablero[0]),
+                        board, tablero[0].coordenadas[0].estado === "Hundido");
+        addNewWidgetPos(2, "Destroy", tablero[1].coordenadas[0].j-1, tablero[1].coordenadas[0].i-1, esBarcoHorizontal(tablero[1]),
+                        board, tablero[1].coordenadas[0].estado === "Hundido");
+        addNewWidgetPos(3, "Sub", tablero[2].coordenadas[0].j-1, tablero[2].coordenadas[0].i-1, esBarcoHorizontal(tablero[2]),
+                        board, tablero[2].coordenadas[0].estado === "Hundido");
+        addNewWidgetPos(4, "Bship", tablero[3].coordenadas[0].j-1, tablero[3].coordenadas[0].i-1, esBarcoHorizontal(tablero[3]), 
+                        board, tablero[3].coordenadas[0].estado === "Hundido");
+        addNewWidgetPos(5, "Aircraft", tablero[4].coordenadas[0].j-1, tablero[4].coordenadas[0].i-1, esBarcoHorizontal(tablero[4]),
+                         board, tablero[4].coordenadas[0].estado === "Hundido");
         setCount(6);
     }
 
@@ -318,6 +381,48 @@ export function Game() {
             board.removeAll();
         }
     }
+    
+    
+    const hundirBarco = (id) => {
+        const widget = document.querySelector(`.fleet-board1 [gs-id="${id}"] .grid-stack-item-content img`);
+        widget.classList = "imgHundida";
+    }
+
+    // Esta función se encarga de mostrar los barcos que nos ha hundido la IA
+    const mostrarBarcosHundidos2 = (tablero, board) => {
+        for (let i = 0; i < tablero['coordenadas'].length; i++) {
+            const coordenadas = tablero['coordenadas'][i];
+            let tipoBarco = tablero['tipo'];
+            let id;
+            switch (tipoBarco) {
+                case "Patrullero":
+                    tipoBarco = "Patrol";
+                    id = 1;
+                    break;
+                case "Destructor":
+                    tipoBarco = "Destroy";
+                    id = 2;
+                    break;
+                case "Submarino":
+                    tipoBarco = "Sub";
+                    id = 3;
+                    break;
+                case "Acorazado":
+                    tipoBarco = "Bship";
+                    id = 4;
+                    break;
+                case "Portaviones":
+                    tipoBarco = "Aircraft";
+                    id = 5;
+                    break;
+                default:
+                    console.log("Error: barco mal hecho -1 para backend");
+            }
+            // edita el widget antiguo
+            hundirBarco(id);
+        }
+    }
+
 
     const mostrarBarcosHundidos = (tablero, board) => {
         for (let i = 0; i < tablero.length; i++) {
@@ -436,8 +541,7 @@ export function Game() {
                         const estado = disparos1[i].estado;
 
                         const locationCasilla = (fila-1)*10 + columna - 1;
-                        const casilla = document.querySelector(`#tablero .casilla[location="${locationCasilla}"]`);
-                        // console.log(casilla);
+                        const casilla = document.querySelector(`#rivalTablero .casilla[location="${locationCasilla}"]`);
 
                         let imgX = document.createElement('img');
                         imgX.style.width = '50%';
@@ -480,10 +584,51 @@ export function Game() {
                     borrarWidgetsTablero(myBoard);
                     mostrarWidgetsTablero(tablero1, myBoard);
 
-                    
+                    // Mostramos los disparos de la IA
+                    // iterar en la lista disparos2
+                    console.log('Disparos de la IA:', disparos2);
+                    for (let i = 0; i < disparos2.length; i++) {
+                        const fila = disparos2[i].i;
+                        const columna = disparos2[i].j;
+                        const estado = disparos2[i].estado;
 
-                    // TO-DO: Mostrar tablero del oponente 
-                    // (No los barcos directamente, sino las celdas donde se ha disparado y los hundidos)
+                        const locationCasilla = (fila-1)*10 + columna - 1;
+                        const casilla = document.querySelector(`#miTablero .casilla[location="${locationCasilla}"]`);
+
+                        let imgX = document.createElement('img');
+                        imgX.style.width = '50%';
+                        imgX.style.height = '50%';
+                        imgX.style.marginLeft = '25%';
+                        imgX.style.marginTop = '25%';
+                        imgX.style.objectFit = 'cover';
+
+                        switch (estado) {
+                            case "Tocado":
+                                if (casilla.childElementCount === 0) {  // Solo 1 img
+                                    imgX.src = explosionImg;
+                                    casilla.appendChild(imgX);
+                                }
+                                break;
+                            case "Hundido":
+                                if (casilla.childElementCount === 0) { // Solo 1 img
+                                    imgX.src = explosionImg;
+                                    casilla.appendChild(imgX);
+                                    //mostrarBarcoPorDebajo();
+                                }
+                                break;
+                            case "Agua":
+                                if (casilla.childElementCount === 0) {  // Solo 1 img
+                                    imgX.src = crossImg;
+                                    imgX.style.opacity = '0.7';
+                                    casilla.appendChild(imgX);
+                                }
+                                // relanzar el return de Game
+
+                                break;
+                            default:
+                                console.log("Error: disparo mal hecho -1 para backend");
+                        }
+                    }
 
                     //borrarWidgetsTablero(opponentBoard);
                     //mostrarWidgetsTablero(tablero2, opponentBoard);
@@ -521,8 +666,10 @@ export function Game() {
             }
         }
         if (hundido && !esHorizontal) {
+            console.log("Estoy hundido vertical");
             node.content = `<img src="${shipInfo[ship].imgRotated}" alt="${shipInfo[ship].name}" class="imgHundida" />`;
         } else if (hundido) {
+            console.log("Estoy hundido horizontal");
             node.content = `<img src="${shipInfo[ship].img}" alt="${shipInfo[ship].name}" class="imgHundida" />`;
         }
         if (board) {    // El tablero está inicializado
@@ -595,10 +742,12 @@ export function Game() {
                         ¡A batallar!
                     </h1>
                     <div className="fleet-main-content-container">
-                        <div className="grid-stack fleet-board1"></div>
+                        <div className="grid-stack fleet-board1">
+                            <Tablero id="miTablero" clickable={false}/>
+                        </div>
                         <div className="fleet-board-separator"></div>
                         <div className="grid-stack fleet-board2" /*onClick={handleItemClick}*/>
-                            <Tablero id="tablero" onCellClick={handleClickedCell}/>
+                            <Tablero id="rivalTablero" onCellClick={handleClickedCell} clickable={true}/>
                         </div>
                     </div>
                 </div>

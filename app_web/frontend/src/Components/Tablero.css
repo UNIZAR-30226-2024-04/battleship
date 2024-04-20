@@ -1,4 +1,4 @@
-#tablero {
+.tablero {
     position: absolute;
     display: grid;
     grid-template-columns: repeat(10, 1fr);
@@ -11,7 +11,7 @@
 }
   
 
-.casilla:hover {
-background-color: rgba(73, 73, 81, 0.771); /* Puedes cambiar el color aquí */
+.casillaColorear:hover {
+    background-color: rgba(73, 73, 81, 0.771); /* Puedes cambiar el color aquí */
 }
   
