@@ -9,19 +9,12 @@ const Tablero = require('../data/tablero');
 const Coordenada = require('../data/coordenada');
 
 
-/**
- * @typedef {Object} mensajeChat
- * @memberof module:chat
- * @property {String} mensaje - Mensaje del chat
- * @property {String} autor - Autor del mensaje
- * @property {Date} timestamp - Fecha y hora del mensaje
- */
 
 /**
  * @memberof module:partida
  * @typedef {Object} Partida
  * @property {Number} codigo - Identificador de la partida
- * @property {mensajeChat[]} chat - Lista de mensajes del chat
+ * @property {MensajeChat[]} chat - Lista de mensajes del chat
  * @property {Number} contadorTurno - Jugador 1 juga si es impar, jugador 2 si es par
  * @property {String} nombreId1 - Identificador del jugador 1
  * @property {String} nombreId2 - Identificador del jugador 2
@@ -47,7 +40,7 @@ const partidaSchema = new Schema({
     unique: true
   },
   chat: {
-    type: [{ mensaje: String, autor: mongoose.Schema.Types.ObjectId, timestamp: Date }],
+    type: [{ mensaje: String, nombreId: String, timestamp: Date }],
     default: []
   },
   contadorTurno: { type: Number, default: 1}, // Jugador 1 juga si es impar, jugador 2 si es par

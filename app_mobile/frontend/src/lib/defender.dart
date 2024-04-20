@@ -28,7 +28,7 @@ class _DefenderState extends State<Defender> {
   }
 
   void iniciarTransicionAutomatica() {
-    Timer(const Duration(seconds: 2), () {
+    Timer(const Duration(seconds: 3), () {
       setState(() {
         Juego().contabilizarAtaque();
         Juego().disparosPendientes = 1;
@@ -131,6 +131,7 @@ class _DefenderState extends State<Defender> {
 
 
   Widget _construirBarcosRestantes() {
+    print("TURNO EN DEFENDER: ${Juego().turno}");
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
@@ -140,19 +141,19 @@ class _DefenderState extends State<Defender> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          buildTitle('Tus barcos restantes: ${Juego().getBarcosRestantesOponente()}', 16),
+          buildTitle('Tus barcos restantes: ${Juego().numBarcos - Juego().barcosHundidosPorJugador.length}', 16),
           const SizedBox(height: 10),
           Wrap(
             alignment: WrapAlignment.center,
             children: [
-              for (int i = 0; i < Juego().tablero_oponente.barcos.length; i++) 
-                if (!Juego().tablero_oponente.barcos[i].hundido) 
+              for (int i = 0; i < Juego().numBarcos; i++) 
+                if (!Juego().barcosHundidosPorJugador.contains(Juego().tablero_jugador1.barcos[i])) 
                   Column(
                     children: [
                       Padding(
                         padding: const EdgeInsets.all(5),
                         child: Image.asset(
-                          'images/${Juego().tablero_oponente.barcos[i].nombre}.png', 
+                          'images/${Juego().tablero_jugador1.barcos[i].nombre}.png', 
                           width: 50, 
                           height: 50,
                         ),
@@ -160,7 +161,7 @@ class _DefenderState extends State<Defender> {
                       Padding(
                         padding: const EdgeInsets.all(5), 
                         child: Text(
-                          Juego().tablero_oponente.barcos[i].longitud.toString(),
+                          Juego().tablero_jugador1.barcos[i].longitud.toString(),
                           style: const TextStyle(
                             fontSize: 15,
                             color: Colors.white,

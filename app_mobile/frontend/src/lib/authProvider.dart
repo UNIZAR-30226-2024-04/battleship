@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-
 import 'juego.dart';
 
 class AuthProvider with ChangeNotifier {
@@ -89,22 +88,34 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
+  Future<bool> login(String name, String password, BuildContext context) async {
+    try {
+      bool response = await loginDB(name, password);
 
-  Future<bool> login(String name, String password) async {
-    bool response = await loginDB(name, password);
-
-    if(response) {
+      if(response) {
         _isLoggedIn = true;
         Juego().perfilJugador.name = name;
         Juego().perfilJugador.password = password;
         notifyListeners(); // Notifica a los listeners que la variable ha cambiado
         return true;
+      } else {
+        const snackBar = SnackBar(
+          content: Text(
+            'Credenciales incorrectas',
+            style: TextStyle(color: Colors.red),
+          ),
+          behavior: SnackBarBehavior.floating,
+        );
+        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+
+        return false;
+      }
+    } catch (e) {
+      print(e.toString());
+      return false;
     }
-
-    print("Credenciales incorrectas");
-
-    return false;
   }
+
 
   Future<bool> signUp(String name, String password, String email) async {
     bool response = await signUpDB(name, password, email);

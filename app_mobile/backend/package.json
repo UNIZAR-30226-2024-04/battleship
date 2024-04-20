@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node src/server.js",
     "test": "jest tests --coverage --runInBand",
-    "temp-test": "jest partidaController.test.js --coverage --runInBand",
+    "temp-test": "jest chatController.test.js --coverage --runInBand",
     "docs-gen": "npx jsdoc -c .jsdoc.json -r",
     "docs": "npm run docs-gen"
   },

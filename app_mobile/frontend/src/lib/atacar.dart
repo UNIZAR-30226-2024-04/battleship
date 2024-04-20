@@ -1,3 +1,4 @@
+import 'package:battleship/authProvider.dart';
 import 'package:battleship/barco.dart';
 import 'package:battleship/destino.dart';
 import 'package:battleship/juego.dart';
@@ -46,7 +47,7 @@ class _AtacarState extends State<Atacar> {
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   // While waiting for the future to complete, you can show a loading indicator.
-                  return CircularProgressIndicator();
+                  return const CircularProgressIndicator();
                 } else if (snapshot.hasError) {
                   // If there's an error, you can show an error message.
                   return Text('Error: ${snapshot.error}');
@@ -83,6 +84,7 @@ class _AtacarState extends State<Atacar> {
   }
 
   Widget _construirBarcosRestantes() {
+    print("TURNO EN ATACAR: ${Juego().turno}");
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
@@ -92,19 +94,19 @@ class _AtacarState extends State<Atacar> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          buildTitle('Barcos restantes del rival: ${Juego().getBarcosRestantesOponente()}', 16),
+          buildTitle('Barcos restantes del rival: ${Juego().numBarcos - Juego().barcosHundidosPorJugador.length}', 16),
           const SizedBox(height: 10),
           Wrap(
             alignment: WrapAlignment.center,
             children: [
-              for (int i = 0; i < Juego().tablero_oponente.barcos.length; i++) 
-                if (!Juego().tablero_oponente.barcos[i].hundido) 
+              for (int i = 0; i < Juego().numBarcos; i++) 
+                if (!Juego().barcosHundidosPorJugador.contains(Juego().tablero_jugador1.barcos[i])) 
                   Column(
                     children: [
                       Padding(
                         padding: const EdgeInsets.all(5),
                         child: Image.asset(
-                          Juego().tablero_oponente.barcos[i].getImagePath(), 
+                          'images/${Juego().tablero_jugador1.barcos[i].nombre}.png', 
                           width: 50, 
                           height: 50,
                         ),
@@ -112,7 +114,7 @@ class _AtacarState extends State<Atacar> {
                       Padding(
                         padding: const EdgeInsets.all(5), 
                         child: Text(
-                          Juego().tablero_oponente.barcos[i].longitud.toString(),
+                          Juego().tablero_jugador1.barcos[i].longitud.toString(),
                           style: const TextStyle(
                             fontSize: 15,
                             color: Colors.white,
@@ -237,13 +239,16 @@ class _AtacarState extends State<Atacar> {
         }
       }
 
-      casillas.add(
-        GestureDetector(
-          onTap: () {
-            setState(() {
-              onTap(rowIndex, j);
-            });
-          },
+    casillas.add(
+      GestureDetector(
+        onTap: () {
+          setState(() {
+            onTap(rowIndex, j);
+          });
+        },
+        child: AnimatedOpacity(
+          opacity: 1.0,
+          duration: const Duration(seconds: 1),
           child: Container(
             width: Juego().tablero_oponente.casillaSize,
             height: Juego().tablero_oponente.casillaSize,
@@ -254,7 +259,8 @@ class _AtacarState extends State<Atacar> {
             child: Image.asset(imagePath, fit: BoxFit.cover),
           ),
         ),
-      );
+      ),
+    );
     }
     
     return Row(children: casillas);
@@ -334,7 +340,7 @@ class _AtacarState extends State<Atacar> {
       return barcoHundido;
     }
 
-    return Barco('Ninguno', Offset(0, 0), 0, false, false);
+    return Barco('Ninguno', const Offset(0, 0), 0, false, false);
   }
 
 
@@ -347,7 +353,7 @@ class _AtacarState extends State<Atacar> {
       },
       body: jsonEncode(<String, dynamic>{
         'codigo': Juego().codigo,
-        'nombreId': Juego().perfilJugador.name,
+        'nombreId': AuthProvider().name,
         'i': i,
         'j': j,
       }),
@@ -404,6 +410,20 @@ class _AtacarState extends State<Atacar> {
         estado = disparo['estado'];
         acertado = estado == 'Tocado' || estado == 'Hundido';
         hundido = estado == 'Hundido';
+
+        if(finPartida) {
+          print("¡Juego terminado!");
+          print("¡Ganador: ${Juego().getGanador()}!");
+          Juego().reiniciarPartida();
+          Navigator.pushReplacement(
+            context,
+            PageRouteBuilder(
+              pageBuilder: (context, animation1, animation2) => Principal(),
+              transitionDuration: const Duration(seconds: 0),
+            ),
+          );
+        }
+
         if (acertado) {
           Juego().disparosAcertadosOponente.add(Offset(disparo['i'].toDouble(), disparo['j'].toDouble()));
         }
@@ -430,24 +450,23 @@ class _AtacarState extends State<Atacar> {
   Future<void> _handleTap(int i, int j) async {
     print("TURNO: ${Juego().turno}");
     print("VOY A DISPARAR EN: $i $j");
-    var respuesta_future = realizarDisparo(i, j);
+    var respuestaFuture = realizarDisparo(i, j);
     print("HE DISPARADO EN: $i $j");
-    //mostrarMiTablero();
     Juego().disparosPendientes--;
 
-    respuesta_future.then((result) {
+    respuestaFuture.then((result) {
       var acertado = result[0];
-      var fin_future = result[1];
-      var hundido_future = result[2];
+      var finFuture = result[1];
+      var hundidoFuture = result[2];
       print("ACERTADO: $acertado");
-      print("FIN: $fin_future");
-      print("HUNDIDO: $hundido_future");
+      print("FIN: $finFuture");
+      print("HUNDIDO: $hundidoFuture");
+
       // Si la casilla tiene un barco.
       if(acertado) {
-        //Juego().actualizarBarcosRestantes();
         Juego().disparosPendientes ++;
         print("ACERTADOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO");
-        if(fin_future) {
+        if(finFuture) {
           print("¡Juego terminado!");
           print("¡Ganador: ${Juego().getGanador()}!");
           Juego().reiniciarPartida();

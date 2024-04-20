@@ -298,6 +298,15 @@ class Juego {
     turno = 1;
     ganador = 0;
     codigo = -1;
+    disparosAcertadosJugador1 = [];
+    disparosAcertadosJugador2 = [];
+    disparosFalladosJugador1 = [];
+    disparosFalladosJugador2 = [];
+    barcosHundidosPorJugador1 = [];
+    barcosHundidosPorJugador2 = [];
+    numAtaques = 0;
+    numAtaquesJugador1 = 0;
+    numAtaquesJugador2 = 0;
   }
 
   Offset boundPosition(Offset position, double height, double width) {
