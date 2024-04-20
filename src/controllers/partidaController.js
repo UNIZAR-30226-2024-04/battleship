@@ -407,7 +407,7 @@ exports.mostrarTableroEnemigo = async (req, res) => {
       for (let barco of jugador === 1 ? partidaActual.tableroBarcos2 : partidaActual.tableroBarcos1) {
         barco._id = undefined;
         if (barco.coordenadas.some(coordenada => coordenada.estado === 'Hundido')) {
-          barcosHundidos.push(barco);
+          listaBarcosHundidos.push(barco);
         }
       }
 
@@ -430,7 +430,7 @@ exports.mostrarTableroEnemigo = async (req, res) => {
     }
   } catch (error) {
     res.status(500).send('Hubo un error');
-    console.error('Hubo un error');
+    console.error('Hubo un error: ', error);
     return;
   }
 };
@@ -505,7 +505,7 @@ exports.mostrarTableros = async (req, res) => {
       for (let barco of jugador === 1 ? partidaActual.tableroBarcos2 : partidaActual.tableroBarcos1) {
         barco._id = undefined;
         if (barco.coordenadas.some(coordenada => coordenada.estado === 'Hundido')) {
-          barcosHundidos.push(barco);
+          listaBarcosHundidos.push(barco);
         }
       }
 

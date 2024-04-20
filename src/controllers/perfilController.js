@@ -183,7 +183,6 @@ exports.obtenerUsuario = async (req, res) => {
       perfilDevuelto.tableroInicial = undefined; // No enviar el tablero inicial en la respuesta
       perfilDevuelto.mazoHabilidades = undefined; // No enviar el mazo de habilidades en la respuesta
       perfilDevuelto.correo = undefined; // No enviar el correo en la respuesta
-      perfilDevuelto.codigoPartidaActual = undefined; // No enviar el código de la partida actual en la respuesta
       perfilDevuelto._id = undefined; // No enviar el _id en la respuesta
       let nivel, restantes, puntosNivel;
       [nivel, restantes, puntosNivel] = calcularNivel(perfil.puntosExperiencia);
@@ -209,7 +208,7 @@ exports.obtenerUsuario = async (req, res) => {
  * @description Obtiene los datos personales de un perfil identificado por _id o nombreId.
  * @param {Object} req - El objeto de solicitud HTTP.
  * @param {string} req.body.nombreId - El perfil debe existir en la base de datos.
- * @param {Object} res - El objeto de respuesta HTTP, con los datos personales del perfil en formato JSON.
+ * @param {Object} res - El objeto de respuesta HTTP.
  * @example
  * perfil = { nombreId: 'usuario1'};
  * const req = { body: perfil };
@@ -481,8 +480,7 @@ exports.registrarUsuario = async (req, res) => {  // Requiere nombreId (o _id), 
       console.log("Usuario registrado con éxito");
     }
   } catch (error) {
-    res.status(500).send('Hubo un error');
-    console.error("Error al registrar usuario", error);
+    // console.log("Ya se envió un mensaje de error en crearPerfil");
   }
 };
 
@@ -538,13 +536,12 @@ exports.iniciarSesion = async (req, res) => { // Requiere nombreId (o _id) y con
       }
       res.json(data);
       console.log("Sesión iniciada con éxito");
-    } else {
-      res.status(404).send('No se ha encontrado el perfil a iniciar sesión');
-      console.error("No se ha encontrado el perfil a iniciar sesión");
+    }  else { 
+      // console.log("Ya se envió 404 en autenticarUsuario");
     }
+    
   } catch (error) {
-    res.status(500).send('Hubo un error');
-    console.error("Error al iniciar sesión", error);
+    // console.log("Ya se envió un mensaje de error en autenticarUsuario");
   }
 };
 
