@@ -20,8 +20,7 @@ class Juego {
   int ganador = 0;
   List<Habilidad> habilidadesJugador1 = [];   // habilidades en el mazo del jugador 1
   List<Habilidad> habilidadesJugador2 = [];   // habilidades en el mazo del jugador 2
-  Perfil perfilJugador1 = Perfil('');
-  Perfil perfilJugador2 = Perfil('');
+  Perfil perfilJugador = Perfil('');
   List<bool> habilidadesUtilizadasJugador1 = [];
   List<bool> habilidadesUtilizadasJugador2 = [];
   int disparosPendientes = 0; // disparo básico 1. Habilidades depende
@@ -35,6 +34,7 @@ class Juego {
   String urlMoverBarcoInicial = 'http://localhost:8080/perfil/moverBarcoInicial';
   String urlActualizarPartida = 'http://localhost:8080/partida/actualizarEstadoPartida';
   String urlCrearPartida = 'http://localhost:8080/partida/crearPartida';
+  String urlMostrarMiTablero = 'http://localhost:8080/partida/mostrarMiTablero';
   int codigo = 0;
   String tokenSesion = '';
 
@@ -51,10 +51,9 @@ class Juego {
     turno = 1;
     barcosJugador1 = List.filled(numBarcos, true);
     barcosJugador2 = List.filled(numBarcos, true);
-    perfilJugador1 = Perfil('usuario1', turno: 1);
-    perfilJugador2 = Perfil('maquina', turno: 2);
-    habilidadesJugador1 = perfilJugador1.getHabilidadesSeleccionadas();
-    habilidadesJugador2 = perfilJugador2.getHabilidadesSeleccionadas();
+    perfilJugador = Perfil('usuario1', turno: 1);
+    habilidadesJugador1 = perfilJugador.getHabilidadesSeleccionadas();
+    //habilidadesJugador2 = perfilJugador2.getHabilidadesSeleccionadas();
     habilidadesUtilizadasJugador1 = List.filled(habilidadesJugador1.length, false);
     habilidadesUtilizadasJugador2 = List.filled(habilidadesJugador2.length, false);
     disparosPendientes = 1;
@@ -68,14 +67,6 @@ class Juego {
 
   Future<void> inicializarBarcosJugador() async {
     tablero_jugador1.barcos = await obtenerBarcos(AuthProvider().name, urlObtenerTablero);
-  }
-
-  Perfil getPerfilJugador() {
-    return turno == 1 ? perfilJugador1 : perfilJugador2;
-  }
-
-  Perfil getPerfilOponente() {
-    return turno == 1 ? perfilJugador2 : perfilJugador1;
   }
 
   // Método para obtener la instancia del singleton
@@ -158,7 +149,8 @@ class Juego {
 
   Future<bool> moverBarco(String url, Offset nuevaPos, bool rotar, String usuario, int barcoId) async {
     var uri = Uri.parse(url);
-    var response = await http.post(
+    var response = await
+     http.post(
       uri,
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
@@ -174,9 +166,10 @@ class Juego {
     );
 
     if (response.statusCode == 200) {
-      var data = jsonDecode(response.body);
+      dynamic data = jsonDecode(response.body);
       print(data);
-      if(data.isNotEmpty) {
+
+      if(data['fueraTablero'] == false && data['colisiona'] == false) {
         print("BARCO MOVIDO");
         return true;
       }
@@ -319,11 +312,6 @@ class Juego {
     numAtaques++;
   }
 
-  void callbackAtaque() {
-    for (int i = 0; i < numHabilidades; i++) {
-      getHabilidadesJugador()[i].informarHabilidad();
-    }
-  }
 
   bool barcoHundido(Barco barco, Tablero tablero) {
     List<List<int>> casillasOcupadas = barco.getCasillasOcupadas(barco.barcoPosition);
@@ -351,6 +339,28 @@ class Juego {
     return estados;
   }
 
+  
+  Future<void> mostrarMiTablero() async {
+    print("LLAMANDO A MOSTRAR MI TABLERO CON CODIGO: $codigo Y NOMBRE: ${AuthProvider().name}");
+    var response = await http.post(
+      Uri.parse(urlMostrarMiTablero),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+        'Authorization': 'Bearer ${tokenSesion}',
+      },
+      body: jsonEncode(<String, dynamic>{
+        'codigo': codigo,
+        'nombreId': AuthProvider().name,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      var data = jsonDecode(response.body);
+      print(data);
+      print(data.runtimeType);
+    }
+  }
+
 
   Future<void> crearPartida() async {
     var response = await http.post(
@@ -360,13 +370,14 @@ class Juego {
         'Authorization': 'Bearer $tokenSesion',
       },
       body: jsonEncode(<String, String>{
-        'nombreId1': getPerfilJugador().name,
-        'nombreId2': 'maquina',
+        'nombreId1': perfilJugador.name,
         'bioma': 'Mediterraneo' ,
       }),
       
     );
 
+    var data = jsonDecode(response.body);
+    print(data);
     if (response.statusCode == 200) {
       var data = jsonDecode(response.body);
       print(data);
@@ -374,11 +385,6 @@ class Juego {
       codigo = data['codigo'];
 
       print(codigo);  
-
-      //print(data['tableroBarcos1']);
-
-      //print(obtenerEstado(data['tableroBarcos1']));
-
 
     } else {
       throw Exception('La solicitud ha fallado');

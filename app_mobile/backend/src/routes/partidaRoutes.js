@@ -23,13 +23,6 @@ router.post('/mostrarTableroEnemigo', verificarToken, partidaController.mostrarT
 // Ruta para mostrar ambos tableros
 router.post('/mostrarTableros', verificarToken, partidaController.mostrarTableros);
 
-// Ruta para actualizar la partida (DEPRECATED)
-router.post('/actualizarEstadoPartida', verificarToken, partidaController.actualizarEstadoPartida);
-
-// Ruta para actualizar las estadisticas al terminar
-router.post('/actualizarEstadisticasFinales', verificarToken, partidaController.actualizarEstadisticasFinales);
-
-
 // --------------------------------------------- //
 // -------------- CHAT DE PARTIDA -------------- //
 // --------------------------------------------- //

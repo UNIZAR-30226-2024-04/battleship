@@ -29,8 +29,8 @@ class _InicioSesionState extends State<InicioSesion> {
   void _autoFillFields() {
     if (_rememberMe) {
       setState(() {
-        _nombreController.text = Juego().getPerfilJugador().name;
-        _passwordController.text = Juego().getPerfilJugador().password;
+        _nombreController.text = Juego().perfilJugador.name;
+        _passwordController.text = Juego().perfilJugador.password;
       });
     }
   }

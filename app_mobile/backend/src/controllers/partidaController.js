@@ -112,18 +112,27 @@ function generarDisparoAleatorio(disparosRealizados) {
   return { i, j };
 }
 
+function calcularActualizacionELO(elo1, elo2, resultado) {
+  const k = 64;
+  const esperado1 = 1 / (1 + Math.pow(10, (elo2 - elo1) / 400));
+  const esperado2 = 1 / (1 + Math.pow(10, (elo1 - elo2) / 400));
+  let nuevosTrofeos1 = k * (resultado - esperado1);
+  let nuevosTrofeos2 = k * (1 - resultado - esperado2);
+  if (elo1 < 100 && nuevosTrofeos1 < 0) nuevosTrofeos1 -= nuevosTrofeos1 * 0.5;
+  if (elo2 < 100 && nuevosTrofeos2 < 0) nuevosTrofeos2 -= nuevosTrofeos2 * 0.5;
+  return [nuevosTrofeos1|0, nuevosTrofeos2|0];
+}
+  
 // -------------------------------------------- //
 // -------------- PARTIDA BASICA -------------- //
 // -------------------------------------------- //
 
 /**
  * @function crearPartida
- * @description Crea una partida con dos jugadores (_id, nombreId) y un bioma, la guarda en la base de datos y devuelve la partida creada
+ * @description Crea una partida con dos jugadores y un bioma, la guarda en la base de datos y devuelve la partida creada
  * @param {Object} req - El objeto de solicitud HTTP
- * @param {String} [req.body._id1] - El id del jugador 1, si no se proporciona se espera el nombreId1
- * @param {String} [req.body._id2] - El id del jugador 2, si no se proporciona se espera el nombreId2
- * @param {String} [req.body.nombreId1] - El nombreId del jugador 1
- * @param {String} [req.body.nombreId2] - El nombreId del jugador 2
+ * @param {String} req.body.nombreId1 - El nombreId del jugador 1
+ * @param {String} req.body.nombreId2 - El nombreId del jugador 2
  * @param {BiomasDisponibles} req.body.bioma - El bioma de la partida
  * @param {Boolean} [req.body.amistosa] - Indica si la partida es amistosa, por defecto es false
  * @param {Object} res - El objeto despuesta HTTP con el codigo de la partida creada TODO: CAMBIAR ESTO EN BACKEND
@@ -135,17 +144,17 @@ function generarDisparoAleatorio(disparosRealizados) {
  */
 exports.crearPartida = async (req, res) => {
   try {
-    const { _id1, _id2, nombreId1, nombreId2, bioma = 'Mediterraneo', amistosa = true, ...extraParam } = req.body;
+    const { nombreId1, nombreId2, bioma = 'Mediterraneo', amistosa = true, ...extraParam } = req.body;
     // Verificar si hay algún parámetro extra
     if (Object.keys(extraParam).length > 0) {
-      res.status(400).send('Sobran parámetros, se espera nombreId1 (o _id1), nombreId2 (o _id2) y bioma');
-      console.error("Sobran parámetros, se espera nombreId1 (o _id1), nombreId2 (o _id2) y bioma");
+      res.status(400).send('Sobran parámetros, se espera nombreId1, nombreId2 y bioma');
+      console.error("Sobran parámetros, se espera nombreId1, nombreId2 y bioma");
       return;
     }
-    // Verificar si falta el nombreId1 (o _id1) 
-    if (!nombreId1 && !_id1) {
-      res.status(400).send('Falta el nombreId1 (o _id1) del jugador 1');
-      console.error("Falta el nombreId1 (o _id1) del jugador 1");
+    // Verificar si falta el nombreId1 
+    if (!nombreId1 ) {
+      res.status(400).send('Falta el nombreId1 del jugador 1');
+      console.error("Falta el nombreId1 del jugador 1");
       return;
     }
     // Verificar si el bioma elegido está en la lista de biomas disponibles
@@ -156,7 +165,7 @@ exports.crearPartida = async (req, res) => {
       return;
     }
     // Verificar que existen los perfiles
-    const filtro1 = _id1 ? { _id: _id1 } : { nombreId: nombreId1 };
+    const filtro1 = { nombreId: nombreId1 };
     let jugador1 = await Perfil.findOne(filtro1);
     if (!jugador1) {
       res.status(404).send('No se ha encontrado el jugador 1');
@@ -165,8 +174,8 @@ exports.crearPartida = async (req, res) => {
     }
     let jugador2 = undefined;
     let filtro2 = {};
-    if (nombreId2 || _id2) {
-      filtro2 = _id2 ? { _id: _id2 } : { nombreId: nombreId2 };
+    if (nombreId2) {
+      filtro2 = { nombreId: nombreId2 };
       jugador2 = await Perfil.findOne(filtro2);
       if (!jugador2) {
         res.status(404).send('No se ha encontrado el jugador 2');
@@ -212,7 +221,7 @@ exports.crearPartida = async (req, res) => {
         jugador2, // Actualizar (jugador2 contiene los cambios)
         { new: true } // Para devolver el documento actualizado
       );
-    } else { 
+    } else {
       console.log('Jugador 2 es IA');
     }
     const nuevaPartida = new Partida({ 
@@ -222,7 +231,7 @@ exports.crearPartida = async (req, res) => {
       tableroBarcos1,
       tableroBarcos2,
       bioma,
-      amistosa
+      amistosa: (jugador2 === undefined) ? true : amistosa,
     });
 
     const partidaGuardada = await nuevaPartida.save(); // ESTA LINEA DA FALLO COJONES
@@ -238,12 +247,11 @@ exports.crearPartida = async (req, res) => {
  * @function mostrarMiTablero
  * @description Devuelve el tablero de barcos y los disparos realizados del jugador en la partida
  * @param {Object} req - El objeto de solicitud HTTP
- * @param {String} [req.body._id] - El id de la partida, si no se proporciona se espera el codigo
- * @param {Number} [req.body.codigo] - El codigo de la partida
+ * @param {Number} req.body.codigo - El codigo de la partida
  * @param {String} req.body.nombreId - El nombreId del jugador
  * @param {Object} res - El tablero de barcos y los disparos realizados del jugador
- * @param {Tablero} res.tableroBarcos - El tablero de barcos del jugador
- * @param {Coordenada[]} res.disparosRealizados - Los disparos realizados por el jugador
+ * @param {Tablero} res.tableroBarcos - El tablero de barcos del jugador y su estado actual
+ * @param {Coordenada[]} res.disparosEnemigos - Los disparos realizados por el jugador enemigo
  * @example
  * peticion = { body: { codigo: '1234567890', jugador: 1 } }
  * respuesta = { json: () => {} }
@@ -251,21 +259,21 @@ exports.crearPartida = async (req, res) => {
  */
 exports.mostrarMiTablero = async (req, res) => {
   try {
-    const { _id, codigo, nombreId, ...extraParam } = req.body;
+    const { codigo, nombreId, ...extraParam } = req.body;
     // Verificar si hay algún parámetro extra
     if (Object.keys(extraParam).length > 0) {
-      res.status(400).send('Sobran parámetros, se espera codigo (o _id) y jugador');
-      console.error("Sobran parámetros, se espera codigo (o _id) y jugador");
+      res.status(400).send('Sobran parámetros, se espera codigo y jugador');
+      console.error("Sobran parámetros, se espera codigo y jugador");
       return;
     }
     // Verificar si alguno de los parámetros está ausente
-    if (!codigo && !_id || !nombreId) {
-      res.status(400).send('Falta el codigo (o _id) y/o jugador');
-      console.error("Falta el codigo (o _id) y/o jugador");
+    if (!codigo || !nombreId) {
+      res.status(400).send('Falta el codigo y/o jugador');
+      console.error("Falta el codigo y/o jugador");
       return;
     }
     // Verificar que existe la partida
-    const filtro = _id ? { _id: _id } : { codigo: codigo };
+    const filtro = { codigo: codigo };
     const partidaActual = await Partida.findOne(filtro);
     if (partidaActual) {
       const jugador1 = await Perfil.findOne({ nombreId: partidaActual.nombreId1 });
@@ -284,9 +292,23 @@ exports.mostrarMiTablero = async (req, res) => {
         console.error('El jugador no está en la partida');
         return;
       }
+
+      let tableroBarcos = jugador === 1 ? partidaActual.tableroBarcos1 : partidaActual.tableroBarcos2;
+      for (let barco of tableroBarcos) {
+        barco._id = undefined;
+        for (let coordenada of barco.coordenadas) {
+          coordenada._id = undefined;
+        }
+      }
+
+      let disparosEnemigos = jugador === 1 ? partidaActual.disparosRealizados2 : partidaActual.disparosRealizados1;
+      for (let disparo of disparosEnemigos) {
+        disparo._id = undefined;
+      }
+
       const tableroDisparos = {
-        tableroBarcos: jugador === 1 ? partidaActual.tableroBarcos1 : partidaActual.tableroBarcos2,
-        disparosRealizados: jugador === 1 ? partidaActual.disparosRealizados2 : partidaActual.disparosRealizados1
+        tableroBarcos: tableroBarcos,
+        disparosEnemigos: disparosEnemigos
       };
       console.log('Mi tablero obtenido con éxito');
       res.json(tableroDisparos);
@@ -308,11 +330,11 @@ exports.mostrarMiTablero = async (req, res) => {
  * @function mostrarTableroEnemigo
  * @description Devuelve el tablero de barcos del jugador enemigo en la partida
  * @param {Object} req - El objeto de solicitud HTTP
- * @param {String} [req.body._id] - El id de la partida, si no se proporciona se espera el codigo
- * @param {String} [req.body.codigo] - El codigo de la partida
+ * @param {String} req.body.codigo - El codigo de la partida
  * @param {String} req.body.nombreId - El nombreId del jugador
  * @param {Object} res - El objeto de respuesta HTTP
- * @returns {Tablero} El tablero de barcos del jugador enemigo
+ * @param {Coordenada[]} res.misDisparos - Los disparos realizados por mi
+ * @param {Coordenada[]} res.barcosHundidos - Los barcos del enemigo hundidos por mi
  * @example
  * peticion = { body: { codigo: '1234567890', jugador: 1 } }
  * respuesta = { json: () => {} }
@@ -320,21 +342,21 @@ exports.mostrarMiTablero = async (req, res) => {
  */
 exports.mostrarTableroEnemigo = async (req, res) => {
   try {
-    const { _id, codigo, nombreId, ...extraParam } = req.body;
+    const { codigo, nombreId, ...extraParam } = req.body;
     // Verificar si hay algún parámetro extra
     if (Object.keys(extraParam).length > 0) {
-      res.status(400).send('Sobran parámetros, se espera codigo (o _id) y jugador');
-      console.error("Sobran parámetros, se espera codigo (o _id) y jugador");
+      res.status(400).send('Sobran parámetros, se espera codigo y jugador');
+      console.error("Sobran parámetros, se espera codigo y jugador");
       return;
     }
     // Verificar si alguno de los parámetros está ausente
-    if (!codigo && !_id || !nombreId) {
-      res.status(400).send('Falta el codigo (o _id) y/o jugador');
-      console.error("Falta el codigo (o _id) y/o jugador");
+    if (!codigo || !nombreId) {
+      res.status(400).send('Falta el codigo y/o jugador');
+      console.error("Falta el codigo y/o jugador");
       return;
     }
     // Verificar que existe la partida
-    const filtro = _id ? { _id: _id } : { codigo: codigo };
+    const filtro = { codigo: codigo };
     const partidaActual = await Partida.findOne(filtro);
     if (partidaActual) {
       const jugador1 = await Perfil.findOne({ nombreId: partidaActual.nombreId1 });
@@ -353,13 +375,30 @@ exports.mostrarTableroEnemigo = async (req, res) => {
         console.error('El jugador no está en la partida');
         return;
       }
-      const tablero = {
-        tableroBarcos: jugador === 1 ? partidaActual.disparosRealizados1 : partidaActual.disparosRealizados2
+
+      // Obtengo los barcos hundidos en el tablero enemigo
+      let listaBarcosHundidos = [];
+      for (let barco of jugador === 1 ? partidaActual.tableroBarcos2 : partidaActual.tableroBarcos1) {
+        barco._id = undefined;
+        if (barco.coordenadas.some(coordenada => coordenada.estado === 'Hundido')) {
+          barcosHundidos.push(barco);
+        }
+      }
+
+      // Obtengo los disparos realizados por el jugador
+      let misDisparos = jugador === 1 ? partidaActual.disparosRealizados1 : partidaActual.disparosRealizados2;
+      for (let disparo of misDisparos) {
+        disparo._id = undefined;
+      }
+
+      const disparosBarcos = {
+        misDisparos: misDisparos,
+        barcosHundidos: listaBarcosHundidos
       };
       console.log('Tablero enemigo obtenido con éxito');
-      res.json(tablero);
-      console.log(tablero);
-      return tablero;
+      res.json(disparosBarcos);
+      console.log(disparosBarcos);
+      return disparosBarcos;
     } else {
       res.status(404).send('Partida no encontrada');
       console.error('Partida no encontrada');
@@ -376,11 +415,13 @@ exports.mostrarTableroEnemigo = async (req, res) => {
  * @function mostrarTableros
  * @description Devuelve los tableros y disparos realizados de ambos jugadores en la partida
  * @param {Object} req - El objeto de solicitud HTTP
- * @param {String} [req.body._id] - El id de la partida, si no se proporciona se espera el codigo
- * @param {String} [req.body.codigo] - El codigo de la partida
+ * @param {String} req.body.codigo - El codigo de la partida
  * @param {String} req.body.nombreId - El nombreId del jugador
  * @param {Object} res - El objeto de respuesta HTTP
- * @returns {Object} Los tableros y disparos realizados de ambos jugadores
+ * @param {Tablero} res.tableroBarcos - El tablero de barcos del jugador y su estado actual
+ * @param {Coordenada[]} res.disparosEnemigos - Los disparos realizados por el jugador enemigo
+ * @param {Coordenada[]} res.misDisparos - Los disparos realizados por mi
+ * @param {Coordenada[]} res.barcosHundidos - Los barcos del enemigo hundidos por mi
  * @example
  * peticion = { body: { codigo: '1234567890' } }
  * respuesta = { json: () => {} }
@@ -388,21 +429,21 @@ exports.mostrarTableroEnemigo = async (req, res) => {
  */
 exports.mostrarTableros = async (req, res) => {
   try {
-    const { _id, codigo, nombreId, ...extraParam } = req.body;
+    const { codigo, nombreId, ...extraParam } = req.body;
     // Verificar si hay algún parámetro extra
     if (Object.keys(extraParam).length > 0) {
-      res.status(400).send('Sobran parámetros, se espera codigo (o _id)');
-      console.error("Sobran parámetros, se espera codigo (o _id)");
+      res.status(400).send('Sobran parámetros, se espera codigo');
+      console.error("Sobran parámetros, se espera codigo");
       return;
     }
     // Verificar si alguno de los parámetros está ausente
-    if ((!codigo && !_id) || !nombreId) {
-      res.status(400).send('Falta el codigo (o _id) y/o jugador');
-      console.error("Falta el codigo (o _id) y/o jugador");
+    if (!codigo || !nombreId) {
+      res.status(400).send('Falta el codigo y/o jugador');
+      console.error("Falta el codigo y/o jugador");
       return;
     }
     // Verificar que existe la partida
-    const filtro = _id ? { _id: _id } : { codigo: codigo };
+    const filtro = { codigo: codigo };
     const partidaActual = await Partida.findOne(filtro);
     if (partidaActual) {      
       const jugador1 = await Perfil.findOne({ nombreId: partidaActual.nombreId1 });
@@ -421,11 +462,20 @@ exports.mostrarTableros = async (req, res) => {
         console.error('El jugador no está en la partida');
         return;
       }
+
+      // Obtengo los barcos hundidos en el tablero enemigo
+      let listaBarcosHundidos = [];
+      for (let barco of jugador === 1 ? partidaActual.tableroBarcos2 : partidaActual.tableroBarcos1) {
+        if (barco.coordenadas.some(coordenada => coordenada.estado === 'Hundido')) {
+          barcosHundidos.push(barco);
+        }
+      }
+
       const tableros = {
-        tableroBarcos1: partidaActual.tableroBarcos1,
-        tableroBarcos2: partidaActual.tableroBarcos2,
-        disparosRealizados1: partidaActual.disparosRealizados1,
-        disparosRealizados2: partidaActual.disparosRealizados2
+        tableroBarcos: jugador === 1 ? partidaActual.tableroBarcos1 : partidaActual.tableroBarcos2,
+        disparosEnemigos: jugador === 1 ? partidaActual.disparosRealizados2 : partidaActual.disparosRealizados1,
+        misDisparos: jugador === 1 ? partidaActual.disparosRealizados1 : partidaActual.disparosRealizados2,
+        barcosHundidos: listaBarcosHundidos
       };
       console.log('Tableros obtenidos con éxito');
       res.json(tableros);
@@ -456,8 +506,7 @@ exports.mostrarTableros = async (req, res) => {
  * @function realizarDisparo
  * @description Realiza un disparo en la coordenada (i, j) del enemigo y actualiza el estado de la partida
  * @param {Object} req - El objeto de solicitud HTTP
- * @param {String} [req.body._id] - El id de la partida, si no se proporciona se espera el codigo
- * @param {String} [req.body.codigo] - El codigo de la partida
+ * @param {String} req.body.codigo - El codigo de la partida
  * @param {String} req.body.nombreId - El nombreId del jugador
  * @param {Number} req.body.i - La coordenada i del disparo
  * @param {Number} req.body.j - La coordenada j del disparo
@@ -475,16 +524,16 @@ exports.mostrarTableros = async (req, res) => {
  */
 exports.realizarDisparo = async (req, res) => {
   try {
-    const { _id, codigo, nombreId, i, j, ...extraParam } = req.body;
+    const { codigo, nombreId, i, j, ...extraParam } = req.body;
     // Verificar si hay algún parámetro extra que no se espera
     if (Object.keys(extraParam).length > 0) {
-      res.status(400).send('Sobran parámetros, se espera codigo (o _id), jugador, i, j');
-      console.error("Sobran parámetros, se espera codigo (o _id), jugador, i, j");
+      res.status(400).send('Sobran parámetros, se espera codigo, jugador, i, j');
+      console.error("Sobran parámetros, se espera codigo, jugador, i, j");
       return;
     }
     // Verificar si alguno de los parámetros está ausente
-    if ((!codigo && !_id) || !nombreId || !i || !j) {
-      res.status(400).send('Falta alguno de los siguientes parámetros: codigo (o _id), nombreId, i, j');
+    if (!codigo || !nombreId || !i || !j) {
+      res.status(400).send('Falta alguno de los siguientes parámetros: codigo, nombreId, i, j');
       return;
     }
     // Comprobar si i, j es casilla válida
@@ -494,7 +543,7 @@ exports.realizarDisparo = async (req, res) => {
       return;
     }
     // Verificar que existe la partida
-    const filtro = _id ? { _id: _id } : { codigo: codigo };
+    const filtro = { codigo: codigo };
     const partidaActual = await Partida.findOne(filtro);
     if (partidaActual) {
       let jugador1 = await Perfil.findOne({ nombreId: partidaActual.nombreId1 });
@@ -536,6 +585,7 @@ exports.realizarDisparo = async (req, res) => {
       dispararCoordenada(partidaActual.tableroBarcos1, i, j);
       let disparo = { i, j, estado: 'Agua' };
       if (barcoDisparado) {
+        barcoDisparado._id = undefined;
         estadisticasJugadores[jugador - 1].nuevosDisparosAcertados++;
         disparo.estado = 'Tocado'; // Los disparos solo son Agua o Tocado
         let hundido = true;
@@ -603,13 +653,13 @@ exports.realizarDisparo = async (req, res) => {
       if (partidaContraIA && disparo.estado === 'Agua' && !finPartida) {
         console.log('Turno de la IA');
         let juegaIA = true;
-        let num = 1;
         while (juegaIA) {
           let posibleDisparoIA = generarDisparoAleatorio(partidaActual.disparosRealizados2);
           let barcoDisparadoIA = dispararCoordenada(partidaActual.tableroBarcos1, 
             posibleDisparoIA.i, posibleDisparoIA.j);
           let disparoIA = { i: posibleDisparoIA.i, j: posibleDisparoIA.j, estado: 'Agua' };
           if (barcoDisparadoIA) {
+            barcoDisparadoIA._id = undefined;
             disparoIA.estado = 'Tocado';
             let hundido = true;
             for (let coord of barcoDisparadoIA.coordenadas) {
@@ -670,8 +720,28 @@ exports.realizarDisparo = async (req, res) => {
         };
 
         // Actualizar estadisticas de los jugadores
+        let nuevosTrofeos = [0, 0];
         let tempRes1 = { json: () => {}, status: function(s) { 
           this.statusCode = s; return this;} };
+        // Actualizar ptos de experiencia y ELO si la partida no es amistosa
+        if (!partidaActual.amistosa) {
+          estadisticasJugadores[0].nuevosTrofeos = 
+            (estadisticasJugadores[0].victoria === 1) ? 20 : 0; // Place holder === TODO ELO
+          let experienciaJ1 = 1*estadisticasJugadores[0].nuevosDisparosAcertados 
+          + 0.25*estadisticasJugadores[0].nuevosDisparosFallados 
+          + 5*estadisticasJugadores[0].nuevosBarcosHundidos
+          + 10*estadisticasJugadores[0].victoria;
+          nuevosTrofeos  = calcularActualizacionELOs(jugador1.trofeos, jugador2.trofeos,
+            estadisticasJugadores[0].victoria);
+          estadisticasJugadores[0].nuevosTrofeos = nuevosTrofeos[0];
+          await actualizarPuntosExperiencia({ body: { nombreId: estadisticasJugadores[0].nombreId, 
+            nuevosPuntosExperiencia: experienciaJ1 } }, tempRes1);
+          if (tempRes1.statusCode !== undefined && tempRes1.statusCode !== 200) {
+            res.status(500).send('Hubo un error al actualizar los puntos de experiencia');
+            console.error("Hubo un error al actualizar los puntos de experiencia");
+            return;
+          }
+        }
         await actualizarEstadisticas({ body: estadisticasJugadores[0] }, tempRes1);
         if (tempRes1.statusCode !== undefined && tempRes1.statusCode !== 200) {
           res.status(500).send('Hubo un error al actualizar las estadísticas');
@@ -682,6 +752,22 @@ exports.realizarDisparo = async (req, res) => {
         if (!partidaContraIA) {
           let tempRes2 = { json: () => {}, status: function(s) {
             this.statusCode = s; return this;} };
+          // Las partidas amistosas no cuentan para la experiencia ni para los trofeos
+          if (!partidaActual.amistosa) {
+            estadisticasJugadores[1].nuevosTrofeos = 20; // Place holder === TODO ELO
+            let experienciaJ2 = 1*estadisticasJugadores[1].nuevosDisparosAcertados
+            + 0.25*estadisticasJugadores[1].nuevosDisparosFallados
+            + 5*estadisticasJugadores[1].nuevosBarcosHundidos
+            + 10*estadisticasJugadores[1].victoria;
+            estadisticasJugadores[1].nuevosTrofeos = nuevosTrofeos[1];
+            await actualizarPuntosExperiencia({ body: { nombreId: estadisticasJugadores[1].nombreId,
+              nuevosPuntosExperiencia: experienciaJ2 } }, tempRes2);
+            if (tempRes2.statusCode !== undefined && tempRes2.statusCode !== 200) {
+              res.status(500).send('Hubo un error al actualizar los puntos de experiencia');
+              console.error("Hubo un error al actualizar los puntos de experiencia");
+              return;
+            }
+          }
           await actualizarEstadisticas({ body: estadisticasJugadores[1] }, res);
           if (tempRes2.statusCode !== undefined && tempRes2.statusCode !== 200) {
             res.status(500).send('Hubo un error al actualizar las estadísticas');
@@ -707,112 +793,12 @@ exports.realizarDisparo = async (req, res) => {
 };
 
 
-// Actualizar estado de la partida tras un disparo o habilidad del adversario
-// Devuelve mi tablero y los disparos realizados
-/**
- * @function actualizarEstadoPartida
- * @description Actualiza el estado de la partida tras un disparo o habilidad del adversario
- * @param {Object} req - El objeto de solicitud HTTP
- * @param {String} [req.body._id] - El id de la partida, si no se proporciona se espera el codigo
- * @param {String} [req.body.codigo] - El codigo de la partida
- * @param {Number} req.body.jugador - El número del jugador (1 o 2)
- * @param {Object[]} req.body.tablero - El tablero de barcos del jugador
- * @param {Object[]} req.body.disparos - Los disparos realizados por el jugador
- * @param {Object} res - El objeto de respuesta HTTP
- * @returns {Partida} La partida modificada
- * @example
- * peticion = { body: { codigo: '1234567890', jugador: 1, tablero: [], disparos: [] } }
- * respuesta = { json: () => {} }
- * await actualizarEstadoPartida(peticion, respuesta)
- */
-exports.actualizarEstadoPartida = async (req, res) => {
-  try {
-    const { codigo, jugador } = req.body;
-    const partidaActual = await Partida.findById(codigo);
-    if (partidaActual) {
-      if (jugador === 1) {
-        partidaActual.tableroBarcos1 = tablero;
-        partidaActual.disparosRealizados1 = disparos;
-      } else {
-        partidaActual.tableroBarcos2 = tablero;
-        partidaActual.disparosRealizados2 = disparos;
-      }
-      const partidaGuardada = await partidaActual.save();
-      res.json(partidaGuardada);
-    } else {
-      res.status(404).send('Partida no encontrada');
-    }
-  } catch (error) {
-    res.status(500).send('Hubo un error');
-  }
-};
-
-// Funcion para guardar las estadisticas de cada jugador al finalizar la partida
-// Devuelve las estadisticas de la partida de ambos jugadores
-/**
- * @function actualizarEstadisticasFinales
- * @description Actualiza las estadísticas de los jugadores al finalizar la partida
- * @param {Object} req - El objeto de solicitud HTTP
- * @param {String} [req.body._id] - El id de la partida, si no se proporciona se espera el codigo
- * @param {String} [req.body.codigo] - El codigo de la partida
- * @param {Object} res - El objeto de respuesta HTTP
- * @returns {Object} Las estadísticas de la partida de ambos jugadores
- * @example
- * peticion = { body: { codigo: '1234567890' } }
- * respuesta = { json: () => {} }
- * await actualizarEstadisticasFinales(peticion, respuesta)
- * @see module:perfilController.actualizarEstadisticas
- * @requires module:perfilController.actualizarEstadisticas
- */
-exports.actualizarEstadisticasFinales = async (req, res) => {
-  try {
-    const { codigo } = req.body;
-    const partidaActual = await Partida.findById(codigo);
-    if (partidaActual) {
-      // Actualizar estadisticas de los jugadores
-      const estadisticasJ1 = {
-        nombreId: partidaActual.nombreId1,                             // Nombre del jugador 1
-        victoria: partidaActual.ganador === partidaActual.nombreId1 ? 1 : 0, // 1 si ganó, 0 si perdió. 
-        nuevosBarcosHundidos: partidaActual.tableroBarcos2.filter(barco => barco.barcoHundido).length,
-        nuevosBarcosPerdidos: partidaActual.tableroBarcos1.filter(barco => barco.barcoHundido).length,
-        nuevosDisparosAcertados: partidaActual.disparosRealizados1.filter(disparo => disparo.resultado === 'Tocado' || disparo.resultado === 'Hundido').length,
-        nuevosDisparosFallados: partidaActual.disparosRealizados1.filter(disparo => disparo.resultado === 'Agua').length,
-        nuevosTrofeos: 20 // Place holder === TODO ELO
-      };
-      const estadisticasJ2 = {
-        nombreId: partidaActual.nombreId2,                             // Nombre del jugador 1
-        victoria: partidaActual.ganador === partidaActual.nombreId2 ? 1 : 0, // 1 si ganó, 0 si perdió. 
-        nuevosBarcosHundidos: partidaActual.tableroBarcos1.filter(barco => barco.barcoHundido).length,
-        nuevosBarcosPerdidos: partidaActual.tableroBarcos2.filter(barco => barco.barcoHundido).length,
-        nuevosDisparosAcertados: partidaActual.disparosRealizados2.filter(disparo => disparo.resultado === 'Tocado' || disparo.resultado === 'Hundido').length,
-        nuevosDisparosFallados: partidaActual.disparosRealizados2.filter(disparo => disparo.resultado === 'Agua').length,
-        nuevosTrofeos: 20 // Place holder === TODO ELO
-      };
-
-      // Llamar a la función de perfilController para actualizar las estadísticas
-      const req1 = { body: estadisticasJ1 };
-      const req2 = { body: estadisticasJ2 };
-      const res1 = { json: () => {}, status: () => ({ send: () => {} }) }; // No hace nada
-      const res2 = { json: () => {}, status: () => ({ send: () => {} }) }; // No hace nada
-      await actualizarEstadisticas(req1, res1);
-      await actualizarEstadisticas(req2, res2);
-      res.json({ estadisticasJ1, estadisticasJ2 });
-    } else {
-      res.status(404).send('Partida no encontrada');
-    }
-  } catch (error) {
-    res.status(500).send('Hubo un error');
-  }
-};
-
-
 // Funcion para obtener el chat de una partida
 /**
  * @function obtenerChat
  * @description Devuelve el chat de la partida
  * @param {Object} req - El objeto de solicitud HTTP
- * @param {String} [req.body._id] - El id de la partida, si no se proporciona se espera el codigo
- * @param {String} [req.body.codigo] - El codigo de la partida
+ * @param {String} req.body.codigo - El codigo de la partida
  * @param {Object} res - El objeto de respuesta HTTP
  * @returns {Object[]} El chat de la partida
  * @example
@@ -822,18 +808,18 @@ exports.actualizarEstadisticasFinales = async (req, res) => {
  */
 exports.obtenerChat = async (req, res) => {
   try {
-    const { _id, codigo, ...extraParam  } = req.body;
+    const { codigo, ...extraParam  } = req.body;
     if (Object.keys(extraParam).length > 0) {
-      res.status(400).send('Sobran parámetros, se espera codigo (o _id), autor, mensaje');
-      console.error("Sobran parámetros, se espera codigo (o _id), autor, mensaje");
+      res.status(400).send('Sobran parámetros, se espera codigo, autor, mensaje');
+      console.error("Sobran parámetros, se espera codigo, autor, mensaje");
       return;
     }
-    if (!codigo && !_id) {
+    if (!codigo) {
       res.status(400).send('Falta el codigo de partida');
       console.error("Falta el codigo de partida");
       return;
     }
-    const filtro = _id ? { _id: _id } : { codigo: codigo };
+    const filtro = { codigo: codigo };
     const partidaActual = await Partida.findOne(filtro);
     if (partidaActual) {
       res.json(partidaActual.chat);
@@ -852,8 +838,7 @@ exports.obtenerChat = async (req, res) => {
  * @function enviarMensaje
  * @description Envia un mensaje al chat de la partida
  * @param {Object} req - El objeto de solicitud HTTP
- * @param {String} [req.body._id] - El id de la partida, si no se proporciona se espera el codigo
- * @param {String} [req.body.codigo] - El codigo de la partida
+ * @param {String} req.body.codigo - El codigo de la partida
  * @param {Number} req.body.autor - El número del jugador que envía el mensaje (1 o 2)
  * @param {String} req.body.mensaje - El mensaje a enviar
  * @param {Object} res - El objeto de respuesta HTTP
@@ -866,17 +851,17 @@ exports.obtenerChat = async (req, res) => {
  */
 exports.enviarMensaje = async (req, res) => {
   try {
-    const { _id, codigo, autor, mensaje, ...extraParam } = req.body;
+    const { codigo, autor, mensaje, ...extraParam } = req.body;
     // Verificar si hay algún parámetro extra que no se espera
     if (Object.keys(extraParam).length > 0) {
-      res.status(400).send('Sobran parámetros, se espera codigo (o _id), autor, mensaje');
-      console.error("Sobran parámetros, se espera codigo (o _id), autor, mensaje");
+      res.status(400).send('Sobran parámetros, se espera codigo, autor, mensaje');
+      console.error("Sobran parámetros, se espera codigo, autor, mensaje");
       return;
     }
     // Verificar si alguno de los parámetros está ausente
-    if (!codigo && !_id || !autor || !mensaje) {
-      res.status(400).send('Falta alguno de los siguientes parámetros: codigo (o _id), autor o mensaje');
-      console.error("Falta alguno de los siguientes parámetros: codigo (o _id), autor o mensaje");
+    if (!codigo || !autor || !mensaje) {
+      res.status(400).send('Falta alguno de los siguientes parámetros: codigo , autor o mensaje');
+      console.error("Falta alguno de los siguientes parámetros: codigo, autor o mensaje");
       return;
     }
     // Verificar si el numero de jugador es correcto
@@ -886,7 +871,7 @@ exports.enviarMensaje = async (req, res) => {
       return;
     }
     // Verificar que existe la partida
-    const filtro = _id ? { _id: _id } : { codigo: codigo };
+    const filtro = { codigo: codigo };
     const partidaActual = await Partida.findOne(filtro);
     if (partidaActual) {
       let chat = partidaActual.chat;

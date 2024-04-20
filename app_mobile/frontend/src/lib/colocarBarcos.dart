@@ -58,7 +58,7 @@ class _ColocarBarcosState extends State<ColocarBarcos> {
               future: _barcosFuture,
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  // Mientras espera que se complete la inicialización de los barcos, puedes mostrar un indicador de carga.
+                  // Mientras espera que se complete la inicialización de los barcos.
                   return const CircularProgressIndicator();
                 } else {
                   // Una vez que se complete la inicialización, construir el tablero con los barcos.
@@ -244,8 +244,8 @@ class _ColocarBarcosState extends State<ColocarBarcos> {
     return Row(children: casillas);
   }
 
-  void _handlePressed(BuildContext context) {
-    Juego().crearPartida();
+  Future<void> _handlePressed(BuildContext context) async {
+    await Juego().crearPartida();
     DestinoManager.setDestino(Atacar());
     Navigator.pushReplacement(
       context,

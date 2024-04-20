@@ -30,7 +30,7 @@ mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true,
 
 // redirect console.log and console.error to /dev/null
 console.error = function() {};
-//console.log = function() {};
+console.log = function() {};
 
 var token = '';
 // Test de integración

@@ -2,6 +2,7 @@ import 'package:battleship/destino.dart';
 import 'package:battleship/juego.dart';
 import 'package:battleship/main.dart';
 import 'package:flutter/material.dart';
+import 'authProvider.dart';
 import 'barco.dart';
 import 'comun.dart';
 import 'defender.dart';
@@ -10,6 +11,7 @@ import 'package:http/http.dart' as http;
 
 class Atacar extends StatefulWidget {
   String urlDisparar = 'http://localhost:8080/partida/realizarDisparo';
+  String urlMostrarTableroEnemigo = 'http://localhost:8080/partida/mostrarTableroEnemigo';
 
   Atacar({super.key});
 
@@ -39,8 +41,22 @@ class _AtacarState extends State<Atacar> {
           children: [
             buildHeader(context),
             const Spacer(),
-            _construirBarcosRestantes(),
-            _construirTableroConBarcosAtacable(),   
+            _construirBarcosRestantes(),  
+            FutureBuilder<Widget>(
+              future: _construirTableroConBarcosAtacable(), 
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  // While waiting for the future to complete, you can show a loading indicator.
+                  return CircularProgressIndicator();
+                } else if (snapshot.hasError) {
+                  // If there's an error, you can show an error message.
+                  return Text('Error: ${snapshot.error}');
+                } else {
+                  // Once the future completes, return the widget.
+                  return snapshot.data!;
+                }
+              },
+            ),
             _construirHabilidades(),
             const Spacer(),
             buildActions(context),
@@ -50,7 +66,7 @@ class _AtacarState extends State<Atacar> {
     );
   }
 
-  Widget _construirTableroConBarcosAtacable() {
+  Future<Widget> _construirTableroConBarcosAtacable() async {
     List<Widget> children = [];
 
     children.add(
@@ -59,7 +75,7 @@ class _AtacarState extends State<Atacar> {
         height: Juego().tablero_oponente.boardSize + Juego().tablero_oponente.casillaSize,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: buildTableroClicable(_handleTap),
+          children: await buildTableroClicable(_handleTap),
         ),
       ),
     );  
@@ -113,6 +129,53 @@ class _AtacarState extends State<Atacar> {
     );
   }
 
+  Future<Map<String, List<Offset>>> obtenerMisDisparos() async {
+    print("EL CODIGO ES: ${Juego().codigo}");
+    print("LLAMO A OBTENER MIS DISPAROS CON: ${widget.urlMostrarTableroEnemigo} Y ${Juego().tokenSesion} Y ${Juego().codigo} Y ${Juego().perfilJugador.name}");
+    var response = await http.post(
+      Uri.parse(widget.urlMostrarTableroEnemigo),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+        'Authorization': 'Bearer ${Juego().tokenSesion}',
+      },
+      body: jsonEncode(<String, dynamic>{
+        'codigo': Juego().codigo,
+        'nombreId': Juego().perfilJugador.name,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      var data = jsonDecode(response.body);
+      print("ESTOS SON MIS DISPAROS:");
+      print(data);
+      print(data.runtimeType);
+
+      var disparosEnemigos = data['misDisparos'] as List;
+      List<Offset> disparosAgua = [];
+      List<Offset> disparosAcertados = [];
+
+      for (var disparo in disparosEnemigos) {
+        double i = disparo['i'].toDouble();
+        double j = disparo['j'].toDouble();
+        if (disparo['estado'] == 'Agua') {
+          disparosAgua.add(Offset(i, j));
+        } else {
+          disparosAcertados.add(Offset(i, j));
+        }
+      }
+
+      print(disparosAgua);
+      print(disparosAcertados);
+      print("EL CODIGO ES: ${Juego().codigo}");
+      return {
+        'Agua': disparosAgua,
+        'Acertados': disparosAcertados,
+      };
+    } else {
+      throw Exception('La solicitud ha fallado');
+    }
+  }
+
 
   Widget _construirHabilidades() {
     return Container(
@@ -162,11 +225,11 @@ class _AtacarState extends State<Atacar> {
   }
 
 
-  List<Widget> buildTableroClicable(Function(int, int) onTap) {
+  Future<List<Widget>> buildTableroClicable(Function(int, int) onTap) async {
     List<Widget> filas = [];
     filas.add(buildFilaCoordenadas());
     for (int i = 1; i < Juego().tablero_oponente.numFilas; i++) {
-      filas.add(buildFilaCasillasClicables(i, onTap));
+      filas.add(await buildFilaCasillasClicables(i, onTap));
     }
     return filas;
   }
@@ -194,9 +257,46 @@ class _AtacarState extends State<Atacar> {
     return Row(children: coordenadas);
   }
   
+  Future<void> obtenerBarcosEnemigo() async {
+    var response = await http.post(
+      Uri.parse(widget.urlMostrarTableroEnemigo),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+        'Authorization': 'Bearer ${Juego().tokenSesion}',
+      },
+      body: jsonEncode(<String, dynamic>{
+        'codigo': Juego().codigo,
+        'nombreId': Juego().perfilJugador.name,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      var data = jsonDecode(response.body);
+      print("BARCOS DEL ENEMIGO:");
+      print(data);
+      print(data.runtimeType);
+    } else {
+      throw Exception('La solicitud ha fallado');
+    }
+  }
 
 
-  Widget buildFilaCasillasClicables(int rowIndex, Function(int, int) onTap) {
+
+  Future<Widget> buildFilaCasillasClicables(int rowIndex, Function(int, int) onTap) async {
+    var disparos_future = obtenerMisDisparos();
+    Map<String, List<Offset>> disparos = await disparos_future;
+    print("OBTENGO MIS DISPAROS: ");
+    print(disparos);
+
+    List<Offset> disparosAgua = disparos['Agua']!;
+    List<Offset> disparosAcertados = disparos['Acertados']!;
+    print("DISPAROS AGUA:");
+    print(disparosAgua);
+    print("DISPAROS ACERTADOS:");
+    print(disparosAcertados);
+
+    obtenerBarcosEnemigo();
+
     List<Widget> casillas = [];
     // Etiqueta de fila
     casillas.add(
@@ -211,161 +311,149 @@ class _AtacarState extends State<Atacar> {
       ),
     );
 
-    for (int j = 1; j < Juego().tablero_oponente.numColumnas; j++) {
-      casillas.add(
-        GestureDetector(
-          onTap: () {
-            setState(() {
+    for (int j = 1; j <= Juego().tablero_oponente.numColumnas; j++) {
+      Offset casilla = Offset(rowIndex.toDouble(), j.toDouble());
+      if (disparosAgua.contains(casilla)) {
+        casillas.add(
+          GestureDetector(
+            onTap: () {
               onTap(rowIndex, j);
-            });
-          },
-          child: Container(
-            width: Juego().tablero_oponente.casillaSize,
-            height: Juego().tablero_oponente.casillaSize,
-            decoration: BoxDecoration(
-              color: const Color.fromARGB(128, 116, 181, 213),
-              border: Border.all(color: Colors.black, width: 1),
-            ),// CASILLAS ATACADAS Y OCUPADAS (BACKEND)
-            child: Juego().tablero_oponente.casillasAtacadas[rowIndex][j] ? Image.asset('images/redCross.png', fit: BoxFit.cover) : Image.asset('images/dot.png', fit: BoxFit.cover),
-          ),
-        ),
-      );
-    }
-    return Row(children: casillas);
-  }
-
-
-  Widget _construirTableroConBarcosMina(Function(int, int) onTap) {
-    List<bool> barcosRestantesOponente = Juego().barcosRestantes_oponente;
-    List<Barco> barcosOponente = Juego().barcos_oponente;
-
-    // Construir una lista con las posiciones de los barcos hundidos para poner una cruz.
-    List<List<int>> casillasConCruz = [];
-    for(int i = 0; i < Juego().numBarcos; i++) {
-      if(!barcosRestantesOponente[i]) {
-        casillasConCruz += barcosOponente[i].getCasillasOcupadas(barcosOponente[i].barcoPosition);
-      }
-    }
-
-    return Stack(
-      children: [
-        SizedBox(
-          width: Juego().tablero_oponente.boardSize + Juego().tablero_oponente.casillaSize,
-          height: Juego().tablero_oponente.boardSize + Juego().tablero_oponente.casillaSize,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: buildTableroClicable(onTap),
-          ),
-        ),
-        for(int i = 0; i < casillasConCruz.length; i++)
-          Positioned(
-            top: casillasConCruz[i][0] * Juego().tablero_oponente.casillaSize,
-            left: casillasConCruz[i][1] * Juego().tablero_oponente.casillaSize,
-            child: Column(
-              children: [
-                Image.asset(
-                  'images/redCross.png',
-                  width: Juego().tablero_oponente.casillaSize,
-                  height: Juego().tablero_oponente.casillaSize,
-                ),
-              ],
+            },
+            child: Image.asset(
+              'images/redCross.png',
+              width: Juego().tablero_oponente.casillaSize,
+              height: Juego().tablero_oponente.casillaSize,
+              fit: BoxFit.cover
             ),
           ),
-
-        for (int i = 0; i < Juego().numBarcos; i++)
-          if (!contiene(casillasConCruz, barcosOponente[i].barcoPosition))
-            Positioned(
-              top: barcosOponente[i].barcoPosition.dx * Juego().tablero_oponente.casillaSize,
-              left: barcosOponente[i].barcoPosition.dy * Juego().tablero_oponente.casillaSize,
-              child: Image.asset(
-                'images/${barcosOponente[i].nombre}.png',
-                width: barcosOponente[i].getWidth(Juego().tablero_oponente.casillaSize),
-                height: barcosOponente[i].getHeight(Juego().tablero_oponente.casillaSize),
-              ),
+        );
+      } else if (disparosAcertados.contains(casilla)) {
+        casillas.add(
+          GestureDetector(
+            onTap: () {
+              onTap(rowIndex, j);
+            },
+            child: Image.asset(
+              'images/explosion.png',
+              width: Juego().tablero_oponente.casillaSize,
+              height: Juego().tablero_oponente.casillaSize,
+              fit: BoxFit.cover
             ),
-      ],
-    );
-  }
-
-  Future<bool> dispararCoordenada(int i, int j) async {
-      var response = await http.post(
-        Uri.parse(widget.urlDisparar),
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
-        },
-        body: jsonEncode(<String, dynamic>{
-          'codigo': Juego().codigo,
-          'jugador': Juego().turno,
-          'i': i,
-          'j': j,
-        }),
-      );
-
-    var data = jsonDecode(response.body);
-
-    print(data);
-
-    if (response.statusCode == 200) {
-      var data = jsonDecode(response.body);
-      //var tableroInicial = data['tableroInicial'];
-      print(data);
-      if (data != null) {
-        print("DISPARO REALIZADO");
-        return true;
-      }
-      return false;
-    } else {
-      return false;
-    }
-  }
-
-
-
-
-
-  void _handleTap(int i, int j) {
-    print("TURNO: ${Juego().turno}");
-    dispararCoordenada(i, j);
-    print("HE DISPARADO EN: $i $j");
-    Juego().disparosPendientes--;
-    //Juego().actualizarPartida();
-    print("HE ACTUALIZADO LA PARTIDA");
-  
-    // BACKENDDDDDDDDDDDDDDDDDDDD
-    // Si la casilla tiene un barco.
-    if(true) { // casillas ocupadas
-      Juego().actualizarBarcosRestantes();
-      if(!Juego().habilidadSeleccionadaEnTurno) {
-        Juego().disparosPendientes++;
-      }
-      if(Juego().juegoTerminado()) {
-        print("¡Juego terminado!");
-        print("¡Ganador: ${Juego().getGanador()}!");
-        Juego().reiniciarPartida();
-        Navigator.pushReplacement(
-          context,
-          PageRouteBuilder(
-            pageBuilder: (context, animation1, animation2) => Principal(),
-            transitionDuration: const Duration(seconds: 0),
+          ),
+        );
+      } else {
+        casillas.add(
+          GestureDetector(
+            onTap: () {
+              onTap(rowIndex, j);
+            },
+            child: Image.asset(
+              'images/dot.png',
+              width: Juego().tablero_oponente.casillaSize,
+              height: Juego().tablero_oponente.casillaSize,
+              fit: BoxFit.cover
+            ),
           ),
         );
       }
     }
+    return Row(children: casillas);
+  }
 
-    if (Juego().disparosPendientes == 0) {
-      Juego().contabilizarAtaque();
-      Juego().callbackAtaque();
-      Juego().disparosPendientes = 1;
-      Juego().habilidadSeleccionadaEnTurno = false;
-      Juego().cambiarTurno();
-      DestinoManager.setDestino(const Defender());
-      Navigator.pushReplacement(
-        context,
-        PageRouteBuilder(
-          pageBuilder: (context, animation1, animation2) => const Defender(),
-          transitionDuration: const Duration(seconds: 0),
-        ),
-      );
+  List<bool> analizarDisparoEnemigo(List<Map<String, dynamic>> disparoEnemigo) {
+    if (disparoEnemigo.isEmpty) {
+      return [false, false];
     }
+
+    var disparo = disparoEnemigo[0];
+    var estado = disparo['disparoRealizado']['estado'];
+    var fin = disparo['finPartida'];
+    var acertado = estado == 'Tocado' || estado == 'Hundido';
+
+    return [acertado, fin];
+  }
+
+  Future<List<bool>> realizarDisparo(int i, int j) async {
+    var response = await http.post(
+      Uri.parse(widget.urlDisparar),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+        'Authorization': 'Bearer ${Juego().tokenSesion}',
+      },
+      body: jsonEncode(<String, dynamic>{
+        'codigo': Juego().codigo,
+        'nombreId': Juego().perfilJugador.name,
+        'i': i,
+        'j': j,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      print("DISPARO ME DEVUELVE: ");
+      var data = jsonDecode(response.body);
+      print(data);
+      var fin = data['finPartida'];
+      var turnosIA = data['turnosIA'].cast<Map<String, dynamic>>();
+      var disparo = data['disparoRealizado'];
+      var estado = disparo['estado'];
+
+      //analizarDisparoEnemigo(turnosIA);
+
+      if (estado == 'Tocado' || estado == 'Hundido') {
+        return Future.value([true as bool, fin as bool]);
+      }
+      return Future.value([false, fin as bool]);
+    } else {
+      throw Exception('Failed to load data');
+    }
+  }
+
+  Future<void> _handleTap(int i, int j) async {
+    print("TURNO: ${Juego().turno}");
+    print("VOY A DISPARAR EN: $i $j");
+    var respuesta_future = realizarDisparo(i, j);
+    print("HE DISPARADO EN: $i $j");
+    //mostrarMiTablero();
+    Juego().disparosPendientes--;
+
+    respuesta_future.then((result) {
+      var acertado = result[0];
+      var fin_future = result[1];
+      print("ACERTADO: $acertado");
+      print("FIN: $fin_future");
+      // Si la casilla tiene un barco.
+      if(acertado) {
+        //Juego().actualizarBarcosRestantes();
+        Juego().disparosPendientes ++;
+        print("ACERTADOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO");
+        if(fin_future) {
+          print("¡Juego terminado!");
+          print("¡Ganador: ${Juego().getGanador()}!");
+          Juego().reiniciarPartida();
+          Navigator.pushReplacement(
+            context,
+            PageRouteBuilder(
+              pageBuilder: (context, animation1, animation2) => Principal(),
+              transitionDuration: const Duration(seconds: 0),
+            ),
+          );
+        }
+      }
+
+      if (Juego().disparosPendientes == 0) {
+        Juego().contabilizarAtaque();
+        Juego().disparosPendientes = 1;
+        Juego().habilidadSeleccionadaEnTurno = false;
+        Juego().cambiarTurno();
+        DestinoManager.setDestino(Defender());
+        Navigator.pushReplacement(
+          context,
+          PageRouteBuilder(
+            pageBuilder: (context, animation1, animation2) => Defender(),
+            transitionDuration: const Duration(seconds: 0),
+          ),
+        );
+      }
+    });
   }
 }

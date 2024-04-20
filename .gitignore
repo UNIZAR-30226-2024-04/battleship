@@ -1,43 +1,43 @@
 # Miscellaneous
-*.class
-*.log
-*.pyc
-*.swp
-.DS_Store
-.atom/
-.buildlog/
-.history
-.svn/
-migrate_working_dir/
+app_mobile/frontend/src/*.class
+app_mobile/frontend/src/*.log
+app_mobile/frontend/src/*.pyc
+app_mobile/frontend/src/*.swp
+app_mobile/frontend/src/.DS_Store
+app_mobile/frontend/src/.atom/
+app_mobile/frontend/src/.buildlog/
+app_mobile/frontend/src/.history
+app_mobile/frontend/src/.svn/
+app_mobile/frontend/src/migrate_working_dir/
 
 # IntelliJ related
-*.iml
-*.ipr
-*.iws
-.idea/
+app_mobile/frontend/src/*.iml
+app_mobile/frontend/src/*.ipr
+app_mobile/frontend/src/*.iws
+app_mobile/frontend/src/.idea/
 
 # The .vscode folder contains launch configuration and tasks you configure in
 # VS Code which you may wish to be included in version control, so this line
 # is commented out by default.
-.vscode/
+app_mobile/frontend/src/.vscode/
 
 # Flutter/Dart/Pub related
-**/doc/api/
-**/ios/Flutter/.last_build_id
-.dart_tool/
-.flutter-plugins
-.flutter-plugins-dependencies
-.pub-cache/
-.pub/
-/build/
+app_mobile/frontend/src/**/doc/api/
+app_mobile/frontend/src/**/ios/Flutter/.last_build_id
+app_mobile/frontend/src/.dart_tool/
+app_mobile/frontend/src/.flutter-plugins
+app_mobile/frontend/src/.flutter-plugins-dependencies
+app_mobile/frontend/src/.pub-cache/
+app_mobile/frontend/src/.pub/
+app_mobile/frontend/src/build/
 
 # Symbolication related
-app.*.symbols
+app_mobile/frontend/src/app.*.symbols
 
 # Obfuscation related
-app.*.map.json
+app_mobile/frontend/src/app.*.map.json
 
 # Android Studio will place build artifacts here
-/android/app/debug
-/android/app/profile
-/android/app/release
+app_mobile/frontend/src/android/app/debug
+app_mobile/frontend/src/android/app/profile
+app_mobile/frontend/src/android/app/release

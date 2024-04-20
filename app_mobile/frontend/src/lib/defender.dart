@@ -1,13 +1,17 @@
 import 'dart:async';
+import 'package:battleship/authProvider.dart';
 import 'package:battleship/juego.dart';
 import 'package:flutter/material.dart';
 import 'comun.dart';
 import 'barco.dart';
 import 'atacar.dart';
 import 'destino.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class Defender extends StatefulWidget {
-  const Defender({super.key});
+  String urlMostrarTableroEnemigo = 'http://localhost:8080/partida/mostrarTableroEnemigo';
+  String urlMostrarMiTablero = 'http://localhost:8080/partida/mostrarMiTablero';
 
   @override
   _DefenderState createState() => _DefenderState();
@@ -22,10 +26,9 @@ class _DefenderState extends State<Defender> {
   }
 
   void iniciarTransicionAutomatica() {
-    Timer(const Duration(seconds: 2), () {
+    Timer(const Duration(seconds: 5), () {
       setState(() {
         Juego().contabilizarAtaque();
-        Juego().callbackAtaque();
         Juego().disparosPendientes = 1;
         Juego().habilidadSeleccionadaEnTurno = false;
         Juego().cambiarTurno();
@@ -57,7 +60,21 @@ class _DefenderState extends State<Defender> {
             buildHeader(context),
             const Spacer(),
             _construirBarcosRestantes(),
-            _construirTableroConBarcosDefensa(),
+            FutureBuilder<Widget>(
+              future: _construirTableroConBarcosDefensa(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  // While waiting for the future to complete, you can show a loading indicator.
+                  return CircularProgressIndicator();
+                } else if (snapshot.hasError) {
+                  // If there's an error, you can show an error message.
+                  return Text('Error: ${snapshot.error}');
+                } else {
+                  // Once the future completes, return the widget.
+                  return snapshot.data!;
+                }
+              },
+            ),
             const Spacer(),
             buildActions(context),
           ],
@@ -65,6 +82,51 @@ class _DefenderState extends State<Defender> {
       ),
     );
   }
+
+  Future<Map<String, List<Offset>>> obtenerDisparosEnemigos() async {
+    var response = await http.post(
+      Uri.parse(widget.urlMostrarMiTablero),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+        'Authorization': 'Bearer ${Juego().tokenSesion}',
+      },
+      body: jsonEncode(<String, dynamic>{
+        'codigo': Juego().codigo,
+        'nombreId': Juego().perfilJugador.name,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      var data = jsonDecode(response.body);
+      print(data);
+      print(data.runtimeType);
+
+      var disparosEnemigos = data['disparosEnemigos'] as List;
+      List<Offset> disparosAgua = [];
+      List<Offset> disparosAcertados = [];
+
+      for (var disparo in disparosEnemigos) {
+        double i = disparo['i'].toDouble();
+        double j = disparo['j'].toDouble();
+        if (disparo['estado'] == 'Agua') {
+          disparosAgua.add(Offset(i, j));
+        } else {
+          disparosAcertados.add(Offset(i, j));
+        }
+      }
+
+      print(disparosAgua);
+      print(disparosAcertados);
+
+      return {
+        'Agua': disparosAgua,
+        'Acertados': disparosAcertados,
+      };
+    } else {
+      throw Exception('La solicitud ha fallado');
+    }
+  }
+
 
   Widget _construirBarcosRestantes() {
     return Container(
@@ -112,17 +174,67 @@ class _DefenderState extends State<Defender> {
     );
   }
 
-  Widget _construirTableroConBarcosDefensa() {
-    List<bool> barcosRestantesOponente = Juego().barcosRestantes_oponente;
-    List<Barco> barcosOponente = Juego().barcos_oponente;
+  Future<List<bool>> obtenerBarcosHundidos() async {
+    var response = await http.post(
+      Uri.parse(widget.urlMostrarMiTablero),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+        'Authorization': 'Bearer ${Juego().tokenSesion}',
+      },
+      body: jsonEncode(<String, dynamic>{
+        'codigo': Juego().codigo,
+        'nombreId': Juego().perfilJugador.name,
+      }),
+    );
 
-    // Construir una lista con las posiciones de los barcos hundidos para poner una cruz.
-    List<List<int>> casillasConCruz = [];
-    for(int i = 0; i < Juego().numBarcos; i++) {
-      if(!barcosRestantesOponente[i]) {
-        casillasConCruz += barcosOponente[i].getCasillasOcupadas(barcosOponente[i].barcoPosition);
+    if (response.statusCode == 200) {
+      var data = jsonDecode(response.body);
+      var tableroBarcos = data['tableroBarcos'] as List;
+      List<bool> listaBarcosHundidos = [];
+
+      for (var barco in tableroBarcos) {
+        var coordenadas = barco['coordenadas'] as List;
+        bool hundido = true;
+
+        for (var casilla in coordenadas) {
+          if (casilla['estado'] == 'Agua') {
+            hundido = false;
+            break;
+          }
+        }
+
+        listaBarcosHundidos.add(hundido);
       }
+
+      return listaBarcosHundidos;
+    } else {
+      throw Exception('La solicitud ha fallado');
     }
+  }
+
+  Future<Widget> _construirTableroConBarcosDefensa() async {
+    var disparosEnemigos_future = obtenerDisparosEnemigos();
+    Map<String, List<Offset>> disparosEnemigos = await disparosEnemigos_future;
+    print("OBTENGO LOS DISPAROS ENEMIGOS: ");
+    print(disparosEnemigos);
+
+    List<Offset> disparosAgua = disparosEnemigos['Agua']!;
+    List<Offset> disparosAcertados = disparosEnemigos['Acertados']!;
+    print("DISPAROS AGUA:");
+    print(disparosAgua);
+    print("DISPAROS ACERTADOS:");
+    print(disparosAcertados);
+
+    var barcosHundidos_future = obtenerBarcosHundidos();
+    List<bool> barcosHundidos = await barcosHundidos_future;
+    print("BARCOS HUNDIDOS:");
+    print(barcosHundidos);
+
+    var barcos_future = Juego().obtenerBarcos(AuthProvider().name, Juego().urlObtenerTablero);
+    List<Barco> barcosJugador = await barcos_future;
+    print("BARCOS JUGADOR:");
+    print(barcosJugador);
+
 
     return Stack(
       children: [
@@ -134,10 +246,10 @@ class _DefenderState extends State<Defender> {
             children: buildTablero(),
           ),
         ),
-        for(int i = 0; i < casillasConCruz.length; i++)
+        for(int i = 0; i < disparosAgua.length; i++)
           Positioned(
-            top: casillasConCruz[i][0] * Juego().tablero_oponente.casillaSize,
-            left: casillasConCruz[i][1] * Juego().tablero_oponente.casillaSize,
+            top: disparosAgua[i].dx * Juego().tablero_oponente.casillaSize,
+            left: disparosAgua[i].dy * Juego().tablero_oponente.casillaSize,
             child: Column(
               children: [
                 Image.asset(
@@ -149,15 +261,30 @@ class _DefenderState extends State<Defender> {
             ),
           ),
 
-        for (int i = 0; i < Juego().numBarcos; i++)
-          if (!contiene(casillasConCruz, barcosOponente[i].barcoPosition))
+        for(int i = 0; i < disparosAcertados.length; i++)
+          Positioned(
+            top: disparosAcertados[i].dx * Juego().tablero_oponente.casillaSize,
+            left: disparosAcertados[i].dy * Juego().tablero_oponente.casillaSize,
+            child: Column(
+              children: [
+                Image.asset(
+                  'images/explosion.png',
+                  width: Juego().tablero_oponente.casillaSize,
+                  height: Juego().tablero_oponente.casillaSize,
+                ),
+              ],
+            ),
+          ),
+
+        for (int i = 0; i < barcosHundidos.length; i++)
+          if (barcosHundidos[i])
             Positioned(
-              top: barcosOponente[i].barcoPosition.dx * Juego().tablero_oponente.casillaSize,
-              left: barcosOponente[i].barcoPosition.dy * Juego().tablero_oponente.casillaSize,
+              top: barcosJugador[i].barcoPosition.dx * Juego().tablero_oponente.casillaSize,
+              left: barcosJugador[i].barcoPosition.dy * Juego().tablero_oponente.casillaSize,
               child: Image.asset(
-                barcosOponente[i].getImagePath(),
-                width: barcosOponente[i].getWidth(Juego().tablero_oponente.casillaSize),
-                height: barcosOponente[i].getHeight(Juego().tablero_oponente.casillaSize),
+                barcosJugador[i].getImagePath(),
+                width: barcosJugador[i].getWidth(Juego().tablero_oponente.casillaSize),
+                height: barcosJugador[i].getHeight(Juego().tablero_oponente.casillaSize),
                 fit: BoxFit.fill,
               ),
             ),

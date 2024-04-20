@@ -10,9 +10,9 @@ class AuthProvider with ChangeNotifier {
   bool _isLoggedIn = false;
 
   bool get isLoggedIn => _isLoggedIn;
-  String get email => Juego().getPerfilJugador().email;
-  String get password => Juego().getPerfilJugador().password;
-  String get name => Juego().getPerfilJugador().name;
+  String get email => Juego().perfilJugador.email;
+  String get password => Juego().perfilJugador.password;
+  String get name => Juego().perfilJugador.name;
 
   set isLoggedIn(bool value) {
     _isLoggedIn = value;
@@ -95,8 +95,8 @@ class AuthProvider with ChangeNotifier {
 
     if(response) {
         _isLoggedIn = true;
-        Juego().getPerfilJugador().name = name;
-        Juego().getPerfilJugador().password = password;
+        Juego().perfilJugador.name = name;
+        Juego().perfilJugador.password = password;
         notifyListeners(); // Notifica a los listeners que la variable ha cambiado
         return true;
     }
@@ -111,9 +111,9 @@ class AuthProvider with ChangeNotifier {
 
     if(response) {
         _isLoggedIn = true;
-        Juego().getPerfilJugador().name = name;
-        Juego().getPerfilJugador().password = password;
-        Juego().getPerfilJugador().email = email;
+        Juego().perfilJugador.name = name;
+        Juego().perfilJugador.password = password;
+        Juego().perfilJugador.email = email;
         notifyListeners(); // Notifica a los listeners que la variable ha cambiado
         return true;
     }
