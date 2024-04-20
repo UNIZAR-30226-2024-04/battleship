@@ -480,8 +480,7 @@ exports.registrarUsuario = async (req, res) => {  // Requiere nombreId (o _id), 
       console.log("Usuario registrado con éxito");
     }
   } catch (error) {
-    res.status(500).send('Hubo un error');
-    console.error("Error al registrar usuario", error);
+    // console.log("Ya se envió un mensaje de error en crearPerfil");
   }
 };
 
@@ -537,13 +536,12 @@ exports.iniciarSesion = async (req, res) => { // Requiere nombreId (o _id) y con
       }
       res.json(data);
       console.log("Sesión iniciada con éxito");
-    } else {
-      res.status(404).send('No se ha encontrado el perfil a iniciar sesión');
-      console.error("No se ha encontrado el perfil a iniciar sesión");
+    }  else { 
+      // console.log("Ya se envió 404 en autenticarUsuario");
     }
+    
   } catch (error) {
-    res.status(500).send('Hubo un error');
-    console.error("Error al iniciar sesión", error);
+    // console.log("Ya se envió un mensaje de error en autenticarUsuario");
   }
 };
 

@@ -122,6 +122,34 @@ function calcularActualizacionELO(elo1, elo2, resultado) {
   if (elo2 < 100 && nuevosTrofeos2 < 0) nuevosTrofeos2 -= nuevosTrofeos2 * 0.5;
   return [nuevosTrofeos1|0, nuevosTrofeos2|0];
 }
+
+function calcularEstadisticasPartida(partida, jugador) {
+  let estadisticas = {
+    nuevosBarcosHundidos: 0,
+    nuevosBarcosPerdidos: 0,
+    nuevosDisparosAcertados: 0,
+    nuevosDisparosFallados: 0,
+    nuevosPuntosExperiencia: 0
+  };
+  let tableroEnemigo = jugador === 1 ? partida.tableroBarcos2 : partida.tableroBarcos1;
+  let disparosEnemigos = jugador === 1 ? partida.disparosRealizados2 : partida.disparosRealizados1;
+  let barcosHundidos = tableroEnemigo.filter(barco => barco.coordenadas.every(coordenada => coordenada.estado === 'Hundido'));
+  let barcosPerdidos = tableroEnemigo.filter(barco => barco.coordenadas.every(coordenada => coordenada.estado === 'Hundido' || coordenada.estado === 'Tocado'));
+  let disparosAcertados = disparosEnemigos.filter(disparo => tableroEnemigo.some(barco => barco.coordenadas.some(coordenada => coordenada.i === disparo.i && coordenada.j === disparo.j)));
+  let disparosFallados = disparosEnemigos.filter(disparo => !tableroEnemigo.some(barco => barco.coordenadas.some(coordenada => coordenada.i === disparo.i && coordenada.j === disparo.j)));
+  estadisticas.nuevosBarcosHundidos = barcosHundidos.length;
+  estadisticas.nuevosBarcosPerdidos = barcosPerdidos.length;
+  estadisticas.nuevosDisparosAcertados = disparosAcertados.length;
+  estadisticas.nuevosDisparosFallados = disparosFallados.length;
+
+  // Calcular puntos de experiencia
+  let puntosExperiencia = 0;
+  puntosExperiencia += estadisticas.nuevosBarcosHundidos * 10;
+  puntosExperiencia += estadisticas.nuevosDisparosAcertados * 1;
+  puntosExperiencia += estadisticas.nuevosDisparosFallados * 0.25;
+  estadisticas.nuevosPuntosExperiencia = puntosExperiencia;
+  return estadisticas;
+}
   
 // -------------------------------------------- //
 // -------------- PARTIDA BASICA -------------- //
@@ -138,7 +166,7 @@ function calcularActualizacionELO(elo1, elo2, resultado) {
  * @param {Object} res - El objeto despuesta HTTP con el codigo de la partida creada TODO: CAMBIAR ESTO EN BACKEND
  * @param {Number} res.codigo - El código de la partida
  * @example 
- * peticion = { body: { nombreId1: 'jugador1', nombreId2: 'jugador2', bioma: 'Mediterraneo' } }
+ * peticion = { body: { nombreId1: 'jugador1', nombreId2: 'jugador2', bioma: 'Mediterraneo', amistosa: true }}
  * respuesta = { json: () => {} }
  * await crearPartida(peticion, respuesta)
  */
@@ -253,7 +281,7 @@ exports.crearPartida = async (req, res) => {
  * @param {Tablero} res.tableroBarcos - El tablero de barcos del jugador y su estado actual
  * @param {Coordenada[]} res.disparosEnemigos - Los disparos realizados por el jugador enemigo
  * @example
- * peticion = { body: { codigo: '1234567890', jugador: 1 } }
+ * peticion = { body: { codigo: '1234567890', nombreId: 'jugador1' }}
  * respuesta = { json: () => {} }
  * await mostrarMiTablero(peticion, respuesta)
  */
@@ -310,10 +338,8 @@ exports.mostrarMiTablero = async (req, res) => {
         tableroBarcos: tableroBarcos,
         disparosEnemigos: disparosEnemigos
       };
-      console.log('Mi tablero obtenido con éxito');
       res.json(tableroDisparos);
-      console.log(tableroDisparos);
-      return tableroDisparos;
+      console.log('Mi tablero obtenido con éxito');
     } else {
       res.status(404).send('Partida no encontrada');
       console.error('Partida no encontrada');
@@ -336,7 +362,7 @@ exports.mostrarMiTablero = async (req, res) => {
  * @param {Coordenada[]} res.misDisparos - Los disparos realizados por mi
  * @param {Coordenada[]} res.barcosHundidos - Los barcos del enemigo hundidos por mi
  * @example
- * peticion = { body: { codigo: '1234567890', jugador: 1 } }
+ * peticion = { body: { codigo: '1234567890', nombreId: 'jugador1' } }
  * respuesta = { json: () => {} }
  * await mostrarTableroEnemigo(peticion, respuesta)
  */
@@ -381,7 +407,7 @@ exports.mostrarTableroEnemigo = async (req, res) => {
       for (let barco of jugador === 1 ? partidaActual.tableroBarcos2 : partidaActual.tableroBarcos1) {
         barco._id = undefined;
         if (barco.coordenadas.some(coordenada => coordenada.estado === 'Hundido')) {
-          barcosHundidos.push(barco);
+          listaBarcosHundidos.push(barco);
         }
       }
 
@@ -395,10 +421,8 @@ exports.mostrarTableroEnemigo = async (req, res) => {
         misDisparos: misDisparos,
         barcosHundidos: listaBarcosHundidos
       };
-      console.log('Tablero enemigo obtenido con éxito');
       res.json(disparosBarcos);
-      console.log(disparosBarcos);
-      return disparosBarcos;
+      console.log('Tablero enemigo obtenido con éxito');
     } else {
       res.status(404).send('Partida no encontrada');
       console.error('Partida no encontrada');
@@ -406,7 +430,7 @@ exports.mostrarTableroEnemigo = async (req, res) => {
     }
   } catch (error) {
     res.status(500).send('Hubo un error');
-    console.error('Hubo un error');
+    console.error('Hubo un error: ', error);
     return;
   }
 };
@@ -423,7 +447,7 @@ exports.mostrarTableroEnemigo = async (req, res) => {
  * @param {Coordenada[]} res.misDisparos - Los disparos realizados por mi
  * @param {Coordenada[]} res.barcosHundidos - Los barcos del enemigo hundidos por mi
  * @example
- * peticion = { body: { codigo: '1234567890' } }
+ * peticion = { body: { codigo: '1234567890', nombreId: 'jugador1' } }
  * respuesta = { json: () => {} }
  * await mostrarTableros(peticion, respuesta)
  */
@@ -463,24 +487,42 @@ exports.mostrarTableros = async (req, res) => {
         return;
       }
 
+      let tableroBarcos = jugador === 1 ? partidaActual.tableroBarcos1 : partidaActual.tableroBarcos2;
+      for (let barco of tableroBarcos) {
+        barco._id = undefined;
+        for (let coordenada of barco.coordenadas) {
+          coordenada._id = undefined;
+        }
+      }
+
+      let disparosEnemigos = jugador === 1 ? partidaActual.disparosRealizados2 : partidaActual.disparosRealizados1;
+      for (let disparo of disparosEnemigos) {
+        disparo._id = undefined;
+      }
+
       // Obtengo los barcos hundidos en el tablero enemigo
       let listaBarcosHundidos = [];
       for (let barco of jugador === 1 ? partidaActual.tableroBarcos2 : partidaActual.tableroBarcos1) {
+        barco._id = undefined;
         if (barco.coordenadas.some(coordenada => coordenada.estado === 'Hundido')) {
           listaBarcosHundidos.push(barco);
         }
       }
 
+      // Obtengo los disparos realizados por el jugador
+      let misDisparos = jugador === 1 ? partidaActual.disparosRealizados1 : partidaActual.disparosRealizados2;
+      for (let disparo of misDisparos) {
+        disparo._id = undefined;
+      }
+
       const tableros = {
-        tableroBarcos: jugador === 1 ? partidaActual.tableroBarcos1 : partidaActual.tableroBarcos2,
-        disparosEnemigos: jugador === 1 ? partidaActual.disparosRealizados2 : partidaActual.disparosRealizados1,
-        misDisparos: jugador === 1 ? partidaActual.disparosRealizados1 : partidaActual.disparosRealizados2,
+        tableroBarcos: tableroBarcos,
+        disparosEnemigos: disparosEnemigos,
+        misDisparos: misDisparos,
         barcosHundidos: listaBarcosHundidos
       };
-      console.log('Tableros obtenidos con éxito');
       res.json(tableros);
-      console.log(tableros);
-      return tableros;
+      console.log('Tableros obtenidos con éxito');
     } else {
       res.status(404).send('Partida no encontrada');
       console.error('Partida no encontrada');
@@ -488,7 +530,7 @@ exports.mostrarTableros = async (req, res) => {
     }
   } catch (error) {
     res.status(500).send('Hubo un error');
-    console.error('Hubo un error ', error);
+    console.error('Hubo un error');
     return;
   }
 };
@@ -562,6 +604,12 @@ exports.realizarDisparo = async (req, res) => {
         console.error('El jugador no está en la partida');
         return;
       }
+      // Comprobar que la partida no ha terminado
+      if (partidaActual.ganador) {
+        res.status(400).send('La partida ha terminado');
+        console.error('La partida ha terminado');
+        return;
+      }
       // Comprobar si es el turno del jugador
       if (jugador === 1 && partidaActual.contadorTurno % 2 === 0 || 
             jugador === 2 && partidaActual.contadorTurno % 2 === 1) {
@@ -586,6 +634,10 @@ exports.realizarDisparo = async (req, res) => {
       let disparo = { i, j, estado: 'Agua' };
       if (barcoDisparado) {
         barcoDisparado._id = undefined;
+        barcoDisparado.coordenadas._id = undefined;
+        for (let coord of barcoDisparado.coordenadas) {
+          coord._id = undefined;
+        }
         estadisticasJugadores[jugador - 1].nuevosDisparosAcertados++;
         disparo.estado = 'Tocado'; // Los disparos solo son Agua o Tocado
         let hundido = true;
@@ -650,6 +702,7 @@ exports.realizarDisparo = async (req, res) => {
 
       
       let turnosIA = [];
+      let finPartidaIA = false;
       if (partidaContraIA && disparo.estado === 'Agua' && !finPartida) {
         console.log('Turno de la IA');
         let juegaIA = true;
@@ -660,6 +713,10 @@ exports.realizarDisparo = async (req, res) => {
           let disparoIA = { i: posibleDisparoIA.i, j: posibleDisparoIA.j, estado: 'Agua' };
           if (barcoDisparadoIA) {
             barcoDisparadoIA._id = undefined;
+            barcoDisparadoIA.coordenadas._id = undefined;
+            for (let coord of barcoDisparadoIA.coordenadas) {
+              coord._id = undefined;
+            }
             disparoIA.estado = 'Tocado';
             let hundido = true;
             for (let coord of barcoDisparadoIA.coordenadas) {
@@ -681,7 +738,7 @@ exports.realizarDisparo = async (req, res) => {
           partidaActual.disparosRealizados2.push(disparoIA);
 
           // Comprobar si la partida ha terminado
-          let finPartidaIA = partidaActual.tableroBarcos1.every(barco =>
+          finPartidaIA = partidaActual.tableroBarcos1.every(barco =>
             barco.coordenadas.every(coordenada => coordenada.estado === 'Hundido'));
           if (finPartidaIA) {
             partidaActual.ganador = 'IA';
@@ -710,7 +767,7 @@ exports.realizarDisparo = async (req, res) => {
         if (partidaContraIA && disparo.estado === 'Agua') {
 
         }
-        const respuestaDisparo = {
+        let respuestaDisparo = {
           disparoRealizado: disparo,
           barcoCoordenadas: (disparo.estado === 'Hundido') ? barcoDisparado : undefined,
           eventoOcurrido: undefined, // Evento ocurrido en la partida
@@ -731,7 +788,7 @@ exports.realizarDisparo = async (req, res) => {
           + 0.25*estadisticasJugadores[0].nuevosDisparosFallados 
           + 5*estadisticasJugadores[0].nuevosBarcosHundidos
           + 10*estadisticasJugadores[0].victoria;
-          nuevosTrofeos  = calcularActualizacionELOs(jugador1.trofeos, jugador2.trofeos,
+          nuevosTrofeos  = calcularActualizacionELO(jugador1.trofeos, jugador2.trofeos,
             estadisticasJugadores[0].victoria);
           estadisticasJugadores[0].nuevosTrofeos = nuevosTrofeos[0];
           await actualizarPuntosExperiencia({ body: { nombreId: estadisticasJugadores[0].nombreId, 
@@ -775,7 +832,13 @@ exports.realizarDisparo = async (req, res) => {
             return;
           }
         }
-        
+        // Si acaba la partida, devolver las estadisticas totales del jugador
+        if (finPartida || finPartidaIA) {
+          let estadisticas = calcularEstadisticasPartida(partidaActual, jugador);
+          estadisticas.nuevosPuntosExperiencia += 10*estadisticasJugadores[0].victoria;
+          estadisticas.nuevosTrofeos = nuevosTrofeos[0];
+          respuestaDisparo.estadisticas = estadisticas;
+        }
         res.json(respuestaDisparo);
         console.log("Partida modificada con éxito");
       } else {
@@ -798,20 +861,21 @@ exports.realizarDisparo = async (req, res) => {
  * @function obtenerChat
  * @description Devuelve el chat de la partida
  * @param {Object} req - El objeto de solicitud HTTP
+ * @param {String} req.body.nombreId - El nombreId del jugador, para comprobar si está en la partida
  * @param {String} req.body.codigo - El codigo de la partida
  * @param {Object} res - El objeto de respuesta HTTP
  * @returns {Object[]} El chat de la partida
  * @example
- * peticion = { body: { codigo: '1234567890' } }
+ * peticion = { body: { codigo: '1234567890', nombreId: 'jugador1' } }
  * respuesta = { json: () => {} }
  * await obtenerChat(peticion, respuesta)
  */
 exports.obtenerChat = async (req, res) => {
   try {
-    const { codigo, ...extraParam  } = req.body;
+    const { codigo, nombreId, ...extraParam  } = req.body;
     if (Object.keys(extraParam).length > 0) {
-      res.status(400).send('Sobran parámetros, se espera codigo, autor, mensaje');
-      console.error("Sobran parámetros, se espera codigo, autor, mensaje");
+      res.status(400).send('Sobran parámetros, se espera codigo y nombreId');
+      console.error("Sobran parámetros, se espera codigo y nombreId");
       return;
     }
     if (!codigo) {
@@ -819,10 +883,25 @@ exports.obtenerChat = async (req, res) => {
       console.error("Falta el codigo de partida");
       return;
     }
+    if (!nombreId) {
+      res.status(400).send('Falta el nombreId del jugador');
+      console.error("Falta el nombreId del jugador");
+      return;
+    }
     const filtro = { codigo: codigo };
     const partidaActual = await Partida.findOne(filtro);
     if (partidaActual) {
-      res.json(partidaActual.chat);
+      if (partidaActual.nombreId1 !== nombreId && partidaActual.nombreId2 !== nombreId) {
+        res.status(404).send('El jugador no está en la partida');
+        console.error('El jugador no está en la partida');
+        return;
+      }
+      let chatDevuelto = partidaActual.chat;
+      for (let mensaje of chatDevuelto) {
+        mensaje._id = undefined;
+      }
+      res.json(chatDevuelto);
+      console.log('Chat obtenido con éxito');
     } else {
       res.status(404).send('Partida no encontrada');
       console.error('Partida no encontrada');
@@ -839,43 +918,40 @@ exports.obtenerChat = async (req, res) => {
  * @description Envia un mensaje al chat de la partida
  * @param {Object} req - El objeto de solicitud HTTP
  * @param {String} req.body.codigo - El codigo de la partida
- * @param {Number} req.body.autor - El número del jugador que envía el mensaje (1 o 2)
+ * @param {String} req.body.nombreId - El nombreId del autor del mensaje
  * @param {String} req.body.mensaje - El mensaje a enviar
  * @param {Object} res - El objeto de respuesta HTTP
  * @returns {Partida} La partida modificada
  * @example
- * peticion = { body: { codigo: '1234567890', autor: 1, mensaje
- * : 'Hola' }
+ * peticion = { body: { codigo: '1234567890', nombreId: 'jugador1', mensaje: 'Hola' } }
  * respuesta = { json: () => {} }
  * await enviarMensaje(peticion, respuesta)
  */
 exports.enviarMensaje = async (req, res) => {
   try {
-    const { codigo, autor, mensaje, ...extraParam } = req.body;
+    const { codigo, nombreId, mensaje, ...extraParam } = req.body;
     // Verificar si hay algún parámetro extra que no se espera
     if (Object.keys(extraParam).length > 0) {
-      res.status(400).send('Sobran parámetros, se espera codigo, autor, mensaje');
-      console.error("Sobran parámetros, se espera codigo, autor, mensaje");
+      res.status(400).send('Sobran parámetros, se espera codigo, nombreId y mensaje');
+      console.error("Sobran parámetros, se espera codigo, nombreId y mensaje");
       return;
     }
     // Verificar si alguno de los parámetros está ausente
-    if (!codigo || !autor || !mensaje) {
-      res.status(400).send('Falta alguno de los siguientes parámetros: codigo , autor o mensaje');
-      console.error("Falta alguno de los siguientes parámetros: codigo, autor o mensaje");
-      return;
-    }
-    // Verificar si el numero de jugador es correcto
-    if (autor !== 1 && autor !== 2) {
-      res.status(400).send('El jugador debe ser 1 o 2');
-      console.error("El jugador debe ser 1 o 2");
+    if (!codigo || !nombreId || !mensaje) {
+      res.status(400).send('Falta alguno de los siguientes parámetros: codigo, nombreId, mensaje');
+      console.error("Falta alguno de los siguientes parámetros: codigo, nombreId, mensaje");
       return;
     }
     // Verificar que existe la partida
     const filtro = { codigo: codigo };
     const partidaActual = await Partida.findOne(filtro);
     if (partidaActual) {
-      let chat = partidaActual.chat;
-      chat.push({ mensaje, autor, timestamp: new Date() });
+      if (partidaActual.nombreId1 !== nombreId && partidaActual.nombreId2 !== nombreId) {
+        res.status(404).send('El jugador no está en la partida');
+        console.error('El jugador no está en la partida');
+        return;
+      }
+      partidaActual.chat.push({ mensaje, nombreId, timestamp: new Date() });
 
       // Actualizar la partida
       const partidaModificada = await Partida.findOneAndUpdate(
@@ -884,8 +960,12 @@ exports.enviarMensaje = async (req, res) => {
         { new: true } // Para devolver el documento actualizado
       );
       if (partidaModificada) {
-        res.json(partidaModificada );
-        console.log("Partida modificada con éxito");
+        let chatDevuelto = partidaModificada.chat;
+        for (let mensaje of chatDevuelto) {
+          mensaje._id = undefined;
+        }
+        res.json(chatDevuelto);
+        console.log("Mensaje enviado con éxito");
       } else {
         res.status(404).send('No se ha encontrado la partida a actualizar');
         console.error("No se ha encontrado la partida a actualizar");
