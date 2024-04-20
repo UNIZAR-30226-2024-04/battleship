@@ -55,16 +55,7 @@ const cookies = new Cookies();
 //     };
 // }
 
-/*
-function timeout(delay) {
-    return new Promise( res => setTimeout(res, delay) );
-}
-*/
-/*
-async function example() {
-    await timeout(1000); // for 1 sec delay
-}
-*/
+
 
 
 function esBarcoHorizontal(barco) {
@@ -135,9 +126,32 @@ export function Game() {
                 mostrarBarcosHundidos([data['barcoCoordenadas']], opponentBoard);
             }
 
+            /*            
+            function timeout(delay) {
+                return new Promise( res => setTimeout(res, delay) );
+            }
+            
+            function myFunction() {
+                return timeout(5000).then(() => {
+                    console.log("Después de esperar 1 segundo");
+                });
+            }
+            
+            function callerFunction() {
+                console.log("Antes de esperar");
+                return myFunction().then(() => {
+                    console.log("Después de la función esperada");
+                });
+            }
+            */
+            
+            
             // Representar las jugadas de la IA
             const turnosIA = data['turnosIA'];
             for (let i = 0; i < turnosIA.length; i++) {
+                
+                //callerFunction();
+                
                 const disparoIA = turnosIA[i].disparoRealizado;
                 const filaIA = disparoIA.i;
                 const columnaIA = disparoIA.j;
@@ -179,10 +193,11 @@ export function Game() {
                     default:
                         console.log("Error: disparo mal hecho -1 para backend");
                 }
-                console.log('Barco hundido:', turnosIA[i].barcoCoordenadas);
+
                 if(turnosIA[i].barcoCoordenadas) {
                     mostrarBarcosHundidos2(turnosIA[i].barcoCoordenadas, myBoard);
                 }
+                
             }
         })
         .catch(error => {
@@ -382,7 +397,7 @@ export function Game() {
         }
     }
     
-    
+
     const hundirBarco = (id) => {
         const widget = document.querySelector(`.fleet-board1 [gs-id="${id}"] .grid-stack-item-content img`);
         widget.classList = "imgHundida";
