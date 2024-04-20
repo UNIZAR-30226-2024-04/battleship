@@ -31,7 +31,7 @@ class _ColocarBarcosState extends State<ColocarBarcos> {
   }
 
   Future<void> inicializarBarcosJugador() async {
-    await Juego().inicializarBarcosJugador();
+    await Juego().actualizarBarcosJugadores();
   }
 
   Future<bool> moverBarco(Barco barco, bool rotar) async {
@@ -245,7 +245,10 @@ class _ColocarBarcosState extends State<ColocarBarcos> {
   }
 
   Future<void> _handlePressed(BuildContext context) async {
-    await Juego().crearPartida();
+    if (Juego().codigo == -1) {
+      await Juego().crearPartida();
+    } 
+    
     DestinoManager.setDestino(Atacar());
     Navigator.pushReplacement(
       context,

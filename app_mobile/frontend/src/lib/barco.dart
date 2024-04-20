@@ -70,6 +70,7 @@ class Barco {
   bool get esRotado => _esRotado;
   double getWidth(double casillaSize) => esRotado ? casillaSize : _longitud * casillaSize;
   double getHeight(double casillaSize) => esRotado ? _longitud * casillaSize : casillaSize;
+  bool get hundido => _hundido;
 
   //Setters
   set barcoPosition(Offset barcoPosition) {
@@ -99,5 +100,9 @@ class Barco {
 
   void rotate() {
     _esRotado = !_esRotado;
+  }
+
+  void hundir() {
+    _hundido = true;
   }
 }

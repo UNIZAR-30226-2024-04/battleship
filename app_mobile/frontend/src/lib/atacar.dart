@@ -1,9 +1,8 @@
+import 'package:battleship/barco.dart';
 import 'package:battleship/destino.dart';
 import 'package:battleship/juego.dart';
 import 'package:battleship/main.dart';
 import 'package:flutter/material.dart';
-import 'authProvider.dart';
-import 'barco.dart';
 import 'comun.dart';
 import 'defender.dart';
 import 'dart:convert';
@@ -99,7 +98,7 @@ class _AtacarState extends State<Atacar> {
             alignment: WrapAlignment.center,
             children: [
               for (int i = 0; i < Juego().tablero_oponente.barcos.length; i++) 
-                if (Juego().barcosRestantes_oponente[i]) 
+                if (!Juego().tablero_oponente.barcos[i].hundido) 
                   Column(
                     children: [
                       Padding(
@@ -128,54 +127,6 @@ class _AtacarState extends State<Atacar> {
       ),
     );
   }
-
-  Future<Map<String, List<Offset>>> obtenerMisDisparos() async {
-    print("EL CODIGO ES: ${Juego().codigo}");
-    print("LLAMO A OBTENER MIS DISPAROS CON: ${widget.urlMostrarTableroEnemigo} Y ${Juego().tokenSesion} Y ${Juego().codigo} Y ${Juego().perfilJugador.name}");
-    var response = await http.post(
-      Uri.parse(widget.urlMostrarTableroEnemigo),
-      headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-        'Authorization': 'Bearer ${Juego().tokenSesion}',
-      },
-      body: jsonEncode(<String, dynamic>{
-        'codigo': Juego().codigo,
-        'nombreId': Juego().perfilJugador.name,
-      }),
-    );
-
-    if (response.statusCode == 200) {
-      var data = jsonDecode(response.body);
-      print("ESTOS SON MIS DISPAROS:");
-      print(data);
-      print(data.runtimeType);
-
-      var disparosEnemigos = data['misDisparos'] as List;
-      List<Offset> disparosAgua = [];
-      List<Offset> disparosAcertados = [];
-
-      for (var disparo in disparosEnemigos) {
-        double i = disparo['i'].toDouble();
-        double j = disparo['j'].toDouble();
-        if (disparo['estado'] == 'Agua') {
-          disparosAgua.add(Offset(i, j));
-        } else {
-          disparosAcertados.add(Offset(i, j));
-        }
-      }
-
-      print(disparosAgua);
-      print(disparosAcertados);
-      print("EL CODIGO ES: ${Juego().codigo}");
-      return {
-        'Agua': disparosAgua,
-        'Acertados': disparosAcertados,
-      };
-    } else {
-      throw Exception('La solicitud ha fallado');
-    }
-  }
-
 
   Widget _construirHabilidades() {
     return Container(
@@ -227,10 +178,7 @@ class _AtacarState extends State<Atacar> {
 
   Future<List<Widget>> buildTableroClicable(Function(int, int) onTap) async {
     List<Widget> filas = [];
-    filas.add(buildFilaCoordenadas());
-    for (int i = 1; i < Juego().tablero_oponente.numFilas; i++) {
-      filas.add(await buildFilaCasillasClicables(i, onTap));
-    }
+    filas.add(await buildFilaCasillasClicables(onTap));
     return filas;
   }
 
@@ -257,46 +205,7 @@ class _AtacarState extends State<Atacar> {
     return Row(children: coordenadas);
   }
   
-  Future<void> obtenerBarcosEnemigo() async {
-    var response = await http.post(
-      Uri.parse(widget.urlMostrarTableroEnemigo),
-      headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-        'Authorization': 'Bearer ${Juego().tokenSesion}',
-      },
-      body: jsonEncode(<String, dynamic>{
-        'codigo': Juego().codigo,
-        'nombreId': Juego().perfilJugador.name,
-      }),
-    );
-
-    if (response.statusCode == 200) {
-      var data = jsonDecode(response.body);
-      print("BARCOS DEL ENEMIGO:");
-      print(data);
-      print(data.runtimeType);
-    } else {
-      throw Exception('La solicitud ha fallado');
-    }
-  }
-
-
-
-  Future<Widget> buildFilaCasillasClicables(int rowIndex, Function(int, int) onTap) async {
-    var disparos_future = obtenerMisDisparos();
-    Map<String, List<Offset>> disparos = await disparos_future;
-    print("OBTENGO MIS DISPAROS: ");
-    print(disparos);
-
-    List<Offset> disparosAgua = disparos['Agua']!;
-    List<Offset> disparosAcertados = disparos['Acertados']!;
-    print("DISPAROS AGUA:");
-    print(disparosAgua);
-    print("DISPAROS ACERTADOS:");
-    print(disparosAcertados);
-
-    obtenerBarcosEnemigo();
-
+  Future<Widget> buildFilaCasillas(int rowIndex, Function(int, int) onTap) async {
     List<Widget> casillas = [];
     // Etiqueta de fila
     casillas.add(
@@ -311,67 +220,123 @@ class _AtacarState extends State<Atacar> {
       ),
     );
 
-    for (int j = 1; j <= Juego().tablero_oponente.numColumnas; j++) {
-      Offset casilla = Offset(rowIndex.toDouble(), j.toDouble());
-      if (disparosAgua.contains(casilla)) {
-        casillas.add(
-          GestureDetector(
-            onTap: () {
-              onTap(rowIndex, j);
-            },
-            child: Image.asset(
-              'images/redCross.png',
-              width: Juego().tablero_oponente.casillaSize,
-              height: Juego().tablero_oponente.casillaSize,
-              fit: BoxFit.cover
-            ),
-          ),
-        );
-      } else if (disparosAcertados.contains(casilla)) {
-        casillas.add(
-          GestureDetector(
-            onTap: () {
-              onTap(rowIndex, j);
-            },
-            child: Image.asset(
-              'images/explosion.png',
-              width: Juego().tablero_oponente.casillaSize,
-              height: Juego().tablero_oponente.casillaSize,
-              fit: BoxFit.cover
-            ),
-          ),
-        );
-      } else {
-        casillas.add(
-          GestureDetector(
-            onTap: () {
-              onTap(rowIndex, j);
-            },
-            child: Image.asset(
-              'images/dot.png',
-              width: Juego().tablero_oponente.casillaSize,
-              height: Juego().tablero_oponente.casillaSize,
-              fit: BoxFit.cover
-            ),
-          ),
-        );
+    for (int j = 1; j < Juego().tablero_oponente.numColumnas; j++) {
+      String imagePath = 'images/dot.png';
+      if (Juego().disparosFalladosJugador.contains(Offset(rowIndex.toDouble(), j.toDouble()))) {
+        imagePath = 'images/redCross.png';
+      } else if (Juego().disparosAcertadosJugador.contains(Offset(rowIndex.toDouble(), j.toDouble()))) {
+        imagePath = 'images/explosion.png';
       }
+
+      if (Juego().barcosHundidosPorJugador.isNotEmpty) {
+        Offset pos = Offset(rowIndex.toDouble(), j.toDouble());
+        if (Juego().barcosHundidosPorJugador.contains(pos)) {
+          // Obtener el barco hundido en la posición pos.
+          Barco barcoHundido = Juego().barcosHundidosPorJugador.firstWhere((element) => element.barcoPosition == pos);
+          imagePath = barcoHundido.getImagePath();
+        }
+      }
+
+      casillas.add(
+        GestureDetector(
+          onTap: () {
+            setState(() {
+              onTap(rowIndex, j);
+            });
+          },
+          child: Container(
+            width: Juego().tablero_oponente.casillaSize,
+            height: Juego().tablero_oponente.casillaSize,
+            decoration: BoxDecoration(
+              color: const Color.fromARGB(128, 116, 181, 213),
+              border: Border.all(color: Colors.black, width: 1),
+            ),
+            child: Image.asset(imagePath, fit: BoxFit.cover),
+          ),
+        ),
+      );
     }
+    
     return Row(children: casillas);
   }
 
-  List<bool> analizarDisparoEnemigo(List<Map<String, dynamic>> disparoEnemigo) {
-    if (disparoEnemigo.isEmpty) {
-      return [false, false];
+  Future<Widget> buildFilaCasillasClicables(Function(int, int) onTap) async {
+    return Stack(
+      children: [
+        SizedBox(
+          width: Juego().tablero_jugador.boardSize + Juego().tablero_jugador.casillaSize,
+          height: Juego().tablero_jugador.boardSize + Juego().tablero_jugador.casillaSize,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: await buildTablero(onTap),
+          ),
+        ),
+        for (var barco in Juego().barcosHundidosPorJugador)
+          Positioned(
+            top: barco.barcoPosition.dx * Juego().tablero_jugador.casillaSize,
+            left: barco.barcoPosition.dy * Juego().tablero_jugador.casillaSize,
+            child: Column(
+              children: [
+                GestureDetector(
+                  child: Opacity(
+                    opacity: 0.8,
+                    child: Image.asset(
+                      barco.getImagePath(),
+                      width: barco.getWidth(Juego().tablero_jugador.casillaSize),
+                      height: barco.getHeight(Juego().tablero_jugador.casillaSize),
+                      fit: BoxFit.fill,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+      ],
+    );
+  }
+
+
+  Future<List<Widget>> buildTablero(Function(int, int) onTap) async {
+    List<Widget> filas = [];
+    // Añade una fila adicional para las etiquetas de las coordenadas
+    filas.add(buildFilaCoordenadas());
+    for (int i = 1; i < Juego().tablero_jugador.numFilas; i++) {
+      filas.add(await buildFilaCasillas(i, onTap));
+    }
+    return filas;
+  }
+
+
+  Barco buscarBarcoHundidoDisparo(Map<String, dynamic> datosJuego) {
+    if (datosJuego.containsKey('barcoCoordenadas')) {
+      Map<String, dynamic> barcoCoordenadas = datosJuego['barcoCoordenadas'];
+      List<dynamic> coordenadas = barcoCoordenadas['coordenadas'];
+      String tipo = barcoCoordenadas['tipo'];
+
+      print('Tipo de barco: $tipo');
+      print('coordenadas: $coordenadas');
+
+      List<Offset> casillasBarco = [];
+      for (var coordenada in coordenadas) {
+        double i = coordenada['i'].toDouble();
+        double j = coordenada['j'].toDouble();
+        Offset offset = Offset(i, j);
+        casillasBarco.add(offset);
+      }
+
+      String nombre = tipo;
+      Offset barcoPos = casillasBarco[0];
+      int long = casillasBarco.length;
+      bool rotado = casillasBarco[0].dy == casillasBarco[1].dy ? true : false;
+      bool hundido = true;
+      Barco barcoHundido = Barco(nombre, barcoPos, long, rotado, hundido);
+      barcoHundido.showInfo();
+      return barcoHundido;
     }
 
-    var disparo = disparoEnemigo[0];
-    var estado = disparo['disparoRealizado']['estado'];
-    var fin = disparo['finPartida'];
-    var acertado = estado == 'Tocado' || estado == 'Hundido';
-
-    return [acertado, fin];
+    return Barco('Ninguno', Offset(0, 0), 0, false, false);
   }
+
 
   Future<List<bool>> realizarDisparo(int i, int j) async {
     var response = await http.post(
@@ -392,17 +357,71 @@ class _AtacarState extends State<Atacar> {
       print("DISPARO ME DEVUELVE: ");
       var data = jsonDecode(response.body);
       print(data);
-      var fin = data['finPartida'];
       var turnosIA = data['turnosIA'].cast<Map<String, dynamic>>();
+      print("TURNOS IA: $turnosIA");
       var disparo = data['disparoRealizado'];
       var estado = disparo['estado'];
+      bool acertado = estado == 'Tocado' || estado == 'Hundido';
+      bool fin = data['finPartida'];
+      bool hundido = estado == 'Hundido';
+      String nombreBarcoHundido = "";
 
-      //analizarDisparoEnemigo(turnosIA);
+      // Offset con las coordenadas del disparo.
+      Offset disparoCoordenadas = Offset(i as double, j as double);
 
-      if (estado == 'Tocado' || estado == 'Hundido') {
-        return Future.value([true as bool, fin as bool]);
+      if (acertado) {
+        setState(() {
+          Juego().disparosAcertadosJugador.add(disparoCoordenadas);
+          print("DISPAROS ACERTADOS: ");
+          print(Juego().disparosAcertadosJugador);
+        });
+      } else {
+        setState(() {
+          Juego().disparosFalladosJugador.add(disparoCoordenadas);
+          print("DISPAROS FALLADOS: ");
+          print(Juego().disparosFalladosJugador);
+        });
       }
-      return Future.value([false, fin as bool]);
+
+      if (hundido) {
+        setState(() {
+        Juego().decrementarBarcosRestantesOponente();
+        nombreBarcoHundido = data['barcoCoordenadas']['tipo'];
+        print("NOMBRE DEL BARCO HUNDIDO: $nombreBarcoHundido");
+        Barco barcoHundido = buscarBarcoHundidoDisparo(data);
+        Juego().barcosHundidosPorJugador.add(barcoHundido);
+        print("BARCOS HUNDIDOS POR JUGADOR: ");
+        print(Juego().barcosHundidosPorJugador);
+        });
+      }
+  
+      // Procesar disparo de la IA.
+      bool finPartida = false;
+
+      for (var elemento in turnosIA) {
+        var disparo = elemento['disparoRealizado'];
+        finPartida = elemento['finPartida'];
+        estado = disparo['estado'];
+        acertado = estado == 'Tocado' || estado == 'Hundido';
+        hundido = estado == 'Hundido';
+        if (acertado) {
+          Juego().disparosAcertadosOponente.add(Offset(disparo['i'].toDouble(), disparo['j'].toDouble()));
+        }
+        else {
+          Juego().disparosFalladosOponente.add(Offset(disparo['i'].toDouble(), disparo['j'].toDouble()));
+        }
+
+        if (hundido) {
+          Barco barcoHundido = buscarBarcoHundidoDisparo(elemento);
+          Juego().barcosHundidosPorOponente.add(barcoHundido);
+        }
+      }
+
+      // Mostrar información de los barcos hundidos por la IA.
+      print("BARCOS HUNDIDOS POR IA: ");
+      print(Juego().barcosHundidosPorOponente);
+
+      return Future.value([acertado, fin, hundido]);
     } else {
       throw Exception('Failed to load data');
     }
@@ -419,8 +438,10 @@ class _AtacarState extends State<Atacar> {
     respuesta_future.then((result) {
       var acertado = result[0];
       var fin_future = result[1];
+      var hundido_future = result[2];
       print("ACERTADO: $acertado");
       print("FIN: $fin_future");
+      print("HUNDIDO: $hundido_future");
       // Si la casilla tiene un barco.
       if(acertado) {
         //Juego().actualizarBarcosRestantes();
