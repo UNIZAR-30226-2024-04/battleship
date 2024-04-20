@@ -613,7 +613,7 @@ describe("Enviar mensaje", () => {
         _codigo = res3._json.codigo;
     });
     it("Debería enviar un mensaje correctamente", async () => {
-        const req = { body: { codigo: _codigo, autor: 1, mensaje: "Esto es una prueba" } };
+        const req = { body: { codigo: _codigo, nombreId: 'usuario1', mensaje: "Esto es una prueba" } };
         const res = { json: () => {}, status: function(s) { 
           this.statusCode = s; return this; }, send: () => {} };
         try {
@@ -623,7 +623,7 @@ describe("Enviar mensaje", () => {
         expect(res.statusCode).toBe(undefined);
     });
     it("Debería fallar al enviar un mensaje con demasiados campos", async () => {
-        const req = { body: { codigo: _codigo, autor: 1, mensaje: "Esto es una prueba", extra: 1 } };
+        const req = { body: { codigo: _codigo, nombreId: 'usuario1', mensaje: "Esto es una prueba", extra: 1 } };
         const res = { json: () => {}, status: function(s) { 
           this.statusCode = s; return this; }, send: () => {} };
         try {
@@ -641,7 +641,7 @@ describe("Enviar mensaje", () => {
         expect(res.statusCode).toBe(400);
     });
     it("Debería fallar al enviar un mensaje sin mensaje", async () => {
-        const req = { body: { codigo: _codigo, autor: 1 } };
+        const req = { body: { codigo: _codigo, nombreId: 'usuario1' } };
         const res = { json: () => {}, status: function(s) { 
           this.statusCode = s; return this; }, send: () => {} };
         try {
@@ -650,16 +650,16 @@ describe("Enviar mensaje", () => {
         expect(res.statusCode).toBe(400);
     });
     it("Debería fallar al enviar un mensaje con un autor inválido", async () => {
-        const req = { body: { codigo: _codigo, autor: 3, mensaje: "Esto es una prueba" } };
+        const req = { body: { codigo: _codigo,nombreId: 'usuario3', mensaje: "Esto es una prueba" } };
         const res = { json: () => {}, status: function(s) { 
           this.statusCode = s; return this; }, send: () => {} };
         try {
             await enviarMensaje(req, res);
         } catch (error) {}
-        expect(res.statusCode).toBe(400);
+        expect(res.statusCode).toBe(404);
     });
     it("Debería fallar al enviar un mensaje con un código de partida inexistente", async () => {
-        const req = { body: { codigo: 1, autor: 1, mensaje: "Esto es una prueba" } };
+        const req = { body: { codigo: 1, nombreId: 'usuario1', mensaje: "Esto es una prueba" } };
         const res = { json: () => {}, status: function(s) { 
           this.statusCode = s; return this; }, send: () => {} };
         try {
@@ -698,7 +698,7 @@ describe("Obtener chat", () => {
         } catch (error) {}
         expect(res3.statusCode).toBe(undefined);
         _codigo = res3._json.codigo;
-        const req4 = { body: { codigo: _codigo, autor: 1, mensaje: "Esto es una prueba" } };
+        const req4 = { body: { codigo: _codigo, nombreId: 'usuario1', mensaje: "Esto es una prueba" } };
         const res4 = { json: () => {}, status: function(s) { 
           this.statusCode = s; return this; }, send: () => {} };
         try {
@@ -707,7 +707,7 @@ describe("Obtener chat", () => {
         expect(res4.statusCode).toBe(undefined);
     });
     it("Debería obtener el chat correctamente", async () => {
-        const req = { body: { codigo: _codigo } };
+        const req = { body: { codigo: _codigo, nombreId: 'usuario1' } };
         const res = { json: function(_json) {this._json = _json; return this;}, status: function(s) { 
             this.statusCode = s; return this; }, send: () => {} };
         try {
@@ -717,7 +717,7 @@ describe("Obtener chat", () => {
         expect(res._json[0].mensaje).toBe("Esto es una prueba");
     });
     it("Debería fallar al obtener el chat con demasiados campos", async () => {
-        const req = { body: { codigo: _codigo, extra: 1 } };
+        const req = { body: { codigo: _codigo, nombreId: 'usuario1', extra: 1 } };
         const res = { json: () => {}, status: function(s) { 
           this.statusCode = s; return this; }, send: () => {} };
         try {
@@ -726,7 +726,7 @@ describe("Obtener chat", () => {
         expect(res.statusCode).toBe(400);
     });
     it("Debería fallar al obtener el chat sin código de partida", async () => {
-        const req = { body: {} };
+        const req = { body: {nombreId: 'usuario1'} };
         const res = { json: () => {}, status: function(s) { 
           this.statusCode = s; return this; }, send: () => {} };
         try {
@@ -734,8 +734,26 @@ describe("Obtener chat", () => {
         } catch (error) {}
         expect(res.statusCode).toBe(400);
     });
+    it("Debería fallar al obtener el chat sin usuario", async () => {
+        const req = { body: {codigo: _codigo} };
+        const res = { json: () => {}, status: function(s) { 
+          this.statusCode = s; return this; }, send: () => {} };
+        try {
+            await obtenerChat(req, res);
+        } catch (error) {}
+        expect(res.statusCode).toBe(400);
+    });
+    it("Debería fallar al obtener el chat con un usuario inválido", async () => {
+        const req = { body: { codigo: _codigo, nombreId: 'usuario3'} };
+        const res = { json: () => {}, status: function(s) { 
+          this.statusCode = s; return this; }, send: () => {} };
+        try {
+            await obtenerChat(req, res);
+        } catch (error) {}
+        expect(res.statusCode).toBe(404);
+    });
     it("Debería fallar al obtener el chat con un código de partida inexistente", async () => {
-        const req = { body: { codigo: 1 } };
+        const req = { body: { codigo: 1, nombreId: 'usuario1'} };
         const res = { json: () => {}, status: function(s) { 
           this.statusCode = s; return this; }, send: () => {} };
         try {

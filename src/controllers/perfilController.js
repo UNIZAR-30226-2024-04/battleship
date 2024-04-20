@@ -183,6 +183,7 @@ exports.obtenerUsuario = async (req, res) => {
       perfilDevuelto.tableroInicial = undefined; // No enviar el tablero inicial en la respuesta
       perfilDevuelto.mazoHabilidades = undefined; // No enviar el mazo de habilidades en la respuesta
       perfilDevuelto.correo = undefined; // No enviar el correo en la respuesta
+      perfilDevuelto.codigoPartidaActual = undefined; // No enviar el código de la partida actual en la respuesta
       perfilDevuelto._id = undefined; // No enviar el _id en la respuesta
       let nivel, restantes, puntosNivel;
       [nivel, restantes, puntosNivel] = calcularNivel(perfil.puntosExperiencia);
@@ -208,7 +209,7 @@ exports.obtenerUsuario = async (req, res) => {
  * @description Obtiene los datos personales de un perfil identificado por _id o nombreId.
  * @param {Object} req - El objeto de solicitud HTTP.
  * @param {string} req.body.nombreId - El perfil debe existir en la base de datos.
- * @param {Object} res - El objeto de respuesta HTTP.
+ * @param {Object} res - El objeto de respuesta HTTP, con los datos personales del perfil en formato JSON.
  * @example
  * perfil = { nombreId: 'usuario1'};
  * const req = { body: perfil };
