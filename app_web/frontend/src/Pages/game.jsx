@@ -8,7 +8,6 @@ import 'gridstack/dist/gridstack.min.css';
 import 'gridstack/dist/gridstack-extra.min.css';
 
 import Tablero from '../Components/Tablero';
-import { crossList } from '../Components/Tablero';
 
 import aircraftImg from '../Images/fleet/portaaviones.png';
 import destroyImg from '../Images/fleet/destructor.png';
@@ -92,8 +91,10 @@ export function Game() {
             // console.log(casilla);
 
             let imgX = document.createElement('img');
-            imgX.style.width = '100%';
-            imgX.style.height = '100%';
+            imgX.style.width = '50%';
+            imgX.style.height = '50%';
+            imgX.style.marginLeft = '25%';
+            imgX.style.marginTop = '25%';
             imgX.style.objectFit = 'cover';
 
             switch (data['disparoRealizado'].estado) {
@@ -113,14 +114,17 @@ export function Game() {
                 case "Agua":
                     if (casilla.childElementCount === 0) {  // Solo 1 img
                         imgX.src = crossImg;
+                        imgX.style.opacity = '0.7';
                         casilla.appendChild(imgX);
-                        crossList.push(locationCasilla);
                     }
                     // relanzar el return de Game
 
                     break;
                 default:
                     console.log("Error: disparo mal hecho -1 para backend");
+            }
+            if(data['barcoCoordenadas']) {
+                mostrarBarcosHundidos([data['barcoCoordenadas']], opponentBoard);
             }
         })
         .catch(error => {
@@ -180,34 +184,63 @@ export function Game() {
         if (hayPartidaInicializada()) {
             console.log('Ya hay partida creada:');
         } else {
-            setPartidaInicializada(true);
-            console.log('Creando partida...');
-            // Creamos partida en bbdd
-            fetch(urlCrearPartida, {
+            // TO DO: Cargar info del perfil para recuperar la partida en curso
+            fetch(urlObtenerDatosPersonales, {
                 method: 'POST',
                 headers: {
                 'Content-Type': 'application/json',
                 'authorization': tokenCookie
                 },
-                body: JSON.stringify({ nombreId1: nombreId1Cookie, bioma: 'Mediterraneo', amistosa: true}) // TO DO: biomas!!!
+                body: JSON.stringify({ nombreId: nombreId1Cookie})
             })
             .then(response => {
                 if (!response.ok) {
-                    setPartidaInicializada(false);
                     throw new Error('La solicitud ha fallado');
                 }
                 return response.json();
             })
             .then(data => {
-                console.log('Partida creada:');
-                setIdPartida(data.codigo);
-                console.log(idPartida);
-            })
+                console.log('Datos personales:', data);
+                if (data.codigoPartidaActual != -1) {
+                    console.log('Partida en curso:', data.codigoPartidaActual);
+                    setIdPartida(data.codigoPartidaActual);
+                    setPartidaInicializada(true);
+                } else {
+                    console.log('No hay partida en curso');
+                    // ----------------------------
+                    setPartidaInicializada(true);
+                    console.log('Creando partida...');
+                    // Creamos partida en bbdd
+                    fetch(urlCrearPartida, {
+                        method: 'POST',
+                        headers: {
+                        'Content-Type': 'application/json',
+                        'authorization': tokenCookie
+                        },
+                        body: JSON.stringify({ nombreId1: nombreId1Cookie, bioma: 'Mediterraneo', amistosa: true}) // TO DO: biomas!!!
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            setPartidaInicializada(false);
+                            throw new Error('La solicitud ha fallado');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('Partida creada:');
+                        setIdPartida(data.codigo);
+                        console.log(idPartida);
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        setPartidaInicializada(false);
+                    });
+                }
+            })  
             .catch(error => {
                 console.error('Error:', error);
                 setPartidaInicializada(false);
-            });
-            
+            });          
         }
     };
 
@@ -229,7 +262,6 @@ export function Game() {
             // TODO: Mira si venimos de partida offline o online
             // inicializarPartidaOnline();
             await inicializarPartidaOffline();
-            console.log('POST partida inicializada:');
 
             // Inicializamos el tablero propio con las siguientes propiedades
             const myBoard = GridStack.init({
@@ -286,6 +318,35 @@ export function Game() {
             board.removeAll();
         }
     }
+
+    const mostrarBarcosHundidos = (tablero, board) => {
+        for (let i = 0; i < tablero.length; i++) {
+            const coordenadas = tablero[i].coordenadas;
+            let tipoBarco = tablero[i].tipo;
+
+            switch (tipoBarco) {
+                case "Patrullero":
+                    tipoBarco = "Patrol";
+                    break;
+                case "Destructor":
+                    tipoBarco = "Destroy";
+                    break;
+                case "Submarino":
+                    tipoBarco = "Sub";
+                    break;
+                case "Acorazado":
+                    tipoBarco = "Bship";
+                    break;
+                case "Portaviones":
+                    tipoBarco = "Aircraft";
+                    break;
+                default:
+                    console.log("Error: barco mal hecho -1 para backend");
+            }
+            addNewWidgetPos(i, tipoBarco, coordenadas[0].j-1, coordenadas[0].i-1, esBarcoHorizontal(tablero[i]), board, true);
+        }
+    }
+
 
 
     // Este efecto se ejecuta cuando myBoard cambia
@@ -368,8 +429,58 @@ export function Game() {
                     tablero2 = data.barcosHundidos;
                     disparos2 = data.disparosEnemigos;
 
+                    // iterar en la lista disparos1
+                    for (let i = 0; i < disparos1.length; i++) {
+                        const fila = disparos1[i].i;
+                        const columna = disparos1[i].j;
+                        const estado = disparos1[i].estado;
+
+                        const locationCasilla = (fila-1)*10 + columna - 1;
+                        const casilla = document.querySelector(`#tablero .casilla[location="${locationCasilla}"]`);
+                        // console.log(casilla);
+
+                        let imgX = document.createElement('img');
+                        imgX.style.width = '50%';
+                        imgX.style.height = '50%';
+                        imgX.style.marginLeft = '25%';
+                        imgX.style.marginTop = '25%';
+                        imgX.style.objectFit = 'cover';
+
+                        switch (estado) {
+                            case "Tocado":
+                                if (casilla.childElementCount === 0) {  // Solo 1 img
+                                    imgX.src = explosionImg;
+                                    casilla.appendChild(imgX);
+                                }
+                                break;
+                            case "Hundido":
+                                if (casilla.childElementCount === 0) { // Solo 1 img
+                                    imgX.src = explosionImg;
+                                    casilla.appendChild(imgX);
+                                    //mostrarBarcoPorDebajo();
+                                }
+                                break;
+                            case "Agua":
+                                if (casilla.childElementCount === 0) {  // Solo 1 img
+                                    imgX.src = crossImg;
+                                    imgX.style.opacity = '0.7';
+                                    casilla.appendChild(imgX);
+                                }
+                                // relanzar el return de Game
+
+                                break;
+                            default:
+                                console.log("Error: disparo mal hecho -1 para backend");
+                        }
+                    }
+
+                    // iteramos por los barcos ya hundidos
+                    mostrarBarcosHundidos(tablero2, opponentBoard);
+
                     borrarWidgetsTablero(myBoard);
                     mostrarWidgetsTablero(tablero1, myBoard);
+
+                    
 
                     // TO-DO: Mostrar tablero del oponente 
                     // (No los barcos directamente, sino las celdas donde se ha disparado y los hundidos)
@@ -389,7 +500,7 @@ export function Game() {
 
 
     // Función que añade un elemento a la cuadrícula
-    const addNewWidgetPos = (id, ship, x, y, esHorizontal, board) => {
+    const addNewWidgetPos = (id, ship, x, y, esHorizontal, board, hundido=false) => {
         //const shipName = shipInfo[ship].name;
         const node = {
             id: id,      // id para identificar el widget
@@ -405,6 +516,14 @@ export function Game() {
             node.content = `<img src="${shipInfo[ship].imgRotated}" alt="${shipInfo[ship].name}";" />`;
             node.w = 1;
             node.h = shipInfo[ship].size;
+            if (hundido) {
+                node.content = `<img src="${shipInfo[ship].imgRotated}" alt="${shipInfo[ship].name}" class="imgHundida" />`;
+            }
+        }
+        if (hundido && !esHorizontal) {
+            node.content = `<img src="${shipInfo[ship].imgRotated}" alt="${shipInfo[ship].name}" class="imgHundida" />`;
+        } else if (hundido) {
+            node.content = `<img src="${shipInfo[ship].img}" alt="${shipInfo[ship].name}" class="imgHundida" />`;
         }
         if (board) {    // El tablero está inicializado
             board.addWidget(node);   // Añadir widget a la cuadrícula

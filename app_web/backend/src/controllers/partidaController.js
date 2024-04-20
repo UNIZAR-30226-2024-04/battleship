@@ -467,7 +467,7 @@ exports.mostrarTableros = async (req, res) => {
       let listaBarcosHundidos = [];
       for (let barco of jugador === 1 ? partidaActual.tableroBarcos2 : partidaActual.tableroBarcos1) {
         if (barco.coordenadas.some(coordenada => coordenada.estado === 'Hundido')) {
-          barcosHundidos.push(barco);
+          listaBarcosHundidos.push(barco);
         }
       }
 
@@ -488,7 +488,7 @@ exports.mostrarTableros = async (req, res) => {
     }
   } catch (error) {
     res.status(500).send('Hubo un error');
-    console.error('Hubo un error');
+    console.error('Hubo un error ', error);
     return;
   }
 };
