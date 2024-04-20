@@ -10,15 +10,12 @@ export function Login() {
         e.preventDefault(); // Previene el comportamiento por defecto del formulario
 
         const cookies = new Cookies();
-        // Recopilando los datos del formulario
         const formData = new FormData(e.target);
         const data = {
             nombreId: formData.get('nombreId'),
             contraseña: formData.get('contraseña'),
-            // Asegúrate de añadir el input de confirmación de contraseña en el formulario y aquí
         };
 
-        // Creación de la solicitud fetch
         try {
             const response = await fetch(iniciarSesionURI, {
                 method: 'POST',
@@ -29,85 +26,23 @@ export function Login() {
             });
 
             if (!response.ok) {
+                console.error("Respuesta backend:", response);
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
 
-            const responseData = await response.json(); // Suponiendo que el backend devuelve JSON
+            const responseData = await response.json();
             console.log('Respuesta del servidor:', responseData);
+
             cookies.remove('JWT');
-            cookies.remove('nombreId');
             cookies.remove('perfil');
+
             cookies.set('JWT', responseData['token'], {path: '/'});
 
             cookies.set('perfil', responseData['perfilDevuelto'], {path: '/'});
-            // Aquí puedes manejar la respuesta, como actualizar el estado del componente o redirigir al usuario
         } catch (error) {
-            console.error('Error en la solicitud:', error);
+            console.error('Error en el login:', error);
         }
     };
-
-//export function Login() {
-    // const cookies = new Cookies();
-
-    // async function handleSubmit(e) {
-    //     const request = {
-    //         method: 'POST',
-    //         headers: { 'Content-Type': 'application/json' },
-    //         body: JSON.stringify({
-    //             nombreId: e.target[0].value,
-    //             contraseña: e.target[1].value,
-    //         })
-    //     };
-
-    //     //const response = await fetch(iniciarSesionURI, request);
-    //     //const data = await response.json();
-    //     try {
-    //         console.log('try');
-    //         const response = await fetch(iniciarSesionURI, request);
-    //         if (!response.ok) {
-    //             throw new Error('La respuesta de la red no fue ok');
-    //         }
-    //         const data = await response.json(); // Suponiendo que el servidor responde con JSON
-    //         console.log('Respuesta del servidor:', data);
-    //         // Aquí puedes continuar con el manejo de la respuesta
-    //         cookies.remove('JWT');
-    //         cookies.remove('nombreId');
-    //         console.log('token:');
-    //         console.log(data['token']);
-    //         console.log('nombreId:');
-    //         console.log(data['perfilDevuelto']['nombreId']);
-    //         cookies.set('JWT', data['token'], {path: '/'});
-    //         cookies.set('nombreId', data['perfilDevuelto']['nombreId'], {path: '/'});
-    //     } catch (error) {
-    //         console.error('Error durante la solicitud:', error);
-    //     }
-        // try {
-        //     fetch(iniciarSesionURI, request)
-        //     .then(response => {
-        //         if (!response.ok) {
-        //             throw new Error('La solicitud ha fallado');
-        //         }
-        //         return response.json();
-        //     })
-        //     .then(data => {
-        //         cookies.remove('JWT');
-        //         cookies.remove('nombreId');
-        //         console.log('data:');
-        //         console.log(data);
-        //         console.log('token:');
-        //         console.log(data['token']);
-        //         console.log('nombreId:');
-        //         console.log(data['perfilDevuelto']['nombreId']);
-        //         cookies.set('JWT', data['token'], {path: '/'});
-        //         cookies.set('nombreId', data['perfilDevuelto']['nombreId'], {path: '/'});
-        //     })
-        //     .catch(error => {
-        //         console.error('Error:', error);
-        //     });
-        // } catch (error) {
-        //     console.error('Error:', error);
-        // }
-    //}
 
     /*
                     <ToastContainer
@@ -141,8 +76,8 @@ export function Login() {
                                 placeholder="Introduzca su usuario..."
                                 type="text"
                                 size="30"
-                            >        
-                            </input>
+                                required
+                            ></input>
                         </div>
                         <div className="login-password-header login-header">
                             <span>Contraseña</span>
@@ -154,8 +89,8 @@ export function Login() {
                                 placeholder="Introduzca su contraseña..."
                                 type="password"
                                 size="30"
-                            >
-                            </input>
+                                required
+                            ></input>
                         </div>
                         <div className="login-apply">
                             <input type="submit" value="Iniciar sesión"></input>
