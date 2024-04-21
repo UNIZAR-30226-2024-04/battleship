@@ -37,7 +37,7 @@ const Profile = () => {
                 })
                 .then(response => {
                     if (!response.ok) {
-                    throw new Error('La solicitud de obtener estadísticas ha fallado');
+                        throw new Error('La solicitud de obtener estadísticas ha fallado');
                     }
                     return response.json();
                 })

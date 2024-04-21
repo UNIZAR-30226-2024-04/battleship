@@ -19,12 +19,13 @@ export function Navbar() {
     // Estilos CSS para el texto cuando el cursor está encima
     const textStyleHovered = {
         color: '#FFFFFF', // Cambia el color del texto cuando el cursor está encima
+        fontWeight: 'bold',
         cursor: 'pointer',
     };
 
     // Estilos CSS para el texto cuando el cursor no está encima
     const textStyle = {
-        color: '#000000', // Color de texto predeterminado
+        color: '#FFFFFF', // Color de texto predeterminado
         cursor: 'pointer',
     };
 
@@ -53,6 +54,7 @@ export function Navbar() {
                     onClick={() => navigate('/')}
                     onMouseEnter={handleMouseEnter}
                     onMouseLeave={handleMouseLeave}
+                    color="white"
                     style={hovered ? textStyleHovered : textStyle} // Aplica los estilos correspondientes según el estado del cursor
                 > Battleship </center>
                 <br></br>

@@ -9,6 +9,10 @@ export function Login() {
     const handleSubmit = async (e) => {
         e.preventDefault(); // Previene el comportamiento por defecto del formulario
 
+        const divError = document.querySelector(".login-body .login-error-msg span")
+        divError.innerText = "";
+        divError.style.color = "red";
+
         const cookies = new Cookies();
         const formData = new FormData(e.target);
         const data = {
@@ -27,8 +31,13 @@ export function Login() {
 
             if (!response.ok) {
                 console.error("Respuesta backend:", response);
+                const errorMessage = await response.text();     // Mostramos mensaje enviado por backend
+                divError.innerText = errorMessage;
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
+            
+            divError.innerText = "Sesión iniciada con éxito";
+            divError.style.color = "green";
 
             const responseData = await response.json();
             console.log('Respuesta del servidor:', responseData);
@@ -94,6 +103,9 @@ export function Login() {
                         </div>
                         <div className="login-apply">
                             <input type="submit" value="Iniciar sesión"></input>
+                        </div>
+                        <div className="login-error-msg">
+                            <span></span>
                         </div>
                     </form>
                 </div>

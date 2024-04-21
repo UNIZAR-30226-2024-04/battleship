@@ -20,10 +20,15 @@ export function Register() {
     const handleSubmit = async (e) => {
         e.preventDefault(); // Previene el comportamiento por defecto del formulario
         
+        const divError = document.querySelector(".register-body .register-error-msg span")
+        divError.innerText = "";
+        divError.style.color = "red";
+                
         const formData = new FormData(e.target);
 
         if (formData.get('contraseña') !== formData.get('confirmContraseña')) {
             console.error('Las contraseñas no coinciden');
+            divError.innerText="Las contraseñas no coinciden";
             return;
         }
 
@@ -44,8 +49,13 @@ export function Register() {
 
             if (!response.ok) {
                 console.error("Respuesta backend:", response);
+                const errorMessage = await response.text();     // Mostramos mensaje enviado por backend
+                divError.innerText = errorMessage;
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
+            
+            divError.innerText = "Usuario registrado con éxito";
+            divError.style.color = "green";
 
             const responseData = await response.json();
             console.log('Respuesta del servidor:', responseData);
@@ -122,6 +132,9 @@ export function Register() {
                         </div>
                         <div className="register-apply">
                             <input type="submit" value="Registrarse"></input>
+                        </div>
+                        <div className="register-error-msg">
+                            <span></span>
                         </div>
                     </form>
                 </div>

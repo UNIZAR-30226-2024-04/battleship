@@ -43,3 +43,7 @@
 .register-apply{
     margin-top: 2em;
 }
+
+.register-error-msg {
+    margin-top: 2em;
+}
