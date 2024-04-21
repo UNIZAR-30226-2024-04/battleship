@@ -26,20 +26,20 @@ app_mobile/frontend/src/.idea/
 app_mobile/frontend/src/.vscode/
 
 # Flutter/Dart/Pub related
-app_mobile/frontend/src/**/doc/api/
-app_mobile/frontend/src/**/ios/Flutter/.last_build_id
-app_mobile/frontend/src/.dart_tool/
-app_mobile/frontend/src/.flutter-plugins
-app_mobile/frontend/src/.flutter-plugins-dependencies
-app_mobile/frontend/src/.pub-cache/
-app_mobile/frontend/src/.pub/
-app_mobile/frontend/src/build/
+**/doc/api/
+**/ios/Flutter/.last_build_id
+**/.dart_tool/
+**/.flutter-plugins
+**/.flutter-plugins-dependencies
+**/.pub-cache/
+**/.pub/
+**/frontend/src/build/
 
 # Symbolication related
 app_mobile/frontend/src/app.*.symbols
 
 # Obfuscation related
-app_mobile/frontend/src/app.*.map.json
+**/frontend/src/app.*.map.json
 
 # Android Studio will place build artifacts here
 app_mobile/frontend/src/android/app/debug
