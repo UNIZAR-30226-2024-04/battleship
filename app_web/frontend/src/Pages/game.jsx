@@ -56,6 +56,26 @@ const cookies = new Cookies();
 // }
 
 
+function resetEndgameMsg() {
+    const endgameContainer = document.querySelector("#endgame-container");
+    endgameContainer.style.display = "none"
+    const endgameMsg = document.querySelector("#endgame-container span");
+    endgameMsg.innerHTML = "";
+}
+
+
+function triggerFinPartida(finPartida, soyYo) {
+    if (finPartida) {
+        const endgameContainer = document.querySelector("#endgame-container");
+        endgameContainer.style.display = "block"
+        const endgameMsg = document.querySelector("#endgame-container span");
+        if (soyYo) {
+            endgameMsg.innerHTML = "¡Victoria!";
+        } else {
+            endgameMsg.innerHTML = "¡Derrota!";
+        }
+    }
+}
 
 
 function esBarcoHorizontal(barco) {
@@ -124,6 +144,7 @@ export function Game() {
             }
             if(data['barcoCoordenadas']) {
                 mostrarBarcosHundidos([data['barcoCoordenadas']], opponentBoard);
+                triggerFinPartida(data['finPartida'], true);
             }
 
             /*            
@@ -151,7 +172,6 @@ export function Game() {
             for (let i = 0; i < turnosIA.length; i++) {
                 
                 //callerFunction();
-                
                 const disparoIA = turnosIA[i].disparoRealizado;
                 const filaIA = disparoIA.i;
                 const columnaIA = disparoIA.j;
@@ -196,8 +216,8 @@ export function Game() {
 
                 if(turnosIA[i].barcoCoordenadas) {
                     mostrarBarcosHundidos2(turnosIA[i].barcoCoordenadas, myBoard);
+                    triggerFinPartida(turnosIA[i].finPartida, false);       // comprobamos fin partida
                 }
-                
             }
         })
         .catch(error => {
@@ -468,7 +488,6 @@ export function Game() {
     }
 
 
-
     // Este efecto se ejecuta cuando myBoard cambia
     useEffect(() => {
         if(!hayPartidaInicializada()) {
@@ -655,7 +674,8 @@ export function Game() {
                 console.error('Error:', error);
             }
         }
-        
+
+        resetEndgameMsg();  // resetar el mensaje de final
     }, [idPartida]);
 
 
@@ -694,35 +714,6 @@ export function Game() {
         }
     };
 
-
-    // // Función para manejar el clic izquierdo (disparos)
-    // const handleItemClick = (event) => {
-    //     // TO-DO: Implementar disparos
-    //     // saber en qué celda del tablero rival se ha clickado
-    //     const cell = event.target;
-    //     const cellId = cell.id;
-    //     console.log('Celda:', cellId);
-    //     if (cellId) {
-    //         const response = fetch(urlRealizarDisparo, {
-    //             method: 'POST',
-    //             headers: {
-    //             'Content-Type': 'application/json',
-    //             'authorization': tokenCookie
-    //             },
-    //             body: JSON.stringify({ idPartida: idPartida, nombreId: nombreId1Cookie, i: cellId[1], j: cellId[3]})
-                
-    //         });
-            
-    //         if (!response.ok) {
-    //             throw new Error(`HTTP error! status: ${response.status}`);
-    //         }
-            
-    //         const responseData = response.json(); // Suponiendo que el backend devuelve JSON
-    //         console.log('Respuesta del servidor al disparar:', responseData);
-            
-    //     }
-
-    // };
 
     useEffect(() => {
         if (!(skillQueue.length > 0 && skillQueue[0] === "null")) {
@@ -763,6 +754,9 @@ export function Game() {
                         <div className="fleet-board-separator"></div>
                         <div className="grid-stack fleet-board2" /*onClick={handleItemClick}*/>
                             <Tablero id="rivalTablero" onCellClick={handleClickedCell} clickable={true}/>
+                        </div>
+                        <div id="endgame-container">
+                            <span></span>
                         </div>
                     </div>
                 </div>

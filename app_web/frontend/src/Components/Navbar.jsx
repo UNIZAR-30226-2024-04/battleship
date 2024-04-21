@@ -54,7 +54,6 @@ export function Navbar() {
                     onClick={() => navigate('/')}
                     onMouseEnter={handleMouseEnter}
                     onMouseLeave={handleMouseLeave}
-                    color="white"
                     style={hovered ? textStyleHovered : textStyle} // Aplica los estilos correspondientes según el estado del cursor
                 > Battleship </center>
                 <br></br>
