@@ -96,19 +96,19 @@ const Profile = () => {
                             </div>
                             <div className="profile-activity-content">
                                 <div className="profile-activity-info">
-                                    <span>Has vencido a Nanosecso ganando 120 puntos.</span>
+                                    <span>Has vencido a Snatilla ganando 120 puntos.</span>
                                     <span>21:00  16 May 2024</span>
                                 </div>
                                 <div className="profile-activity-info">
-                                    <span>Has vencido a Nanosecso ganando 120 puntos.</span>
+                                    <span>Has vencido a Carlitos ganando 120 puntos.</span>
                                     <span>21:00  16 May 2024</span>
                                 </div>
                                 <div className="profile-activity-info">
-                                    <span>Has vencido a Nanosecso ganando 120 puntos.</span>
+                                    <span>Has vencido a Dlad ganando 120 puntos.</span>
                                     <span>21:00  16 May 2024</span>
                                 </div>
                                 <div className="profile-activity-info">
-                                    <span>Has vencido a Nanosecso ganando 120 puntos.</span>
+                                    <span>Has vencido a MT ganando 120 puntos.</span>
                                     <span>21:00  16 May 2024</span>
                                 </div>
                             </div>
@@ -159,30 +159,30 @@ const Profile = () => {
                                 <div className="profile-sidebar-friend-img">
                                 </div>
                                 <div className="profile-sidebar-friend-name">
-                                    <span>Nanosecso</span>
+                                    <span>Snatilla</span>
                                 </div>
                                 <div className="profile-sidebar-friend-flag">
-                                    <Flag code={ "ES" } height="15em" fallback={ <span>Nada</span> }/>
+                                    <Flag code={ "FR" } height="15em" fallback={ <span>Nada</span> }/>
                                 </div>
                             </div>
                             <div className="profile-sidebar-friend-info">
                                 <div className="profile-sidebar-friend-img">
                                 </div>
                                 <div className="profile-sidebar-friend-name">
-                                    <span>Nanosecso</span>
+                                    <span>Dlad</span>
                                 </div>
                                 <div className="profile-sidebar-friend-flag">
-                                    <Flag code={ "ES" } height="15em" fallback={ <span>Nada</span> }/>
+                                    <Flag code={ "USA" } height="15em" fallback={ <span>Nada</span> }/>
                                 </div>
                             </div>
                             <div className="profile-sidebar-friend-info">
                                 <div className="profile-sidebar-friend-img">
                                 </div>
                                 <div className="profile-sidebar-friend-name">
-                                    <span>Nanosecso</span>
+                                    <span>MT</span>
                                 </div>
                                 <div className="profile-sidebar-friend-flag">
-                                    <Flag code={ "ES" } height="15em" fallback={ <span>Nada</span> }/>
+                                    <Flag code={ "CAN" } height="15em" fallback={ <span>Nada</span> }/>
                                 </div>
                             </div>
                         </div>

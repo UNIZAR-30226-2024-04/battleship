@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import countriesData from '../../Resources/countries.json';
-import Flag from 'react-world-flags'
+import Flag from 'react-world-flags';
+import Cookies from 'universal-cookie';
 
 const ProfileMenu = () => {
     const [selectedCountry, setSelectedCountry] = useState('');
@@ -9,6 +10,9 @@ const ProfileMenu = () => {
         setSelectedCountry(event.target.value);
     };
 
+    const cookies = new Cookies();
+    const profileCookie = cookies.get('perfil');
+
     return (
         <>
             <div className="settings-profile-header">
@@ -16,12 +20,12 @@ const ProfileMenu = () => {
                     <Flag code={ selectedCountry } height="auto" fallback={ <span>Nada</span> }/>
                 </div>
                 <div className="settings-profile-name">
-                    <span>Butanero Putero</span>
+                    <span>{profileCookie['nombreId']}</span>
                 </div>
             </div>
             <form className="settings-profile-body settings-menu-body" name="userdata" method="post" action="/backend/">
                 <div className="settings-profile-user-header">
-                    <span>Nombre de usuario</span>
+                    <span>Cambiar nombre</span>
                 </div>
                 <div className="settings-profile-user-input">
                     <input
@@ -34,7 +38,7 @@ const ProfileMenu = () => {
                     </input>
                 </div>
                 <div className="settings-profile-email-header">
-                    <span>Correo electrónico</span>
+                    <span>Cambiar email</span>
                 </div>
                 <div className="settings-profile-email-input">
                     <input
