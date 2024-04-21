@@ -10,12 +10,6 @@ import GraphicsMenu from './settingsMenu/GraphicsMenu';
 import MatchMenu from './settingsMenu/MatchMenu';
 import HelpMenu from './settingsMenu/HelpMenu';
 
-/*
-TODO:
-    -Añadir form a los input
-    -Quitar apartado contraseña
-
-*/
 
 export function Settings() {
     const [selectedMenu, setSelectedMenu] = useState('Profile');
@@ -25,6 +19,10 @@ export function Settings() {
         setMenuTitle(menu);
         setSelectedMenu(menu);
     };
+
+    /*
+    modificarDatosPersonales(): nombreId, contraseña, email, pais
+    */
 
     const renderMenu = () => {
         switch (selectedMenu) {
