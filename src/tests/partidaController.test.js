@@ -8,6 +8,7 @@ const mongoURI = 'mongodb://localhost/BattleshipDB';
 mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true, 
   useCreateIndex: true, useFindAndModify: false});
 const Coordenada = require('../data/coordenada');
+const { expect } = require('chai');
 const tableroDim = Coordenada.i.max;  // Dimensiones del tablero
 // redirect console.log and console.error to /dev/null
 console.error = function() {};
@@ -579,6 +580,78 @@ describe("Realizar disparo contra la IA", () => {
       }
     }
   });
+});
+
+
+describe("Realizar ráfaga de misiles contra la IA", () => {
+  beforeAll(async () => {
+    const connection = mongoose.connection;
+    await connection.dropDatabase();
+    const req = { body: { nombreId: 'usuario1', contraseña: 'Passwd1.',
+    correo: 'usuario1@example.com' } };
+    const res = { json: () => {}, status: function(s) { 
+      this.statusCode = s; return this; }, send: () => {} };
+    try {
+      await registrarUsuario(req, res);
+    } catch (error) {}
+    expect(res.statusCode).toBe(undefined);
+
+    const req3 = { body: { nombreId1: 'usuario1', bioma: 'Norte' } };
+    const res3 = { json: function(_json) {this._json = _json; return this;}, status: function(s) {
+        this.statusCode = s; return this; }, send: () => {} };
+    try {
+        await crearPartida(req3, res3);
+    } catch (error) {}
+    expect(res3.statusCode).toBe(undefined);
+    _codigo = res3._json.codigo;
+});
+it("Debería realizar una ráfaga de misiles y responder la IA correctamente", async () => {
+    // Tomamos la partida
+    const partida = await Partida.findOne({codigo: _codigo});
+    // Buscamos una casilla sin barco de la IA
+    let i = 0;
+    let j = 0;
+    let encontrado = false;
+    while (!encontrado) {
+        i = Math.floor(Math.random() * tableroDim) + 1;
+        j = Math.floor(Math.random() * tableroDim) + 1;
+        let barco = dispararCoordenada(partida.tableroBarcos2, i, j);
+        if (!barco) break;
+    }
+    // Primer disparo
+    let req = { body: { codigo: _codigo, nombreId: 'usuario1', i: i, j: j, misilesRafagaRestantes: 3} };
+    let res = { json: function(_json) {this._json = _json; return this;}, status: function(s) {
+        this.statusCode = s; return this; }, send: () => {} };
+    try {
+        await realizarDisparo(req, res);
+    } catch (error) {}
+    expect(res.statusCode).toBe(undefined);
+    expect(res._json.disparoRealizado.estado).toBe('Agua');
+    expect(res._json.usosHab).toBe(3);
+    expect(res._json.turnosIA.length).toBe(0);
+    // Segundo disparo
+    req = { body: { codigo: _codigo, nombreId: 'usuario1', i: i, j: j, misilesRafagaRestantes: 2} };
+    res = { json: function(_json) {this._json = _json; return this;}, status: function(s) {
+        this.statusCode = s; return this; }, send: () => {} };
+    try {
+        await realizarDisparo(req, res);
+    } catch (error) {}
+    expect(res.statusCode).toBe(undefined);
+    expect(res._json.disparoRealizado.estado).toBe('Agua');
+    expect(res._json.usosHab).toBe(3);
+    expect(res._json.turnosIA.length).toBe(0);
+    // Último disparo
+    req = { body: { codigo: _codigo, nombreId: 'usuario1', i: i, j: j, misilesRafagaRestantes: 1} };
+    res = { json: function(_json) {this._json = _json; return this;}, status: function(s) {
+        this.statusCode = s; return this; }, send: () => {} };
+    try {
+        await realizarDisparo(req, res);
+    } catch (error) {}
+    expect(res.statusCode).toBe(undefined);
+    expect(res._json.disparoRealizado.estado).toBe('Agua');
+    expect(res._json.usosHab).toBe(2);
+    expect(res._json.turnosIA.length).toBeGreaterThan(0);
+});
 });
 
 

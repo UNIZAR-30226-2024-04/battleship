@@ -280,6 +280,7 @@ exports.crearPartida = async (req, res) => {
  * @param {Object} res - El tablero de barcos y los disparos realizados del jugador
  * @param {Tablero} res.tableroBarcos - El tablero de barcos del jugador y su estado actual
  * @param {Coordenada[]} res.disparosEnemigos - Los disparos realizados por el jugador enemigo
+ * @param {Number} res.usosHabEnemigas - Los usos restantes de la habilidad del enemigo
  * @example
  * peticion = { body: { codigo: '1234567890', nombreId: 'jugador1' }}
  * respuesta = { json: () => {} }
@@ -336,7 +337,8 @@ exports.mostrarMiTablero = async (req, res) => {
 
       const tableroDisparos = {
         tableroBarcos: tableroBarcos,
-        disparosEnemigos: disparosEnemigos
+        disparosEnemigos: disparosEnemigos,
+        usosHabEnemigas: jugador === 1 ? partidaActual.usosHab2 : partidaActual.usosHab1
       };
       res.json(tableroDisparos);
       console.log('Mi tablero obtenido con éxito');
@@ -361,6 +363,7 @@ exports.mostrarMiTablero = async (req, res) => {
  * @param {Object} res - El objeto de respuesta HTTP
  * @param {Coordenada[]} res.misDisparos - Los disparos realizados por mi
  * @param {Coordenada[]} res.barcosHundidos - Los barcos del enemigo hundidos por mi
+ * @param {Number} res.misUsosHab - Los usos restantes de la habilidad del jugador
  * @example
  * peticion = { body: { codigo: '1234567890', nombreId: 'jugador1' } }
  * respuesta = { json: () => {} }
@@ -419,7 +422,8 @@ exports.mostrarTableroEnemigo = async (req, res) => {
 
       const disparosBarcos = {
         misDisparos: misDisparos,
-        barcosHundidos: listaBarcosHundidos
+        barcosHundidos: listaBarcosHundidos,
+        misUsosHab: jugador === 1 ? partidaActual.usosHab1 : partidaActual.usosHab2
       };
       res.json(disparosBarcos);
       console.log('Tablero enemigo obtenido con éxito');
@@ -446,6 +450,8 @@ exports.mostrarTableroEnemigo = async (req, res) => {
  * @param {Coordenada[]} res.disparosEnemigos - Los disparos realizados por el jugador enemigo
  * @param {Coordenada[]} res.misDisparos - Los disparos realizados por mi
  * @param {Coordenada[]} res.barcosHundidos - Los barcos del enemigo hundidos por mi
+ * @param {Number} res.misUsosHab - Los usos restantes de la habilidad del jugador
+ * @param {Number} res.usosHabEnemigas - Los usos restantes de la habilidad del enemigo
  * @example
  * peticion = { body: { codigo: '1234567890', nombreId: 'jugador1' } }
  * respuesta = { json: () => {} }
@@ -519,7 +525,9 @@ exports.mostrarTableros = async (req, res) => {
         tableroBarcos: tableroBarcos,
         disparosEnemigos: disparosEnemigos,
         misDisparos: misDisparos,
-        barcosHundidos: listaBarcosHundidos
+        barcosHundidos: listaBarcosHundidos,
+        misUsosHab: jugador === 1 ? partidaActual.usosHab1 : partidaActual.usosHab2,
+        usosHabEnemigas: jugador === 1 ? partidaActual.usosHab2 : partidaActual.usosHab1
       };
       res.json(tableros);
       console.log('Tableros obtenidos con éxito');
@@ -546,18 +554,20 @@ exports.mostrarTableros = async (req, res) => {
 
 /**
  * @function realizarDisparo
- * @description Realiza un disparo en la coordenada (i, j) del enemigo y actualiza el estado de la partida
+ * @description Realiza un disparo en la coordenada (i, j) del enemigo y actualiza el estado de la partida o realiza una habilidad
  * @param {Object} req - El objeto de solicitud HTTP
  * @param {String} req.body.codigo - El codigo de la partida
  * @param {String} req.body.nombreId - El nombreId del jugador
  * @param {Number} req.body.i - La coordenada i del disparo
  * @param {Number} req.body.j - La coordenada j del disparo
+ * @param {Number} [req.body.misilesRafagaRestantes] - Los misiles de rafaga restantes (3, 2 o 1)
  * @param {Object} res - El objeto de respuesta HTTP
  * @param {Object} res.disparoRealizado - El disparo realizado con sus coordenadas y estado
  * @param {Object} [res.barcoCoordenadas] - Las coordenadas del barco disparado, si se ha hundido
  * @param {String} res.eventoOcurrido - El evento ocurrido en la partida
  * @param {Boolean} res.finPartida - Indica si la partida ha terminado
  * @param {String} res.clima - El clima de la partida
+ * @param {Number} res.usosHab - Los usos restantes de la habilidad del jugador
  * @param {TurnoIA[]} [res.turnosIA] - Los turnos de la IA, si la partida es contra la IA
  * @example
  * peticion = { body: { codigo: '1234567890', nombreId: 'jugador1', i: 1, j: 1 } }
@@ -566,7 +576,7 @@ exports.mostrarTableros = async (req, res) => {
  */
 exports.realizarDisparo = async (req, res) => {
   try {
-    const { codigo, nombreId, i, j, ...extraParam } = req.body;
+    const { codigo, nombreId, i, j, misilesRafagaRestantes = undefined, ...extraParam } = req.body;
     // Verificar si hay algún parámetro extra que no se espera
     if (Object.keys(extraParam).length > 0) {
       res.status(400).send('Sobran parámetros, se espera codigo, jugador, i, j');
@@ -582,6 +592,12 @@ exports.realizarDisparo = async (req, res) => {
     if (i < 1 || i > tableroDim || j < 1 || j > tableroDim) {
       res.status(400).send('Las coordenadas i, j deben estar entre 1 y 10');
       console.error("Las coordenadas i, j deben estar entre 1 y 10");
+      return;
+    }
+    // Comprobar si misilesRafagaRestantes es un entero positivo
+    if (misilesRafagaRestantes!==undefined && misilesRafagaRestantes <= 0) {
+      res.status(400).send('misilesRafagaRestantes debe ser un entero positivo');
+      console.error("misilesRafagaRestantes debe ser un entero positivo");
       return;
     }
     // Verificar que existe la partida
@@ -617,6 +633,14 @@ exports.realizarDisparo = async (req, res) => {
         console.error('No es el turno del jugador');
         return;
       }
+      // Comprobar si el jugador usa habilidad y puede usarla
+      const habilidadUsada = misilesRafagaRestantes !== undefined;
+      if (habilidadUsada && (jugador === 1 && partidaActual.usosHab1 === 0 || 
+            jugador === 2 && partidaActual.usosHab2 === 0)) {
+        res.status(400).send('Las habilidades han sido consumidas');
+        console.error('Las habilidades han sido consumidas');
+        return;
+      }
 
       let estadisticasJugadores = [
         { victoria: undefined, nuevosBarcosHundidos: 0, nuevosBarcosPerdidos: 0,
@@ -629,6 +653,11 @@ exports.realizarDisparo = async (req, res) => {
 
       const partidaContraIA = !partidaActual.nombreId2;
       // Realizar disparo
+      const ultimoMisilRafaga = misilesRafagaRestantes === 1;
+      if (ultimoMisilRafaga) { // Si es último misil de ráfaga, consumir habilidad
+        if (jugador === 1) partidaActual.usosHab1--;
+        else partidaActual.usosHab2--;
+      }
       let barcoDisparado = jugador === 1 ? dispararCoordenada(partidaActual.tableroBarcos2, i, j) :
       dispararCoordenada(partidaActual.tableroBarcos1, i, j);
       let disparo = { i, j, estado: 'Agua' };
@@ -657,7 +686,7 @@ exports.realizarDisparo = async (req, res) => {
         }
       } else {  // Sólo cambia el turno si se falla el disparo
         estadisticasJugadores[jugador - 1].nuevosDisparosFallados++;
-        partidaActual.contadorTurno++;
+        if (!misilesRafagaRestantes || ultimoMisilRafaga) partidaActual.contadorTurno++; // Si es ráfaga, sólo cambia en el último
       }
       let disparosRealizados = jugador === 1 ? partidaActual.disparosRealizados1 :
                                                 partidaActual.disparosRealizados2;
@@ -703,7 +732,7 @@ exports.realizarDisparo = async (req, res) => {
       
       let turnosIA = [];
       let finPartidaIA = false;
-      if (partidaContraIA && disparo.estado === 'Agua' && !finPartida) {
+      if (partidaContraIA && disparo.estado === 'Agua' && !finPartida && (!misilesRafagaRestantes || ultimoMisilRafaga)) {
         console.log('Turno de la IA');
         let juegaIA = true;
         while (juegaIA) {
@@ -773,6 +802,7 @@ exports.realizarDisparo = async (req, res) => {
           eventoOcurrido: undefined, // Evento ocurrido en la partida
           finPartida: finPartida,
           clima: partidaActual.clima,
+          usosHab: jugador === 1 ? partidaActual.usosHab1 : partidaActual.usosHab2,
           turnosIA: turnosIA
         };
 
@@ -854,7 +884,6 @@ exports.realizarDisparo = async (req, res) => {
     console.error("Hubo un error");
   }
 };
-
 
 // Funcion para obtener el chat de una partida
 /**
