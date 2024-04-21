@@ -83,7 +83,7 @@ class Registro extends StatelessWidget {
       );
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
     }
-    else if(await _authProvider.signUp(_nameController.text, _passwordController.text, _emailController.text)) {
+    else if(await _authProvider.signUp(_nameController.text, _passwordController.text, _emailController.text, context)) {
       Navigator.pushReplacement(
         context,
         PageRouteBuilder(

@@ -448,6 +448,7 @@ class _DefenderState extends State<Defender> {
   }
 
   Future<Widget> buildFilaCasillasDefensa() async {
+    print("TURNO EN DEFENDER: ${Juego().turno}");
     return Stack(
       children: [
         SizedBox(
@@ -458,10 +459,10 @@ class _DefenderState extends State<Defender> {
             children: await buildTablero(),
           ),
         ),
-        for (var barco in Juego().barcosHundidosPorJugador)
+        for (var barco in Juego().tablero_oponente.barcos)
           Positioned(
-            top: barco.barcoPosition.dx * Juego().tablero_jugador.casillaSize,
-            left: barco.barcoPosition.dy * Juego().tablero_jugador.casillaSize,
+            top: barco.barcoPosition.dx * Juego().tablero_oponente.casillaSize,
+            left: barco.barcoPosition.dy * Juego().tablero_oponente.casillaSize,
             child: Column(
               children: [
                 GestureDetector(
@@ -469,8 +470,8 @@ class _DefenderState extends State<Defender> {
                     opacity: 0.8,
                     child: Image.asset(
                       barco.getImagePath(),
-                      width: barco.getWidth(Juego().tablero_jugador.casillaSize),
-                      height: barco.getHeight(Juego().tablero_jugador.casillaSize),
+                      width: barco.getWidth(Juego().tablero_oponente.casillaSize),
+                      height: barco.getHeight(Juego().tablero_oponente.casillaSize),
                       fit: BoxFit.fill,
                     ),
                   ),

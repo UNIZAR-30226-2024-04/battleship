@@ -116,9 +116,29 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
+  bool isValidEmail(String email) {
+    final RegExp regex = RegExp(
+        r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$'
+    );
+    return regex.hasMatch(email);
+  }
 
-  Future<bool> signUp(String name, String password, String email) async {
+
+  Future<bool> signUp(String name, String password, String email, BuildContext context) async {
     bool response = await signUpDB(name, password, email);
+
+    if(!isValidEmail(email)) {
+      const snackBar = SnackBar(
+        content: Text(
+          'El email no es válido',
+          style: TextStyle(color: Colors.red),
+        ),
+        behavior: SnackBarBehavior.floating,
+      );
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+
+      return false;
+    }
 
     if(response) {
         _isLoggedIn = true;
@@ -129,7 +149,17 @@ class AuthProvider with ChangeNotifier {
         return true;
     }
 
-    print("Credenciales incorrectas");
+    else {
+      const snackBar = SnackBar(
+        content: Text(
+          'La contraseña debe tener al menos 8 caracteres, 1 minúscula, 1 mayúscula, 1 dígito y un caracter especial',
+          style: TextStyle(color: Colors.red),
+        ),
+        behavior: SnackBarBehavior.floating,
+      );
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+
+    }
 
     return false;
   }
