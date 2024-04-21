@@ -41,6 +41,8 @@ class Juego {
   List<Offset> disparosFalladosJugador2 = [];
   List<Barco> barcosHundidosPorJugador1 = [];
   List<Barco> barcosHundidosPorJugador2 = [];
+  String nombreJugador1 = '';
+  String nombreJugador2 = '';
 
   // Instancia privada y estática del singleton
   static final Juego _singleton = Juego._internal();
@@ -53,7 +55,6 @@ class Juego {
     barcosRestantesJugador1 = numBarcos;
     barcosRestantesJugador2 = numBarcos;
     turno = 1;
-    perfilJugador = Perfil('usuario1', turno: 1);
     habilidadesJugador1 = perfilJugador.getHabilidadesSeleccionadas();
     //habilidadesJugador2 = perfilJugador2.getHabilidadesSeleccionadas();
     habilidadesUtilizadasJugador1 = List.filled(habilidadesJugador1.length, false);
@@ -65,9 +66,12 @@ class Juego {
     numAtaquesJugador1 = 0;
     numAtaquesJugador2 = 0;
     indexHabilidad = 0;
+    nombreJugador1 = "";
+    nombreJugador2 = "IA";
   }
 
   Future<void> actualizarBarcosJugadores() async {
+    nombreJugador1 = perfilJugador.name;
     tablero_jugador1.barcos = await obtenerBarcos(AuthProvider().name, urlObtenerTablero);
   }
 
@@ -284,9 +288,9 @@ class Juego {
     return false;
   }
 
-  // Devolver el ganador del juego
-  int getGanador() {
-    return ganador;
+  // Devolver el nombre del ganador en funcion del turno actual
+  String getGanador() {
+    return turno == 1 ? nombreJugador1 : nombreJugador2;
   }
 
   void reiniciarPartida() {

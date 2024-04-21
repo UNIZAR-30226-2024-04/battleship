@@ -414,6 +414,14 @@ class _AtacarState extends State<Atacar> {
         if(finPartida) {
           print("¡Juego terminado!");
           print("¡Ganador: ${Juego().getGanador()}!");
+          final snackBar = SnackBar(
+            content: Text(
+              '¡Ganador: ${Juego().getGanador()}!',
+              style: TextStyle(color: Colors.white),
+            ),
+            behavior: SnackBarBehavior.floating,
+          );
+          ScaffoldMessenger.of(context).showSnackBar(snackBar);
           Juego().reiniciarPartida();
           Navigator.pushReplacement(
             context,
@@ -469,6 +477,14 @@ class _AtacarState extends State<Atacar> {
         if(finFuture) {
           print("¡Juego terminado!");
           print("¡Ganador: ${Juego().getGanador()}!");
+          final snackBar = SnackBar(
+            content: Text(
+              '¡Ganador: ${Juego().getGanador()}!',
+              style: TextStyle(color: Colors.white),
+            ),
+            behavior: SnackBarBehavior.floating,
+          );
+          ScaffoldMessenger.of(context).showSnackBar(snackBar);
           Juego().reiniciarPartida();
           Navigator.pushReplacement(
             context,

@@ -8,6 +8,7 @@ class AuthProvider with ChangeNotifier {
   final String _urlRegistro = 'http://localhost:8080/perfil/registrarUsuario';
   bool _isLoggedIn = false;
   String mensajeError = "";
+  String tokenSesion = "";
 
   bool get isLoggedIn => _isLoggedIn;
   String get email => Juego().perfilJugador.email;
@@ -48,7 +49,7 @@ class AuthProvider with ChangeNotifier {
       if (data != null) {
         print("DATA NO NULL");
         print(data['token']);
-        Juego().tokenSesion = data['token'];
+        tokenSesion = data['token'];
         print("LOGIN CORRECTO");
         return true;
       }
@@ -73,25 +74,34 @@ class AuthProvider with ChangeNotifier {
       }),
     );
 
-    print(response);
-    print(response.body);
-    var responseBody = jsonDecode(response.body);
+
+
+    // Verificar si la cadena ya está en formato JSON
+    dynamic responseBody;
+    try {
+      responseBody = jsonDecode(response.body);
+      print("La cadena ya está en formato JSON");
+
+      if (responseBody.containsKey('message')) {
+        mensajeError = responseBody['message'];
+      }
+      
+    } catch (e) {
+      print("La cadena no está en formato JSON");
+      mensajeError = response.body;
+    }
 
     if (response.statusCode == 200) {
       print("RESPUESTA OK");
       print(responseBody);
       if (responseBody != null) {
-        Juego().tokenSesion = responseBody['token'];
+        tokenSesion = responseBody['token'];
         print("REGISTRO CORRECTO");
         return true;
       }
     } else {
-      // Si hay un error, intenta obtener el mensaje de error si está presente
-      if (responseBody.containsKey('message')) {
-        mensajeError = responseBody['message'];
-      } else {
-        mensajeError = response.body;
-      }
+      print("RESPUESTA NO OK");
+      return false;
     }
     
     return false;
@@ -106,6 +116,7 @@ class AuthProvider with ChangeNotifier {
         _isLoggedIn = true;
         Juego().perfilJugador.name = name;
         Juego().perfilJugador.password = password;
+        Juego().tokenSesion = tokenSesion;
         notifyListeners(); // Notifica a los listeners que la variable ha cambiado
         return true;
       } else {
@@ -117,7 +128,7 @@ class AuthProvider with ChangeNotifier {
           behavior: SnackBarBehavior.floating,
         );
         ScaffoldMessenger.of(context).showSnackBar(snackBar);
-
+        mensajeError = "";
         return false;
       }
     } catch (e) {
@@ -146,6 +157,7 @@ class AuthProvider with ChangeNotifier {
         behavior: SnackBarBehavior.floating,
       );
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      mensajeError = "";
 
       return false;
     }
@@ -173,6 +185,8 @@ class AuthProvider with ChangeNotifier {
       Juego().perfilJugador.name = name;
       Juego().perfilJugador.password = password;
       Juego().perfilJugador.email = email;
+      Juego().tokenSesion = tokenSesion;
+      mensajeError = "";
       notifyListeners(); // Notifica a los listeners que la variable ha cambiado
       return true;
     }
@@ -186,6 +200,7 @@ class AuthProvider with ChangeNotifier {
         behavior: SnackBarBehavior.floating,
       );
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      mensajeError = "";
     }
 
     return false;
