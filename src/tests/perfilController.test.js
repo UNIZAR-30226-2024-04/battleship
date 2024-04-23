@@ -4,7 +4,6 @@ const {registrarUsuario, autenticarUsuario, eliminarUsuario, iniciarSesion,
   actualizarPuntosExperiencia, modificarMazo, moverBarcoInicial, 
   enviarSolicitudAmistad, eliminarSolicitudAmistad, agnadirAmigo, eliminarAmigo} = require('../controllers/perfilController');
   const { barcosDisponibles } = require('../data/barco');
-const e = require('express');
 const Perfil = require('../models/perfilModel');
 const mongoURI = 'mongodb://localhost/BattleshipDB';
 mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true, 

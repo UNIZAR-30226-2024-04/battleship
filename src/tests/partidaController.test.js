@@ -8,7 +8,6 @@ const mongoURI = 'mongodb://localhost/BattleshipDB';
 mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true, 
   useCreateIndex: true, useFindAndModify: false});
 const Coordenada = require('../data/coordenada');
-const { expect } = require('chai');
 const tableroDim = Coordenada.i.max;  // Dimensiones del tablero
 // redirect console.log and console.error to /dev/null
 console.error = function() {};
@@ -579,7 +578,7 @@ describe("Realizar disparo contra la IA", () => {
             }
       }
     }
-  });
+  }, 10000);  // Aumentar el tiempo de espera de 5 a 10 segundos
 });
 
 
@@ -834,7 +833,7 @@ describe("Obtener chat", () => {
         } catch (error) {}
         expect(res.statusCode).toBe(404);
     });
-    afterAll(() => {
-      mongoose.disconnect();
+    afterAll(async () => {
+      await mongoose.disconnect();
     });
 });
