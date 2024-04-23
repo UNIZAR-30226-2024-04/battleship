@@ -231,7 +231,7 @@ describe('Iniciar sesión', () => {
         try {
           await iniciarSesion(req, res);
         } catch (error) {}
-        expect(res.statusCode).toBe(404);
+        expect(res.statusCode).toBe(400);
     });
     it('Debería fallar al iniciar sesión sin un campo', async () => {
         const req = { body: { nombreId: 'usuario' } };
@@ -240,7 +240,7 @@ describe('Iniciar sesión', () => {
         try {
           await iniciarSesion(req, res);
         } catch (error) {}
-        expect(res.statusCode).toBe(404);
+        expect(res.statusCode).toBe(400);
     });
     it('Debería fallar al iniciar sesión con una contraseña inválida', async () => {
         const req = { body: { nombreId: 'usuario', contraseña: 'passwd1.' } };
