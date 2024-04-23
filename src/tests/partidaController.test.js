@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const {crearPartida, mostrarMiTablero, mostrarTableroEnemigo,
-    mostrarTableros, realizarDisparo, enviarMensaje, obtenerChat} = require('../controllers/partidaController');
+    mostrarTableros, realizarDisparo, enviarMensaje, obtenerChat,
+    realizarDisparoMisilRafaga} = require('../controllers/partidaController');
 const {registrarUsuario} = require('../controllers/perfilController');
 const Partida = require('../models/partidaModel');
 
@@ -581,7 +582,7 @@ describe("Realizar disparo contra la IA", () => {
   }, 10000);  // Aumentar el tiempo de espera de 5 a 10 segundos
 });
 
-
+// Test for realizarDisparoMisilRafaga
 describe("Realizar ráfaga de misiles contra la IA", () => {
   beforeAll(async () => {
     const connection = mongoose.connection;
@@ -617,34 +618,43 @@ it("Debería realizar una ráfaga de misiles y responder la IA correctamente", a
         let barco = dispararCoordenada(partida.tableroBarcos2, i, j);
         if (!barco) break;
     }
-    // Primer disparo
+    // Primer misil: agua
     let req = { body: { codigo: _codigo, nombreId: 'usuario1', i: i, j: j, misilesRafagaRestantes: 3} };
     let res = { json: function(_json) {this._json = _json; return this;}, status: function(s) {
         this.statusCode = s; return this; }, send: () => {} };
     try {
-        await realizarDisparo(req, res);
+        await realizarDisparoMisilRafaga(req, res);
     } catch (error) {}
     expect(res.statusCode).toBe(undefined);
     expect(res._json.disparoRealizado.estado).toBe('Agua');
     expect(res._json.usosHab).toBe(3);
     expect(res._json.turnosIA.length).toBe(0);
-    // Segundo disparo
+    // Segundo misil: tocado
+    i = 0;
+    j = 0;
+    encontrado = false;
+    while (!encontrado) {
+        i = Math.floor(Math.random() * tableroDim) + 1;
+        j = Math.floor(Math.random() * tableroDim) + 1;
+        let barco = dispararCoordenada(partida.tableroBarcos2, i, j);
+        if (barco) break;
+    }
     req = { body: { codigo: _codigo, nombreId: 'usuario1', i: i, j: j, misilesRafagaRestantes: 2} };
     res = { json: function(_json) {this._json = _json; return this;}, status: function(s) {
         this.statusCode = s; return this; }, send: () => {} };
     try {
-        await realizarDisparo(req, res);
+        await realizarDisparoMisilRafaga(req, res);
     } catch (error) {}
     expect(res.statusCode).toBe(undefined);
-    expect(res._json.disparoRealizado.estado).toBe('Agua');
+    expect(res._json.disparoRealizado.estado).toBe('Tocado');
     expect(res._json.usosHab).toBe(3);
     expect(res._json.turnosIA.length).toBe(0);
-    // Último disparo
+    // Último misil: agua
     req = { body: { codigo: _codigo, nombreId: 'usuario1', i: i, j: j, misilesRafagaRestantes: 1} };
     res = { json: function(_json) {this._json = _json; return this;}, status: function(s) {
         this.statusCode = s; return this; }, send: () => {} };
     try {
-        await realizarDisparo(req, res);
+        await realizarDisparoMisilRafaga(req, res);
     } catch (error) {}
     expect(res.statusCode).toBe(undefined);
     expect(res._json.disparoRealizado.estado).toBe('Agua');
