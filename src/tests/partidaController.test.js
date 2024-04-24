@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const {crearPartida, mostrarMiTablero, mostrarTableroEnemigo,
     mostrarTableros, realizarDisparo, enviarMensaje, obtenerChat,
-    realizarDisparoMisilRafaga} = require('../controllers/partidaController');
+    realizarDisparoMisilRafaga, realizarDisparoTorpedoRecargado} = require('../controllers/partidaController');
 const {registrarUsuario} = require('../controllers/perfilController');
 const Partida = require('../models/partidaModel');
 
@@ -663,6 +663,85 @@ it("Debería realizar una ráfaga de misiles y responder la IA correctamente", a
 });
 });
 
+// Test for realizarDisparoTorpedoRecargado
+describe("Realizar torpedo recargado contra la IA", () => {
+  beforeAll(async () => {
+    const connection = mongoose.connection;
+    await connection.dropDatabase();
+    const req = { body: { nombreId: 'usuario1', contraseña: 'Passwd1.',
+    correo: 'usuario1@example.com' } };
+    const res = { json: () => {}, status: function(s) { 
+      this.statusCode = s; return this; }, send: () => {} };
+    try {
+      await registrarUsuario(req, res);
+    } catch (error) {}
+    expect(res.statusCode).toBe(undefined);
+
+    const req3 = { body: { nombreId1: 'usuario1', bioma: 'Norte' } };
+    const res3 = { json: function(_json) {this._json = _json; return this;}, status: function(s) {
+        this.statusCode = s; return this; }, send: () => {} };
+    try {
+        await crearPartida(req3, res3);
+    } catch (error) {}
+    expect(res3.statusCode).toBe(undefined);
+    _codigo = res3._json.codigo;
+});
+it("Debería recargar un torpedo y responder la IA correctamente", async () => {
+    // Tomamos la partida
+    const partida = await Partida.findOne({codigo: _codigo});
+    let req = { body: { codigo: _codigo, nombreId: 'usuario1', turnoRecarga: true} };
+    let res = { json: function(_json) {this._json = _json; return this;}, status: function(s) {
+        this.statusCode = s; return this; }, send: () => {} };
+    try {
+        await realizarDisparoTorpedoRecargado(req, res);
+    } catch (error) {}
+    expect(res.statusCode).toBe(undefined);
+    expect(res._json.disparosRealizados).toBe(undefined);
+    expect(res._json.usosHab).toBe(3);
+    expect(res._json.turnosIA.length).toBeGreaterThan(0);
+});
+it("Debería disparar un torpedo recargado y responder la IA correctamente", async () => {
+    // Torpedo en esquina
+    let req = { body: { codigo: _codigo, nombreId: 'usuario1', i: 1, j: 1} };
+    let res = { json: function(_json) {this._json = _json; return this;}, status: function(s) {
+        this.statusCode = s; return this; }, send: () => {} };
+    try {
+        await realizarDisparoTorpedoRecargado(req, res);
+    } catch (error) {}
+    expect(res.statusCode).toBe(undefined);
+    expect(res._json.disparosRealizados.length).toBe(4);
+    expect(res._json.usosHab).toBe(2);
+    if (res._json.algunoTocado) {
+      expect(res._json.turnosIA.length).toBe(0);
+    } else expect(res._json.turnosIA.length).toBeGreaterThan(0);
+    // Torpedo en borde
+    req = { body: { codigo: _codigo, nombreId: 'usuario1', i: 5, j: 1} };
+    res = { json: function(_json) {this._json = _json; return this;}, status: function(s) {
+        this.statusCode = s; return this; }, send: () => {} };
+    try {
+        await realizarDisparoTorpedoRecargado(req, res);
+    } catch (error) {}
+    expect(res.statusCode).toBe(undefined);
+    expect(res._json.disparosRealizados.length).toBe(6);
+    expect(res._json.usosHab).toBe(1);
+    if (res._json.algunoTocado) {
+      expect(res._json.turnosIA.length).toBe(0);
+    } else expect(res._json.turnosIA.length).toBeGreaterThan(0);
+    // Torpedo en centro
+    req = { body: { codigo: _codigo, nombreId: 'usuario1', i: 5, j: 5} };
+    res = { json: function(_json) {this._json = _json; return this;}, status: function(s) {
+        this.statusCode = s; return this; }, send: () => {} };
+    try {
+        await realizarDisparoTorpedoRecargado(req, res);
+    } catch (error) {}
+    expect(res.statusCode).toBe(undefined);
+    expect(res._json.disparosRealizados.length).toBe(9);
+    expect(res._json.usosHab).toBe(0);
+    if (res._json.algunoTocado) {
+      expect(res._json.turnosIA.length).toBe(0);
+    } else expect(res._json.turnosIA.length).toBeGreaterThan(0);
+});
+});
 
 // Test for enviarMensaje
 describe("Enviar mensaje", () => {
