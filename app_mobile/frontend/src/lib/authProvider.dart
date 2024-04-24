@@ -1,14 +1,18 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'comun.dart';
 import 'juego.dart';
+import 'error.dart';
 
 class AuthProvider with ChangeNotifier {
   final String _urlInicioSesion = 'http://localhost:8080/perfil/iniciarSesion';
   final String _urlRegistro = 'http://localhost:8080/perfil/registrarUsuario';
+  final String _urlModificarDatosPersonales = 'http://localhost:8080/perfil/modificarDatosPersonales';
   bool _isLoggedIn = false;
-  String mensajeError = "";
   String tokenSesion = "";
+
+  MensajeErrorModel mensajeErrorModel = MensajeErrorModel.getInstance();
 
   bool get isLoggedIn => _isLoggedIn;
   String get email => Juego().perfilJugador.email;
@@ -28,6 +32,56 @@ class AuthProvider with ChangeNotifier {
   }
 
   AuthProvider._internal();
+
+
+  Future<bool> modificarPerfil(String nombre, String password, String email, String pais) async {
+    var uri = Uri.parse(_urlModificarDatosPersonales);
+    var response = await http.post(
+      uri,
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+        'Authorization': 'Bearer ${Juego().tokenSesion}',
+      },
+      body: jsonEncode(<String, dynamic>{
+        'nombreId': nombre,
+        'contraseña': password,
+        'correo': email,
+        'pais': pais,
+      }),
+    );
+
+    print(response.body);
+
+    // Verificar si la cadena ya está en formato JSON
+    dynamic responseBody;
+    try {
+      responseBody = jsonDecode(response.body);
+      print("La cadena ya está en formato JSON");
+
+      if (responseBody.containsKey('message')) {
+        mensajeErrorModel.setMensaje(responseBody['message']);
+      }
+      
+    } catch (e) {
+      print("La cadena no está en formato JSON");
+      mensajeErrorModel.setMensaje(response.body);
+    }
+
+    if (response.statusCode == 200) {
+      var data = jsonDecode(response.body);
+      print("RESPUESTA OK");
+      print(data);
+      if (data != null) {
+        print("DATOS MODIFICADOS CORRECTAMENTE");
+        mensajeErrorModel.cleanErrorMessage();
+        return true;
+      }
+
+      return false;
+    } else {
+      return false;
+    }
+  }
 
   Future<bool> loginDB(String nombre, String password) async {
     var uri = Uri.parse(_urlInicioSesion);
@@ -74,8 +128,6 @@ class AuthProvider with ChangeNotifier {
       }),
     );
 
-
-
     // Verificar si la cadena ya está en formato JSON
     dynamic responseBody;
     try {
@@ -83,12 +135,12 @@ class AuthProvider with ChangeNotifier {
       print("La cadena ya está en formato JSON");
 
       if (responseBody.containsKey('message')) {
-        mensajeError = responseBody['message'];
+        mensajeErrorModel.setMensaje(responseBody['message']);
       }
       
     } catch (e) {
       print("La cadena no está en formato JSON");
-      mensajeError = response.body;
+      mensajeErrorModel.setMensaje(response.body);
     }
 
     if (response.statusCode == 200) {
@@ -114,21 +166,13 @@ class AuthProvider with ChangeNotifier {
 
       if(response) {
         _isLoggedIn = true;
-        Juego().perfilJugador.name = name;
-        Juego().perfilJugador.password = password;
-        Juego().tokenSesion = tokenSesion;
+        Juego().setSession(name, "", password, tokenSesion);
+        print("USUARIO EN JUEGO:${Juego().perfilJugador.name}");
         notifyListeners(); // Notifica a los listeners que la variable ha cambiado
         return true;
       } else {
-        const snackBar = SnackBar(
-          content: Text(
-            'Credenciales incorrectas',
-            style: TextStyle(color: Colors.red),
-          ),
-          behavior: SnackBarBehavior.floating,
-        );
-        ScaffoldMessenger.of(context).showSnackBar(snackBar);
-        mensajeError = "";
+        showErrorSnackBar(context, 'Credenciales incorrectas');
+        mensajeErrorModel.cleanErrorMessage();
         return false;
       }
     } catch (e) {
@@ -137,42 +181,19 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
-  bool isValidEmail(String email) {
-    final RegExp regex = RegExp(
-        r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$'
-    );
-    return regex.hasMatch(email);
-  }
-
-
   Future<bool> signUp(String name, String password, String email, BuildContext context) async {
     bool response = await signUpDB(name, password, email);
 
     if(!isValidEmail(email)) {
-      const snackBar = SnackBar(
-        content: Text(
-          'El email no es válido',
-          style: TextStyle(color: Colors.red),
-        ),
-        behavior: SnackBarBehavior.floating,
-      );
-      ScaffoldMessenger.of(context).showSnackBar(snackBar);
-      mensajeError = "";
+      showErrorSnackBar(context, 'El email no es válido');
+      mensajeErrorModel.cleanErrorMessage();
 
       return false;
     }
 
-    if(mensajeError != "") {
-      final snackBar = SnackBar(
-        content: Text(
-          mensajeError,
-          style: TextStyle(color: Colors.red),
-        ),
-        behavior: SnackBarBehavior.floating,  
-      );
-      ScaffoldMessenger.of(context).showSnackBar(snackBar);
-
-      mensajeError = "";
+    if(mensajeErrorModel.mensaje != "") {
+      showErrorSnackBar(context, mensajeErrorModel.mensaje);
+      mensajeErrorModel.cleanErrorMessage();
       return false;
     }
 
@@ -182,32 +203,21 @@ class AuthProvider with ChangeNotifier {
 
     if(response) {
       _isLoggedIn = true;
-      Juego().perfilJugador.name = name;
-      Juego().perfilJugador.password = password;
-      Juego().perfilJugador.email = email;
-      Juego().tokenSesion = tokenSesion;
-      mensajeError = "";
+      Juego().setSession(name, email, password, tokenSesion);
+      mensajeErrorModel.cleanErrorMessage();
       notifyListeners(); // Notifica a los listeners que la variable ha cambiado
       return true;
     }
-
     else {
-      const snackBar = SnackBar(
-        content: Text(
-          'La contraseña debe tener al menos 8 caracteres, 1 minúscula, 1 mayúscula, 1 dígito y un caracter especial',
-          style: TextStyle(color: Colors.red),
-        ),
-        behavior: SnackBarBehavior.floating,
-      );
-      ScaffoldMessenger.of(context).showSnackBar(snackBar);
-      mensajeError = "";
+      showErrorSnackBar(context, mensajeErrorModel.mensaje);
+      mensajeErrorModel.cleanErrorMessage();
     }
 
     return false;
   }
   void logOut() {
     _isLoggedIn = false;
-    mensajeError = "";
+    mensajeErrorModel.cleanErrorMessage();
     notifyListeners();
   }
 }

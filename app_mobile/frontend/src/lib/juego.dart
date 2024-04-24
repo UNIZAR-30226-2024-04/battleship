@@ -18,7 +18,7 @@ class Juego {
   int ganador = 0;
   List<Habilidad> habilidadesJugador1 = [];   // habilidades en el mazo del jugador 1
   List<Habilidad> habilidadesJugador2 = [];   // habilidades en el mazo del jugador 2
-  Perfil perfilJugador = Perfil('');
+  Perfil perfilJugador = Perfil();
   List<bool> habilidadesUtilizadasJugador1 = [];
   List<bool> habilidadesUtilizadasJugador2 = [];
   int disparosPendientes = 0; // disparo básico 1. Habilidades depende
@@ -68,6 +68,19 @@ class Juego {
     indexHabilidad = 0;
     nombreJugador1 = "";
     nombreJugador2 = "IA";
+    print("PERFIL DEL JUGADOR EN INTERNAL JUEGO: ${perfilJugador.name} ${perfilJugador.email} ${perfilJugador.password}");
+  }
+
+  void setSession(String name, String email, String password, String token) {
+    if (name != "") {
+      perfilJugador.name = name;
+      perfilJugador.email = email;
+      perfilJugador.password = password;
+      tokenSesion = token;
+      perfilJugador.updateState();
+      print("PONGO EL PERFIL A $name ${perfilJugador.name} ${perfilJugador.email} ${perfilJugador.password}");
+      print("PERFIL JUGADOR: ${perfilJugador.name} ${perfilJugador.email} ${perfilJugador.password}");
+    }
   }
 
   Future<void> actualizarBarcosJugadores() async {

@@ -30,8 +30,6 @@ class Flota extends StatelessWidget {
     );
   }
 
-
-
     
   Widget _buildFlota(BuildContext context) {
     return Column(
@@ -40,18 +38,18 @@ class Flota extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            buildCircledButton('images/clasico.png', 'Clásico'),
+            buildCircledButton('images/clasico.png', 'Clásico', false, () {}),
             const SizedBox(width: 20),
-            buildCircledButton('images/titan.png', 'Titán'),
+            buildCircledButton('images/titan.png', 'Titán', false, () {}),
           ],
         ),
         const SizedBox(height: 5),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            buildCircledButton('images/pirata.png', 'Pirata'),
+            buildCircledButton('images/pirata.png', 'Pirata', false, () {}),
             const SizedBox(width: 20),
-            buildCircledButton('images/vikingo.png', 'Vikingo'),
+            buildCircledButton('images/vikingo.png', 'Vikingo', false, () {}),
           ],
         ),
       ],

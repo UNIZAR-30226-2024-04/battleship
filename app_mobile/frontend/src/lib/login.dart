@@ -99,34 +99,16 @@ class _InicioSesionState extends State<InicioSesion> {
   }
 
   void _handleRegistrarsePressed(BuildContext context) {
-    Navigator.pushReplacement(
-      context,
-      PageRouteBuilder(
-        pageBuilder: (context, animation1, animation2) => Registro(),
-        transitionDuration: const Duration(seconds: 0),
-      ),
-    );
+    Navigator.pushNamed(context, '/Registro');
   }
 
   void _handleRecContrasenaPressed(BuildContext context) {
-    Navigator.pushReplacement(
-      context,
-      PageRouteBuilder(
-        pageBuilder: (context, animation1, animation2) => RecuperacionContrasena(),
-        transitionDuration: const Duration(seconds: 0),
-      ),
-    );
+    Navigator.pushNamed(context, '/RecuperacionContrasena');
   }
 
   Future<void> _handlePressed(BuildContext context, AuthProvider authProvider) async {
     if(await _authProvider.login(_nombreController.text, _passwordController.text, context)) {
-      Navigator.pushReplacement(
-        context,
-        PageRouteBuilder(
-          pageBuilder: (context, animation1, animation2) => DestinoManager.getDestino(),
-          transitionDuration: const Duration(seconds: 0),
-        ),
-      );
+      Navigator.pushNamed(context, '/Destino');
     }
     else {
       print("ERROR: Credenciales incorrectas");

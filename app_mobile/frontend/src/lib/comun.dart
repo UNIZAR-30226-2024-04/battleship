@@ -4,10 +4,10 @@ import 'package:flutter/material.dart';
 import 'habilidades.dart';
 import 'flota.dart';
 import 'ajustes.dart';
+import 'juego.dart';
 import 'login.dart';
 import 'main.dart';
 import 'social.dart';
-import 'perfil.dart';
 
 // Panel superior.
 Widget buildHeader(BuildContext context) {
@@ -29,24 +29,17 @@ Widget buildHeader(BuildContext context) {
           padding: const EdgeInsets.only(right: 20),
           child: GestureDetector(
             onTap: () {
-              DestinoManager.setDestino(Perfil(AuthProvider().name));
+              if (ModalRoute.of(context)?.settings.name == '/Perfil') {
+                print("RUTA: /Perfil");
+                return;
+              }
+
+              DestinoManager.setDestino(Juego().perfilJugador);
 
               if (!AuthProvider().isLoggedIn) {
-                Navigator.pushReplacement(
-                  context,
-                  PageRouteBuilder(
-                    pageBuilder: (context, animation1, animation2) => const InicioSesion(),
-                    transitionDuration: const Duration(seconds: 0),
-                  ),
-                );
+                Navigator.pushNamed(context, '/InicioSesion');
               } else {
-                Navigator.pushReplacement(
-                  context,
-                  PageRouteBuilder(
-                    pageBuilder: (context, animation1, animation2) => Perfil(AuthProvider().name),
-                    transitionDuration: const Duration(seconds: 0),
-                  ),
-                );
+                Navigator.pushNamed(context, '/Perfil');
               }
             },
             child: const Image(
@@ -72,49 +65,56 @@ Widget buildActions(BuildContext context) {
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           _buildActionItem('Jugar', 'images/jugar.png', () {
-            Navigator.pushReplacement(
-              context,
-              PageRouteBuilder(
-                pageBuilder: (context, animation1, animation2) => Principal(),
-                transitionDuration: const Duration(seconds: 0),
-              ),
-            );
+            Navigator.pushNamed(context, '/Principal');
           }),
           _buildActionItem('Habilidades', 'images/habilidad.png', () {
-            Navigator.pushReplacement(
-              context,
-              PageRouteBuilder(
-                pageBuilder: (context, animation1, animation2) => const Habilidades(),
-                transitionDuration: const Duration(seconds: 0),
-              ),
-            );
+            if (ModalRoute.of(context)?.settings.name == '/Habilidades') {
+              print("RUTA: /Habilidades");
+              return;
+            }
+
+            DestinoManager.setDestino(Habilidades());
+
+            if (!AuthProvider().isLoggedIn) {
+              Navigator.pushNamed(context, '/InicioSesion');
+            } else {
+              Navigator.pushNamed(context, '/Habilidades');
+            }
           }),
           _buildActionItem('Flota', 'images/flota.png', () {
-            Navigator.pushReplacement(
-              context,
-              PageRouteBuilder(
-                pageBuilder: (context, animation1, animation2) => const Flota(),
-                transitionDuration: const Duration(seconds: 0),
-              ),
-            );
+            if (ModalRoute.of(context)?.settings.name == '/Flota') {
+              print("RUTA: /Flota");
+              return;
+            }
+
+            DestinoManager.setDestino(Flota());
+
+            if (!AuthProvider().isLoggedIn) {
+              Navigator.pushNamed(context, '/InicioSesion');
+            } else {
+              Navigator.pushNamed(context, '/Flota');
+            }
           }),
           _buildActionItem('Social', 'images/social.png', () {
-            Navigator.pushReplacement(
-              context,
-              PageRouteBuilder(
-                pageBuilder: (context, animation1, animation2) => const Social(),
-                transitionDuration: const Duration(seconds: 0),
-              ),
-            );
+            if (ModalRoute.of(context)?.settings.name == '/Social') {
+              print("RUTA: /Social");
+              return;
+            }
+
+            DestinoManager.setDestino(Social());
+
+            if (!AuthProvider().isLoggedIn) {
+              Navigator.pushNamed(context, '/InicioSesion');
+            } else {
+              Navigator.pushNamed(context, '/Social');
+            }
           }),
           _buildActionItem('Ajustes', 'images/ajustes.png', () {
-            Navigator.pushReplacement(
-              context,
-              PageRouteBuilder(
-                pageBuilder: (context, animation1, animation2) => const Ajustes(),
-                transitionDuration: const Duration(seconds: 0),
-              ),
-            );
+            if (ModalRoute.of(context)?.settings.name == '/Ajustes') {
+              print("RUTA: /Ajustes");
+              return;
+            }
+            Navigator.pushNamed(context, '/Ajustes');
           }),
         ],
       ),
@@ -162,4 +162,37 @@ Widget buildTitle(String text, int fontSize) {
       ],
     ),
   );
+}
+
+bool isValidEmail(String email) {
+  final RegExp regex = RegExp(
+      r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$'
+  );
+  return regex.hasMatch(email);
+}
+
+void showErrorSnackBar(BuildContext context, String message) {
+  if (ScaffoldMessenger.of(context).mounted) {
+    final snackBar = SnackBar(
+      content: Text(
+        message,
+        style: TextStyle(color: Colors.red),
+      ),
+      behavior: SnackBarBehavior.floating,
+    );
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  }
+}
+
+void showSuccessSnackBar(BuildContext context, String message) {
+  if (ScaffoldMessenger.of(context).mounted) {
+    final snackBar = SnackBar(
+      content: Text(
+        message,
+        style: TextStyle(color: Colors.green),
+      ),
+      behavior: SnackBarBehavior.floating,
+    );
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  }
 }

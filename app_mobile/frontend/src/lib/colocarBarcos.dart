@@ -250,12 +250,6 @@ class _ColocarBarcosState extends State<ColocarBarcos> {
     } 
     
     DestinoManager.setDestino(Atacar());
-    Navigator.pushReplacement(
-      context,
-      PageRouteBuilder(
-        pageBuilder: (context, animation1, animation2) => Atacar(),
-        transitionDuration: const Duration(seconds: 0),
-      ),
-    );
+    Navigator.pushNamed(context, '/Atacar');
   }
 }

@@ -58,20 +58,31 @@ class _CustomCheckboxState extends State<CustomCheckbox> {
 }
 
 // Botones circulares.
-Widget buildCircledButton(String imagePath, String text) {
+Widget buildCircledButton(String imagePath, String text, bool showTick, VoidCallback onPressed) {
   return Column(
     children: [
       ElevatedButton(
-        onPressed: () {},
+        onPressed: onPressed,
         style: ElevatedButton.styleFrom(
           shape: const CircleBorder(), // Forma totalmente redonda
           padding: const EdgeInsets.all(20), // Tamaño del botón
           backgroundColor: Colors.black.withOpacity(0.5), // Fondo oscuro y transparente
         ),
-        child: Image.asset(
-          imagePath, // Ruta de la imagen
-          width: 50, // Ancho de la imagen
-          height: 50, // Alto de la imagen
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Image.asset(
+              imagePath, // Ruta de la imagen
+              width: 50, // Ancho de la imagen
+              height: 50, // Alto de la imagen
+            ),
+            if (showTick)
+              Image.asset(
+                'images/tick.png', // Ruta de la imagen "tick.png"
+                width: 50, // Ancho de la imagen
+                height: 50, // Alto de la imagen
+              ),
+          ],
         ),
       ),
       const SizedBox(height: 5), // Espaciado entre el botón y el texto
@@ -177,8 +188,13 @@ Widget buildEntryAstButton(String text, String hintText, IconData icono, TextEdi
 }
 
 // Entrada de texto blanca con texto permanente y desplegable.
-Widget buildDropdownButton(BuildContext context, String text, List<String> items, TextEditingController controller) {
+Widget buildDropdownButton(BuildContext context, String text, List<String> items, TextEditingController controller, {String? defaultValue}) {
   String? selectedItem;
+
+  // Comprueba si defaultValue está en items
+  if (defaultValue != null && items.contains(defaultValue)) {
+    selectedItem = defaultValue;
+  }
 
   return Padding(
     padding: const EdgeInsets.all(10),
@@ -208,6 +224,7 @@ Widget buildDropdownButton(BuildContext context, String text, List<String> items
     ),
   );
 }
+
 
 
 Widget buildToggleButton({required bool isActive, required VoidCallback onPressed}) {

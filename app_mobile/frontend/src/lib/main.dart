@@ -1,11 +1,20 @@
 import 'package:battleship/colocarBarcos.dart';
+import 'package:battleship/defender.dart';
+import 'package:battleship/registro.dart';
 import 'package:flutter/material.dart';
+import 'ajustes.dart';
+import 'atacar.dart';
+import 'flota.dart';
+import 'habilidades.dart';
+import 'juego.dart';
 import 'login.dart';
 import 'authProvider.dart';
 import 'comun.dart';
 import 'botones.dart';
 import 'destino.dart';
-
+import 'perfil.dart';
+import 'recContrasena.dart';
+import 'social.dart';
 
 void main() {
   runApp(const MyApp());
@@ -17,9 +26,22 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: Scaffold(
-        body: Principal(),
-      ),
+      home: Principal(),
+      routes: {
+        '/InicioSesion': (context) => InicioSesion(),
+        '/Perfil': (context) => Juego().perfilJugador,
+        '/Principal': (context) => Principal(),
+        '/ColocarBarcos': (context) => const ColocarBarcos(),
+        '/Habilidades': (context) => Habilidades(),
+        '/Flota': (context) => Flota(),
+        '/Ajustes': (context) => Ajustes(),
+        '/Social': (context) => Social(),
+        '/Registrarse': (context) => Registro(),
+        'RecuperarContrasena': (context) => RecuperacionContrasena(),
+        '/Atacar': (context) => Atacar(),
+        '/Defender': (context) => Defender(),
+        '/Destino': (context) => DestinoManager.getDestino(),
+      },
     );
   }
 }
@@ -68,84 +90,36 @@ class Principal extends StatelessWidget {
   void _handleCompetitivaPressed(BuildContext context, AuthProvider authProvider) {
     DestinoManager.setDestino(const ColocarBarcos());
     if (!authProvider.isLoggedIn) {
-      Navigator.pushReplacement(
-        context,
-        PageRouteBuilder(
-          pageBuilder: (context, animation1, animation2) => const InicioSesion(),
-          transitionDuration: const Duration(seconds: 0),
-        ),
-      );
+      Navigator.pushNamed(context, '/InicioSesion');
     } else {
-      Navigator.pushReplacement(
-        context,
-        PageRouteBuilder(
-          pageBuilder: (context, animation1, animation2) => const ColocarBarcos(),
-          transitionDuration: const Duration(seconds: 0),
-        ),
-      );
+      Navigator.pushNamed(context, '/ColocarBarcos');
     }
   }
 
   void _handleAmistosaPressed(BuildContext context, AuthProvider authProvider) {
     DestinoManager.setDestino(const ColocarBarcos());
     if (!authProvider.isLoggedIn) {
-      Navigator.pushReplacement(
-        context,
-        PageRouteBuilder(
-          pageBuilder: (context, animation1, animation2) => const InicioSesion(),
-          transitionDuration: const Duration(seconds: 0),
-        ),
-      );
+      Navigator.pushNamed(context, '/InicioSesion');
     } else {
-      Navigator.pushReplacement(
-        context,
-        PageRouteBuilder(
-          pageBuilder: (context, animation1, animation2) => const ColocarBarcos(),
-          transitionDuration: const Duration(seconds: 0),
-        ),
-      );
+      Navigator.pushNamed(context, '/ColocarBarcos');
     }
   }
 
 void _handleIndividualPressed(BuildContext context, AuthProvider authProvider) {
     DestinoManager.setDestino(const ColocarBarcos());
     if (!authProvider.isLoggedIn) {
-      Navigator.pushReplacement(
-        context,
-        PageRouteBuilder(
-          pageBuilder: (context, animation1, animation2) => const InicioSesion(),
-          transitionDuration: const Duration(seconds: 0),
-        ),
-      );
+      Navigator.pushNamed(context, '/InicioSesion');
     } else {
-      Navigator.pushReplacement(
-        context,
-        PageRouteBuilder(
-          pageBuilder: (context, animation1, animation2) => const ColocarBarcos(),
-          transitionDuration: const Duration(seconds: 0),
-        ),
-      );
+      Navigator.pushNamed(context, '/ColocarBarcos');
     }
   }
 
   void _handleTorneosPressed(BuildContext context, AuthProvider authProvider) {
     DestinoManager.setDestino(const ColocarBarcos());
     if (!authProvider.isLoggedIn) {
-      Navigator.pushReplacement(
-        context,
-        PageRouteBuilder(
-          pageBuilder: (context, animation1, animation2) => const InicioSesion(),
-          transitionDuration: const Duration(seconds: 0),
-        ),
-      );
+      Navigator.pushNamed(context, '/InicioSesion');
     } else {
-      Navigator.pushReplacement(
-        context,
-        PageRouteBuilder(
-          pageBuilder: (context, animation1, animation2) => const ColocarBarcos(),
-          transitionDuration: const Duration(seconds: 0),
-        ),
-      );
+      Navigator.pushNamed(context, '/ColocarBarcos');
     }
   }
 

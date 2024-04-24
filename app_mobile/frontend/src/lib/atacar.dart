@@ -417,19 +417,13 @@ class _AtacarState extends State<Atacar> {
           final snackBar = SnackBar(
             content: Text(
               '¡Ganador: ${Juego().getGanador()}!',
-              style: TextStyle(color: Colors.white),
+              style: const TextStyle(color: Colors.white),
             ),
             behavior: SnackBarBehavior.floating,
           );
           ScaffoldMessenger.of(context).showSnackBar(snackBar);
           Juego().reiniciarPartida();
-          Navigator.pushReplacement(
-            context,
-            PageRouteBuilder(
-              pageBuilder: (context, animation1, animation2) => Principal(),
-              transitionDuration: const Duration(seconds: 0),
-            ),
-          );
+          Navigator.pushNamed(context, '/Principal');
         }
 
         if (acertado) {
@@ -480,19 +474,13 @@ class _AtacarState extends State<Atacar> {
           final snackBar = SnackBar(
             content: Text(
               '¡Ganador: ${Juego().getGanador()}!',
-              style: TextStyle(color: Colors.white),
+              style: const TextStyle(color: Colors.white),
             ),
             behavior: SnackBarBehavior.floating,
           );
           ScaffoldMessenger.of(context).showSnackBar(snackBar);
           Juego().reiniciarPartida();
-          Navigator.pushReplacement(
-            context,
-            PageRouteBuilder(
-              pageBuilder: (context, animation1, animation2) => Principal(),
-              transitionDuration: const Duration(seconds: 0),
-            ),
-          );
+          Navigator.pushNamed(context, '/Principal');
         }
       }
 
@@ -502,13 +490,7 @@ class _AtacarState extends State<Atacar> {
         Juego().habilidadSeleccionadaEnTurno = false;
         Juego().cambiarTurno();
         DestinoManager.setDestino(Defender());
-        Navigator.pushReplacement(
-          context,
-          PageRouteBuilder(
-            pageBuilder: (context, animation1, animation2) => Defender(),
-            transitionDuration: const Duration(seconds: 0),
-          ),
-        );
+        Navigator.pushNamed(context, '/Defender');
       }
     });
   }
