@@ -45,3 +45,5 @@ app_mobile/frontend/src/app.*.symbols
 app_mobile/frontend/src/android/app/debug
 app_mobile/frontend/src/android/app/profile
 app_mobile/frontend/src/android/app/release
+
+**/.idea

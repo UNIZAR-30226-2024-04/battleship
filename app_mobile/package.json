@@ -3,12 +3,14 @@
         "concurrently": "^8.2.2"
     },
     "scripts": {
+        "install": "cd backend/src && npm install && cd ../.. && cd frontend/src && flutter pub get && cd .. && npm install",
         "start": "concurrently \"npm run start-backend\" \"npm run start-frontend\"",
         "start-backend": "cd backend/src && node server.js",
-        "start-frontend": "cd frontend/src && node app.js"
+        "start-frontend": "cd frontend/src && flutter run -d chrome"
     },
     "dependencies": {
         "@types/node": "^20.11.17",
-        "cors": "^2.8.5"
+        "cors": "^2.8.5",
+        "exit-hook": "^4.0.0"
     }
 }

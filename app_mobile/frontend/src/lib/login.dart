@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
-import 'destino.dart';
 import 'juego.dart';
-import 'registro.dart';
-import 'recContrasena.dart';
 import 'botones.dart';
 import 'authProvider.dart';
 import 'comun.dart';
@@ -99,7 +96,7 @@ class _InicioSesionState extends State<InicioSesion> {
   }
 
   void _handleRegistrarsePressed(BuildContext context) {
-    Navigator.pushNamed(context, '/Registro');
+    Navigator.pushNamed(context, '/Registrarse');
   }
 
   void _handleRecContrasenaPressed(BuildContext context) {

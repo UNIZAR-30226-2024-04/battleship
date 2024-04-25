@@ -6,6 +6,8 @@ import 'error.dart';
 class Habilidades extends StatefulWidget {
   MensajeErrorModel mensajeErrorModel = MensajeErrorModel.getInstance();
 
+  Habilidades({super.key});
+
   @override
   _HabilidadesState createState() => _HabilidadesState();
 }

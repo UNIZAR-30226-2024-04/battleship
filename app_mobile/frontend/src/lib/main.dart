@@ -12,7 +12,6 @@ import 'authProvider.dart';
 import 'comun.dart';
 import 'botones.dart';
 import 'destino.dart';
-import 'perfil.dart';
 import 'recContrasena.dart';
 import 'social.dart';
 
@@ -27,25 +26,60 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Principal(),
-      routes: {
-        '/InicioSesion': (context) => InicioSesion(),
-        '/Perfil': (context) => Juego().perfilJugador,
-        '/Principal': (context) => Principal(),
-        '/ColocarBarcos': (context) => const ColocarBarcos(),
-        '/Habilidades': (context) => Habilidades(),
-        '/Flota': (context) => Flota(),
-        '/Ajustes': (context) => Ajustes(),
-        '/Social': (context) => Social(),
-        '/Registrarse': (context) => Registro(),
-        'RecuperarContrasena': (context) => RecuperacionContrasena(),
-        '/Atacar': (context) => Atacar(),
-        '/Defender': (context) => Defender(),
-        '/Destino': (context) => DestinoManager.getDestino(),
+      onGenerateRoute: (RouteSettings settings) {
+        WidgetBuilder builder;
+        switch (settings.name) {
+          case '/InicioSesion':
+            builder = (BuildContext _) => const InicioSesion();
+            break;
+          case '/Perfil':
+            builder = (BuildContext _) => Juego().perfilJugador;
+            break;
+          case '/Principal':
+            builder = (BuildContext _) => Principal();
+            break;
+          case '/ColocarBarcos':
+            builder = (BuildContext _) => const ColocarBarcos();
+            break;
+          case '/Habilidades':
+            builder = (BuildContext _) => Habilidades();
+            break;
+          case '/Flota':
+            builder = (BuildContext _) => const Flota();
+            break;
+          case '/Ajustes':
+            builder = (BuildContext _) => const Ajustes();
+            break;
+          case '/Social':
+            builder = (BuildContext _) => const Social();
+            break;
+          case '/Registrarse':
+            builder = (BuildContext _) => Registro();
+            break;
+          case 'RecuperarContrasena':
+            builder = (BuildContext _) => RecuperacionContrasena();
+            break;
+          case '/Atacar':
+            builder = (BuildContext _) => Atacar();
+            break;
+          case '/Defender':
+            builder = (BuildContext _) => Defender();
+            break;
+          case '/Destino':
+            builder = (BuildContext _) => DestinoManager.getDestino();
+            break;
+          default:
+            throw Exception('Ruta no definida');
+        }
+        return PageRouteBuilder(
+          settings: settings,
+          transitionDuration: Duration.zero, // Desactiva la animación de transición
+          pageBuilder: (context, animation, secondaryAnimation) => builder(context),
+        );
       },
     );
   }
 }
-
 
 class Principal extends StatelessWidget {
   final AuthProvider _authProvider = AuthProvider();
@@ -66,18 +100,19 @@ class Principal extends StatelessWidget {
         body: Column(
           children: [
             buildHeader(context),
+            const SizedBox(height: 30),
             const SizedBox(
-              width: 250,
-              height: 250,
+              width: 195,
+              height: 195,
               child: Image(image: AssetImage('images/portada.png')),
             ),
             const Spacer(),
             buildActionButton(context, () => _handleCompetitivaPressed(context, _authProvider), "Partida Competitiva"),
-            const SizedBox(height: 10),
+            const SizedBox(height: 7),
             buildActionButton(context, () => _handleAmistosaPressed(context, _authProvider), "Partida Amistosa"),
-            const SizedBox(height: 10),
+            const SizedBox(height: 7),
             buildActionButton(context, () => _handleIndividualPressed(context, _authProvider), "Partida Individual"),
-            const SizedBox(height: 10),
+            const SizedBox(height: 7),
             buildActionButton(context, () => _handleTorneosPressed(context, _authProvider), "Torneos"),
             const Spacer(),
             buildActions(context),

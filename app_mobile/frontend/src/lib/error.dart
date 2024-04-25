@@ -4,7 +4,7 @@ class MensajeErrorModel extends ChangeNotifier {
   String _mensaje = '';
 
   // Instancia estática privada de la clase
-  static MensajeErrorModel _instance = MensajeErrorModel._();
+  static final MensajeErrorModel _instance = MensajeErrorModel._();
 
   // Constructor privado
   MensajeErrorModel._();

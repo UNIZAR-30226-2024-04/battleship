@@ -20,10 +20,16 @@ class Defender extends StatefulWidget {
 }
 
 class _DefenderState extends State<Defender> {
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
+    Future.delayed(const Duration(seconds: 1), () {
+      setState(() {
+        _isLoading = false;
+      });
+    });
     iniciarTransicionAutomatica();
   }
 
@@ -51,30 +57,31 @@ class _DefenderState extends State<Defender> {
       ),
       child: Scaffold(
         backgroundColor: Colors.transparent,
-        body: Column(
-          children: [
-            buildHeader(context),
-            const Spacer(),
-            _construirBarcosRestantes(),
-            FutureBuilder<Widget>(
-              future: _construirTableroConBarcosDefensa(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  // While waiting for the future to complete, you can show a loading indicator.
-                  return const CircularProgressIndicator();
-                } else if (snapshot.hasError) {
-                  // If there's an error, you can show an error message.
-                  return Text('Error: ${snapshot.error}');
-                } else {
-                  // Once the future completes, return the widget.
-                  return snapshot.data!;
-                }
-              },
-            ),
-            const Spacer(),
-            buildActions(context),
-          ],
-        ),
+        body: _isLoading
+            ? const Center(child: Text('¡Defiéndete!', style: TextStyle(color: Colors.white, fontSize: 24)))
+            : Column(
+                children: [
+                  buildHeader(context),
+                  const SizedBox(height: 20),
+                  _construirBarcosRestantes(),
+                  FutureBuilder<Widget>(
+                    future: _construirTableroConBarcosDefensa(),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        // While waiting for the future to complete, you can show a loading indicator.
+                        return const CircularProgressIndicator();
+                      } else if (snapshot.hasError) {
+                        // If there's an error, you can show an error message.
+                        return Text('Error: ${snapshot.error}');
+                      } else {
+                        // Once the future completes, return the widget.
+                        return snapshot.data!;
+                      }
+                    },
+                  ),
+                  const Spacer(),
+                ],
+              ),
       ),
     );
   }

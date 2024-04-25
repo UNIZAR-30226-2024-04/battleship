@@ -3,10 +3,7 @@ import 'package:battleship/destino.dart';
 import 'package:flutter/material.dart';
 import 'habilidades.dart';
 import 'flota.dart';
-import 'ajustes.dart';
 import 'juego.dart';
-import 'login.dart';
-import 'main.dart';
 import 'social.dart';
 
 // Panel superior.
@@ -60,7 +57,6 @@ Widget buildHeader(BuildContext context) {
 Widget buildActions(BuildContext context) {
   return Column(
     children: [
-      const SizedBox(height: 70),
       Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
@@ -87,7 +83,7 @@ Widget buildActions(BuildContext context) {
               return;
             }
 
-            DestinoManager.setDestino(Flota());
+            DestinoManager.setDestino(const Flota());
 
             if (!AuthProvider().isLoggedIn) {
               Navigator.pushNamed(context, '/InicioSesion');
@@ -101,7 +97,7 @@ Widget buildActions(BuildContext context) {
               return;
             }
 
-            DestinoManager.setDestino(Social());
+            DestinoManager.setDestino(const Social());
 
             if (!AuthProvider().isLoggedIn) {
               Navigator.pushNamed(context, '/InicioSesion');
@@ -176,7 +172,7 @@ void showErrorSnackBar(BuildContext context, String message) {
     final snackBar = SnackBar(
       content: Text(
         message,
-        style: TextStyle(color: Colors.red),
+        style: const TextStyle(color: Colors.red),
       ),
       behavior: SnackBarBehavior.floating,
     );
@@ -189,7 +185,7 @@ void showSuccessSnackBar(BuildContext context, String message) {
     final snackBar = SnackBar(
       content: Text(
         message,
-        style: TextStyle(color: Colors.green),
+        style: const TextStyle(color: Colors.green),
       ),
       behavior: SnackBarBehavior.floating,
     );

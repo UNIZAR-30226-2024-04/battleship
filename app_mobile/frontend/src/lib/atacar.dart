@@ -1,8 +1,8 @@
 import 'package:battleship/authProvider.dart';
 import 'package:battleship/barco.dart';
+import 'package:battleship/botones.dart';
 import 'package:battleship/destino.dart';
 import 'package:battleship/juego.dart';
-import 'package:battleship/main.dart';
 import 'package:flutter/material.dart';
 import 'comun.dart';
 import 'defender.dart';
@@ -28,60 +28,83 @@ class _AtacarState extends State<Atacar> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        image: DecorationImage(
-          image: AssetImage('images/fondo.jpg'),
-          fit: BoxFit.cover,
-        ),
-      ),
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        body: Column(
-          children: [
-            buildHeader(context),
-            const Spacer(),
-            _construirBarcosRestantes(),  
-            FutureBuilder<Widget>(
-              future: _construirTableroConBarcosAtacable(), 
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  // While waiting for the future to complete, you can show a loading indicator.
-                  return const CircularProgressIndicator();
-                } else if (snapshot.hasError) {
-                  // If there's an error, you can show an error message.
-                  return Text('Error: ${snapshot.error}');
-                } else {
-                  // Once the future completes, return the widget.
-                  return snapshot.data!;
-                }
-              },
+    return FutureBuilder(
+      future: Future.delayed(const Duration(seconds: 1)), // Espera un segundo para cargar el tablero.
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Container(
+            decoration: const BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('images/fondo.jpg'),
+                fit: BoxFit.cover,
+              ),
             ),
-            _construirHabilidades(),
-            const Spacer(),
-            buildActions(context),
-          ],
-        ),
+            child: const Scaffold(
+              backgroundColor: Colors.transparent,
+              body: Center(
+                child: Text('¡Tu turno!', style: TextStyle(color: Colors.white, fontSize: 24)),
+              ),
+            ),
+          );
+        } else {
+          return Container(
+            decoration: const BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('images/fondo.jpg'),
+                fit: BoxFit.cover,
+              ),
+            ),
+            child: Scaffold(
+              backgroundColor: Colors.transparent,
+              body: Column(
+                children: [
+                  buildHeader(context),
+                  const SizedBox(height: 20),
+                  _construirBarcosRestantes(),
+                  FutureBuilder<Widget>(
+                    future: _construirTableroConBarcosAtacable(),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const CircularProgressIndicator();
+                      } else if (snapshot.hasError) {
+                        return Text('Error: ${snapshot.error}');
+                      } else {
+                        return AnimatedOpacity(
+                          opacity: snapshot.data == null ? 0.0 : 1.0,
+                          duration: const Duration(milliseconds: 500),
+                          child: snapshot.data,
+                        );
+                      }
+                    },
+                  ),
+                  _construirHabilidades(),
+                  const Spacer(),
+                  buildActionButton(context, () {
+                    Juego().reiniciarPartida();
+                    Navigator.pushNamed(context, '/Principal');
+                  }, "Abandonar partida"),
+                  const Spacer(),
+                ],
+              ),
+            ),
+          );
+        }
+      },
+    );
+  }
+
+
+  Future<Widget> _construirTableroConBarcosAtacable() async {
+    return SizedBox(
+      width: Juego().tablero_oponente.boardSize + Juego().tablero_oponente.casillaSize,
+      height: Juego().tablero_oponente.boardSize + Juego().tablero_oponente.casillaSize,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: await buildTableroClicable(_handleTap),
       ),
     );
   }
 
-  Future<Widget> _construirTableroConBarcosAtacable() async {
-    List<Widget> children = [];
-
-    children.add(
-      SizedBox(
-        width: Juego().tablero_oponente.boardSize + Juego().tablero_oponente.casillaSize,
-        height: Juego().tablero_oponente.boardSize + Juego().tablero_oponente.casillaSize,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: await buildTableroClicable(_handleTap),
-        ),
-      ),
-    );  
-
-    return Stack(children: children);
-  }
 
   Widget _construirBarcosRestantes() {
     print("TURNO EN ATACAR: ${Juego().turno}");
@@ -180,7 +203,10 @@ class _AtacarState extends State<Atacar> {
 
   Future<List<Widget>> buildTableroClicable(Function(int, int) onTap) async {
     List<Widget> filas = [];
-    filas.add(await buildFilaCasillasClicables(onTap));
+    filas.add(buildFilaCoordenadas());
+    for (int i = 1; i < Juego().tablero_jugador.numFilas; i++) {
+      filas.add(await buildFilaCasillas(i, onTap));
+    }
     return filas;
   }
 
@@ -209,7 +235,6 @@ class _AtacarState extends State<Atacar> {
   
   Future<Widget> buildFilaCasillas(int rowIndex, Function(int, int) onTap) async {
     List<Widget> casillas = [];
-    // Etiqueta de fila
     casillas.add(
       Container(
         width: Juego().tablero_oponente.casillaSize,
@@ -239,16 +264,11 @@ class _AtacarState extends State<Atacar> {
         }
       }
 
-    casillas.add(
-      GestureDetector(
-        onTap: () {
-          setState(() {
+      casillas.add(
+        GestureDetector(
+          onTap: () {
             onTap(rowIndex, j);
-          });
-        },
-        child: AnimatedOpacity(
-          opacity: 1.0,
-          duration: const Duration(seconds: 1),
+          },
           child: Container(
             width: Juego().tablero_oponente.casillaSize,
             height: Juego().tablero_oponente.casillaSize,
@@ -259,8 +279,7 @@ class _AtacarState extends State<Atacar> {
             child: Image.asset(imagePath, fit: BoxFit.cover),
           ),
         ),
-      ),
-    );
+      );
     }
     
     return Row(children: casillas);

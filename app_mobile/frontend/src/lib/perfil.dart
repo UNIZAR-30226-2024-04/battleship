@@ -1,14 +1,11 @@
 import 'package:battleship/error.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'authProvider.dart';
 import 'botones.dart';
 import 'comun.dart';
 import 'habilidad.dart';
-import 'main.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'comun.dart';
 
 class Perfil extends StatefulWidget {
   String _email = '';
@@ -116,6 +113,7 @@ class _PerfilState extends State<Perfil> {
                 ),
               ),
             ),
+            const SizedBox(height: 20),
             buildActions(context),
           ],
         ),
@@ -146,7 +144,12 @@ class _PerfilState extends State<Perfil> {
         widget.partidasJugadas = data['partidasJugadas'];
         widget.partidasGanadas = data['partidasGanadas'];
         widget.partidasPerdidas = widget.partidasJugadas - widget.partidasGanadas;
-        widget.ratioVictorias = widget.partidasGanadas / widget.partidasJugadas;
+        if (widget.partidasJugadas == 0) {
+          widget.ratioVictorias = 0;
+        } 
+        else {
+          widget.ratioVictorias = widget.partidasGanadas / widget.partidasJugadas;
+        }
         widget.barcosHundidos = data['barcosHundidos'];
         widget.barcosPerdidos = data['barcosPerdidos'];
         widget.disparosAcertados = data['disparosAcertados'];
