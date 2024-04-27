@@ -2834,7 +2834,7 @@ crearPerfil = async (req, res) =&gt; {
     }
     // Comprobar que el correo es válido
     if (!verificarCorreo(correo)) {
-      res.status(400).send('El correo no es válido: ');
+      res.status(400).send('El correo no es válido');
       console.error("El correo no es válido");
       return;
     }

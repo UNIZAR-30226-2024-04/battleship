@@ -30,6 +30,8 @@ import torpedoImg from '../Images/skills/torpedo.png';
 import crossImg from '../Images/ingame/cross.png';
 import explosionImg from '../Images/ingame/explosion.png';
 
+import { useSocket } from '../Contexts/SocketContext';
+
 // Establecer la url de obtenerPerfil, moverBarcoInicial del backend
 const urlObtenerDatosPersonales = 'http://localhost:8080/perfil/obtenerDatosPersonales';
 const urlMoverBarcoInicial = 'http://localhost:8080/perfil/moverBarcoInicial';
@@ -83,6 +85,7 @@ function esBarcoHorizontal(barco) {
 }
 
 export function Game() {
+    const { socket } = useSocket();
     const [lastClickedCell, setLastClickedCell] = useState(null);
 
     const handleClickedCell = (fila, columna) => {

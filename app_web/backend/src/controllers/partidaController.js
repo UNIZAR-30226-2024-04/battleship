@@ -31,6 +31,7 @@ function generarCodigo() {
   return parseInt(codigo.substring(0, 10), 16); // Convierte los primeros 10 caracteres del hash en un número
 }
 
+exports.generarCodigo = generarCodigo;
 
 // Funcion que devuelve el barco (si existe) disparado en la coordenada (i, j).
 // Si no hay barco en la coordenada, devuelve null.
@@ -159,6 +160,7 @@ function calcularEstadisticasPartida(partida, jugador) {
  * @function crearPartida
  * @description Crea una partida con dos jugadores y un bioma, la guarda en la base de datos y devuelve la partida creada
  * @param {Object} req - El objeto de solicitud HTTP
+ * @param {Number} [req.body.codigo] - El código de la partida, se generará automáticamente si no se proporciona
  * @param {String} req.body.nombreId1 - El nombreId del jugador 1
  * @param {String} req.body.nombreId2 - El nombreId del jugador 2
  * @param {BiomasDisponibles} req.body.bioma - El bioma de la partida
@@ -172,7 +174,7 @@ function calcularEstadisticasPartida(partida, jugador) {
  */
 exports.crearPartida = async (req, res) => {
   try {
-    const { nombreId1, nombreId2, bioma = 'Mediterraneo', amistosa = true, ...extraParam } = req.body;
+    const { codigo, nombreId1, nombreId2, bioma = 'Mediterraneo', amistosa = true, ...extraParam } = req.body;
     // Verificar si hay algún parámetro extra
     if (Object.keys(extraParam).length > 0) {
       res.status(400).send('Sobran parámetros, se espera nombreId1, nombreId2 y bioma');
@@ -234,7 +236,7 @@ exports.crearPartida = async (req, res) => {
     } else {
       tableroBarcos2 = jugador2.tableroInicial;
     }
-    const codigo = generarCodigo();
+    if(!codigo) codigo = generarCodigo();
     // Actualizamos los códigos de partida actuales de los jugadores
     jugador1.codigoPartidaActual = codigo;
     await Perfil.findOneAndUpdate(
@@ -272,6 +274,43 @@ exports.crearPartida = async (req, res) => {
 };
 
 /**
+ * @function abandonarPartida
+ * @description Modifica el valor de partida actual del usuario en base de datos a -1 y envia respuesta de finalizacion de partida
+ */
+exports.abandonarPartida = async (req, res) => {
+  try {
+    const { codigo, nombreId, ...extraParam} = req.body;
+    //
+    if (Object.keys(extraParam).length > 0) {
+      res.status(400).send('Sobran parámetros, se espera codigo y jugador');
+      console.error("Sobran parámetros, se espera codigo y jugador");
+      return;
+    }
+    // Verificar si alguno de los parámetros está ausente
+    if (!codigo || !nombreId) {
+      res.status(400).send('Falta el codigo y/o jugador');
+      console.error("Falta el codigo y/o jugador");
+      return;
+    }
+    // Verificar que existe la partida
+    const filtro = { codigo: codigo };
+    const partidaActual = await Partida.findOne(filtro);
+    if (partidaActual) {
+      const jugador = await Perfil.findOne({ nombreId: partidaActual.nombreId1 });
+      
+    } else {
+      res.status(404).send('Partida no encontrada');
+      console.error('Partida no encontrada');
+      return;
+    }
+  } catch (error) {
+    res.status(500).send('Hubo un error');
+    console.error('Hubo un error');
+    return;
+  }
+};
+
+/**
  * @function mostrarMiTablero
  * @description Devuelve el tablero de barcos y los disparos realizados del jugador en la partida
  * @param {Object} req - El objeto de solicitud HTTP
@@ -281,7 +320,7 @@ exports.crearPartida = async (req, res) => {
  * @param {Tablero} res.tableroBarcos - El tablero de barcos del jugador y su estado actual
  * @param {Coordenada[]} res.disparosEnemigos - Los disparos realizados por el jugador enemigo
  * @example
- * peticion = { body: { codigo: '1234567890', nombreId: 'jugador1' }}
+ * peticion = { body: { codigo: '1234567890', nombreId: 'jugador1' } }
  * respuesta = { json: () => {} }
  * await mostrarMiTablero(peticion, respuesta)
  */

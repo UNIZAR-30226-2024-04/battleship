@@ -12,6 +12,8 @@
         "@types/node": "^20.11.17",
         "http": "^0.0.1-security",
         "react-world-flags": "^1.6.0",
+        "socket.io": "^4.7.5",
+        "socket.io-client": "^4.7.5",
         "universal-cookie": "^7.1.4"
     }
 }

@@ -9,22 +9,26 @@ import { Social } from './Pages/social';
 import { Register } from './Pages/register';
 import { Login } from './Pages/login';
 import { Game } from './Pages/game';
+import { SocketProvider } from './Contexts/SocketContext';
+
 
 
 function App() {
   return (
     <>
       <Router>
-        <Routes>
-          <Route path="/" element={<Home/>}/>
-          <Route path="/fleet" element={<Fleet/>}/>
-          <Route path="/profile" element={<Profile/>}/>
-          <Route path="/settings" element={<Settings/>}/>
-          <Route path="/social" element={<Social/>}/>
-          <Route path="/register" element={<Register/>}/>
-          <Route path="/login" element={<Login/>}/>
-          <Route path="/game" element={<Game/>}/>
-        </Routes>
+        <SocketProvider>
+          <Routes>
+            <Route path="/" element={<Login/>}/>
+            <Route path="/game" element={<Game/>}/>
+            <Route path="/fleet" element={<Fleet/>}/>
+            <Route path="/profile" element={<Profile/>}/>
+            <Route path="/settings" element={<Settings/>}/>
+            <Route path="/social" element={<Social/>}/>
+            <Route path="/register" element={<Register/>}/>
+            <Route path="/home" element={<Home/>}/>
+          </Routes>
+        </SocketProvider>
       </Router>
     </>
   )
