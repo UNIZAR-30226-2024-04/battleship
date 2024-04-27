@@ -8,7 +8,7 @@ const biomasDisponibles = require('../data/biomas');
 const {actualizarEstadisticas, actualizarPuntosExperiencia} = require('./perfilController');
 const PartidaController = require('./partidaController');
 const socketIo = require('socket.io');
-const { io } = require('../server');
+const { getIO } = require('../socketManager');
 const tableroDim = Coordenada.i.max;  // Dimensiones del tablero
 /**
  * @module partidaMulti
@@ -31,7 +31,7 @@ const tableroDim = Coordenada.i.max;  // Dimensiones del tablero
 
 // Funcion que crea el socket de la partida con 2 jugadores y espectadores
 function crearSocket(codigoPartida) {
-  console.log('Creando socket de la partida', io);
+  const io = getIO();
   const partidaSocket = io.of('/partida' + codigoPartida);
   partidaSocket.on('connection', (socket) => {
     console.log('Usuario conectado a la sala', codigoPartida);
@@ -179,6 +179,7 @@ exports.abandonarPartida = async (req, res) => {
   const { codigo, nombreId, ...extraParam } = req.body;
   // Verificar si hay algún parámetro extra
   await PartidaController.abandonarPartida(req, res);
+  const io = getIO();
   io.of('/partida' + codigo).emit('abandono', nombreId);
 };
 
@@ -273,6 +274,7 @@ exports.mostrarTableros = async (req, res) => {
  */
 exports.realizarDisparo = async (req, res) => {
   const repetirTurno = await PartidaController.realizarDisparo(req, res);
+  const io = getIO();
   if (repetirTurno) {
     io.of('/partida' + req.body.codigo).emit('continuaTurno', req.body.nombreId);
   } else if (!repetirTurno){
@@ -300,6 +302,7 @@ exports.realizarDisparo = async (req, res) => {
  */
 exports.realizarDisparoMisilRafaga = async (req, res) => {
   const repetirTurno = await PartidaController.realizarDisparoMisilRafaga(req, res);
+  const io = getIO();
   if (repetirTurno) {
     io.of('/partida' + req.body.codigo).emit('continuaTurno', req.body.nombreId);
   } else if (!repetirTurno){
@@ -328,6 +331,7 @@ exports.realizarDisparoMisilRafaga = async (req, res) => {
  */
 exports.realizarDisparoTorpedoRecargado = async (req, res) => {
   const repetirTurno = await PartidaController.realizarDisparoTorpedoRecargado(req, res);
+  const io = getIO();
   if (repetirTurno) {
     io.of('/partida' + req.body.codigo).emit('continuaTurno', req.body.nombreId);
   } else if (!repetirTurno){

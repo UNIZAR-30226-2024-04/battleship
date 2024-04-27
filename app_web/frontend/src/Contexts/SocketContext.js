@@ -9,7 +9,7 @@ export const SocketProvider = ({ children }) => {
 
     // Conectar y desconectar el socket de forma efectiva
     useEffect(() => {
-        // Asegúrate de desconectar el socket cuando el componente se desmonta
+        // Desconectar el socket cuando el componente se desmonta
         return () => {
             if (socket) {
                 socket.disconnect();
