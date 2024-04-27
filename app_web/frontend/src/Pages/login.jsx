@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import { Navbar } from "../Components/Navbar";
 import '../Styles/login-style.css';
 import Cookies from 'universal-cookie';
@@ -6,6 +7,8 @@ const iniciarSesionURI = 'http://localhost:8080/perfil/iniciarSesion';
 
 
 export function Login() {
+
+    let navigate = useNavigate();
     const handleSubmit = async (e) => {
         e.preventDefault(); // Previene el comportamiento por defecto del formulario
 
@@ -46,8 +49,9 @@ export function Login() {
             cookies.remove('perfil');
 
             cookies.set('JWT', responseData['token'], {path: '/'});
-
             cookies.set('perfil', responseData['perfilDevuelto'], {path: '/'});
+
+            navigate("/");
         } catch (error) {
             console.error('Error en el login:', error);
         }
