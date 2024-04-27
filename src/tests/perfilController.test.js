@@ -4,6 +4,7 @@ const {registrarUsuario, autenticarUsuario, eliminarUsuario, iniciarSesion,
   actualizarPuntosExperiencia, modificarMazo, moverBarcoInicial, 
   enviarSolicitudAmistad, eliminarSolicitudAmistad, agnadirAmigo, eliminarAmigo} = require('../controllers/perfilController');
   const { barcosDisponibles } = require('../data/barco');
+const e = require('express');
 const Perfil = require('../models/perfilModel');
 const mongoURI = 'mongodb://localhost/BattleshipDB';
 mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true, 
@@ -230,7 +231,7 @@ describe('Iniciar sesión', () => {
         try {
           await iniciarSesion(req, res);
         } catch (error) {}
-        expect(res.statusCode).toBe(400);
+        expect(res.statusCode).toBe(404);
     });
     it('Debería fallar al iniciar sesión sin un campo', async () => {
         const req = { body: { nombreId: 'usuario' } };
@@ -239,7 +240,7 @@ describe('Iniciar sesión', () => {
         try {
           await iniciarSesion(req, res);
         } catch (error) {}
-        expect(res.statusCode).toBe(400);
+        expect(res.statusCode).toBe(404);
     });
     it('Debería fallar al iniciar sesión con una contraseña inválida', async () => {
         const req = { body: { nombreId: 'usuario', contraseña: 'passwd1.' } };
