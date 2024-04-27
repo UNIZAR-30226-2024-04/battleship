@@ -1,5 +1,6 @@
 const app = require('./app')
-const socketIo = require('socket.io');
+
+const { Server } = require('socket.io');
 const mongoose = require('mongoose'); // Asegúrate de requerir mongoose
 const PORT = 8080;
 
@@ -10,7 +11,7 @@ const server = app.listen(PORT, () => {
 });
 
 // Adjunta socket.io al servidor HTTP
-const io = socketIo(server, {
+const io = new Server(server, {
     cors: {
       origin: "*", // Configura CORS según tus necesidades
       methods: ['GET', 'POST', 'PUT', 'DELETE'], // Métodos permitidos
@@ -18,7 +19,12 @@ const io = socketIo(server, {
     }
   });
 
-app.io = io; // Adjunta socket.io a la aplicación express
+io.on('connection', (socket) => {
+    console.log('Usuario conectado en socket server');
+    socket.on('disconnect', () => {
+    console.log('Usuario desconectado de la partida');
+    });
+});
 
 server.closeAll = () => {
     mongoose.disconnect() // Cierra conexión a MongoDB
@@ -33,4 +39,4 @@ server.closeAll = () => {
     });
 }
 
-module.exports = server;
+module.exports = {server, io}; // Exporta server e io para poder usarlos en otros archivos

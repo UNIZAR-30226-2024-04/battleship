@@ -8,7 +8,7 @@ const biomasDisponibles = require('../data/biomas');
 const {actualizarEstadisticas, actualizarPuntosExperiencia} = require('./perfilController');
 const PartidaController = require('./partidaController');
 const socketIo = require('socket.io');
-const app = require('../app');
+const { io } = require('../server');
 const tableroDim = Coordenada.i.max;  // Dimensiones del tablero
 /**
  * @module partidaMulti
@@ -31,28 +31,29 @@ const tableroDim = Coordenada.i.max;  // Dimensiones del tablero
 
 // Funcion que crea el socket de la partida con 2 jugadores y espectadores
 function crearSocket(codigoPartida) {
-  const partidaSocket = app.io.of('/partida' + codigoPartida);
-  partidaSocket.on('connection', (salaId) => {
-    console.log('Usuario conectado a la sala', salaId);
-    partidaSocket.on('disconnect', () => {
-      console.log('Usuario desconectado de la partida', salaId);
+  console.log('Creando socket de la partida', io);
+  const partidaSocket = io.of('/partida' + codigoPartida);
+  partidaSocket.on('connection', (socket) => {
+    console.log('Usuario conectado a la sala', codigoPartida);
+    socket.on('disconnect', () => {
+      console.log('Usuario desconectado de la partida', codigoPartida);
     });
-    partidaSocket.on('partidaEncontrada', (salaId) => {
+    socket.on('partidaEncontrada', (salaId) => {
       console.log('Emparejando a', salaId);
     });
-    partidaSocket.on('continuaTurno', (jugador) => {
+    socket.on('continuaTurno', (jugador) => {
       console.log('Continua el turno de disparos', jugador);
     });
-    partidaSocket.on('finTurno', (jugador) => {
+    socket.on('finTurno', (jugador) => {
       console.log('Fin del turno de disparos', jugador);
     });
-    partidaSocket.on('finPartida', (ganador) => {
+    socket.on('finPartida', (ganador) => {
       console.log('Fin de la partida, ganador ', ganador);
     });
-    partidaSocket.on('abandono', (perdedor) => {
+    socket.on('abandono', (perdedor) => {
       console.log('Abandona la partida', perdedor);
     });
-    partidaSocket.on('chat', (mensaje) => {
+    socket.on('chat', (mensaje) => {
       console.log('Mensaje en el chat', mensaje);
     });   
   });
@@ -178,7 +179,7 @@ exports.abandonarPartida = async (req, res) => {
   const { codigo, nombreId, ...extraParam } = req.body;
   // Verificar si hay algún parámetro extra
   await PartidaController.abandonarPartida(req, res);
-  app.app.io.of('/partida' + codigo).emit('abandono', nombreId);
+  io.of('/partida' + codigo).emit('abandono', nombreId);
 };
 
 /**
@@ -273,9 +274,9 @@ exports.mostrarTableros = async (req, res) => {
 exports.realizarDisparo = async (req, res) => {
   const repetirTurno = await PartidaController.realizarDisparo(req, res);
   if (repetirTurno) {
-    app.io.of('/partida' + req.body.codigo).emit('continuaTurno', req.body.nombreId);
+    io.of('/partida' + req.body.codigo).emit('continuaTurno', req.body.nombreId);
   } else if (!repetirTurno){
-    app.io.of('/partida' + req.body.codigo).emit('finTurno', req.body.nombreId);
+    io.of('/partida' + req.body.codigo).emit('finTurno', req.body.nombreId);
   }
 };
 
@@ -300,9 +301,9 @@ exports.realizarDisparo = async (req, res) => {
 exports.realizarDisparoMisilRafaga = async (req, res) => {
   const repetirTurno = await PartidaController.realizarDisparoMisilRafaga(req, res);
   if (repetirTurno) {
-    app.io.of('/partida' + req.body.codigo).emit('continuaTurno', req.body.nombreId);
+    io.of('/partida' + req.body.codigo).emit('continuaTurno', req.body.nombreId);
   } else if (!repetirTurno){
-    app.io.of('/partida' + req.body.codigo).emit('finTurno', req.body.nombreId);
+    io.of('/partida' + req.body.codigo).emit('finTurno', req.body.nombreId);
   }
 };
 
@@ -328,9 +329,9 @@ exports.realizarDisparoMisilRafaga = async (req, res) => {
 exports.realizarDisparoTorpedoRecargado = async (req, res) => {
   const repetirTurno = await PartidaController.realizarDisparoTorpedoRecargado(req, res);
   if (repetirTurno) {
-    app.io.of('/partida' + req.body.codigo).emit('continuaTurno', req.body.nombreId);
+    io.of('/partida' + req.body.codigo).emit('continuaTurno', req.body.nombreId);
   } else if (!repetirTurno){
-    app.io.of('/partida' + req.body.codigo).emit('finTurno', req.body.nombreId);
+    io.of('/partida' + req.body.codigo).emit('finTurno', req.body.nombreId);
   }
 };
 
@@ -369,6 +370,6 @@ exports.obtenerChat = async (req, res) => {
  */
 exports.enviarMensaje = async (req, res) => {
   await PartidaController.enviarMensaje(req, res);
-  app.io.of('/partida' + req.body.codigo).emit('chat', req.body.nombreId + ': ' + req.body.mensaje);
+  io.of('/partida' + req.body.codigo).emit('chat', req.body.nombreId + ': ' + req.body.mensaje);
 };
 
