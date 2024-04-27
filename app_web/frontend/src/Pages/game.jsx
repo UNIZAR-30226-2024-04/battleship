@@ -56,6 +56,17 @@ const cookies = new Cookies();
 // }
 
 
+// Contiene el tamaño y nombre de los barcos a usar
+const shipInfo = {
+    'Aircraft': { size: 5, name: "Aircraft", img: aircraftImg, imgRotated: aircraftImgRotated},
+    'Bship': { size: 4, name: "Bship", img: bshipImg, imgRotated: bshipImgRotated},
+    'Sub': { size: 3, name: "Sub", img: submarineImg, imgRotated: submarineImgRotated},
+    'Destroy': { size: 3, name: "Destroy", img: destroyImg, imgRotated: destroyImgRotated},
+    'Patrol': { size: 2, name: "Patrol", img: patrolImg, imgRotated: patrolImgRotated},
+};
+
+
+
 function resetEndgameMsg() {
     const endgameContainer = document.querySelector("#endgame-container");
     endgameContainer.style.display = "none"
@@ -143,8 +154,9 @@ export function Game() {
                     console.log("Error: disparo mal hecho -1 para backend");
             }
             if(data['barcoCoordenadas']) {
+                mostrarContadorBarcosHundidos([data['barcoCoordenadas']]);
                 mostrarBarcosHundidos([data['barcoCoordenadas']], opponentBoard);
-                triggerFinPartida(data['finPartida'], true);
+                triggerFinPartida(data['finPartida'], true);    // fin de partida si se da el caso
             }
 
             /*            
@@ -215,7 +227,7 @@ export function Game() {
                 }
 
                 if(turnosIA[i].barcoCoordenadas) {
-                    mostrarBarcosHundidos2(turnosIA[i].barcoCoordenadas, myBoard);
+                    mostrarBarcosHundidos2(turnosIA[i].barcoCoordenadas);
                     triggerFinPartida(turnosIA[i].finPartida, false);       // comprobamos fin partida
                 }
             }
@@ -228,16 +240,6 @@ export function Game() {
     // Obtener el token y nombreId del usuario
     const tokenCookie = cookies.get('JWT');
     const nombreId1Cookie = cookies.get('perfil')['nombreId'];
-    
-
-    // Contiene el tamaño y nombre de los barcos a usar
-    const shipInfo = {
-        'Aircraft': { size: 5, name: "Aircraft", img: aircraftImg, imgRotated: aircraftImgRotated},
-        'Bship': { size: 4, name: "Bship", img: bshipImg, imgRotated: bshipImgRotated},
-        'Sub': { size: 3, name: "Sub", img: submarineImg, imgRotated: submarineImgRotated},
-        'Destroy': { size: 3, name: "Destroy", img: destroyImg, imgRotated: destroyImgRotated},
-        'Patrol': { size: 2, name: "Patrol", img: patrolImg, imgRotated: patrolImgRotated},
-    };
 
     // Datos partida
     let [idPartida, setIdPartida] = useState(null);
@@ -273,11 +275,13 @@ export function Game() {
 
     let [partidaInicializada, setPartidaInicializada] = useState(false); // Estado para saber si la partida ha sido inicializada
 
+
+
+    // Cargar info del perfil para recuperar la partida en curso
     async function inicializarPartidaOffline() {
         if (hayPartidaInicializada()) {
             console.log('Ya hay partida creada:');
         } else {
-            // TO DO: Cargar info del perfil para recuperar la partida en curso
             fetch(urlObtenerDatosPersonales, {
                 method: 'POST',
                 headers: {
@@ -348,7 +352,7 @@ export function Game() {
     const [count, setCount] = useState(0); // Estado para contar widgets
 
 
-    // Este efecto se ejecuta solo una vez después del montaje inicial del componente
+    // Este efecto se ejecuta al entrar a la página
     useEffect(() => {
         // Buscamos sincronizar las llamadas
         const fetchData = async () => {
@@ -397,6 +401,7 @@ export function Game() {
         fetchData();
     }, []);
 
+    
     const mostrarWidgetsTablero = (tablero, board) => {
         addNewWidgetPos(1, "Patrol", tablero[0].coordenadas[0].j-1, tablero[0].coordenadas[0].i-1, esBarcoHorizontal(tablero[0]),
                         board, tablero[0].coordenadas[0].estado === "Hundido");
@@ -416,73 +421,85 @@ export function Game() {
             board.removeAll();
         }
     }
-    
 
     const hundirBarco = (id) => {
         const widget = document.querySelector(`.fleet-board1 [gs-id="${id}"] .grid-stack-item-content img`);
         widget.classList = "imgHundida";
     }
 
+    // Función que devuelve el tipo del barco (para barcos que me han hundido) junto a un id (para barcos que he hundido)
+    const obtenerTipoBarco = (tipoBarco) => {
+        let id;
+        switch (tipoBarco) {
+            case "Patrullero":
+                tipoBarco = shipInfo["Patrol"].name;
+                id = 1;
+                break;
+            case "Destructor":
+                tipoBarco = shipInfo["Destroy"].name;
+                id = 2;
+                break;
+            case "Submarino":
+                tipoBarco = shipInfo["Sub"].name;
+                id = 3;
+                break;
+            case "Acorazado":
+                tipoBarco = shipInfo["Bship"].name;
+                id = 4;
+                break;
+            case "Portaviones":
+                tipoBarco = shipInfo["Aircraft"].name;
+                id = 5;
+                break;
+            default:
+                console.log("Error: barco mal hecho -1 para backend");
+        }
+        return { tipoBarco, id };
+    }
+
+
+    /*-----------------------------------------------------------------
+                        Funciones del contador de barcos
+    -----------------------------------------------------------------*/
+    
+    // Función que quita la clase que "hunde" los barcos del contador
+    const ocultarContadorBarcosHundidos = () => {
+        const barcos = document.querySelectorAll('.game-rivalship-counter-content [class^="game-counter-"]');
+        barcos.forEach(barco => {
+            barco.classList.remove("imgHundida");
+        });
+    }
+
+    // Función que añade la clase que "hunde" los barcos del contador
+    const mostrarContadorBarcosHundidos = (tablero) => {
+        let barco;
+        for (let i = 0; i < tablero.length; i++) {
+            let { tipoBarco, id } = obtenerTipoBarco(tablero[i]['tipo']);
+            tipoBarco = tipoBarco.toLowerCase();
+            barco = document.querySelector(
+                `.game-rivalship-counter .game-rivalship-counter-content .game-counter-${tipoBarco}`);
+            barco.classList = "imgHundida";
+        }
+    }
+
+
+    /*-----------------------------------------------------------------
+                            Mostrar Barcos Hundidos
+    -----------------------------------------------------------------*/
+
     // Esta función se encarga de mostrar los barcos que nos ha hundido la IA
-    const mostrarBarcosHundidos2 = (tablero, board) => {
+    const mostrarBarcosHundidos2 = (tablero) => {
         for (let i = 0; i < tablero['coordenadas'].length; i++) {
-            const coordenadas = tablero['coordenadas'][i];
-            let tipoBarco = tablero['tipo'];
-            let id;
-            switch (tipoBarco) {
-                case "Patrullero":
-                    tipoBarco = "Patrol";
-                    id = 1;
-                    break;
-                case "Destructor":
-                    tipoBarco = "Destroy";
-                    id = 2;
-                    break;
-                case "Submarino":
-                    tipoBarco = "Sub";
-                    id = 3;
-                    break;
-                case "Acorazado":
-                    tipoBarco = "Bship";
-                    id = 4;
-                    break;
-                case "Portaviones":
-                    tipoBarco = "Aircraft";
-                    id = 5;
-                    break;
-                default:
-                    console.log("Error: barco mal hecho -1 para backend");
-            }
+            const { tipoBarco, id } = obtenerTipoBarco(tablero['tipo']);
             // edita el widget antiguo
             hundirBarco(id);
         }
     }
 
-
     const mostrarBarcosHundidos = (tablero, board) => {
         for (let i = 0; i < tablero.length; i++) {
             const coordenadas = tablero[i].coordenadas;
-            let tipoBarco = tablero[i].tipo;
-
-            switch (tipoBarco) {
-                case "Patrullero":
-                    tipoBarco = "Patrol";
-                    break;
-                case "Destructor":
-                    tipoBarco = "Destroy";
-                    break;
-                case "Submarino":
-                    tipoBarco = "Sub";
-                    break;
-                case "Acorazado":
-                    tipoBarco = "Bship";
-                    break;
-                case "Portaviones":
-                    tipoBarco = "Aircraft";
-                    break;
-                default:
-                    console.log("Error: barco mal hecho -1 para backend");
-            }
+            const { tipoBarco, id } = obtenerTipoBarco(tablero[i]['tipo']);
             addNewWidgetPos(i, tipoBarco, coordenadas[0].j-1, coordenadas[0].i-1, esBarcoHorizontal(tablero[i]), board, true);
         }
     }
@@ -539,6 +556,7 @@ export function Game() {
 
 
     // Este efecto se ejecuta cuando myBoard cambia
+    // CARGA EL ESTADO ANTERIOR DE LA PARTIDA
     useEffect(() => {
         if(!idPartida) {
             console.log('No hay idPartida');
@@ -558,7 +576,7 @@ export function Game() {
                 })
                 .then(response => {
                     if (!response.ok) {
-                    throw new Error('La solicitud ha fallado');
+                    throw new Error('La solicitud endpoint "mostrarTableros" ha fallado');
                     }
                     return response.json();
                 })
@@ -611,6 +629,10 @@ export function Game() {
                                 console.log("Error: disparo mal hecho -1 para backend");
                         }
                     }
+                    
+
+                    ocultarContadorBarcosHundidos();    // Reseteamos contador
+                    mostrarContadorBarcosHundidos(tablero2);
 
                     // iteramos por los barcos ya hundidos
                     mostrarBarcosHundidos(tablero2, opponentBoard);
@@ -747,6 +769,15 @@ export function Game() {
                     <h1 className="fleet-banner-container">
                         ¡A batallar!
                     </h1>
+                    <div className='game-rivalship-counter'>
+                        <div className='game-rivalship-counter-content'>
+                            <img className="game-counter-aircraft" src={shipInfo['Aircraft'].imgRotated} />
+                            <img className="game-counter-bship" src={shipInfo['Bship'].imgRotated} />
+                            <img className="game-counter-sub" src={shipInfo['Sub'].imgRotated} />
+                            <img className="game-counter-destroy" src={shipInfo['Destroy'].imgRotated} />
+                            <img className="game-counter-patrol" src={shipInfo['Patrol'].imgRotated} />
+                        </div>
+                    </div>
                     <div className="fleet-main-content-container">
                         <div className="grid-stack fleet-board1">
                             <Tablero id="miTablero" clickable={false}/>
