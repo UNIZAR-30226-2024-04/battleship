@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:battleship/authProvider.dart';
 import 'package:battleship/juego.dart';
 import 'package:flutter/material.dart';
 import 'comun.dart';
@@ -34,7 +33,7 @@ class _DefenderState extends State<Defender> {
   }
 
   void iniciarTransicionAutomatica() {
-    Timer(const Duration(seconds: 3), () {
+    Timer(const Duration(seconds: 4), () {
       setState(() {
         Juego().contabilizarAtaque();
         Juego().disparosPendientes = 1;
@@ -61,7 +60,7 @@ class _DefenderState extends State<Defender> {
             ? const Center(child: Text('¡Defiéndete!', style: TextStyle(color: Colors.white, fontSize: 24)))
             : Column(
                 children: [
-                  buildHeader(context),
+                  buildHeader(context, ponerPerfil: false),
                   const SizedBox(height: 20),
                   _construirBarcosRestantes(),
                   FutureBuilder<Widget>(
@@ -130,9 +129,12 @@ class _DefenderState extends State<Defender> {
     }
   }
 
-
   Widget _construirBarcosRestantes() {
     print("TURNO EN DEFENDER: ${Juego().turno}");
+    List<Barco> barcosRestantes = Juego().obtenerBarcosRestantes();
+    for (var barco in barcosRestantes) {
+      barco.showInfo();
+    }
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
@@ -142,35 +144,34 @@ class _DefenderState extends State<Defender> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          buildTitle('Tus barcos restantes: ${Juego().numBarcos - Juego().barcosHundidosPorJugador.length}', 16),
+          buildTitle('Tus barcos restantes: ${Juego().getBarcosRestantesOponente()}', 16),
           const SizedBox(height: 10),
           Wrap(
             alignment: WrapAlignment.center,
             children: [
-              for (int i = 0; i < Juego().numBarcos; i++) 
-                if (!Juego().barcosHundidosPorJugador.contains(Juego().tablero_jugador1.barcos[i])) 
-                  Column(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.all(5),
-                        child: Image.asset(
-                          'images/${Juego().tablero_jugador1.barcos[i].nombre}.png', 
-                          width: 50, 
-                          height: 50,
+              for (int i = 0; i < barcosRestantes.length; i++) 
+                Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(5),
+                      child: Image.asset(
+                        'images/${barcosRestantes[i].nombre}.png', 
+                        width: 50, 
+                        height: 50,
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(5), 
+                      child: Text(
+                        barcosRestantes[i].longitud.toString(),
+                        style: const TextStyle(
+                          fontSize: 15,
+                          color: Colors.white,
                         ),
                       ),
-                      Padding(
-                        padding: const EdgeInsets.all(5), 
-                        child: Text(
-                          Juego().tablero_jugador1.barcos[i].longitud.toString(),
-                          style: const TextStyle(
-                            fontSize: 15,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
+                ),
             ],
           ),
         ],
@@ -214,86 +215,6 @@ class _DefenderState extends State<Defender> {
     } else {
       throw Exception('La solicitud ha fallado');
     }
-  }
-
-  Future<Widget> _construirTableroConBarcosDefensa2() async {
-    var disparosenemigosFuture = obtenerDisparosEnemigos();
-    Map<String, List<Offset>> disparosEnemigos = await disparosenemigosFuture;
-    print("OBTENGO LOS DISPAROS ENEMIGOS: ");
-    print(disparosEnemigos);
-
-    List<Offset> disparosAgua = disparosEnemigos['Agua']!;
-    List<Offset> disparosAcertados = disparosEnemigos['Acertados']!;
-    print("DISPAROS AGUA:");
-    print(disparosAgua);
-    print("DISPAROS ACERTADOS:");
-    print(disparosAcertados);
-
-    var barcoshundidosFuture = obtenerBarcosHundidos();
-    List<bool> barcosHundidos = await barcoshundidosFuture;
-    print("BARCOS HUNDIDOS:");
-    print(barcosHundidos);
-
-    var barcosFuture = Juego().obtenerBarcos(AuthProvider().name, Juego().urlObtenerTablero);
-    List<Barco> barcosJugador = await barcosFuture;
-    print("BARCOS JUGADOR:");
-    print(barcosJugador);
-
-
-    return Stack(
-      children: [
-        SizedBox(
-          width: Juego().tablero_oponente.boardSize + Juego().tablero_oponente.casillaSize,
-          height: Juego().tablero_oponente.boardSize + Juego().tablero_oponente.casillaSize,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: buildTablero(),
-          ),
-        ),
-        for(int i = 0; i < disparosAgua.length; i++)
-          Positioned(
-            top: disparosAgua[i].dx * Juego().tablero_oponente.casillaSize,
-            left: disparosAgua[i].dy * Juego().tablero_oponente.casillaSize,
-            child: Column(
-              children: [
-                Image.asset(
-                  'images/redCross.png',
-                  width: Juego().tablero_oponente.casillaSize,
-                  height: Juego().tablero_oponente.casillaSize,
-                ),
-              ],
-            ),
-          ),
-
-        for(int i = 0; i < disparosAcertados.length; i++)
-          Positioned(
-            top: disparosAcertados[i].dx * Juego().tablero_oponente.casillaSize,
-            left: disparosAcertados[i].dy * Juego().tablero_oponente.casillaSize,
-            child: Column(
-              children: [
-                Image.asset(
-                  'images/explosion.png',
-                  width: Juego().tablero_oponente.casillaSize,
-                  height: Juego().tablero_oponente.casillaSize,
-                ),
-              ],
-            ),
-          ),
-
-        for (int i = 0; i < barcosHundidos.length; i++)
-          if (barcosHundidos[i])
-            Positioned(
-              top: barcosJugador[i].barcoPosition.dx * Juego().tablero_oponente.casillaSize,
-              left: barcosJugador[i].barcoPosition.dy * Juego().tablero_oponente.casillaSize,
-              child: Image.asset(
-                barcosJugador[i].getImagePath(),
-                width: barcosJugador[i].getWidth(Juego().tablero_oponente.casillaSize),
-                height: barcosJugador[i].getHeight(Juego().tablero_oponente.casillaSize),
-                fit: BoxFit.fill,
-              ),
-            ),
-      ],
-    );
   }
 
   List<Widget> buildTablero() {
@@ -358,16 +279,6 @@ class _DefenderState extends State<Defender> {
     return Row(children: casillas);
   }
 }
-
-
-
-
-
-
-
-
-
-////////////////////////////////////////////////////////
 
   Future<List<Widget>> buildTableroDefensa() async {
     List<Widget> filas = [];
@@ -450,6 +361,7 @@ class _DefenderState extends State<Defender> {
 
   Future<Widget> buildFilaCasillasDefensa() async {
     print("TURNO EN DEFENDER: ${Juego().turno}");
+    List<Barco> barcosRestantes = Juego().obtenerBarcosRestantes();
     return Stack(
       children: [
         SizedBox(
@@ -467,14 +379,13 @@ class _DefenderState extends State<Defender> {
             child: Column(
               children: [
                 GestureDetector(
-                  child: Opacity(
-                    opacity: 0.8,
-                    child: Image.asset(
-                      barco.getImagePath(),
-                      width: barco.getWidth(Juego().tablero_oponente.casillaSize),
-                      height: barco.getHeight(Juego().tablero_oponente.casillaSize),
-                      fit: BoxFit.fill,
-                    ),
+                  child: Image.asset(
+                    barco.getImagePath(),
+                    width: barco.getWidth(Juego().tablero_oponente.casillaSize),
+                    height: barco.getHeight(Juego().tablero_oponente.casillaSize),
+                    fit: BoxFit.fill,
+                    color: barcosRestantes.contains(barco) ? null : Colors.black.withOpacity(0.5),
+                    colorBlendMode: barcosRestantes.contains(barco) ? null : BlendMode.darken,
                   ),
                 ),
               ],
@@ -483,7 +394,6 @@ class _DefenderState extends State<Defender> {
       ],
     );
   }
-
 
   Future<List<Widget>> buildTablero() async {
     List<Widget> filas = [];
@@ -494,8 +404,6 @@ class _DefenderState extends State<Defender> {
     }
     return filas;
   }
-
-
 
   Future<Widget> _construirTableroConBarcosDefensa() async {
     List<Widget> children = [];
@@ -513,10 +421,3 @@ class _DefenderState extends State<Defender> {
 
     return Stack(children: children);
   }
-
-
-
-
-
-
-//////////////////////////////////////////////////////////////

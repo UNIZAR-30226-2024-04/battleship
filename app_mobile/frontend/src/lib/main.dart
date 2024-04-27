@@ -19,9 +19,14 @@ void main() {
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
+  @override
+  _MyAppState createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -126,7 +131,12 @@ class Principal extends StatelessWidget {
     DestinoManager.setDestino(const ColocarBarcos());
     if (!authProvider.isLoggedIn) {
       Navigator.pushNamed(context, '/InicioSesion');
-    } else {
+    } 
+    else if (Juego().codigo != -1) {
+      DestinoManager.setDestino(Atacar());
+      Navigator.pushNamed(context, '/Atacar');
+    }
+    else {
       Navigator.pushNamed(context, '/ColocarBarcos');
     }
   }
@@ -135,16 +145,26 @@ class Principal extends StatelessWidget {
     DestinoManager.setDestino(const ColocarBarcos());
     if (!authProvider.isLoggedIn) {
       Navigator.pushNamed(context, '/InicioSesion');
-    } else {
+    } 
+    else if (Juego().codigo != -1) {
+      DestinoManager.setDestino(Atacar());
+      Navigator.pushNamed(context, '/Atacar');
+    }
+    else {
       Navigator.pushNamed(context, '/ColocarBarcos');
     }
   }
 
-void _handleIndividualPressed(BuildContext context, AuthProvider authProvider) {
+  void _handleIndividualPressed(BuildContext context, AuthProvider authProvider) {
     DestinoManager.setDestino(const ColocarBarcos());
     if (!authProvider.isLoggedIn) {
       Navigator.pushNamed(context, '/InicioSesion');
-    } else {
+    } 
+    else if (Juego().codigo != -1) {
+      DestinoManager.setDestino(Atacar());
+      Navigator.pushNamed(context, '/Atacar');
+    }
+    else {
       Navigator.pushNamed(context, '/ColocarBarcos');
     }
   }
@@ -153,9 +173,13 @@ void _handleIndividualPressed(BuildContext context, AuthProvider authProvider) {
     DestinoManager.setDestino(const ColocarBarcos());
     if (!authProvider.isLoggedIn) {
       Navigator.pushNamed(context, '/InicioSesion');
-    } else {
+    } 
+    else if (Juego().codigo != -1) {
+      DestinoManager.setDestino(Atacar());
+      Navigator.pushNamed(context, '/Atacar');
+    }
+    else {
       Navigator.pushNamed(context, '/ColocarBarcos');
     }
   }
-
 }

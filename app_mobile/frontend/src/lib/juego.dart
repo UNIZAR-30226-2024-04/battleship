@@ -33,6 +33,7 @@ class Juego {
   String urlActualizarPartida = 'http://localhost:8080/partida/actualizarEstadoPartida';
   String urlCrearPartida = 'http://localhost:8080/partida/crearPartida';
   String urlMostrarMiTablero = 'http://localhost:8080/partida/mostrarMiTablero';
+  String urlMostrarTableroEnemigo = 'http://localhost:8080/partida/mostrarTableroEnemigo';
   int codigo = -1;
   String tokenSesion = '';
   List<Offset> disparosAcertadosJugador1 = [];
@@ -83,9 +84,141 @@ class Juego {
     }
   }
 
-  Future<void> actualizarBarcosJugadores() async {
+  Barco buscarBarcoHundido(Map<String, dynamic> datosJuego) {
+    List<dynamic> coordenadas = datosJuego['coordenadas'];
+    String tipo = datosJuego['tipo'];
+
+    print('Tipo de barco: $tipo');
+    print('coordenadas: $coordenadas');
+
+    List<Offset> casillasBarco = [];
+    for (var coordenada in coordenadas) {
+      double i = coordenada['i'].toDouble();
+      double j = coordenada['j'].toDouble();
+      Offset offset = Offset(i, j);
+      casillasBarco.add(offset);
+    }
+
+    String nombre = tipo;
+    Offset barcoPos = casillasBarco[0];
+    int long = casillasBarco.length;
+    bool rotado = casillasBarco[0].dy == casillasBarco[1].dy ? true : false;
+    bool hundido = true;
+    Barco barcoHundido = Barco(nombre, barcoPos, long, rotado, hundido);
+    barcoHundido.showInfo();
+    return barcoHundido;
+  }
+
+  Future<void> actualizarEstadoJugador() async {
+    var response = await http.post(
+      Uri.parse(urlMostrarTableroEnemigo),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+        'Authorization': 'Bearer ${Juego().tokenSesion}',
+      },
+      body: jsonEncode(<String, dynamic>{
+        'codigo': Juego().codigo,
+        'nombreId': Juego().perfilJugador.name,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      var data = jsonDecode(response.body);
+      print("ACTUALIZAR ESTADO Jugador:");
+      print(data);
+
+      if (data.containsKey('misDisparos')) {
+        var misDisparos = data['misDisparos'] as List;
+        for (var disparo in misDisparos) {
+          double i = disparo['i'].toDouble();
+          double j = disparo['j'].toDouble();
+          if (disparo['estado'] == 'Agua') {
+            disparosFalladosJugador.add(Offset(i, j));
+          } else {
+            disparosAcertadosJugador.add(Offset(i, j));
+          }
+        }
+      }
+
+      if (data.containsKey('barcosHundidos')) {
+        var barcosHundidosPorMi = data['barcosHundidos'] as List;
+        for (var barco in barcosHundidosPorMi) {
+          decrementarBarcosRestantesOponente();
+          Barco barcoHundido = buscarBarcoHundido(barco);
+          barcosHundidosPorJugador.add(barcoHundido);
+        }
+      }
+    } else {
+      throw Exception('La solicitud ha fallado');
+    }
+  }
+
+  Future<void> actualizarEstadoOponente() async {
+    var response = await http.post(
+      Uri.parse(urlMostrarMiTablero),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+        'Authorization': 'Bearer ${Juego().tokenSesion}',
+      },
+      body: jsonEncode(<String, dynamic>{
+        'codigo': Juego().codigo,
+        'nombreId': Juego().perfilJugador.name,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      var data = jsonDecode(response.body);
+      print("ACTUALIZAR ESTADO Oponente:");
+      print(data);
+      print(data.runtimeType);
+
+      if (data.containsKey('disparosEnemigos')) {
+        var disparosEnemigos = data['disparosEnemigos'] as List;
+        for (var disparo in disparosEnemigos) {
+          double i = disparo['i'].toDouble();
+          double j = disparo['j'].toDouble();
+          if (disparo['estado'] == 'Agua') {
+            disparosFalladosOponente.add(Offset(i, j));
+          } else {
+            disparosAcertadosOponente.add(Offset(i, j));
+          }
+        }
+      }
+
+      print("AÑADIENDO BARCOS HUNDIDOS POR IA:");
+      if (data.containsKey('barcosHundidos')) {
+        var barcosHundidosPorMi = data['barcosHundidos'] as List;
+        for (var barco in barcosHundidosPorMi) {
+          decrementarBarcosRestantesJugador();
+          Barco barcoHundido = buscarBarcoHundido(barco);
+          barcosHundidosPorOponente.add(barcoHundido);
+          barcoHundido.showInfo();
+        }
+      }
+      print("FIN AÑADIENDO BARCOS HUNDIDOS POR IA:");
+    } else {
+      throw Exception('La solicitud ha fallado');
+    }
+  }
+
+  Future<void> cargarPartida() async {
     nombreJugador1 = perfilJugador.name;
     tablero_jugador1.barcos = await obtenerBarcos(AuthProvider().name, urlObtenerTablero);
+    if (codigo != -1) {
+      print("VOY A ACTUALIZAR ESTADO JUGADOR");
+      await actualizarEstadoJugador();
+      print("VOY A ACTUALIZAR ESTADO OPONENTE");
+      await actualizarEstadoOponente();
+      print("HE CARGADO LA PARTIDA");
+      print("DISPAROS FALLADOS JUGADOR:");
+      print(disparosFalladosJugador);
+      print("DISPAROS ACERTADOS JUGADOR:");
+      print(disparosAcertadosJugador);
+      print("DISPAROS FALLADOS OPONENTE:");
+      print(disparosFalladosOponente);
+      print("DISPAROS ACERTADOS OPONENTE:");
+      print(disparosAcertadosOponente);
+    }
   }
 
   // Método para obtener la instancia del singleton
@@ -149,6 +282,28 @@ class Juego {
     }
 
     return barcosHundidos;
+  }
+
+  List<Barco> obtenerBarcosRestantes() {
+    List<Barco> barcosRestantes = [];
+    bool hundido = false;
+    for (var barco in Juego().tablero_jugador1.barcos) {
+      hundido = false;
+      print("NOMBRE BARCO: ${barco.nombre}");
+      for (var barcoHundido in Juego().barcosHundidosPorJugador) {
+        print("NOMBRE BARCO HUNDIDO: ${barcoHundido.nombre}");
+        if (barcoHundido.nombre.toLowerCase() == barco.nombre.toLowerCase()) {
+          print("DETECTO HUNDIDO");
+          hundido = true;
+          break;
+        }
+      }
+      if (!hundido) {
+        print("LO AÑADO A BARCOS RESTANTES");
+        barcosRestantes.add(barco);
+      }
+    }
+    return barcosRestantes;
   }
 
   Future<List<Barco>> obtenerBarcos(String usuario, String url) async {
@@ -280,6 +435,14 @@ class Juego {
     }
   }
 
+  void decrementarBarcosRestantesJugador() {
+    if (turno == 1) {
+      barcosRestantesJugador1--;
+    } else {
+      barcosRestantesJugador2--;
+    }
+  }
+
   int getBarcosRestantesOponente() {
     return turno == 1 ? barcosRestantesJugador2 : barcosRestantesJugador1;
   }
@@ -307,8 +470,6 @@ class Juego {
   }
 
   void reiniciarPartida() {
-    tablero_jugador1 = Tablero();
-    tablero_jugador2 = Tablero();
     numBarcos = 5;
     barcosRestantesJugador1 = numBarcos;
     barcosRestantesJugador2 = numBarcos;
@@ -421,7 +582,6 @@ class Juego {
     }
   }
 
-
   Future<void> crearPartida() async {
     var response = await http.post(
       Uri.parse(urlCrearPartida),
@@ -437,6 +597,7 @@ class Juego {
     );
 
     var data = jsonDecode(response.body);
+    print("AL CREAR PARTIDA: ");
     print(data);
     if (response.statusCode == 200) {
       var data = jsonDecode(response.body);

@@ -58,7 +58,7 @@ class _AtacarState extends State<Atacar> {
               backgroundColor: Colors.transparent,
               body: Column(
                 children: [
-                  buildHeader(context),
+                  buildHeader(context, ponerPerfil: false),
                   const SizedBox(height: 20),
                   _construirBarcosRestantes(),
                   FutureBuilder<Widget>(
@@ -108,6 +108,7 @@ class _AtacarState extends State<Atacar> {
 
   Widget _construirBarcosRestantes() {
     print("TURNO EN ATACAR: ${Juego().turno}");
+    List<Barco> barcosRestantes = Juego().obtenerBarcosRestantes();
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
@@ -117,35 +118,34 @@ class _AtacarState extends State<Atacar> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          buildTitle('Barcos restantes del rival: ${Juego().numBarcos - Juego().barcosHundidosPorJugador.length}', 16),
+          buildTitle('Barcos restantes del rival: ${Juego().getBarcosRestantesOponente()}', 16),
           const SizedBox(height: 10),
           Wrap(
             alignment: WrapAlignment.center,
             children: [
-              for (int i = 0; i < Juego().numBarcos; i++) 
-                if (!Juego().barcosHundidosPorJugador.contains(Juego().tablero_jugador1.barcos[i])) 
-                  Column(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.all(5),
-                        child: Image.asset(
-                          'images/${Juego().tablero_jugador1.barcos[i].nombre}.png', 
-                          width: 50, 
-                          height: 50,
+              for (int i = 0; i < barcosRestantes.length; i++)  
+                Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(5),
+                      child: Image.asset(
+                        'images/${barcosRestantes[i].nombre}.png', 
+                        width: 50, 
+                        height: 50,
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(5), 
+                      child: Text(
+                        barcosRestantes[i].longitud.toString(),
+                        style: const TextStyle(
+                          fontSize: 15,
+                          color: Colors.white,
                         ),
                       ),
-                      Padding(
-                        padding: const EdgeInsets.all(5), 
-                        child: Text(
-                          Juego().tablero_jugador1.barcos[i].longitud.toString(),
-                          style: const TextStyle(
-                            fontSize: 15,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
+                ),
             ],
           ),
         ],
@@ -203,10 +203,7 @@ class _AtacarState extends State<Atacar> {
 
   Future<List<Widget>> buildTableroClicable(Function(int, int) onTap) async {
     List<Widget> filas = [];
-    filas.add(buildFilaCoordenadas());
-    for (int i = 1; i < Juego().tablero_jugador.numFilas; i++) {
-      filas.add(await buildFilaCasillas(i, onTap));
-    }
+    filas.add(await buildTableroConBarcosHundidos(onTap));
     return filas;
   }
 
@@ -232,7 +229,7 @@ class _AtacarState extends State<Atacar> {
     }
     return Row(children: coordenadas);
   }
-  
+      
   Future<Widget> buildFilaCasillas(int rowIndex, Function(int, int) onTap) async {
     List<Widget> casillas = [];
     casillas.add(
@@ -255,15 +252,6 @@ class _AtacarState extends State<Atacar> {
         imagePath = 'images/explosion.png';
       }
 
-      if (Juego().barcosHundidosPorJugador.isNotEmpty) {
-        Offset pos = Offset(rowIndex.toDouble(), j.toDouble());
-        if (Juego().barcosHundidosPorJugador.contains(pos)) {
-          // Obtener el barco hundido en la posición pos.
-          Barco barcoHundido = Juego().barcosHundidosPorJugador.firstWhere((element) => element.barcoPosition == pos);
-          imagePath = barcoHundido.getImagePath();
-        }
-      }
-
       casillas.add(
         GestureDetector(
           onTap: () {
@@ -281,56 +269,33 @@ class _AtacarState extends State<Atacar> {
         ),
       );
     }
-    
+
     return Row(children: casillas);
   }
 
-  Future<Widget> buildFilaCasillasClicables(Function(int, int) onTap) async {
+  Future<Widget> buildTableroConBarcosHundidos(Function(int, int) onTap) async {
     return Stack(
       children: [
-        SizedBox(
-          width: Juego().tablero_jugador.boardSize + Juego().tablero_jugador.casillaSize,
-          height: Juego().tablero_jugador.boardSize + Juego().tablero_jugador.casillaSize,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: await buildTablero(onTap),
-          ),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: await buildTablero(onTap),
         ),
         for (var barco in Juego().barcosHundidosPorJugador)
           Positioned(
             top: barco.barcoPosition.dx * Juego().tablero_jugador.casillaSize,
             left: barco.barcoPosition.dy * Juego().tablero_jugador.casillaSize,
-            child: Column(
-              children: [
-                GestureDetector(
-                  child: Opacity(
-                    opacity: 0.8,
-                    child: Image.asset(
-                      barco.getImagePath(),
-                      width: barco.getWidth(Juego().tablero_jugador.casillaSize),
-                      height: barco.getHeight(Juego().tablero_jugador.casillaSize),
-                      fit: BoxFit.fill,
-                    ),
-                  ),
-                ),
-              ],
+            child: Image.asset(
+              barco.getImagePath(),
+              width: barco.getWidth(Juego().tablero_jugador.casillaSize),
+              height: barco.getHeight(Juego().tablero_jugador.casillaSize),
+              fit: BoxFit.fill,
+              color: Colors.black.withOpacity(0.5),
+              colorBlendMode: BlendMode.darken,
             ),
           ),
       ],
     );
   }
-
-
-  Future<List<Widget>> buildTablero(Function(int, int) onTap) async {
-    List<Widget> filas = [];
-    // Añade una fila adicional para las etiquetas de las coordenadas
-    filas.add(buildFilaCoordenadas());
-    for (int i = 1; i < Juego().tablero_jugador.numFilas; i++) {
-      filas.add(await buildFilaCasillas(i, onTap));
-    }
-    return filas;
-  }
-
 
   Barco buscarBarcoHundidoDisparo(Map<String, dynamic> datosJuego) {
     if (datosJuego.containsKey('barcoCoordenadas')) {
@@ -359,9 +324,17 @@ class _AtacarState extends State<Atacar> {
       return barcoHundido;
     }
 
-    return Barco('Ninguno', const Offset(0, 0), 0, false, false);
+    return Barco('', const Offset(0, 0), 0, false, false);
   }
 
+  Future<List<Widget>> buildTablero(Function(int, int) onTap) async {
+    List<Widget> filas = [];
+    filas.add(buildFilaCoordenadas());
+    for (int i = 1; i < Juego().tablero_jugador.numFilas; i++) {
+      filas.add(await buildFilaCasillas(i, onTap));
+    }
+    return filas;
+  }
 
   Future<List<bool>> realizarDisparo(int i, int j) async {
     var response = await http.post(
@@ -416,7 +389,9 @@ class _AtacarState extends State<Atacar> {
         Barco barcoHundido = buscarBarcoHundidoDisparo(data);
         Juego().barcosHundidosPorJugador.add(barcoHundido);
         print("BARCOS HUNDIDOS POR JUGADOR: ");
-        print(Juego().barcosHundidosPorJugador);
+        for (var barco in Juego().barcosHundidosPorJugador) {
+          barco.showInfo();
+        }
         });
       }
   
@@ -455,6 +430,7 @@ class _AtacarState extends State<Atacar> {
         if (hundido) {
           Barco barcoHundido = buscarBarcoHundidoDisparo(elemento);
           Juego().barcosHundidosPorOponente.add(barcoHundido);
+          Juego().decrementarBarcosRestantesJugador();
         }
       }
 
@@ -471,6 +447,11 @@ class _AtacarState extends State<Atacar> {
   Future<void> _handleTap(int i, int j) async {
     print("TURNO: ${Juego().turno}");
     print("VOY A DISPARAR EN: $i $j");
+    // Comprobar si ya se ha disparado en esa casilla.
+    if (Juego().disparosAcertadosJugador.contains(Offset(i.toDouble(), j.toDouble())) || Juego().disparosFalladosJugador.contains(Offset(i.toDouble(), j.toDouble()))) {
+      showErrorSnackBar(context, 'Ya has disparado en esa casilla, prueba en otra');
+      return;
+    }
     var respuestaFuture = realizarDisparo(i, j);
     print("HE DISPARADO EN: $i $j");
     Juego().disparosPendientes--;

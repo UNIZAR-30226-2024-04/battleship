@@ -105,7 +105,14 @@ class _InicioSesionState extends State<InicioSesion> {
 
   Future<void> _handlePressed(BuildContext context, AuthProvider authProvider) async {
     if(await _authProvider.login(_nombreController.text, _passwordController.text, context)) {
-      Navigator.pushNamed(context, '/Destino');
+      print("TRAS PULSAR, EL CODIGO DE LA PARTIDA ES: ${Juego().codigo}");
+
+      if (Juego().codigo == -1) {
+        Navigator.pushNamed(context, '/ColocarBarcos');
+      }
+      else {
+        Navigator.pushNamed(context, '/Atacar');
+      }
     }
     else {
       print("ERROR: Credenciales incorrectas");

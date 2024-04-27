@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'comun.dart';
 import 'juego.dart';
 import 'error.dart';
+import 'dart:html';
 
 class AuthProvider with ChangeNotifier {
   final String _urlInicioSesion = 'http://localhost:8080/perfil/iniciarSesion';
@@ -167,6 +168,9 @@ class AuthProvider with ChangeNotifier {
       if(response) {
         _isLoggedIn = true;
         Juego().setSession(name, "", password, tokenSesion);
+        await Juego().cargarPartida();
+        document.cookie = 'usuario=$name';
+        document.cookie = 'tokenSesion=$tokenSesion';
         print("USUARIO EN JUEGO:${Juego().perfilJugador.name}");
         notifyListeners(); // Notifica a los listeners que la variable ha cambiado
         return true;
@@ -187,7 +191,6 @@ class AuthProvider with ChangeNotifier {
     if(!isValidEmail(email)) {
       showErrorSnackBar(context, 'El email no es válido');
       mensajeErrorModel.cleanErrorMessage();
-
       return false;
     }
 
@@ -204,6 +207,9 @@ class AuthProvider with ChangeNotifier {
     if(response) {
       _isLoggedIn = true;
       Juego().setSession(name, email, password, tokenSesion);
+      await Juego().cargarPartida();
+      document.cookie = 'usuario=$name';
+      document.cookie = 'tokenSesion=$tokenSesion';
       mensajeErrorModel.cleanErrorMessage();
       notifyListeners(); // Notifica a los listeners que la variable ha cambiado
       return true;

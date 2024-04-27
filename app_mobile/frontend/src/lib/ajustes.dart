@@ -2,6 +2,7 @@ import 'package:battleship/authProvider.dart';
 import 'package:battleship/botones.dart';
 import 'package:flutter/material.dart';
 import 'comun.dart';
+import 'package:audioplayers/audioplayers.dart';
 
 class Ajustes extends StatefulWidget {
   const Ajustes({super.key});
@@ -16,6 +17,7 @@ class _AjustesState extends State<Ajustes> {
   final TextEditingController _mostrarMarcasController = TextEditingController();
   final TextEditingController _efectosSonidoController = TextEditingController();
   final TextEditingController _ocanoController = TextEditingController();
+  AudioPlayer audioPlayer = AudioPlayer();
   
   bool musica = true;
   bool sonido = true;
@@ -84,7 +86,6 @@ class _AjustesState extends State<Ajustes> {
       ),
     );
   }
-
 
   void _handlePressed(BuildContext context, AuthProvider authProvider, bool isActive, Function(bool) setStateFunc) async {
     setState(() {

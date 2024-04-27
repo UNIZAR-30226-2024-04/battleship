@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'authProvider.dart';
 import 'comun.dart';
 import 'botones.dart';
+import 'juego.dart';
 
 
 class Registro extends StatelessWidget {
@@ -76,7 +77,12 @@ class Registro extends StatelessWidget {
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
     }
     else if(await _authProvider.signUp(_nameController.text, _passwordController.text, _emailController.text, context)) {
-      Navigator.pushNamed(context, '/Destino');
+      if (Juego().codigo == -1) {
+        Navigator.pushNamed(context, '/ColocarBarcos');
+      }
+      else {
+        Navigator.pushNamed(context, '/Atacar');
+      }
     }
   }
 }

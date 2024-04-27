@@ -7,7 +7,7 @@ import 'juego.dart';
 import 'social.dart';
 
 // Panel superior.
-Widget buildHeader(BuildContext context) {
+Widget buildHeader(BuildContext context, {bool ponerPerfil = true}) {
   return Transform.translate(
     offset: const Offset(0, 10),
     child: Row(
@@ -22,35 +22,37 @@ Widget buildHeader(BuildContext context) {
           ),
         ),
         const Spacer(),
-        Padding(
-          padding: const EdgeInsets.only(right: 20),
-          child: GestureDetector(
-            onTap: () {
-              if (ModalRoute.of(context)?.settings.name == '/Perfil') {
-                print("RUTA: /Perfil");
-                return;
-              }
+        if (ponerPerfil)
+          Padding(
+            padding: const EdgeInsets.only(right: 20),
+            child: GestureDetector(
+              onTap: () {
+                if (ModalRoute.of(context)?.settings.name == '/Perfil') {
+                  print("RUTA: /Perfil");
+                  return;
+                }
 
-              DestinoManager.setDestino(Juego().perfilJugador);
+                DestinoManager.setDestino(Juego().perfilJugador);
 
-              if (!AuthProvider().isLoggedIn) {
-                Navigator.pushNamed(context, '/InicioSesion');
-              } else {
-                Navigator.pushNamed(context, '/Perfil');
-              }
-            },
-            child: const Image(
-              image: AssetImage('images/perfil.png'),
-              width: 70,
-              height: 70,
-              alignment: Alignment.topRight,
+                if (!AuthProvider().isLoggedIn) {
+                  Navigator.pushNamed(context, '/InicioSesion');
+                } else {
+                  Navigator.pushNamed(context, '/Perfil');
+                }
+              },
+              child: const Image(
+                image: AssetImage('images/perfil.png'),
+                width: 70,
+                height: 70,
+                alignment: Alignment.topRight,
+              ),
             ),
           ),
-        ),
       ],
     ),
   );
 }
+
 
 
 // Panel inferior.
