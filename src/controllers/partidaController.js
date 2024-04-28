@@ -4,6 +4,7 @@ const Coordenada = require('../data/coordenada');
 const Tablero = require('../data/tablero');
 const {barcosDisponibles} = require('../data/barco');
 const biomasDisponibles = require('../data/biomas');
+const climasDisponibles = require('../data/climas');
 const {actualizarEstadisticas} = require('./perfilController');
 const tableroDim = Coordenada.i.max;  // Dimensiones del tablero
 /**
@@ -315,6 +316,7 @@ exports.abandonarPartida = async (req, res) => {
         );
       }
       res.json({ mensaje: 'Partida abandonada con éxito' });
+      
     } else {
       res.status(404).send('Partida no encontrada');
       console.error('Partida no encontrada');
@@ -1036,3 +1038,107 @@ exports.enviarMensaje = async (req, res) => {
   }
 };
 
+
+
+
+// Funcion para seleccionar el clima en funcion del bioma de la partida 
+function seleccionarClima(bioma, clima) {
+  // Número aleatorio para determinar si hay un cambio de clima
+  let cambioClima = Math.random();
+
+  // Número aleatorio para determinar el nuevo clima
+  let nuevoClima = Math.random();
+
+  // Número aleatorio para decidir un viento
+  let v = Math.random();
+  if(v > 0.25) { viento = 'VientoSur'; }
+  else if(v > 0.5) { viento = 'VientoNorte'; }
+  else if(v > 0.75) { viento = 'VientoEste'; }
+  else { viento = 'VientoOeste'; }
+
+  // Climas del bioma Mediterraneo: calma, viento, niebla
+  // Cambia de climas con frecuencia 10 %
+  // Calma -> Viento 60%, Niebla 40%
+  // Viento -> Calma 70%, Niebla 30%
+  // Niebla -> Calma 70%, Viento 30%
+  if(bioma === 'Mediterraneo') {
+    if(clima == 'Calma') {
+      if(cambioClima > 0.1) {
+        if(nuevoClima > 0.6) { return viento; }
+        else { return 'Niebla'; }
+      }
+    }
+    else if(clima == 'VientoSur' || clima == 'VientoNorte' || clima == 'VientoEste' || clima == 'VientoOeste') {
+      if(cambioClima > 0.7) {
+        if(nuevoClima > 0.7) { return 'Calma'; }  
+        else { return 'Niebla'; }
+      }
+    }
+    else if(clima == 'Niebla') {
+      if(cambioClima > 0.7) {
+        if(nuevoClima > 0.7) { return 'Calma'; }
+        else { return viento; }
+      }
+    }
+
+  }
+  // Climas del bioma Cantabrico: Calma, Viento, Niebla, Tormenta
+  // Cambia de climas con frecuencia 30 %
+  // Calma -> Viento 50%, Niebla 50%
+  // Viento -> Calma 50%, Tormenta 50%
+  // Niebla -> Calma 100%
+  // Tormenta -> Viento 50%, Calma 50%
+  else if(bioma === 'Cantabrico') {
+    if(cambioClima > 0.3) {
+      if(clima == 'Calma') {
+        if(nuevoClima > 0.5) { return viento; }
+        else { return 'Niebla'; }
+      }
+      else if(clima == 'VientoSur' || clima == 'VientoNorte' || clima == 'VientoEste' || clima == 'VientoOeste') {
+        if(nuevoClima > 0.5) { return 'Calma'; }
+        else { return 'Tormenta'; }
+      }
+      else if(clima == 'Niebla') { return 'Calma'; }
+      else if(clima == 'Tormenta') {
+        if(nuevoClima > 0.5) { return viento; }
+        else { return 'Calma'; }
+      }
+    }
+  }
+  // Climas del bioma Norte: Calma, Viento, Niebla, Tormenta
+  // Cambia de climas con frecuencia 50 %
+  // Calma -> Viento 60%, Niebla 40%
+  // Viento -> Calma 40%, Tormenta 60%
+  // Niebla -> Calma 80%, Viento 20%
+  // Tormenta -> Viento 50%, Calma 30%, Niebla 20%
+  else if(bioma === 'Norte') {
+    if(cambioClima > 0.5) {
+      if(clima == 'Calma') {
+        if(nuevoClima > 0.6) { return viento; }
+        else { return 'Niebla'; }
+      }
+      else if(clima == 'VientoSur' || clima == 'VientoNorte' || clima == 'VientoEste' || clima == 'VientoOeste') {
+        if(nuevoClima > 0.4) { return 'Calma'; }
+        else { return 'Tormenta'; }
+      }
+      else if(clima == 'Niebla') {
+        if(nuevoClima > 0.8) { return 'Calma'; }
+        else { return viento; }
+      }
+      else if(clima == 'Tormenta') {
+        if(nuevoClima > 0.5) { return viento; }
+        else if(nuevoClima > 0.8) { return 'Calma'; }
+        else { return 'Niebla'; }
+      }
+    }
+
+  }
+  else if(bioma === 'Bermudas') {
+    return 'Tormenta'
+  }
+  else {
+    // El bioma no está definido
+    console.error('El bioma no está definido');
+    return undefined;
+  }
+}  
