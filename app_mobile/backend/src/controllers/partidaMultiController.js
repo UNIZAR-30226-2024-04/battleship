@@ -132,7 +132,7 @@ exports.crearSala = async (req, res) => {
  * @param {Object} req - El objeto de solicitud HTTP
  * @param {String} req.body.nombreId - El nombreId del jugador
  * @param {Object} res - El objeto de respuesta HTTP con el codigo de la partida creada
- * @param {Number} res.codigo - El código de la partida
+ * @param {Number} res.codigo - El código de la partida (-1 si no se encuentra sala)
  */
 exports.buscarSala = async (req, res) => {
   // Esta funcion no llama a ninguna funcion de partidaController
@@ -156,7 +156,8 @@ exports.buscarSala = async (req, res) => {
       // Se llama a crear partida con los datos de la sala
       await PartidaController.crearPartida({ body: { codigo: sala.codigo, nombreId1: sala.nombreId1, nombreId2: sala.nombreId2, bioma: sala.bioma, amistosa: sala.amistosa } }, res);
     } else {
-      res.status(404).send('Sala no encontrada');
+      // Si no se encuentra la sala, se devuelve un codigo -1
+      res.json({ codigo: -1 });
     }
   }
   catch (error) {

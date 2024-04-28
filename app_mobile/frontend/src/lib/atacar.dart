@@ -11,7 +11,7 @@ import 'package:http/http.dart' as http;
 import 'serverRoute.dart';
 
 class Atacar extends StatefulWidget {
-  Atacar({super.key});
+  const Atacar({super.key});
 
   @override
   _AtacarState createState() => _AtacarState();
@@ -405,7 +405,7 @@ class _AtacarState extends State<Atacar> {
       Juego().disparosPendientes = 1;
       Juego().habilidadSeleccionadaEnTurno = false;
       Juego().cambiarTurno();
-      DestinoManager.setDestino(Defender());
+      DestinoManager.setDestino(const Defender());
       Navigator.pushNamed(context, '/Defender');
     }
   }

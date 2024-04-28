@@ -39,7 +39,7 @@ class _MyAppState extends State<MyApp> {
             builder = (BuildContext _) => const InicioSesion();
             break;
           case '/Perfil':
-            builder = (BuildContext _) => Juego().perfilJugador;
+            builder = (BuildContext _) => Juego().miPerfil;
             break;
           case '/Principal':
             builder = (BuildContext _) => Principal();
@@ -66,10 +66,10 @@ class _MyAppState extends State<MyApp> {
             builder = (BuildContext _) => RecuperacionContrasena();
             break;
           case '/Atacar':
-            builder = (BuildContext _) => Atacar();
+            builder = (BuildContext _) => const Atacar();
             break;
           case '/Defender':
-            builder = (BuildContext _) => Defender();
+            builder = (BuildContext _) => const Defender();
             break;
           case '/Destino':
             builder = (BuildContext _) => DestinoManager.getDestino();
@@ -138,7 +138,7 @@ class Principal extends StatelessWidget {
       Navigator.pushNamed(context, '/InicioSesion');
     } 
     else if (Juego().codigo != -1) {
-      DestinoManager.setDestino(Atacar());
+      DestinoManager.setDestino(const Atacar());
       Navigator.pushNamed(context, '/Atacar');
     }
     else {
@@ -153,7 +153,7 @@ class Principal extends StatelessWidget {
       Navigator.pushNamed(context, '/InicioSesion');
     } 
     else if (Juego().codigo != -1) {
-      DestinoManager.setDestino(Atacar());
+      DestinoManager.setDestino(const Atacar());
       Navigator.pushNamed(context, '/Atacar');
     }
     else {
@@ -168,7 +168,7 @@ class Principal extends StatelessWidget {
       Navigator.pushNamed(context, '/InicioSesion');
     } 
     else if (Juego().codigo != -1) {
-      DestinoManager.setDestino(Atacar());
+      DestinoManager.setDestino(const Atacar());
       Navigator.pushNamed(context, '/Atacar');
     }
     else {
@@ -183,7 +183,7 @@ class Principal extends StatelessWidget {
       Navigator.pushNamed(context, '/InicioSesion');
     } 
     else if (Juego().codigo != -1) {
-      DestinoManager.setDestino(Atacar());
+      DestinoManager.setDestino(const Atacar());
       Navigator.pushNamed(context, '/Atacar');
     }
     else {

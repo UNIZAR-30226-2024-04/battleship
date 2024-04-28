@@ -15,9 +15,9 @@ class AuthProvider with ChangeNotifier {
   MensajeErrorModel mensajeErrorModel = MensajeErrorModel.getInstance();
 
   bool get isLoggedIn => _isLoggedIn;
-  String get email => Juego().perfilJugador.email;
-  String get password => Juego().perfilJugador.password;
-  String get name => Juego().perfilJugador.name;
+  String get email => Juego().miPerfil.email;
+  String get password => Juego().miPerfil.password;
+  String get name => Juego().miPerfil.name;
 
   set isLoggedIn(bool value) {
     _isLoggedIn = value;
@@ -170,7 +170,7 @@ class AuthProvider with ChangeNotifier {
         await Juego().cargarPartida();
         document.cookie = 'usuario=$name';
         document.cookie = 'tokenSesion=$tokenSesion';
-        print("USUARIO EN JUEGO:${Juego().perfilJugador.name}");
+        print("USUARIO EN JUEGO:${Juego().miPerfil.name}");
         notifyListeners(); // Notifica a los listeners que la variable ha cambiado
         return true;
       } else {

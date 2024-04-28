@@ -10,7 +10,7 @@ import 'package:http/http.dart' as http;
 import 'serverRoute.dart';
 
 class Defender extends StatefulWidget {
-  Defender({super.key});
+  const Defender({super.key});
 
   @override
   _DefenderState createState() => _DefenderState();
@@ -28,7 +28,21 @@ class _DefenderState extends State<Defender> {
         _isLoading = false;
       });
     });
-    iniciarTransicionAutomatica();
+    if (Juego().modalidadPartida == 'INDIVIDUAL') {
+      iniciarTransicionAutomatica();
+    }
+    else if (Juego().modalidadPartida == 'COMPETITIVA' || Juego().modalidadPartida == 'AMISTOSA') {
+      esperarDisparoRival();
+      Timer(const Duration(seconds: 4), () {
+      setState(() {
+        Juego().disparosPendientes = 1;
+        Juego().habilidadSeleccionadaEnTurno = false;
+        Juego().cambiarTurno();
+      });
+      DestinoManager.setDestino(const Atacar());
+      Navigator.pushNamed(context, '/Atacar');
+    });
+    }
   }
 
   @override
@@ -154,7 +168,7 @@ class _DefenderState extends State<Defender> {
           height: Juego().tablero_jugador.boardSize + Juego().tablero_jugador.casillaSize,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: await buildTablero(),
+            children: buildTablero(),
           ),
         ),
         for (var barco in Juego().tablero_oponente.barcos)
@@ -252,7 +266,7 @@ class _DefenderState extends State<Defender> {
         Juego().habilidadSeleccionadaEnTurno = false;
         Juego().cambiarTurno();
       });
-      DestinoManager.setDestino(Atacar());
+      DestinoManager.setDestino(const Atacar());
       Navigator.pushNamed(context, '/Atacar');
     });
   }
@@ -267,7 +281,7 @@ class _DefenderState extends State<Defender> {
       },
       body: jsonEncode(<String, dynamic>{
         'codigo': Juego().codigo,
-        'nombreId': Juego().perfilJugador.name,
+        'nombreId': Juego().miPerfil.name,
       }),
     );
 
@@ -311,7 +325,7 @@ class _DefenderState extends State<Defender> {
       },
       body: jsonEncode(<String, dynamic>{
         'codigo': Juego().codigo,
-        'nombreId': Juego().perfilJugador.name,
+        'nombreId': Juego().miPerfil.name,
       }),
     );
 
@@ -338,5 +352,16 @@ class _DefenderState extends State<Defender> {
     } else {
       throw Exception('La solicitud ha fallado');
     }
+  }
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////// PARTIDA COMPETITIVA ////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  void esperarDisparoRival() { // CAMBIAR EVENTO DE SOCKET!!!!!!
+    Juego().socket.on('esperandoDisparo', (data) {
+      print('Mensaje recibido del servidor: $data');
+    });
   }
 }

@@ -32,7 +32,7 @@ Widget buildHeader(BuildContext context, {bool ponerPerfil = true}) {
                   return;
                 }
 
-                DestinoManager.setDestino(Juego().perfilJugador);
+                DestinoManager.setDestino(Juego().miPerfil);
 
                 if (!AuthProvider().isLoggedIn) {
                   Navigator.pushNamed(context, '/InicioSesion');

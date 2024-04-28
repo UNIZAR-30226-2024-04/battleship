@@ -28,7 +28,7 @@ class DestinoManager {
   static String getRutaDestino() {
     if (_destino is InicioSesion) {
       return '/InicioSesion';
-    } else if (_destino == Juego().perfilJugador) {
+    } else if (_destino == Juego().miPerfil) {
       return '/Perfil';
     } else if (_destino is Principal) {
       return '/Principal';

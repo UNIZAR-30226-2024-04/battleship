@@ -10,6 +10,7 @@ import 'perfil.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'serverRoute.dart';
+import 'package:socket_io_client/socket_io_client.dart' as IO;
 
 class Juego {
   Tablero tablero_jugador1 = Tablero();
@@ -21,15 +22,15 @@ class Juego {
   int ganador = 0;
   List<Habilidad> habilidadesJugador1 = [];   // habilidades en el mazo del jugador 1
   List<Habilidad> habilidadesJugador2 = [];   // habilidades en el mazo del jugador 2
-  Perfil perfilJugador = Perfil();
+  Perfil miPerfil = Perfil();     // perfil del jugador con sesión iniciada
   List<bool> habilidadesUtilizadasJugador1 = [];
   List<bool> habilidadesUtilizadasJugador2 = [];
   int disparosPendientes = 0; // disparo básico 1. Habilidades depende
   bool habilidadSeleccionadaEnTurno = false;
   int numHabilidades = 3;
   int indexHabilidad = 0;
-  int codigo = -1;
-  String tokenSesion = '';
+  int codigo = -1;                // código de la partida
+  String tokenSesion = '';        // token de la sesión
   List<Offset> disparosAcertadosJugador1 = [];
   List<Offset> disparosAcertadosJugador2 = [];
   List<Offset> disparosFalladosJugador1 = [];
@@ -38,6 +39,8 @@ class Juego {
   List<Barco> barcosHundidosPorJugador2 = [];
   String modalidadPartida = '';
   ServerRoute serverRoute = ServerRoute();
+  late IO.Socket socket;
+  bool anfitrion = true;
 
   // Instancia privada y estática del singleton
   static final Juego _singleton = Juego._internal();
@@ -50,7 +53,7 @@ class Juego {
     barcosRestantesJugador1 = numBarcos;
     barcosRestantesJugador2 = numBarcos;
     turno = 1;
-    habilidadesJugador1 = perfilJugador.getHabilidadesSeleccionadas();
+    habilidadesJugador1 = miPerfil.getHabilidadesSeleccionadas();
     //habilidadesJugador2 = perfilJugador2.getHabilidadesSeleccionadas();
     habilidadesUtilizadasJugador1 = List.filled(habilidadesJugador1.length, false);
     habilidadesUtilizadasJugador2 = List.filled(habilidadesJugador2.length, false);
@@ -58,7 +61,15 @@ class Juego {
     habilidadSeleccionadaEnTurno = false;
     numHabilidades = 3;
     indexHabilidad = 0;
-    print("PERFIL DEL JUGADOR EN INTERNAL JUEGO: ${perfilJugador.name} ${perfilJugador.email} ${perfilJugador.password}");
+    print("PERFIL DEL JUGADOR EN INTERNAL JUEGO: ${miPerfil.name} ${miPerfil.email} ${miPerfil.password}");
+    anfitrion = true;
+    // Conecta con el servidor de socket
+    socket = IO.io('http://localhost:8080', <String, dynamic>{
+      'transports': ['websocket'],
+      'autoConnect': false,
+    });
+
+    socket.connect();
   }
 
   // Método para obtener la instancia del singleton
@@ -66,6 +77,12 @@ class Juego {
     return _singleton;
   }
 
+
+  @override
+  void dispose() {
+    //socket.disconnect();
+    //super.dispose();
+  }
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////// MÉTODOS DE LA CLASE ////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -124,7 +141,7 @@ class Juego {
 
   List<bool> getHabilidadesUtilizadasOponente() {
     return turno == 1 ? habilidadesUtilizadasJugador2 : habilidadesUtilizadasJugador1;
-  }  
+  }
 
   void cambiarTurno() {
     turno = turno == 1 ? 2 : 1;
@@ -144,6 +161,10 @@ class Juego {
     } else {
       barcosRestantesJugador2--;
     }
+  }
+
+  bool esMiTurno() {
+    return anfitrion == true ? turno == 1 : turno == 2;
   }
 
   int getBarcosRestantesOponente() {
@@ -167,7 +188,7 @@ class Juego {
   }
 
   String getGanador() {
-    return perfilJugador.name;
+    return miPerfil.name;
   }
 
   void reiniciarPartida() {
@@ -183,17 +204,21 @@ class Juego {
     disparosFalladosJugador2 = [];
     barcosHundidosPorJugador1 = [];
     barcosHundidosPorJugador2 = [];
+    anfitrion = true;
+    if(modalidadPartida == 'COMPETITIVA' || modalidadPartida == 'AMISTOSA') {
+      socket.close();
+    }
   }
 
   void setSession(String name, String email, String password, String token) {
     if (name != "") {
-      perfilJugador.name = name;
-      perfilJugador.email = email;
-      perfilJugador.password = password;
+      miPerfil.name = name;
+      miPerfil.email = email;
+      miPerfil.password = password;
       tokenSesion = token;
-      perfilJugador.updateState();
-      print("PONGO EL PERFIL A $name ${perfilJugador.name} ${perfilJugador.email} ${perfilJugador.password}");
-      print("PERFIL JUGADOR: ${perfilJugador.name} ${perfilJugador.email} ${perfilJugador.password}");
+      miPerfil.updateState();
+      print("PONGO EL PERFIL A $name ${miPerfil.name} ${miPerfil.email} ${miPerfil.password}");
+      print("PERFIL JUGADOR: ${miPerfil.name} ${miPerfil.email} ${miPerfil.password}");
     }
   }
 
@@ -333,7 +358,7 @@ class Juego {
       },
       body: jsonEncode(<String, dynamic>{
         'codigo': Juego().codigo,
-        'nombreId': Juego().perfilJugador.name,
+        'nombreId': Juego().miPerfil.name,
       }),
     );
 
@@ -377,7 +402,7 @@ class Juego {
       },
       body: jsonEncode(<String, dynamic>{
         'codigo': Juego().codigo,
-        'nombreId': Juego().perfilJugador.name,
+        'nombreId': Juego().miPerfil.name,
       }),
     );
 
@@ -518,14 +543,16 @@ class Juego {
         'Authorization': 'Bearer $tokenSesion',
       },
       body: jsonEncode(<String, String>{
-        'nombreId1': perfilJugador.name,
+        'nombreId1': miPerfil.name,
         'bioma': 'Mediterraneo' ,
       }),
       
     );
 
-    var data = jsonDecode(response.body);
     print("AL CREAR PARTIDA: ");
+    print(response);
+    print(response.body);
+    var data = jsonDecode(response.body);
     print(data);
     if (response.statusCode == 200) {
       var data = jsonDecode(response.body);
@@ -605,7 +632,7 @@ class Juego {
         'Authorization': 'Bearer ${Juego().tokenSesion}',
       },
       body: jsonEncode(<String, dynamic>{
-        'nombreId': Juego().perfilJugador.name,
+        'nombreId': Juego().miPerfil.name,
         'bioma': 'Mediterraneo' ,
       }),
     );
@@ -615,7 +642,11 @@ class Juego {
       print("CREAR SALA:");
       print(data);
       codigo = data['codigo'];
-
+      print("ESPERANDO RIVAL ...");
+      socket.on('esperandoRival', (data) {
+        print('Mensaje recibido del servidor: $data');
+      });
+      print("SALGO DE ESPERANDO RIVAL");
     } else {
       throw Exception('La solicitud ha fallado');
     }
@@ -623,13 +654,13 @@ class Juego {
 
   Future<bool> buscarSala() async {
     var response = await http.post(
-      Uri.parse(serverRoute.urlCrearSala),
+      Uri.parse(serverRoute.urlBuscarSala),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
         'Authorization': 'Bearer ${Juego().tokenSesion}',
       },
       body: jsonEncode(<String, dynamic>{
-        'nombreId': Juego().perfilJugador.name,
+        'nombreId': Juego().miPerfil.name,
       }),
     );
 
@@ -638,6 +669,14 @@ class Juego {
       print("BUSCAR SALA:");
       print(data);
       codigo = data['codigo'];
+      if (codigo == -1) {
+        return false;
+      }
+      print("ESPERANDO SALA ...");
+      socket.on('partidaEncontrada', (data) {
+        print('Mensaje recibido del servidor: $data');
+      });
+      print("SALGO DE ESPERANDO SALA");
       return true;
 
     } else {

@@ -23,6 +23,9 @@ router.post('/mostrarTableroEnemigo', verificarToken, partidaMultiController.mos
 // Ruta para mostrar ambos tableros
 router.post('/mostrarTableros', verificarToken, partidaMultiController.mostrarTableros);
 
+// Ruta para abandonar partida
+router.post('/abandonarPartida', verificarToken, partidaMultiController.abandonarPartida);
+
 
 // -------------------------------------------- //
 // ------------------ SALAS ------------------- //

@@ -6,6 +6,7 @@ import 'botones.dart';
 import 'comun.dart';
 import 'barco.dart';
 import 'atacar.dart';
+import 'defender.dart';
 import 'serverRoute.dart';
 
 class ColocarBarcos extends StatefulWidget {
@@ -207,8 +208,25 @@ class _ColocarBarcosState extends State<ColocarBarcos> {
   }
 
   Future<void> _handlePressed(BuildContext context) async {
-    await Juego().crearPartida();
-    DestinoManager.setDestino(Atacar());
-    Navigator.pushNamed(context, '/Atacar');
+    if (Juego().modalidadPartida == "INDIVIDUAL") {
+      await Juego().crearPartida();
+      DestinoManager.setDestino(const Atacar());
+      Navigator.pushNamed(context, '/Atacar');
+    }
+    else if (Juego().modalidadPartida == "COMPETITIVA" ||
+              Juego().modalidadPartida == "AMISTOSA") {
+      if (Juego().anfitrion) {
+        DestinoManager.setDestino(const Atacar());
+        Navigator.pushNamed(context, '/Atacar');
+      }
+      else {
+        DestinoManager.setDestino(const Defender());
+        Navigator.pushNamed(context, '/Defender');
+      }
+    }
+    else if (Juego().modalidadPartida == "TORNEO") {
+      DestinoManager.setDestino(const Atacar());
+      Navigator.pushNamed(context, '/Atacar');
+    }
   }
 }

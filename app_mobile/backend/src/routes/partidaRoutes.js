@@ -36,4 +36,5 @@ router.post('/obtenerChat', verificarToken, partidaController.obtenerChat);
 // Ruta para enviar mensaje
 router.post('/enviarMensaje', verificarToken, partidaController.enviarMensaje);
 
+
 module.exports = router;
