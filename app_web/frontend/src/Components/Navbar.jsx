@@ -71,13 +71,13 @@ export function Navbar() {
                         };
                     },
                 }}>
-                    <MenuItem onClick={() => navigate('/')}>Home</MenuItem>
+                    <MenuItem onClick={() => navigate('/home')}>Home</MenuItem>
                     <MenuItem onClick={() => navigate('/fleet')}>Flota</MenuItem>
                     <MenuItem onClick={() => navigate('/settings')}>Ajustes</MenuItem>
                     <MenuItem onClick={() => navigate('/profile')}>Perfil</MenuItem>
                     <MenuItem onClick={() => navigate('/social')}>Social</MenuItem>
                     <MenuItem onClick={() => navigate('/register')}>Registo</MenuItem>
-                    <MenuItem onClick={() => navigate('/login')}>Login</MenuItem>
+                    <MenuItem onClick={() => navigate('/')}>Login</MenuItem>
                 </Menu>
             </Sidebar>
         </div>

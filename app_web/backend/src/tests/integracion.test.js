@@ -132,9 +132,9 @@ describe('Pruebas de integración', function() {
         .then(response => {
             response.body = JSON.parse(response.body);
             expect(response.statusCode).toBe(200);
-            expect(response.body.length).toBe(5);
-            expect(response.body[0].coordenadas[0].i).toBe(9);
-            expect(response.body[0].coordenadas[0].j).toBe(9);
+            expect(response.body.tableroDevuelto.length).toBe(5);
+            expect(response.body.tableroDevuelto[0].coordenadas[0].i).toBe(9);
+            expect(response.body.tableroDevuelto[0].coordenadas[0].j).toBe(9);
         });
     });
     it('Eliminar usuario mediante la ruta', async () => {

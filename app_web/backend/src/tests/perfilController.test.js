@@ -645,7 +645,7 @@ describe('Actualizar puntos de experiencia', () => {
     expect(res.statusCode).toBe(undefined);
   });
   it('Debería actualizar correctamente los puntos de experiencia', async () => {
-      const req = { body: { nombreId: 'usuario1', nuevosPuntosExperiencia: 10 } };
+      const req = { body: { nombreId: 'usuario1', nuevosPuntosExperiencia: 1234567890 } };
       const res = { json: () => {}, status: function(s) { 
         this.statusCode = s; return this; }, send: () => {} };
       try {
@@ -660,7 +660,7 @@ describe('Actualizar puntos de experiencia', () => {
         await obtenerUsuario(req2, res2);
       } catch (error) {}
       expect(res2.statusCode).toBe(undefined);
-      expect(res2._json.puntosExperiencia).toBe(10);
+      expect(res2._json.puntosExperiencia).toBe(1234567890);
   });
   it('Debería fallar al actualizar los puntos de experiencia con un campo extra', async () => {
       const req = { body: { nombreId: 'usuario1', nuevosPuntosExperiencia: 10, extra: 1 } };
