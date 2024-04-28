@@ -1,3 +1,16 @@
 {
-    "serverAddress": "http://localhost:8080"
+    "serverAddress": "http://localhost:8080",
+
+    "partidaEncontrada": "partidaEncontrada",
+
+    "continuaTurno": "continuaTurno",
+
+    "turnoRecibido": "turnoRecibido",
+
+    "finTurnos": "finTurnos",
+
+    "abandono": "abandono",
+
+    "chat": "chat"
+
 }

@@ -8,7 +8,7 @@ const biomasDisponibles = require('../data/biomas');
 const {actualizarEstadisticas, actualizarPuntosExperiencia} = require('./perfilController');
 const PartidaController = require('./partidaController');
 const socketIo = require('socket.io');
-const { getIO } = require('../socketManager');
+const { getIO, eventosSocket } = require('../socketManager');
 const tableroDim = Coordenada.i.max;  // Dimensiones del tablero
 /**
  * @module partidaMulti
@@ -28,37 +28,6 @@ const tableroDim = Coordenada.i.max;  // Dimensiones del tablero
 // ------------------------------------------ //
 // ----------- FUNCIONES INTERNAS ----------- //
 // ------------------------------------------ //
-
-// Funcion que crea el socket de la partida con 2 jugadores y espectadores
-function crearSocket(codigoPartida) {
-  const io = getIO();
-  const partidaSocket = io.of('/partida' + codigoPartida);
-  partidaSocket.on('connection', (socket) => {
-    console.log('Usuario conectado a la sala', codigoPartida);
-    socket.on('disconnect', () => {
-      console.log('Usuario desconectado de la partida', codigoPartida);
-    });
-    socket.on('partidaEncontrada', (salaId) => {
-      console.log('Emparejando a', salaId);
-    });
-    socket.on('continuaTurno', (jugador) => {
-      console.log('Continua el turno de disparos', jugador);
-    });
-    socket.on('finTurno', (jugador) => {
-      console.log('Fin del turno de disparos', jugador);
-    });
-    socket.on('finPartida', (ganador) => {
-      console.log('Fin de la partida, ganador ', ganador);
-    });
-    socket.on('abandono', (perdedor) => {
-      console.log('Abandona la partida', perdedor);
-    });
-    socket.on('chat', (mensaje) => {
-      console.log('Mensaje en el chat', mensaje);
-    });   
-  });
-  return partidaSocket;
-}
 
 
 
@@ -110,8 +79,8 @@ exports.crearSala = async (req, res) => {
       amistosa: amistosa,
     });
     const salaGuardada = await sala.save();
-    let socket = crearSocket(codigo);
     // Verificar si los sockets están disponibles
+    let socket = getIO();
     if (salaGuardada && !socket) {
       res.status(500).send('Los sockets no están disponibles');
       console.error('Los sockets no están disponibles');
@@ -132,7 +101,7 @@ exports.crearSala = async (req, res) => {
  * @param {Object} req - El objeto de solicitud HTTP
  * @param {String} req.body.nombreId - El nombreId del jugador
  * @param {Object} res - El objeto de respuesta HTTP con el codigo de la partida creada
- * @param {Number} res.codigo - El código de la partida
+ * @param {Number} res.codigo - El código de la partida  (-1 si no se encuentra sala)
  */
 exports.buscarSala = async (req, res) => {
   // Esta funcion no llama a ninguna funcion de partidaController
@@ -156,7 +125,7 @@ exports.buscarSala = async (req, res) => {
       // Se llama a crear partida con los datos de la sala
       await PartidaController.crearPartida({ body: { codigo: sala.codigo, nombreId1: sala.nombreId1, nombreId2: sala.nombreId2, bioma: sala.bioma, amistosa: sala.amistosa } }, res);
     } else {
-      res.status(404).send('Sala no encontrada');
+      res.json({ codigo: -1 });
     }
   }
   catch (error) {
@@ -180,7 +149,7 @@ exports.abandonarPartida = async (req, res) => {
   // Verificar si hay algún parámetro extra
   await PartidaController.abandonarPartida(req, res);
   const io = getIO();
-  io.of('/partida' + codigo).emit('abandono', nombreId);
+  io.to('/partida' + codigo).emit(eventosSocket.abandono, codigo);
 };
 
 /**
@@ -276,9 +245,9 @@ exports.realizarDisparo = async (req, res) => {
   const repetirTurno = await PartidaController.realizarDisparo(req, res);
   const io = getIO();
   if (repetirTurno) {
-    io.of('/partida' + req.body.codigo).emit('continuaTurno', req.body.nombreId);
+    io.of('/partida' + req.body.codigo).emit(eventosSocket.continuaTurno, req.body.codigo, res.disparoRealizado);
   } else if (!repetirTurno){
-    io.of('/partida' + req.body.codigo).emit('finTurno', req.body.nombreId);
+    io.of('/partida' + req.body.codigo).emit(eventosSocket.finTurnos, req.body.codigo, res.disparoRealizado);
   }
 };
 
@@ -304,9 +273,9 @@ exports.realizarDisparoMisilRafaga = async (req, res) => {
   const repetirTurno = await PartidaController.realizarDisparoMisilRafaga(req, res);
   const io = getIO();
   if (repetirTurno) {
-    io.of('/partida' + req.body.codigo).emit('continuaTurno', req.body.nombreId);
+    io.of('/partida' + req.body.codigo).emit(eventosSocket.continuaTurno, req.body.codigo, res.disparoRealizado);
   } else if (!repetirTurno){
-    io.of('/partida' + req.body.codigo).emit('finTurno', req.body.nombreId);
+    io.of('/partida' + req.body.codigo).emit(eventosSocket.finTurnos, req.body.codigo, res.disparoRealizado);
   }
 };
 
@@ -333,9 +302,9 @@ exports.realizarDisparoTorpedoRecargado = async (req, res) => {
   const repetirTurno = await PartidaController.realizarDisparoTorpedoRecargado(req, res);
   const io = getIO();
   if (repetirTurno) {
-    io.of('/partida' + req.body.codigo).emit('continuaTurno', req.body.nombreId);
+    io.of('/partida' + req.body.codigo).emit(eventosSocket.continuaTurno, req.body.codigo, res.disparoRealizado);
   } else if (!repetirTurno){
-    io.of('/partida' + req.body.codigo).emit('finTurno', req.body.nombreId);
+    io.of('/partida' + req.body.codigo).emit(eventosSocket.finTurnos, req.body.codigo, res.disparoRealizado);
   }
 };
 
@@ -374,6 +343,6 @@ exports.obtenerChat = async (req, res) => {
  */
 exports.enviarMensaje = async (req, res) => {
   await PartidaController.enviarMensaje(req, res);
-  io.of('/partida' + req.body.codigo).emit('chat', req.body.nombreId + ': ' + req.body.mensaje);
+  io.of('/partida' + req.body.codigo).emit(eventosSocket.chat, req.body.codigo, req.body.mensaje);
 };
 

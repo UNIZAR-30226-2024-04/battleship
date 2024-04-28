@@ -77,8 +77,6 @@ export function Home() {
             // Conectar al socket de la sala
             const salaSocket = io.connect(`/partida${responseData['codigo']}`);
             console.log('partidaEncontrada en:', responseData['codigo']);
-            salaSocket.emit('esperandoRival', responseData['codigo']);
-            console.log('Escuchando partidaEncontrada en:', salaSocket);
             // Escuchar evento de partida encontrada
             salaSocket.on('partidaEncontrada', (codigo) => {
                 console.log('Partida encontrada en:', codigo);
