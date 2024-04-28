@@ -297,7 +297,24 @@ exports.abandonarPartida = async (req, res) => {
     const partidaActual = await Partida.findOne(filtro);
     if (partidaActual) {
       const jugador = await Perfil.findOne({ nombreId: partidaActual.nombreId1 });
-      
+      // Cambiamos el código de partida actual del jugador a -1
+      jugador.codigoPartidaActual = -1;
+      await Perfil.findOneAndUpdate(
+        { nombreId: jugador.nombreId }, // Filtrar
+        jugador, // Actualizar (jugador contiene los cambios)
+        { new: true } // Para devolver el documento actualizado
+      );      
+      // Si hay un segundo jugador, también lo cambiamos
+      if (partidaActual.nombreId2) {
+        const jugador2 = await Perfil.findOne({ nombreId: partidaActual.nombreId2 });
+        jugador2.codigoPartidaActual = -1;
+        await Perfil.findOneAndUpdate(
+          { nombreId: jugador2.nombreId }, // Filtrar
+          jugador2, // Actualizar (jugador contiene los cambios)
+          { new: true } // Para devolver el documento actualizado
+        );
+      }
+      res.json({ mensaje: 'Partida abandonada con éxito' });
     } else {
       res.status(404).send('Partida no encontrada');
       console.error('Partida no encontrada');
