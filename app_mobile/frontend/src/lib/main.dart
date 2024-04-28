@@ -13,6 +13,7 @@ import 'comun.dart';
 import 'botones.dart';
 import 'destino.dart';
 import 'recContrasena.dart';
+import 'sala.dart';
 import 'social.dart';
 
 void main() {
@@ -73,6 +74,9 @@ class _MyAppState extends State<MyApp> {
           case '/Destino':
             builder = (BuildContext _) => DestinoManager.getDestino();
             break;
+          case '/Sala':
+            builder = (BuildContext _) => const Sala();
+            break;
           default:
             throw Exception('Ruta no definida');
         }
@@ -118,7 +122,7 @@ class Principal extends StatelessWidget {
             const SizedBox(height: 7),
             buildActionButton(context, () => _handleIndividualPressed(context, _authProvider), "Partida Individual"),
             const SizedBox(height: 7),
-            buildActionButton(context, () => _handleTorneosPressed(context, _authProvider), "Torneos"),
+            buildActionButton(context, () => _handleTorneoPressed(context, _authProvider), "Torneo"),
             const Spacer(),
             buildActions(context),
           ],
@@ -128,7 +132,8 @@ class Principal extends StatelessWidget {
   }
 
   void _handleCompetitivaPressed(BuildContext context, AuthProvider authProvider) {
-    DestinoManager.setDestino(const ColocarBarcos());
+    DestinoManager.setDestino(const Sala());
+    Juego().modalidadPartida = "COMPETITIVA";
     if (!authProvider.isLoggedIn) {
       Navigator.pushNamed(context, '/InicioSesion');
     } 
@@ -137,12 +142,13 @@ class Principal extends StatelessWidget {
       Navigator.pushNamed(context, '/Atacar');
     }
     else {
-      Navigator.pushNamed(context, '/ColocarBarcos');
+      Navigator.pushNamed(context, '/Sala');
     }
   }
 
   void _handleAmistosaPressed(BuildContext context, AuthProvider authProvider) {
-    DestinoManager.setDestino(const ColocarBarcos());
+    DestinoManager.setDestino(const Sala());
+    Juego().modalidadPartida = "AMISTOSA";
     if (!authProvider.isLoggedIn) {
       Navigator.pushNamed(context, '/InicioSesion');
     } 
@@ -151,12 +157,13 @@ class Principal extends StatelessWidget {
       Navigator.pushNamed(context, '/Atacar');
     }
     else {
-      Navigator.pushNamed(context, '/ColocarBarcos');
+      Navigator.pushNamed(context, '/Sala');
     }
   }
 
   void _handleIndividualPressed(BuildContext context, AuthProvider authProvider) {
     DestinoManager.setDestino(const ColocarBarcos());
+    Juego().modalidadPartida = "INDIVIDUAL";
     if (!authProvider.isLoggedIn) {
       Navigator.pushNamed(context, '/InicioSesion');
     } 
@@ -169,8 +176,9 @@ class Principal extends StatelessWidget {
     }
   }
 
-  void _handleTorneosPressed(BuildContext context, AuthProvider authProvider) {
+  void _handleTorneoPressed(BuildContext context, AuthProvider authProvider) {
     DestinoManager.setDestino(const ColocarBarcos());
+    Juego().modalidadPartida = "TORNEO";
     if (!authProvider.isLoggedIn) {
       Navigator.pushNamed(context, '/InicioSesion');
     } 

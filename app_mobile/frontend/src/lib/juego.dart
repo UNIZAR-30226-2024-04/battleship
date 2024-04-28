@@ -1,12 +1,15 @@
 import 'package:battleship/authProvider.dart';
 import 'package:battleship/tablero.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'barco.dart';
+import 'comun.dart';
 import 'habilidad.dart';
 import 'perfil.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-
+import 'serverRoute.dart';
 
 class Juego {
   Tablero tablero_jugador1 = Tablero();
@@ -24,16 +27,7 @@ class Juego {
   int disparosPendientes = 0; // disparo básico 1. Habilidades depende
   bool habilidadSeleccionadaEnTurno = false;
   int numHabilidades = 3;
-  int numAtaques = 0; // número de ataques en total
-  int numAtaquesJugador1 = 0;
-  int numAtaquesJugador2 = 0;
   int indexHabilidad = 0;
-  String urlObtenerTablero = 'http://localhost:8080/perfil/obtenerDatosPersonales';
-  String urlMoverBarcoInicial = 'http://localhost:8080/perfil/moverBarcoInicial';
-  String urlActualizarPartida = 'http://localhost:8080/partida/actualizarEstadoPartida';
-  String urlCrearPartida = 'http://localhost:8080/partida/crearPartida';
-  String urlMostrarMiTablero = 'http://localhost:8080/partida/mostrarMiTablero';
-  String urlMostrarTableroEnemigo = 'http://localhost:8080/partida/mostrarTableroEnemigo';
   int codigo = -1;
   String tokenSesion = '';
   List<Offset> disparosAcertadosJugador1 = [];
@@ -42,8 +36,8 @@ class Juego {
   List<Offset> disparosFalladosJugador2 = [];
   List<Barco> barcosHundidosPorJugador1 = [];
   List<Barco> barcosHundidosPorJugador2 = [];
-  String nombreJugador1 = '';
-  String nombreJugador2 = '';
+  String modalidadPartida = '';
+  ServerRoute serverRoute = ServerRoute();
 
   // Instancia privada y estática del singleton
   static final Juego _singleton = Juego._internal();
@@ -63,13 +57,132 @@ class Juego {
     disparosPendientes = 1;
     habilidadSeleccionadaEnTurno = false;
     numHabilidades = 3;
-    numAtaques = 0;
-    numAtaquesJugador1 = 0;
-    numAtaquesJugador2 = 0;
     indexHabilidad = 0;
-    nombreJugador1 = "";
-    nombreJugador2 = "IA";
     print("PERFIL DEL JUGADOR EN INTERNAL JUEGO: ${perfilJugador.name} ${perfilJugador.email} ${perfilJugador.password}");
+  }
+
+  // Método para obtener la instancia del singleton
+  factory Juego() {
+    return _singleton;
+  }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////// MÉTODOS DE LA CLASE ////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  Tablero get tablero_jugador {
+    return turno == 1 ? tablero_jugador1 : tablero_jugador2;
+  }
+
+  Tablero get tablero_oponente {
+    return turno == 1 ? tablero_jugador2 : tablero_jugador1;
+  }
+
+  List<Barco> get barcos_jugador {
+    return turno == 1 ? tablero_jugador1.barcos : tablero_jugador2.barcos;
+  }
+
+  List<Barco> get barcos_oponente {
+    return turno == 1 ? tablero_jugador2.barcos : tablero_jugador1.barcos;
+  }
+
+  List<Offset> get disparosAcertadosJugador {
+    return turno == 1 ? disparosAcertadosJugador1 : disparosAcertadosJugador2;
+  }
+
+  List<Offset> get disparosFalladosJugador {
+    return turno == 1 ? disparosFalladosJugador1 : disparosFalladosJugador2;
+  }
+
+  List<Offset> get disparosAcertadosOponente {
+    return turno == 1 ? disparosAcertadosJugador2 : disparosAcertadosJugador1;
+  }
+
+  List<Offset> get disparosFalladosOponente {
+    return turno == 1 ? disparosFalladosJugador2 : disparosFalladosJugador1;
+  }
+
+  List<Barco> get barcosHundidosPorJugador {
+    return turno == 1 ? barcosHundidosPorJugador1 : barcosHundidosPorJugador2;
+  }
+
+  List<Barco> get barcosHundidosPorOponente {
+    return turno == 1 ? barcosHundidosPorJugador2 : barcosHundidosPorJugador1;
+  }
+
+  List<Habilidad> getHabilidadesJugador() {
+    return turno == 1 ? habilidadesJugador1 : habilidadesJugador2;
+  }
+
+  List<Habilidad> getHabilidadesOponente() {
+    return turno == 1 ? habilidadesJugador2 : habilidadesJugador1;
+  }
+
+  List<bool> getHabilidadesUtilizadasJugador() {
+    return turno == 1 ? habilidadesUtilizadasJugador1 : habilidadesUtilizadasJugador2;
+  }
+
+  List<bool> getHabilidadesUtilizadasOponente() {
+    return turno == 1 ? habilidadesUtilizadasJugador2 : habilidadesUtilizadasJugador1;
+  }  
+
+  void cambiarTurno() {
+    turno = turno == 1 ? 2 : 1;
+  }
+
+  void decrementarBarcosRestantesOponente() {
+    if (turno == 1) {
+      barcosRestantesJugador2--;
+    } else {
+      barcosRestantesJugador1--;
+    }
+  }
+
+  void decrementarBarcosRestantesJugador() {
+    if (turno == 1) {
+      barcosRestantesJugador1--;
+    } else {
+      barcosRestantesJugador2--;
+    }
+  }
+
+  int getBarcosRestantesOponente() {
+    return turno == 1 ? barcosRestantesJugador2 : barcosRestantesJugador1;
+  }
+
+  int getBarcosRestantesJugador() {
+    return turno == 1 ? barcosRestantesJugador1 : barcosRestantesJugador2;
+  }
+
+  bool juegoTerminado() {
+    if (barcosRestantesJugador1 == 0) {
+      ganador = 2;
+      return true;
+    }
+    if (barcosRestantesJugador2 == 0) {
+      ganador = 1;
+      return true;
+    }
+    return false;
+  }
+
+  String getGanador() {
+    return perfilJugador.name;
+  }
+
+  void reiniciarPartida() {
+    numBarcos = 5;
+    barcosRestantesJugador1 = numBarcos;
+    barcosRestantesJugador2 = numBarcos;
+    turno = 1;
+    ganador = 0;
+    codigo = -1;
+    disparosAcertadosJugador1 = [];
+    disparosAcertadosJugador2 = [];
+    disparosFalladosJugador1 = [];
+    disparosFalladosJugador2 = [];
+    barcosHundidosPorJugador1 = [];
+    barcosHundidosPorJugador2 = [];
   }
 
   void setSession(String name, String email, String password, String token) {
@@ -82,6 +195,104 @@ class Juego {
       print("PONGO EL PERFIL A $name ${perfilJugador.name} ${perfilJugador.email} ${perfilJugador.password}");
       print("PERFIL JUGADOR: ${perfilJugador.name} ${perfilJugador.email} ${perfilJugador.password}");
     }
+  }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////// AUXILIAR /////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////  
+
+  Offset boundPosition(Offset position, double height, double width) {
+    double dx = position.dx;
+    double dy = position.dy;
+
+    // Aseguramos que el barco no se salga por la izquierda o la parte superior del tablero
+    dx = dx < 1 ? 1 : dx;
+    dy = dy < 1 ? 1 : dy;
+
+    // Aseguramos que el barco no se salga por la derecha o la parte inferior del tablero
+    dx = dx + height / Juego().tablero_jugador.casillaSize > Juego().tablero_jugador.numFilas ? Juego().tablero_jugador.numFilas - height / Juego().tablero_jugador.casillaSize : dx;
+    dy = dy + width / Juego().tablero_jugador.casillaSize > Juego().tablero_jugador.numColumnas ? Juego().tablero_jugador.numColumnas - width / Juego().tablero_jugador.casillaSize : dy;
+
+    return Offset(dx, dy);
+  }
+
+  List<Barco> obtenerBarcosRestantes() {
+    List<Barco> barcosRestantes = [];
+    bool hundido = false;
+    for (var barco in Juego().tablero_jugador1.barcos) {
+      hundido = false;
+      print("NOMBRE BARCO: ${barco.nombre}");
+      for (var barcoHundido in Juego().barcosHundidosPorJugador) {
+        print("NOMBRE BARCO HUNDIDO: ${barcoHundido.nombre}");
+        if (barcoHundido.nombre.toLowerCase() == barco.nombre.toLowerCase()) {
+          print("DETECTO HUNDIDO");
+          hundido = true;
+          break;
+        }
+      }
+      if (!hundido) {
+        print("LO AÑADO A BARCOS RESTANTES");
+        barcosRestantes.add(barco);
+      }
+    }
+    return barcosRestantes;
+  }
+
+  List<List<Offset>> getCoordinates(List<dynamic> inputList) {
+    List<List<Offset>> coordinates = [];
+
+    for (var barco in inputList) {
+      List<dynamic> coordenadas = barco['coordenadas'];
+      List<Offset> coordenadasBarco = [];
+      for (var coordenada in coordenadas) {
+        coordenadasBarco.add(Offset(coordenada['i'].toDouble(), coordenada['j'].toDouble()));
+      }
+      coordinates.add(coordenadasBarco);
+    }
+
+    return coordinates;
+  }
+
+  List<String> getNames(List<dynamic> inputList) {
+    List<String> nombresBarcos = [];
+
+    for (var barco in inputList) {
+      nombresBarcos.add(barco['tipo'].toLowerCase());
+    }
+
+    return nombresBarcos;
+  }
+
+  List<Barco> procesaTableroBD(List<List<Offset>> tablero, List<String> nombres, List<bool> barcosHundidos) {
+    List<Barco> barcos = [];
+
+    for (int i = 0; i < numBarcos; i++) {
+      String nombre = nombres[i];
+      Offset barcoPos = Offset(tablero[i][0].dx, tablero[i][0].dy);
+      int long = tablero[i].length;
+      bool rotado = tablero[i][0].dy == tablero[i][1].dy ? true : false;
+      bool hundido = barcosHundidos[i];
+      barcos.add(Barco(nombre, barcoPos, long, rotado, hundido));
+      barcos[i].showInfo();
+    }
+    return barcos;
+  }
+
+  List<bool> obtenerHundidos(List<dynamic> inputList) {
+    List<bool> barcosHundidos = [];
+
+    for (var barco in inputList) {
+      bool hundido = true;
+      for (var coordenada in barco['coordenadas']) {
+        if (coordenada['estado'] == 'Agua') {
+          hundido = false;
+          break;
+        }
+      }
+      barcosHundidos.add(hundido);
+    }
+
+    return barcosHundidos;
   }
 
   Barco buscarBarcoHundido(Map<String, dynamic> datosJuego) {
@@ -109,9 +320,13 @@ class Juego {
     return barcoHundido;
   }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////// PARTIDA VS IA //////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////  
+
   Future<void> actualizarEstadoJugador() async {
     var response = await http.post(
-      Uri.parse(urlMostrarTableroEnemigo),
+      Uri.parse(serverRoute.urlMostrarTableroEnemigo),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
         'Authorization': 'Bearer ${Juego().tokenSesion}',
@@ -155,7 +370,7 @@ class Juego {
 
   Future<void> actualizarEstadoOponente() async {
     var response = await http.post(
-      Uri.parse(urlMostrarMiTablero),
+      Uri.parse(serverRoute.urlMostrarMiTablero),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
         'Authorization': 'Bearer ${Juego().tokenSesion}',
@@ -202,8 +417,7 @@ class Juego {
   }
 
   Future<void> cargarPartida() async {
-    nombreJugador1 = perfilJugador.name;
-    tablero_jugador1.barcos = await obtenerBarcos(AuthProvider().name, urlObtenerTablero);
+    tablero_jugador1.barcos = await obtenerBarcos(AuthProvider().name);
     if (codigo != -1) {
       print("VOY A ACTUALIZAR ESTADO JUGADOR");
       await actualizarEstadoJugador();
@@ -221,94 +435,9 @@ class Juego {
     }
   }
 
-  // Método para obtener la instancia del singleton
-  factory Juego() {
-    return _singleton;
-  }
-
-  List<List<Offset>> getCoordinates(List<dynamic> inputList) {
-    List<List<Offset>> coordinates = [];
-
-    for (var barco in inputList) {
-      List<dynamic> coordenadas = barco['coordenadas'];
-      List<Offset> coordenadasBarco = [];
-      for (var coordenada in coordenadas) {
-        coordenadasBarco.add(Offset(coordenada['i'].toDouble(), coordenada['j'].toDouble()));
-      }
-      coordinates.add(coordenadasBarco);
-    }
-
-    return coordinates;
-  }
-
-  List<String> getNames(List<dynamic> inputList) {
-    List<String> nombresBarcos = [];
-
-    for (var barco in inputList) {
-      nombresBarcos.add(barco['tipo'].toLowerCase());
-    }
-
-    return nombresBarcos;
-  }
-
-
-  List<Barco> procesaTableroBD(List<List<Offset>> tablero, List<String> nombres, List<bool> barcosHundidos) {
-    List<Barco> barcos = [];
-
-    for (int i = 0; i < numBarcos; i++) {
-      String nombre = nombres[i];
-      Offset barcoPos = Offset(tablero[i][0].dx, tablero[i][0].dy);
-      int long = tablero[i].length;
-      bool rotado = tablero[i][0].dy == tablero[i][1].dy ? true : false;
-      bool hundido = barcosHundidos[i];
-      barcos.add(Barco(nombre, barcoPos, long, rotado, hundido));
-      barcos[i].showInfo();
-    }
-    return barcos;
-  }
-
-  List<bool> obtenerHundidos(List<dynamic> inputList) {
-    List<bool> barcosHundidos = [];
-
-    for (var barco in inputList) {
-      bool hundido = true;
-      for (var coordenada in barco['coordenadas']) {
-        if (coordenada['estado'] == 'Agua') {
-          hundido = false;
-          break;
-        }
-      }
-      barcosHundidos.add(hundido);
-    }
-
-    return barcosHundidos;
-  }
-
-  List<Barco> obtenerBarcosRestantes() {
-    List<Barco> barcosRestantes = [];
-    bool hundido = false;
-    for (var barco in Juego().tablero_jugador1.barcos) {
-      hundido = false;
-      print("NOMBRE BARCO: ${barco.nombre}");
-      for (var barcoHundido in Juego().barcosHundidosPorJugador) {
-        print("NOMBRE BARCO HUNDIDO: ${barcoHundido.nombre}");
-        if (barcoHundido.nombre.toLowerCase() == barco.nombre.toLowerCase()) {
-          print("DETECTO HUNDIDO");
-          hundido = true;
-          break;
-        }
-      }
-      if (!hundido) {
-        print("LO AÑADO A BARCOS RESTANTES");
-        barcosRestantes.add(barco);
-      }
-    }
-    return barcosRestantes;
-  }
-
-  Future<List<Barco>> obtenerBarcos(String usuario, String url) async {
+  Future<List<Barco>> obtenerBarcos(String usuario) async {
     var response = await http.post(
-      Uri.parse(url),
+      Uri.parse(serverRoute.urlObtenerTablero),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
         'Authorization': 'Bearer $tokenSesion',
@@ -349,7 +478,6 @@ class Juego {
     }
   }
 
-
   Future<bool> moverBarco(String url, Offset nuevaPos, bool rotar, String usuario, int barcoId) async {
     var uri = Uri.parse(url);
     var response = await
@@ -381,210 +509,10 @@ class Juego {
       return false;
     }
   }
-
-
-  Tablero get tablero_jugador {
-    return turno == 1 ? tablero_jugador1 : tablero_jugador2;
-  }
-
-  Tablero get tablero_oponente {
-    return turno == 1 ? tablero_jugador2 : tablero_jugador1;
-  }
-
-  List<Barco> get barcos_jugador {
-    return turno == 1 ? tablero_jugador1.barcos : tablero_jugador2.barcos;
-  }
-
-  List<Barco> get barcos_oponente {
-    return turno == 1 ? tablero_jugador2.barcos : tablero_jugador1.barcos;
-  }
-
-  List<Offset> get disparosAcertadosJugador {
-    return turno == 1 ? disparosAcertadosJugador1 : disparosAcertadosJugador2;
-  }
-
-  List<Offset> get disparosFalladosJugador {
-    return turno == 1 ? disparosFalladosJugador1 : disparosFalladosJugador2;
-  }
-
-  List<Offset> get disparosAcertadosOponente {
-    return turno == 1 ? disparosAcertadosJugador2 : disparosAcertadosJugador1;
-  }
-
-  List<Offset> get disparosFalladosOponente {
-    return turno == 1 ? disparosFalladosJugador2 : disparosFalladosJugador1;
-  }
-
-  List<Barco> get barcosHundidosPorJugador {
-    return turno == 1 ? barcosHundidosPorJugador1 : barcosHundidosPorJugador2;
-  }
-
-  List<Barco> get barcosHundidosPorOponente {
-    return turno == 1 ? barcosHundidosPorJugador2 : barcosHundidosPorJugador1;
-  }
-
-  void cambiarTurno() {
-    turno = turno == 1 ? 2 : 1;
-  }
-
-  void decrementarBarcosRestantesOponente() {
-    if (turno == 1) {
-      barcosRestantesJugador2--;
-    } else {
-      barcosRestantesJugador1--;
-    }
-  }
-
-  void decrementarBarcosRestantesJugador() {
-    if (turno == 1) {
-      barcosRestantesJugador1--;
-    } else {
-      barcosRestantesJugador2--;
-    }
-  }
-
-  int getBarcosRestantesOponente() {
-    return turno == 1 ? barcosRestantesJugador2 : barcosRestantesJugador1;
-  }
-
-  int getBarcosRestantesJugador() {
-    return turno == 1 ? barcosRestantesJugador1 : barcosRestantesJugador2;
-  }
-
-  // Devuelve true si el juego ha terminado y actualiza el ganador
-  bool juegoTerminado() {
-    if (barcosRestantesJugador1 == 0) {
-      ganador = 2;
-      return true;
-    }
-    if (barcosRestantesJugador2 == 0) {
-      ganador = 1;
-      return true;
-    }
-    return false;
-  }
-
-  // Devolver el nombre del ganador en funcion del turno actual
-  String getGanador() {
-    return turno == 1 ? nombreJugador1 : nombreJugador2;
-  }
-
-  void reiniciarPartida() {
-    numBarcos = 5;
-    barcosRestantesJugador1 = numBarcos;
-    barcosRestantesJugador2 = numBarcos;
-    turno = 1;
-    ganador = 0;
-    codigo = -1;
-    disparosAcertadosJugador1 = [];
-    disparosAcertadosJugador2 = [];
-    disparosFalladosJugador1 = [];
-    disparosFalladosJugador2 = [];
-    barcosHundidosPorJugador1 = [];
-    barcosHundidosPorJugador2 = [];
-    numAtaques = 0;
-    numAtaquesJugador1 = 0;
-    numAtaquesJugador2 = 0;
-  }
-
-  Offset boundPosition(Offset position, double height, double width) {
-    double dx = position.dx;
-    double dy = position.dy;
-
-    // Aseguramos que el barco no se salga por la izquierda o la parte superior del tablero
-    dx = dx < 1 ? 1 : dx;
-    dy = dy < 1 ? 1 : dy;
-
-    // Aseguramos que el barco no se salga por la derecha o la parte inferior del tablero
-    dx = dx + height / Juego().tablero_jugador.casillaSize > Juego().tablero_jugador.numFilas ? Juego().tablero_jugador.numFilas - height / Juego().tablero_jugador.casillaSize : dx;
-    dy = dy + width / Juego().tablero_jugador.casillaSize > Juego().tablero_jugador.numColumnas ? Juego().tablero_jugador.numColumnas - width / Juego().tablero_jugador.casillaSize : dy;
-
-    return Offset(dx, dy);
-  }
-
-  // Getter de habilidades
-  List<Habilidad> getHabilidadesJugador() {
-    return turno == 1 ? habilidadesJugador1 : habilidadesJugador2;
-  }
-
-  List<Habilidad> getHabilidadesOponente() {
-    return turno == 1 ? habilidadesJugador2 : habilidadesJugador1;
-  }
-
-  List<bool> getHabilidadesUtilizadasJugador() {
-    return turno == 1 ? habilidadesUtilizadasJugador1 : habilidadesUtilizadasJugador2;
-  }
-
-  List<bool> getHabilidadesUtilizadasOponente() {
-    return turno == 1 ? habilidadesUtilizadasJugador2 : habilidadesUtilizadasJugador1;
-  }
-
-  int getNumAtaques() {
-    return numAtaques;
-  }
-
-  void contabilizarAtaque() {
-    print("CONTABILIZAR ATAQUE");
-    if (turno == 1) {
-      numAtaquesJugador1++;
-    } else {
-      numAtaquesJugador2++;
-    }
-    numAtaques++;
-  }
-
-
-  bool barcoHundido(Barco barco, Tablero tablero) {
-    List<List<int>> casillasOcupadas = barco.getCasillasOcupadas(barco.barcoPosition);
-    for (int i = 0; i < casillasOcupadas.length; i++) {
-      if (!tablero.casillasAtacadas[casillasOcupadas[i][0]][casillasOcupadas[i][1]]) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  List<List<String>> obtenerEstado(List<dynamic> lista) {
-    List<List<String>> estados = [];
-    for (var elemento in lista) {
-      if (elemento is List) {
-        List<String> subEstados = [];
-        for (var mapa in elemento) {
-          if (mapa is Map && mapa.containsKey('estado')) {
-            subEstados.add(mapa['estado']);
-          }
-        }
-        estados.add(subEstados);
-      }
-    }
-    return estados;
-  }
-
   
-  Future<void> mostrarMiTablero() async {
-    print("LLAMANDO A MOSTRAR MI TABLERO CON CODIGO: $codigo Y NOMBRE: ${AuthProvider().name}");
-    var response = await http.post(
-      Uri.parse(urlMostrarMiTablero),
-      headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-        'Authorization': 'Bearer $tokenSesion',
-      },
-      body: jsonEncode(<String, dynamic>{
-        'codigo': codigo,
-        'nombreId': AuthProvider().name,
-      }),
-    );
-
-    if (response.statusCode == 200) {
-      var data = jsonDecode(response.body);
-      print(data);
-      print(data.runtimeType);
-    }
-  }
-
   Future<void> crearPartida() async {
     var response = await http.post(
-      Uri.parse(urlCrearPartida),
+      Uri.parse(serverRoute.urlCrearPartida),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
         'Authorization': 'Bearer $tokenSesion',
@@ -612,27 +540,108 @@ class Juego {
     }
   }
 
-  Future<void> actualizarPartida() async {
+  Future<void> abandonarPartida(BuildContext context) async {
     var response = await http.post(
-      Uri.parse(urlActualizarPartida),
+      Uri.parse(serverRoute.urlAbandonarPartida),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
       body: jsonEncode(<String, dynamic>{
         'codigo': codigo,
-        'jugador': turno,
-        'tablero': [] ,
-        'disparos': [] ,
+        'nombreId': turno,
       }),
     );
 
     if (response.statusCode == 200) {
       var data = jsonDecode(response.body);
       print(data);
+      showErrorSnackBar(context, 'Has abandonado la partida');
 
     } else {
       throw Exception('La solicitud ha fallado');
     }
   }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////// PARTIDA MULTIPLAYER ////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  Future<void> crearPartidaMulti(String nombreJugador1, String nombreJugador2) async {
+    var response = await http.post(
+      Uri.parse(serverRoute.urlCrearPartidaMulti),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+        'Authorization': 'Bearer $tokenSesion',
+      },
+      body: jsonEncode(<String, String>{
+        'nombreId1': nombreJugador1,
+        'nombreId2': nombreJugador2,
+        'bioma': 'Mediterraneo' ,
+      }),
+      
+    );
+
+    var data = jsonDecode(response.body);
+    print("AL CREAR PARTIDA MULTI: ");
+    print(data);
+    if (response.statusCode == 200) {
+      var data = jsonDecode(response.body);
+      print(data);
+
+      codigo = data['codigo'];
+
+      print(codigo);  
+
+    } else {
+      throw Exception('La solicitud ha fallado');
+    }
+  }
+
+  Future<void> crearSala() async {
+    var response = await http.post(
+      Uri.parse(serverRoute.urlCrearSala),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+        'Authorization': 'Bearer ${Juego().tokenSesion}',
+      },
+      body: jsonEncode(<String, dynamic>{
+        'nombreId': Juego().perfilJugador.name,
+        'bioma': 'Mediterraneo' ,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      var data = jsonDecode(response.body);
+      print("CREAR SALA:");
+      print(data);
+      codigo = data['codigo'];
+
+    } else {
+      throw Exception('La solicitud ha fallado');
+    }
+  }
+
+  Future<bool> buscarSala() async {
+    var response = await http.post(
+      Uri.parse(serverRoute.urlCrearSala),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+        'Authorization': 'Bearer ${Juego().tokenSesion}',
+      },
+      body: jsonEncode(<String, dynamic>{
+        'nombreId': Juego().perfilJugador.name,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      var data = jsonDecode(response.body);
+      print("BUSCAR SALA:");
+      print(data);
+      codigo = data['codigo'];
+      return true;
+
+    } else {
+      return false;
+    }
+  }  
 }

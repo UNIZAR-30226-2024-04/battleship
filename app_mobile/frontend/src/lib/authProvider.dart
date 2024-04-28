@@ -5,13 +5,12 @@ import 'comun.dart';
 import 'juego.dart';
 import 'error.dart';
 import 'dart:html';
+import 'serverRoute.dart';
 
 class AuthProvider with ChangeNotifier {
-  final String _urlInicioSesion = 'http://localhost:8080/perfil/iniciarSesion';
-  final String _urlRegistro = 'http://localhost:8080/perfil/registrarUsuario';
-  final String _urlModificarDatosPersonales = 'http://localhost:8080/perfil/modificarDatosPersonales';
   bool _isLoggedIn = false;
   String tokenSesion = "";
+  ServerRoute serverRoute = ServerRoute();
 
   MensajeErrorModel mensajeErrorModel = MensajeErrorModel.getInstance();
 
@@ -36,7 +35,7 @@ class AuthProvider with ChangeNotifier {
 
 
   Future<bool> modificarPerfil(String nombre, String password, String email, String pais) async {
-    var uri = Uri.parse(_urlModificarDatosPersonales);
+    var uri = Uri.parse(serverRoute.urlModificarDatosPersonales);
     var response = await http.post(
       uri,
       headers: <String, String>{
@@ -85,7 +84,7 @@ class AuthProvider with ChangeNotifier {
   }
 
   Future<bool> loginDB(String nombre, String password) async {
-    var uri = Uri.parse(_urlInicioSesion);
+    var uri = Uri.parse(serverRoute.urlInicioSesion);
     var response = await http.post(
       uri,
       headers: <String, String>{
@@ -116,7 +115,7 @@ class AuthProvider with ChangeNotifier {
   }
 
   Future<bool> signUpDB(String nombre, String password, String email) async {
-    var uri = Uri.parse(_urlRegistro);
+    var uri = Uri.parse(serverRoute.urlRegistro);
     var response = await http.post(
       uri,
       headers: <String, String>{

@@ -107,13 +107,24 @@ class _InicioSesionState extends State<InicioSesion> {
     if(await _authProvider.login(_nombreController.text, _passwordController.text, context)) {
       print("TRAS PULSAR, EL CODIGO DE LA PARTIDA ES: ${Juego().codigo}");
 
-      if (Juego().codigo == -1) {
-        Navigator.pushNamed(context, '/ColocarBarcos');
+      if (Juego().modalidadPartida == "COMPETITIVA") {
+        Navigator.pushNamed(context, '/Sala');
       }
-      else {
+      else if (Juego().modalidadPartida == "AMISTOSA") {
+        Navigator.pushNamed(context, '/Sala');
+      }
+      else if (Juego().modalidadPartida == "INDIVIDUAL") {
+        if (Juego().codigo == -1) {
+          Navigator.pushNamed(context, '/ColocarBarcos');
+        }
+        else {
+          Navigator.pushNamed(context, '/Atacar');
+        }
+      }
+      else if (Juego().modalidadPartida == "TORNEO") {
         Navigator.pushNamed(context, '/Atacar');
       }
-    }
+  }
     else {
       print("ERROR: Credenciales incorrectas");
     }

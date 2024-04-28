@@ -11,6 +11,7 @@ import 'juego.dart';
 import 'login.dart';
 import 'recContrasena.dart';
 import 'registro.dart';
+import 'sala.dart';
 import 'social.dart';
 
 class DestinoManager {
@@ -49,7 +50,10 @@ class DestinoManager {
       return '/Atacar';
     } else if (_destino is Defender) {
       return '/Defender';
-    } else {
+    } else if (_destino is Sala) {
+      return '/Sala';
+    }
+    else {
       throw Exception('Widget no definido');
     }
   }

@@ -6,6 +6,7 @@ import 'comun.dart';
 import 'habilidad.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'serverRoute.dart';
 
 class Perfil extends StatefulWidget {
   String _email = '';
@@ -22,8 +23,6 @@ class Perfil extends StatefulWidget {
   final AuthProvider _authProvider = AuthProvider();
   List<Habilidad> _habilidades = [];  // habilidades desbloqueadas
   List<Habilidad> _habilidadesSeleccionadas = [];  // habilidades seleccionadas para la partida
-  String urlEliminarUsuario = 'http://localhost:8080/perfil/eliminarUsuario';
-  String urlObtenerPerfil = 'http://localhost:8080/perfil/obtenerUsuario';
   int partidasJugadas = 0;
   int partidasGanadas = 0;
   int partidasPerdidas = 0;
@@ -78,6 +77,8 @@ class Perfil extends StatefulWidget {
 }
 
 class _PerfilState extends State<Perfil> {
+  ServerRoute serverRoute = ServerRoute();
+
   @override
   void initState() {
     super.initState();
@@ -124,7 +125,7 @@ class _PerfilState extends State<Perfil> {
   Future<void> actualizarEstadisticasPerfil(String nombrePerfil) async {
     print("LLAMANDO A OBTENER PERFIL CON USUARIO: $nombrePerfil");
     var response = await http.post(
-      Uri.parse(widget.urlObtenerPerfil),
+      Uri.parse(serverRoute.urlObtenerPerfil),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
@@ -165,7 +166,7 @@ class _PerfilState extends State<Perfil> {
 
   void eliminarCuenta() async {
     var response = await http.post(
-      Uri.parse(widget.urlEliminarUsuario),
+      Uri.parse(serverRoute.urlEliminarUsuario),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },

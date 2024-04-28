@@ -8,11 +8,9 @@ import 'comun.dart';
 import 'defender.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'serverRoute.dart';
 
 class Atacar extends StatefulWidget {
-  String urlDisparar = 'http://localhost:8080/partida/realizarDisparo';
-  String urlMostrarTableroEnemigo = 'http://localhost:8080/partida/mostrarTableroEnemigo';
-
   Atacar({super.key});
 
   @override
@@ -20,6 +18,7 @@ class Atacar extends StatefulWidget {
 }
 
 class _AtacarState extends State<Atacar> {
+  ServerRoute serverRoute = ServerRoute();
 
   @override
   void initState() {
@@ -42,7 +41,7 @@ class _AtacarState extends State<Atacar> {
             child: const Scaffold(
               backgroundColor: Colors.transparent,
               body: Center(
-                child: Text('¡Tu turno!', style: TextStyle(color: Colors.white, fontSize: 24)),
+                child: Text('¡Tu turno!', style: TextStyle(color: Colors.white, fontSize: 28)),
               ),
             ),
           );
@@ -80,6 +79,7 @@ class _AtacarState extends State<Atacar> {
                   _construirHabilidades(),
                   const Spacer(),
                   buildActionButton(context, () {
+                    Juego().abandonarPartida(context);
                     Juego().reiniciarPartida();
                     Navigator.pushNamed(context, '/Principal');
                   }, "Abandonar partida"),
@@ -336,9 +336,87 @@ class _AtacarState extends State<Atacar> {
     return filas;
   }
 
-  Future<List<bool>> realizarDisparo(int i, int j) async {
+  Future<void> _handleTap(int i, int j) async {
+    // Comprobar si ya se ha disparado en esa casilla.
+    if (Juego().disparosAcertadosJugador.contains(Offset(i.toDouble(), j.toDouble())) || 
+          Juego().disparosFalladosJugador.contains(Offset(i.toDouble(), j.toDouble()))) {
+      showErrorSnackBar(context, 'Ya has disparado en esa casilla, prueba en otra');
+      return;
+    }
+
+    bool acertado = false;
+    bool fin = false;
+
+    if(Juego().modalidadPartida == "INDIVIDUAL") {
+      var respuestaFuture = realizarDisparoIndividual(i, j);
+      Juego().disparosPendientes--;
+      respuestaFuture.then((result) {
+        acertado = result[0];
+        fin = result[1];
+      });
+    }
+    else if(Juego().modalidadPartida == "COMPETITIVA") {
+      var respuestaFuture = realizarDisparoMulti(i, j);
+      Juego().disparosPendientes--;
+      respuestaFuture.then((result) {
+        acertado = result[0];
+        fin = result[1];
+      });
+    }
+    else if (Juego().modalidadPartida == "AMISTOSA") {
+      var respuestaFuture = realizarDisparoMulti(i, j);
+      Juego().disparosPendientes--;
+      respuestaFuture.then((result) {
+        acertado = result[0];
+        fin = result[1];
+      });
+    }
+    else if (Juego().modalidadPartida == "TORNEO") {
+      var respuestaFuture = realizarDisparoMulti(i, j);
+      Juego().disparosPendientes--;
+      respuestaFuture.then((result) {
+        acertado = result[0];
+        fin = result[1];
+      });
+    }
+    else {
+      showErrorSnackBar(context, 'Modalidad de juego no válida');
+    }
+
+    // Si la casilla tiene un barco.
+    if(acertado) {
+      Juego().disparosPendientes ++;
+
+      if(fin) {
+        final snackBar = SnackBar(
+          content: Text(
+            '¡Ganador: ${Juego().getGanador()}!',
+            style: const TextStyle(color: Colors.white),
+          ),
+          behavior: SnackBarBehavior.floating,
+        );
+        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+        Juego().reiniciarPartida();
+        Navigator.pushNamed(context, '/Principal');
+      }
+    }
+
+    if (Juego().disparosPendientes == 0) {
+      Juego().disparosPendientes = 1;
+      Juego().habilidadSeleccionadaEnTurno = false;
+      Juego().cambiarTurno();
+      DestinoManager.setDestino(Defender());
+      Navigator.pushNamed(context, '/Defender');
+    }
+  }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////// PARTIDA VS IA  /////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+ Future<List<bool>> realizarDisparoIndividual(int i, int j) async {
     var response = await http.post(
-      Uri.parse(widget.urlDisparar),
+      Uri.parse(serverRoute.urlDisparar),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
         'Authorization': 'Bearer ${Juego().tokenSesion}',
@@ -438,60 +516,39 @@ class _AtacarState extends State<Atacar> {
       print("BARCOS HUNDIDOS POR IA: ");
       print(Juego().barcosHundidosPorOponente);
 
-      return Future.value([acertado, fin, hundido]);
+      return Future.value([acertado, fin]);
     } else {
       throw Exception('Failed to load data');
     }
   }
 
-  Future<void> _handleTap(int i, int j) async {
-    print("TURNO: ${Juego().turno}");
-    print("VOY A DISPARAR EN: $i $j");
-    // Comprobar si ya se ha disparado en esa casilla.
-    if (Juego().disparosAcertadosJugador.contains(Offset(i.toDouble(), j.toDouble())) || Juego().disparosFalladosJugador.contains(Offset(i.toDouble(), j.toDouble()))) {
-      showErrorSnackBar(context, 'Ya has disparado en esa casilla, prueba en otra');
-      return;
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////// PARTIDA MULTI  /////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  Future<List<bool>> realizarDisparoMulti(int i, int j) async {
+    var response = await http.post(
+      Uri.parse(serverRoute.urlDispararMulti),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+        'Authorization': 'Bearer ${Juego().tokenSesion}',
+      },
+      body: jsonEncode(<String, dynamic>{
+        'codigo': Juego().codigo,
+        'nombreId': AuthProvider().name,
+        'i': i,
+        'j': j,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      print("DISPARO MULTI ME DEVUELVE: ");
+      var data = jsonDecode(response.body);
+      print(data);
+
+      return Future.value([true, true]);
+    } else {
+      throw Exception('Failed to load data');
     }
-    var respuestaFuture = realizarDisparo(i, j);
-    print("HE DISPARADO EN: $i $j");
-    Juego().disparosPendientes--;
-
-    respuestaFuture.then((result) {
-      var acertado = result[0];
-      var finFuture = result[1];
-      var hundidoFuture = result[2];
-      print("ACERTADO: $acertado");
-      print("FIN: $finFuture");
-      print("HUNDIDO: $hundidoFuture");
-
-      // Si la casilla tiene un barco.
-      if(acertado) {
-        Juego().disparosPendientes ++;
-        print("ACERTADOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO");
-        if(finFuture) {
-          print("¡Juego terminado!");
-          print("¡Ganador: ${Juego().getGanador()}!");
-          final snackBar = SnackBar(
-            content: Text(
-              '¡Ganador: ${Juego().getGanador()}!',
-              style: const TextStyle(color: Colors.white),
-            ),
-            behavior: SnackBarBehavior.floating,
-          );
-          ScaffoldMessenger.of(context).showSnackBar(snackBar);
-          Juego().reiniciarPartida();
-          Navigator.pushNamed(context, '/Principal');
-        }
-      }
-
-      if (Juego().disparosPendientes == 0) {
-        Juego().contabilizarAtaque();
-        Juego().disparosPendientes = 1;
-        Juego().habilidadSeleccionadaEnTurno = false;
-        Juego().cambiarTurno();
-        DestinoManager.setDestino(Defender());
-        Navigator.pushNamed(context, '/Defender');
-      }
-    });
   }
 }

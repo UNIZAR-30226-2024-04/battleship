@@ -23,6 +23,9 @@ router.post('/mostrarTableroEnemigo', verificarToken, partidaController.mostrarT
 // Ruta para mostrar ambos tableros
 router.post('/mostrarTableros', verificarToken, partidaController.mostrarTableros);
 
+// Ruta para abandonar partida
+router.post('/abandonarPartida', verificarToken, partidaController.abandonarPartida);
+
 // --------------------------------------------- //
 // -------------- CHAT DE PARTIDA -------------- //
 // --------------------------------------------- //

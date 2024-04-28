@@ -67,20 +67,25 @@ class Registro extends StatelessWidget {
 
   Future<void> _handlePressed(BuildContext context, AuthProvider authProvider) async {
     if(_passwordController.text != _passwordConfController.text) {
-      const snackBar = SnackBar(
-        content: Text(
-          'Las contraseñas no coinciden',
-          style: TextStyle(color: Colors.red),
-        ),
-        behavior: SnackBarBehavior.floating, // Mostrar el SnackBar en la parte superior
-      );
-      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      showErrorSnackBar(context, 'Las contraseñas no coinciden');
     }
     else if(await _authProvider.signUp(_nameController.text, _passwordController.text, _emailController.text, context)) {
-      if (Juego().codigo == -1) {
-        Navigator.pushNamed(context, '/ColocarBarcos');
+      showSuccessSnackBar(context, 'Usuario registrado correctamente');
+      if (Juego().modalidadPartida == "COMPETITIVA") {
+        Navigator.pushNamed(context, '/Sala');
       }
-      else {
+      else if (Juego().modalidadPartida == "AMISTOSA") {
+        Navigator.pushNamed(context, '/Sala');
+      }
+      else if (Juego().modalidadPartida == "INDIVIDUAL") {
+        if (Juego().codigo == -1) {
+          Navigator.pushNamed(context, '/ColocarBarcos');
+        }
+        else {
+          Navigator.pushNamed(context, '/Atacar');
+        }
+      }
+      else if (Juego().modalidadPartida == "TORNEO") {
         Navigator.pushNamed(context, '/Atacar');
       }
     }

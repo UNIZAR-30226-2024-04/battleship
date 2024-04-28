@@ -6,6 +6,7 @@ import 'botones.dart';
 import 'comun.dart';
 import 'barco.dart';
 import 'atacar.dart';
+import 'serverRoute.dart';
 
 class ColocarBarcos extends StatefulWidget {
   const ColocarBarcos({super.key});
@@ -16,6 +17,7 @@ class ColocarBarcos extends StatefulWidget {
 
 class _ColocarBarcosState extends State<ColocarBarcos> {
   Map<Barco, bool> _draggingStates = {};
+  ServerRoute server_route = ServerRoute();
 
   @override
   void initState() {
@@ -29,7 +31,7 @@ class _ColocarBarcosState extends State<ColocarBarcos> {
 
   Future<bool> moverBarco(Barco barco, bool rotar) async {
     print("VOY A MOVER BARCO CON POSICION: ${barco.barcoPosition} Y ROTAR: $rotar Y NOMBRE: ${AuthProvider().name} Y INDEX: ${Juego().tablero_jugador.barcos.indexOf(barco)}");
-    return await Juego().moverBarco(Juego().urlMoverBarcoInicial, barco.barcoPosition, rotar, AuthProvider().name, Juego().tablero_jugador.barcos.indexOf(barco));
+    return await Juego().moverBarco(server_route.urlMoverBarcoInicial, barco.barcoPosition, rotar, AuthProvider().name, Juego().tablero_jugador.barcos.indexOf(barco));
   }
 
   @override
