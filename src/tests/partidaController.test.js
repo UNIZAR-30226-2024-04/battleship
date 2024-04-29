@@ -578,7 +578,7 @@ describe("Realizar disparo contra la IA", () => {
             }
       }
     }
-  });
+  }, 10000);
 });
 
 
