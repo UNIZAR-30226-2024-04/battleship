@@ -176,6 +176,7 @@ function calcularEstadisticasPartida(partida, jugador) {
 exports.crearPartida = async (req, res) => {
   try {
     const { codigo, nombreId1, nombreId2, bioma = 'Mediterraneo', amistosa = true, ...extraParam } = req.body;
+    let codigoFinal = codigo;
     // Verificar si hay algún parámetro extra
     if (Object.keys(extraParam).length > 0) {
       res.status(400).send('Sobran parámetros, se espera nombreId1, nombreId2 y bioma');
@@ -237,16 +238,16 @@ exports.crearPartida = async (req, res) => {
     } else {
       tableroBarcos2 = jugador2.tableroInicial;
     }
-    if(!codigo) codigo = generarCodigo();
+    if(!codigo) codigoFinal = generarCodigo();
     // Actualizamos los códigos de partida actuales de los jugadores
-    jugador1.codigoPartidaActual = codigo;
+    jugador1.codigoPartidaActual = codigoFinal;
     await Perfil.findOneAndUpdate(
       filtro1, // Filtrar
       jugador1, // Actualizar (jugador1 contiene los cambios)
       { new: true } // Para devolver el documento actualizado
     );
     if (jugador2 !== undefined) {
-      jugador2.codigoPartidaActual = codigo;
+      jugador2.codigoPartidaActual = codigoFinal;
       await Perfil.findOneAndUpdate(
         filtro2, // Filtrar
         jugador2, // Actualizar (jugador2 contiene los cambios)
@@ -256,7 +257,7 @@ exports.crearPartida = async (req, res) => {
       console.log('Jugador 2 es IA');
     }
     const nuevaPartida = new Partida({ 
-      codigo, 
+      codigo: codigoFinal, 
       nombreId1, 
       nombreId2,
       tableroBarcos1,
