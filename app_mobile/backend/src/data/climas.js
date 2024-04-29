@@ -8,6 +8,6 @@
  */
 
 // Lista de climas disponibles
-const climasDisponibles = ['Calma', 'Viento', 'Tormenta', 'Niebla'];
+const climasDisponibles = ['Calma', 'VientoOeste', 'VientoSur', 'VientoEste', 'VientoNorte', 'Tormenta', 'Niebla'];
 
 module.exports = climasDisponibles;

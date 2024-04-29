@@ -572,10 +572,11 @@ class Juego {
       Uri.parse(serverRoute.urlAbandonarPartida),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
+        'Authorization': 'Bearer $tokenSesion',
       },
       body: jsonEncode(<String, dynamic>{
         'codigo': codigo,
-        'nombreId': turno,
+        'nombreId': miPerfil.name,
       }),
     );
 
