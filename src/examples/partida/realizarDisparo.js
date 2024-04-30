@@ -1,19 +1,19 @@
 const mongoose = require('mongoose');
-const { iniciarPartida, realizarDisparo } = require('../../controllers/partidaController');
+const { realizarDisparo } = require('../../controllers/partidaController');
 
 // Conexión a la base de datos
 mongoose.connect('mongodb://localhost/BattleshipDB', { useNewUrlParser: true, useUnifiedTopology: true })
   .then(async () => {
     console.log('Conectado a MongoDB...');
     try {
-      const codigo = 510101992548;
+      const codigo =  291446521806;
       // Lista de disparos realizados a crear
       const disparos = [
         // {codigo: codigo, nombreId: 1, i: 1, j: 1}, // Tocado
         // {codigo: codigo, nombreId: 1, i: 1, j: 2}, // No es el turno del jugador
         // {codigo: codigo, nombreId: 2, i: 1, j: 1}, 
         // {codigo: codigo, nombreId: 1, i: 1, j: 2}, // Hundido
-        {codigo: codigo, nombreId: 'usuario1', i: 1, j: 6}, // Agua
+        {codigo: codigo, nombreId: 'usuario1', i: 5, j: 9}, // Agua
         // {codigo: codigo, nombreId: 1, i: 1, j: 1}, // Repetido
         // {codigo: codigo, nombreId: 1, i: 1, j: 3, extra: 1}, // Sobran campos
         // {nombreId: 1, i: 1, j: 3}, // Faltan campos
