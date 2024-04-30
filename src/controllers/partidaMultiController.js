@@ -124,12 +124,13 @@ exports.buscarSala = async (req, res) => {
       await sala.save();
       // Se llama a crear partida con los datos de la sala
       await PartidaController.crearPartida({ body: { codigo: sala.codigo, nombreId1: sala.nombreId1, nombreId2: sala.nombreId2, bioma: sala.bioma, amistosa: sala.amistosa } }, res);
+      const io = getIO();
+      io.to('/partida' + sala.codigo).emit(eventosSocket.partidaEncontrada, sala.codigo);
     } else {
       res.json({ codigo: -1 });
     }
   }
   catch (error) {
-    res.status(500).send('Hubo un error buscando la sala');
     console.error('Hubo un error buscando la sala', error);
   }
 };
@@ -149,7 +150,7 @@ exports.abandonarPartida = async (req, res) => {
   // Verificar si hay algún parámetro extra
   await PartidaController.abandonarPartida(req, res);
   const io = getIO();
-  io.to('/partida' + codigo).emit(eventosSocket.abandono, codigo);
+  io.to('/partida' + codigo).emit(eventosSocket.abandono, codigo, nombreId);
 };
 
 /**
