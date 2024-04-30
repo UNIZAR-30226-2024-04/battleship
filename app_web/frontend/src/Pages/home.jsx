@@ -45,9 +45,9 @@ export function Home() {
     
             // Conectar al socket de la sala
             const salaSocket = io.connect(`/partida${responseData['codigo']}`);
-            console.log('partidaEncontrada en:', responseData['codigo']);
-            console.log('Emitiendo partidaEncontrada en:', salaSocket);
-            salaSocket.emit('partidaEncontrada', responseData['codigo']);
+            console.log('partidaEncontrada en sala:', responseData['codigo']);
+            salaSocket.emit(info['entrarSala'], responseData['codigo']);
+            // esperar unos milisegundos para que el servidor pueda procesar el evento
             navigate('/game');
         }
         catch (error) {
@@ -76,9 +76,10 @@ export function Home() {
     
             // Conectar al socket de la sala
             const salaSocket = io.connect(`/partida${responseData['codigo']}`);
-            console.log('partidaEncontrada en:', responseData['codigo']);
+            salaSocket.emit(info['entrarSala'], responseData['codigo']);
+            console.log('sala creada en:', responseData['codigo']);
             // Escuchar evento de partida encontrada
-            salaSocket.on('partidaEncontrada', (codigo) => {
+            salaSocket.on(info['partidaEncontrada'], (codigo) => {
                 console.log('Partida encontrada en:', codigo);
                 navigate('/game');
             });

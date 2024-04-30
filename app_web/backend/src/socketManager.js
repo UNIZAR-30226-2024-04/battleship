@@ -1,10 +1,15 @@
 const { Server } = require("socket.io");
+const { isModuleNamespaceObject } = require("util/types");
 let io = null;
 const hostSocket = 'http://localhost:8080';
 
 // Define los eventos de socket que se pueden emitir y escuchar
 // Los enviamos junto con el codigo de la partida
 const eventosSocket = {
+
+    entrarSala: 'entrarSala',               // Se emite cuando un jugador entra a la sala o la crea
+                                            // Se escucha en el backend para hacer join con el socket
+
     partidaEncontrada: 'partidaEncontrada', // Se emite cuando se encuentra una sala para jugar partida
                                             // Se escucha cuando se encuentra una sala para jugar partida
 
@@ -38,21 +43,30 @@ function initializeSocket(server) {
     io.on('connection', socket => {
         console.log('Cliente conectado');
 
+        socket.on(eventosSocket.entrarSala, (codigo) => {
+            console.log('Entrar sala recibido en backend:', codigo);
+            socket.join(`/partida${codigo}`);
+        });
+
         socket.on(eventosSocket.partidaEncontrada, (codigo) => {
             console.log('Partida encontrada recibido en backend:', codigo);
-            socket.join(`/partida${codigo}`);
             // Aquí puedes emitir eventos a todos los sockets conectados con mismo namespace
-            io.to(`/partida${codigo}`).emit(partidaEncontrada, codigo);
+            io.to(`/partida${codigo}`).emit(eventosSocket.partidaEncontrada, codigo);
         });
 
-        socket.on(eventosSocket.disparoRecibido, (codigo) => {
-            console.log('Disparo recibido en backend:', codigo);
-            io.to(`/partida${codigo['codigo']}`).emit(disparoRecibido, codigo);
+        socket.on(eventosSocket.continuaTurno, (codigo, coordenada) => {
+            console.log('Continua turno tras disparo recibido en backend:', codigo);
+            io.to(`/partida${codigo['codigo']}`).emit(eventosSocket.continuaTurno, codigo, coordenada);
+        });
+        
+        socket.on(eventosSocket.finTurnos, (codigo, coordenada) => {
+            console.log('Fin turno disparo recibido en backend:', codigo);
+            io.to(`/partida${codigo['codigo']}`).emit(eventosSocket.finTurnos, codigo, coordenada);
         });
 
-        socket.on(eventosSocket.turnoJugador, (codigo) => {
-            console.log('Turno jugador recibido en backend:', codigo);
-            io.to(`/partida${codigo}`).emit(turnoJugador, codigo);
+        socket.on(eventosSocket.abandono, (codigo) => {
+            console.log('Abandono recibido en backend:', codigo, idJugador);
+            io.to(`/partida${codigo}`).emit(eventosSocket.abandono, codigo, idJugador);
         });
 
         socket.on('disconnect', () => {
@@ -62,6 +76,7 @@ function initializeSocket(server) {
         // Aquí puedes configurar más eventos de socket globales
     });
 }
+
 
 // Obtiene el objeto io
 function getIO() {
