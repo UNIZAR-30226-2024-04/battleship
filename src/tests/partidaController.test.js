@@ -1,7 +1,8 @@
 const mongoose = require('mongoose');
 const {crearPartida, mostrarMiTablero, mostrarTableroEnemigo,
     mostrarTableros, realizarDisparo, enviarMensaje, obtenerChat,
-    realizarDisparoMisilRafaga, realizarDisparoTorpedoRecargado} = require('../controllers/partidaController');
+    realizarDisparoMisilRafaga, realizarDisparoTorpedoRecargado,
+    realizarDisparoMisilTeledirigido} = require('../controllers/partidaController');
 const {registrarUsuario} = require('../controllers/perfilController');
 const Partida = require('../models/partidaModel');
 
@@ -740,6 +741,46 @@ it("Debería disparar un torpedo recargado y responder la IA correctamente", asy
     if (res._json.algunoTocado) {
       expect(res._json.turnosIA.length).toBe(0);
     } else expect(res._json.turnosIA.length).toBeGreaterThan(0);
+});
+});
+
+// Test for realizarDisparoMisilTeledirigido
+describe("Realizar disparo de misil teledirigido contra la IA", () => {
+  beforeAll(async () => {
+    const connection = mongoose.connection;
+    await connection.dropDatabase();
+    const req = { body: { nombreId: 'usuario1', contraseña: 'Passwd1.',
+    correo: 'usuario1@example.com' } };
+    const res = { json: () => {}, status: function(s) { 
+      this.statusCode = s; return this; }, send: () => {} };
+    try {
+      await registrarUsuario(req, res);
+    } catch (error) {}
+    expect(res.statusCode).toBe(undefined);
+
+    const req3 = { body: { nombreId1: 'usuario1', bioma: 'Norte' } };
+    const res3 = { json: function(_json) {this._json = _json; return this;}, status: function(s) {
+        this.statusCode = s; return this; }, send: () => {} };
+    try {
+        await crearPartida(req3, res3);
+    } catch (error) {}
+    expect(res3.statusCode).toBe(undefined);
+    _codigo = res3._json.codigo;
+});
+it("Debería disparar misiles teledirigidos sin error", async () => {
+
+    let req = { body: { codigo: _codigo, nombreId: 'usuario1'} };
+    let res = { json: function(_json) {this._json = _json; return this;}, status: function(s) {
+        this.statusCode = s; return this; }, send: () => {} };
+    for (let i = 0; i < 3; i++) {
+      try {
+          await realizarDisparoMisilTeledirigido(req, res);
+      } catch (error) {}
+      expect(res.statusCode).toBe(undefined);
+      expect(res._json.disparoRealizado.estado).toMatch(/Tocado|Hundido/);
+      expect(res._json.usosHab).toBe(3 - i - 1);
+      expect(res._json.turnosIA.length).toBe(0);
+    }
 });
 });
 
