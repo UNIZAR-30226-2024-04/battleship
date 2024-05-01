@@ -470,7 +470,7 @@ describe("Realizar disparo", () => {
         } catch (error) {}
         expect(res.statusCode).toBe(undefined);
     });
-    it("Debería fallar al disparar al agua", async () => {
+    it("Debería al disparar al agua", async () => {
         const req = { body: { codigo: _codigo, nombreId: 'usuario1', i: 1, j: 3 } };
         const res = { json: () => {}, status: function(s) { 
           this.statusCode = s; return this; }, send: () => {} };
@@ -481,18 +481,29 @@ describe("Realizar disparo", () => {
     });
 });
 
-// Funcion que devuelve el barco (si existe) disparado en la coordenada (i, j).
-// Si no hay barco en la coordenada, devuelve null.
-function dispararCoordenada(tablero, i, j) {
+// Funcion que devuelve:
+// - El barco (si existe) disparado en la coordenada (i, j), tocándolo.
+// - La mina (si existe) disparada en la coordenada (i, j), hundiéndola.
+function dispararCoordenada(tablero, minas, i, j) {
   for (let barco of tablero) {
     for (let coordenada of barco.coordenadas) {
       if (coordenada.i === i && coordenada.j === j) {
-        coordenada.estado = 'Tocado';
-        return barco;
+        if (coordenada.estado === 'Agua') {
+          coordenada.estado = 'Tocado';
+          return {barcoDisparado: barco, minaDisparada: undefined};
+        } else return {barcoDisparado: undefined, minaDisparada: undefined};
       }
     }
   }
-  return null;
+  for (let mina of minas) {
+    if (mina.i === i && mina.j === j) {
+      if (mina.estado === 'Agua') {
+        mina.estado = 'Hundido';
+        return {barcoDisparado: undefined, minaDisparada: mina};
+      } else return {barcoDisparado: undefined, minaDisparada: undefined};
+    }
+  }
+  return {barcoDisparado: undefined, minaDisparada: undefined};
 }
 
 // Test for realizarDisparo
@@ -528,7 +539,7 @@ describe("Realizar disparo contra la IA", () => {
       while (!encontrado) {
           i = Math.floor(Math.random() * tableroDim) + 1;
           j = Math.floor(Math.random() * tableroDim) + 1;
-          let barco = dispararCoordenada(partida.tableroBarcos2, i, j);
+          let {barcoDisparado: barco} = dispararCoordenada(partida.tableroBarcos2, partida.minas2, i, j);
           if (!barco) break;
       }
 
@@ -616,7 +627,7 @@ it("Debería realizar una ráfaga de misiles y responder la IA correctamente", a
     while (!encontrado) {
         i = Math.floor(Math.random() * tableroDim) + 1;
         j = Math.floor(Math.random() * tableroDim) + 1;
-        let barco = dispararCoordenada(partida.tableroBarcos2, i, j);
+        let {barcoDisparado: barco} = dispararCoordenada(partida.tableroBarcos2, partida.minas2, i, j);
         if (!barco) break;
     }
     // Primer misil: agua
@@ -637,7 +648,7 @@ it("Debería realizar una ráfaga de misiles y responder la IA correctamente", a
     while (!encontrado) {
         i = Math.floor(Math.random() * tableroDim) + 1;
         j = Math.floor(Math.random() * tableroDim) + 1;
-        let barco = dispararCoordenada(partida.tableroBarcos2, i, j);
+        let {barcoDisparado: barco} = dispararCoordenada(partida.tableroBarcos2, partida.minas2, i, j);
         if (barco) break;
     }
     req = { body: { codigo: _codigo, nombreId: 'usuario1', i: i, j: j, misilesRafagaRestantes: 2} };
