@@ -459,7 +459,7 @@ describe("Realizar disparo", () => {
         try {
             await realizarDisparo(req, res);
         } catch (error) {}
-        expect(res.statusCode).toBe(400);
+        expect(res.statusCode).toBe(404);
     });
     it("Debería hundir el barco", async () => {
         const req = { body: { codigo: _codigo, nombreId: 'usuario1', i: 1, j: 2 } };
