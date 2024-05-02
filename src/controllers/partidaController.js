@@ -735,11 +735,11 @@ function gestionarDisparo(jugador, partidaActual, estadisticasJugadores, i, j, /
           var iRespuesta = Math.floor(Math.random() * tableroDim) + 1;
           var jRespuesta = Math.floor(Math.random() * tableroDim) + 1;
           if (jugador === 1) {
-            if (!partidaActual.minas1.some(mina => mina.i === iRespuesta && mina.j === jRespuesta)) {
+            if (!partidaActual.minas1.some(mina => mina.i === iRespuesta && mina.j === jRespuesta && mina.estado === 'Agua')) {
               break;
             }
           } else {
-            if (!partidaActual.minas2.some(mina => mina.i === iRespuesta && mina.j === jRespuesta)) {
+            if (!partidaActual.minas2.some(mina => mina.i === iRespuesta && mina.j === jRespuesta && mina.estado === 'Agua')) {
               break;
             }
           }
@@ -1530,14 +1530,14 @@ exports.colocarMina = async (req, res) => {
     } else {
       // Comprobar si la casilla está ocupada por un barco propio u otra mina
       const miTablero = jugador === 1 ? partidaActual.tableroBarcos1 : partidaActual.tableroBarcos2;
-      const ocupadaPorBarco = miTablero.some(barco => barco.coordenadas.some(coordenada => coordenada.i === i && coordenada.j === j));
+      const ocupadaPorBarco = miTablero.some(barco => barco.coordenadas.some(coordenada => coordenada.i === i && coordenada.j === j && coordenada.estado === 'Agua'));
       if (ocupadaPorBarco) {
         res.status(404).send('La casilla está ocupada por un barco');
         console.error("La casilla está ocupada por un barco");
         return;
       }
       const misMinas = jugador === 1 ? partidaActual.minas1 : partidaActual.minas2;
-      const ocupadaPorMina = misMinas.some(mina => mina.i === i && mina.j === j);
+      const ocupadaPorMina = misMinas.some(mina => mina.i === i && mina.j === j && mina.estado === 'Agua');
       if (ocupadaPorMina) {
         res.status(404).send('La casilla está ocupada por una mina');
         console.error("La casilla está ocupada por una mina");
@@ -1585,6 +1585,151 @@ exports.colocarMina = async (req, res) => {
       if (partidaModificada) {
         let respuestaDisparo = {
           minaColocada: {i: i, j: j},
+          eventoOcurrido: undefined, // Evento ocurrido en la partida
+          finPartida: finPartida,
+          clima: partidaActual.clima,
+          usosHab: jugador === 1 ? partidaActual.usosHab1 : partidaActual.usosHab2,
+          turnosIA: turnosIA
+        };
+
+        // Actualizar estadisticas de los jugadores
+        let nuevosTrofeos = [0, 0];
+        const {mensajeError} = await actualizarEstadisticasTurno(nuevosTrofeos, partidaActual, estadisticasJugadores, jugador1, jugador2, partidaContraIA);
+        if (mensajeError) {
+          res.status(500).send(mensajeError);
+          console.error(mensajeError);
+          return;
+        }
+
+        // Si acaba la partida, devolver las estadisticas totales del jugador
+        if (finPartida || finPartidaIA) {
+          añadirEstadisticasEnRespuesta(respuestaDisparo, partidaActual, estadisticasJugadores, jugador, nuevosTrofeos);
+        }
+        res.json(respuestaDisparo);
+        console.log("Partida modificada con éxito");
+      } else {
+        res.status(404).send('No se ha encontrado la partida a actualizar');
+        console.error("No se ha encontrado la partida a actualizar");
+      }
+    }
+  } catch (error) {
+    res.status(500).send('Hubo un error');
+    console.error("Hubo un error");
+  }
+};
+
+/**
+ * @function usarSonar
+ * @description Usa la habilidad del sónar para revelar lo que hay en la casilla (i, j) y sus vecinas del enemigo y actualiza el estado de la partida
+ * @param {Object} req - El objeto de solicitud HTTP
+ * @param {String} req.body.codigo - El codigo de la partida
+ * @param {String} req.body.nombreId - El nombreId del jugador
+ * @param {Number} req.body.i - La coordenada i de la mina
+ * @param {Number} req.body.j - La coordenada j de la mina
+ * @param {Object} res - El objeto de respuesta HTTP
+ * @param {String[][]} res.sonar - El resultado del sónar en la casilla (i, j) y sus vecinas: 'Barco', 'Mina' o 'Agua' (o null si fuera de rango)
+ * @param {String} res.eventoOcurrido - El evento ocurrido en la partida
+ * @param {Boolean} res.finPartida - Indica si la partida ha terminado
+ * @param {String} res.clima - El clima de la partida
+ * @param {Number} res.usosHab - Los usos restantes de la habilidad del jugador
+ * @param {TurnoIA[]} [res.turnosIA] - Los turnos de la IA, si la partida es contra la IA
+ * @example
+ * peticion = { body: { codigo: '1234567890', nombreId: 'jugador1', i: 2, j: 2 } }
+ * respuesta = { json: () => {} }
+ * await usarSonar(peticion, respuesta)
+ */
+exports.usarSonar = async (req, res) => {
+  try {
+    const { codigo, nombreId, i, j, ...extraParam } = req.body;
+    // Verificar si hay algún parámetro extra que no se espera
+    if (Object.keys(extraParam).length > 0) {
+      res.status(400).send('Sobran parámetros, se espera codigo, jugador, i, j');
+      console.error("Sobran parámetros, se espera codigo, jugador, i, j");
+      return;
+    }
+    // Verificar si alguno de los parámetros está ausente
+    if (!codigo || !nombreId || !i || !j) {
+      res.status(400).send('Falta alguno de los siguientes parámetros: codigo, nombreId, i, j');
+      return;
+    }
+    // Comprobar si i, j es casilla válida
+    if (i < 1 || i > tableroDim || j < 1 || j > tableroDim) {
+      res.status(400).send('Las coordenadas i, j deben estar entre 1 y 10');
+      console.error("Las coordenadas i, j deben estar entre 1 y 10");
+      return;
+    }
+    // Verificar que el turno es válido: partida existe, no ha terminado, es el turno del jugador y puede usar habilidad
+    const filtro = { codigo: codigo };
+    let {partidaActual, jugador1, jugador2, jugador, mensajeError} = await verificarTurno(filtro, nombreId, habilidad=true);
+    if (mensajeError) {
+      res.status(404).send(mensajeError);
+      return;
+    } else {
+      let estadisticasJugadores = [
+        { victoria: undefined, nuevosBarcosHundidos: 0, nuevosBarcosPerdidos: 0,
+          nuevosDisparosAcertados: 0, nuevosDisparosFallados: 0, nuevosTrofeos: 0,
+          nombreId: jugador1.nombreId },
+        { victoria: undefined, nuevosBarcosHundidos: 0, nuevosBarcosPerdidos: 0,
+          nuevosDisparosAcertados: 0, nuevosDisparosFallados: 0, nuevosTrofeos: 0,
+          nombreId: jugador2.nombreId }
+      ]
+
+      const partidaContraIA = !partidaActual.nombreId2;
+      // Consumir habilidad 
+      if (jugador === 1) {
+        partidaActual.usosHab1--;
+      } else {
+        partidaActual.usosHab2--;
+      }
+
+      // Descubrir casillas enemigas
+      let sonar = [
+        [null, null, null],
+        [null, null, null],
+        [null, null, null]
+      ];
+      const tableroEnemigo = jugador === 1 ? partidaActual.tableroBarcos2 : partidaActual.tableroBarcos1;
+      const minasEnemigas = jugador === 1 ? partidaActual.minas2 : partidaActual.minas1;
+      const vecinidad = [-1, 0, 1];
+      for (let iVecino of vecinidad) {
+        for (let jVecino of vecinidad) {
+          let iCasilla = i + iVecino;
+          let jCasilla = j + jVecino;
+          if (iCasilla >= 1 && iCasilla <= tableroDim && jCasilla >= 1 && jCasilla <= tableroDim) {
+            if (tableroEnemigo.some(barco => barco.coordenadas.some(coordenada => coordenada.i === iCasilla && coordenada.j === jCasilla && coordenada.estado === 'Agua'))) {
+              sonar[iVecino + 1][jVecino + 1] = 'Barco';
+            } else if (minasEnemigas.some(mina => mina.i === iCasilla && mina.j === jCasilla && mina.estado === 'Agua')) {
+              sonar[iVecino + 1][jVecino + 1] = 'Mina';
+            } else {
+              sonar[iVecino + 1][jVecino + 1] = 'Agua';
+            }
+          }
+        }
+      }
+
+      // Actualizar turno
+      partidaActual.contadorTurno++;
+
+      // Comprobar si la partida ha terminado
+      const finPartida = false; // No puede acabar la partida al usar el sónar
+      
+      let turnosIA = [];
+      let finPartidaIA = false;
+      // La IA no juega si no es el último misil de ráfaga
+      if (partidaContraIA) {  // La IA juega siempre tras usar el sónar
+        finPartidaIA = await juegaIA(jugador1, jugador2, partidaActual, estadisticasJugadores, turnosIA);
+      }
+      console.log('Sónar usado con éxito');
+      // Actualizar la partida
+      const partidaModificada = await Partida.findOneAndUpdate(
+        filtro, // Filtrar
+        partidaActual, // Actualizar (partida contiene los cambios)
+        { new: true } // Para devolver el documento actualizado
+      );
+
+      if (partidaModificada) {
+        let respuestaDisparo = {
+          sonar: sonar,
           eventoOcurrido: undefined, // Evento ocurrido en la partida
           finPartida: finPartida,
           clima: partidaActual.clima,

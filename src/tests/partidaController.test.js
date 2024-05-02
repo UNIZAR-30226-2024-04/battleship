@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const {crearPartida, mostrarMiTablero, mostrarTableroEnemigo,
     mostrarTableros, realizarDisparo, enviarMensaje, obtenerChat,
     realizarDisparoMisilRafaga, realizarDisparoTorpedoRecargado,
-    realizarDisparoMisilTeledirigido, colocarMina} = require('../controllers/partidaController');
+    realizarDisparoMisilTeledirigido, colocarMina, usarSonar} = require('../controllers/partidaController');
 const {registrarUsuario} = require('../controllers/perfilController');
 const Partida = require('../models/partidaModel');
 
@@ -828,9 +828,9 @@ describe("Colocar mina", () => {
     while (true) {
         i = Math.floor(Math.random() * tableroDim) + 1;
         j = Math.floor(Math.random() * tableroDim) + 1;
-        ocupadaPorBarco = miTablero.some(barco => barco.coordenadas.some(coordenada => coordenada.i === i && coordenada.j === j));
+        ocupadaPorBarco = miTablero.some(barco => barco.coordenadas.some(coordenada => coordenada.i === i && coordenada.j === j && coordenada.estado === 'Agua'));
         if (!ocupadaPorBarco) {
-          ocupadaPorMina = misMinas.some(mina => mina.i === i && mina.j === j);
+          ocupadaPorMina = misMinas.some(mina => mina.i === i && mina.j === j && mina.estado === 'Agua');
           if (!ocupadaPorMina) break;
         }
     }
@@ -843,7 +843,7 @@ describe("Colocar mina", () => {
     expect(res.statusCode).toBe(undefined);
     partidaActual = await Partida.findOne({codigo: _codigo});
     misMinas = partidaActual.minas1;
-    ocupadaPorMina = misMinas.some(mina => mina.i === i && mina.j === j);
+    ocupadaPorMina = misMinas.some(mina => mina.i === i && mina.j === j && mina.estado === 'Agua');
     expect(ocupadaPorMina).toBe(true);
     expect(res._json.finPartida).toBe(false);
     expect(res._json.usosHab).toBe(2);
@@ -1177,6 +1177,105 @@ describe("Pierdo la partida por explotar minas", () => {
   }, 10000);
 });
 
+// Test for usarSonar
+describe("Usar sónar", () => {
+  beforeAll(async () => {
+    const connection = mongoose.connection;
+    await connection.dropDatabase();
+    const req = { body: { nombreId: 'usuario1', contraseña: 'Passwd1.',
+    correo: 'usuario1@example.com' } };
+    const res = { json: () => {}, status: function(s) { 
+      this.statusCode = s; return this; }, send: () => {} };
+    try {
+      await registrarUsuario(req, res);
+    } catch (error) {}
+    expect(res.statusCode).toBe(undefined);
+
+    const req3 = { body: { nombreId1: 'usuario1', bioma: 'Norte' } };
+    const res3 = { json: function(_json) {this._json = _json; return this;}, status: function(s) {
+        this.statusCode = s; return this; }, send: () => {} };
+    try {
+        await crearPartida(req3, res3);
+    } catch (error) {}
+    expect(res3.statusCode).toBe(undefined);
+    _codigo = res3._json.codigo;
+  });
+  it("Debería usar el sónar correctamente en malla 3x3", async () => {
+    let partidaActual = await Partida.findOne({codigo: _codigo});
+    // Quitar mis barcos para no perder
+    partidaActual.tableroBarcos1 = [];
+    // Recolocar los barcos de la IA
+    partidaActual.tableroBarcos2 = [partidaActual.tableroBarcos2[1]];
+    partidaActual.tableroBarcos2[0].coordenadas = [{i: 1, j: 1}, {i: 1, j: 2}, {i: 1, j: 3}];
+    // Colocar minas en tablero de la IA
+    partidaActual.minas2.push({i: 2, j: 2});
+    partidaActual.minas2.push({i: 3, j: 3});
+    // Actualizar la partida
+    await Partida.findOneAndUpdate(
+      {codigo: _codigo}, // Filtrar
+      partidaActual, // Actualizar (partida contiene los cambios)
+      { new: true } // Para devolver el documento actualizado
+    );
+    // La esquina superior izquierda de la IA es
+    // Barco Barco Barco
+    // Agua  Mina  Agua
+    // Agua  Agua  Mina
+    let req = { body: { codigo: _codigo, nombreId: 'usuario1', i: 2, j: 2} };
+    let res = { json: function(_json) {this._json = _json; return this;}, status: function(s) {
+        this.statusCode = s; return this; }, send: () => {} };
+    try {
+      await usarSonar(req, res);
+    } catch (error) {}    
+    expect(res.statusCode).toBe(undefined);
+    expect(res._json.usosHab).toBe(2);
+    expect(res._json.turnosIA.length).toBe(1);
+    expect(res._json.sonar).toEqual([ // toEqual verifica recursivamente cada campo o componente
+      ['Barco', 'Barco', 'Barco'],
+      ['Agua', 'Mina', 'Agua'],
+      ['Agua', 'Agua', 'Mina']
+    ]);
+  });
+  it("Debería usar el sónar correctamente en malla 2x2", async () => {
+    // La esquina superior izquierda de la IA es
+    // Barco Barco Barco
+    // Agua  Mina  Agua
+    // Agua  Agua  Mina
+    let req = { body: { codigo: _codigo, nombreId: 'usuario1', i: 1, j: 1} };
+    let res = { json: function(_json) {this._json = _json; return this;}, status: function(s) {
+        this.statusCode = s; return this; }, send: () => {} };
+    try {
+      await usarSonar(req, res);
+    } catch (error) {}    
+    expect(res.statusCode).toBe(undefined);
+    expect(res._json.usosHab).toBe(1);
+    expect(res._json.turnosIA.length).toBe(1);
+    expect(res._json.sonar).toEqual([ // toEqual verifica recursivamente cada campo o componente
+      [null, null, null],
+      [null, 'Barco', 'Barco'],
+      [null, 'Agua', 'Mina']
+    ]);
+  });
+  it("Debería usar el sónar correctamente en malla 2x3", async () => {
+    // La esquina superior izquierda de la IA es
+    // Barco Barco Barco
+    // Agua  Mina  Agua
+    // Agua  Agua  Mina
+    let req = { body: { codigo: _codigo, nombreId: 'usuario1', i: 2, j: 1} };
+    let res = { json: function(_json) {this._json = _json; return this;}, status: function(s) {
+        this.statusCode = s; return this; }, send: () => {} };
+    try {
+      await usarSonar(req, res);
+    } catch (error) {}    
+    expect(res.statusCode).toBe(undefined);
+    expect(res._json.usosHab).toBe(0);
+    expect(res._json.turnosIA.length).toBe(1);
+    expect(res._json.sonar).toEqual([ // toEqual verifica recursivamente cada campo o componente
+      [null, 'Barco', 'Barco'],
+      [null, 'Agua', 'Mina'],
+      [null, 'Agua', 'Agua']
+    ]);
+  });
+});
 
 // Test for enviarMensaje
 describe("Enviar mensaje", () => {
