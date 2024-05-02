@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const {crearPartida, mostrarMiTablero, mostrarTableroEnemigo,
     mostrarTableros, realizarDisparo, enviarMensaje, obtenerChat,
     realizarDisparoMisilRafaga, realizarDisparoTorpedoRecargado,
-    realizarDisparoMisilTeledirigido} = require('../controllers/partidaController');
+    realizarDisparoMisilTeledirigido, colocarMina} = require('../controllers/partidaController');
 const {registrarUsuario} = require('../controllers/perfilController');
 const Partida = require('../models/partidaModel');
 
@@ -794,6 +794,389 @@ it("Debería disparar misiles teledirigidos sin error", async () => {
     }
 });
 });
+
+// Test for colocarMina
+describe("Colocar mina", () => {
+  beforeAll(async () => {
+    const connection = mongoose.connection;
+    await connection.dropDatabase();
+    const req = { body: { nombreId: 'usuario1', contraseña: 'Passwd1.',
+    correo: 'usuario1@example.com' } };
+    const res = { json: () => {}, status: function(s) { 
+      this.statusCode = s; return this; }, send: () => {} };
+    try {
+      await registrarUsuario(req, res);
+    } catch (error) {}
+    expect(res.statusCode).toBe(undefined);
+
+    const req3 = { body: { nombreId1: 'usuario1', bioma: 'Norte' } };
+    const res3 = { json: function(_json) {this._json = _json; return this;}, status: function(s) {
+        this.statusCode = s; return this; }, send: () => {} };
+    try {
+        await crearPartida(req3, res3);
+    } catch (error) {}
+    expect(res3.statusCode).toBe(undefined);
+    _codigo = res3._json.codigo;
+  });
+  it("Debería colocar una mina en una casilla no ocupada correctamente", async () => {
+    // Buscamos una casilla sin barco ni mina
+    let partidaActual = await Partida.findOne({codigo: _codigo});
+    let i = 0;
+    let j = 0;
+    let miTablero = partidaActual.tableroBarcos1;
+    let misMinas = partidaActual.minas1;
+    while (true) {
+        i = Math.floor(Math.random() * tableroDim) + 1;
+        j = Math.floor(Math.random() * tableroDim) + 1;
+        ocupadaPorBarco = miTablero.some(barco => barco.coordenadas.some(coordenada => coordenada.i === i && coordenada.j === j));
+        if (!ocupadaPorBarco) {
+          ocupadaPorMina = misMinas.some(mina => mina.i === i && mina.j === j);
+          if (!ocupadaPorMina) break;
+        }
+    }
+    let req = { body: { codigo: _codigo, nombreId: 'usuario1', i: i, j: j} };
+    let res = { json: function(_json) {this._json = _json; return this;}, status: function(s) {
+        this.statusCode = s; return this; }, send: () => {} };
+    try {
+      await colocarMina(req, res);
+    } catch (error) {}    
+    expect(res.statusCode).toBe(undefined);
+    partidaActual = await Partida.findOne({codigo: _codigo});
+    misMinas = partidaActual.minas1;
+    ocupadaPorMina = misMinas.some(mina => mina.i === i && mina.j === j);
+    expect(ocupadaPorMina).toBe(true);
+    expect(res._json.finPartida).toBe(false);
+    expect(res._json.usosHab).toBe(2);
+    expect(res._json.turnosIA.length).toBeGreaterThan(0);
+  });
+  it("Debería fallar al colocar una mina en una casilla ocupada por barco", async () => {
+    const partidaActual = await Partida.findOne({codigo: _codigo});
+    let miTablero = partidaActual.tableroBarcos1;
+    let {i, j} = miTablero[0].coordenadas[0];
+    let req = { body: { codigo: _codigo, nombreId: 'usuario1', i: i, j: j} };
+    let res = { json: function(_json) {this._json = _json; return this;}, status: function(s) {
+        this.statusCode = s; return this; }, send: () => {} };
+    try {
+      await colocarMina(req, res);
+    } catch (error) {}    
+    expect(res.statusCode).toBe(404);
+  });
+  it("Debería fallar al colocar una mina en una casilla ocupada por otra mina", async () => {
+    const partidaActual = await Partida.findOne({codigo: _codigo});
+    let misMinas = partidaActual.minas1;
+    let {i, j} = misMinas[0];
+    let req = { body: { codigo: _codigo, nombreId: 'usuario1', i: i, j: j} };
+    let res = { json: function(_json) {this._json = _json; return this;}, status: function(s) {
+        this.statusCode = s; return this; }, send: () => {} };
+    try {
+      await colocarMina(req, res);
+    } catch (error) {}    
+    expect(res.statusCode).toBe(404);
+  });
+});
+
+describe("Respuesta de mi mina a un disparo básico de la IA", () => {
+  beforeAll(async () => {
+    const connection = mongoose.connection;
+    await connection.dropDatabase();
+    const req = { body: { nombreId: 'usuario1', contraseña: 'Passwd1.',
+    correo: 'usuario1@example.com' } };
+    const res = { json: () => {}, status: function(s) { 
+      this.statusCode = s; return this; }, send: () => {} };
+    try {
+      await registrarUsuario(req, res);
+    } catch (error) {}
+    expect(res.statusCode).toBe(undefined);
+
+    const req3 = { body: { nombreId1: 'usuario1', bioma: 'Norte' } };
+    const res3 = { json: function(_json) {this._json = _json; return this;}, status: function(s) {
+        this.statusCode = s; return this; }, send: () => {} };
+    try {
+        await crearPartida(req3, res3);
+    } catch (error) {}
+    expect(res3.statusCode).toBe(undefined);
+    _codigo = res3._json.codigo;
+  });
+  it("Debería responder con 5 disparos contra la IA correctamente", async () => {
+    let partidaActual = await Partida.findOne({codigo: _codigo});
+    // Quitar todos mis barcos
+    partidaActual.tableroBarcos1 = [];
+    // Colocar minas en todo mi tablero
+    for (let i = 1; i <= tableroDim; i++) {
+      for (let j = 1; j <= tableroDim; j++) {
+        partidaActual.minas1.push({i: i, j: j});
+      }
+    }
+    partidaActual.minas1.pop(); // Quitar la última para colocarla en mi turno
+    // Actualizar la partida
+    await Partida.findOneAndUpdate(
+      {codigo: _codigo}, // Filtrar
+      partidaActual, // Actualizar (partida contiene los cambios)
+      { new: true } // Para devolver el documento actualizado
+    );
+    // Colocar la mina que me falta en mi turno
+    let req = { body: { codigo: _codigo, nombreId: 'usuario1', i: tableroDim, j: tableroDim} };
+    let res = { json: function(_json) {this._json = _json; return this;}, status: function(s) {
+        this.statusCode = s; return this; }, send: () => {} };
+    try {
+      await colocarMina(req, res);
+    } catch (error) {}    
+    expect(res.statusCode).toBe(undefined);
+    expect(res._json.finPartida).toBe(false);
+    expect(res._json.usosHab).toBe(2);
+    expect(res._json.turnosIA.length).toBe(1);
+    expect(res._json.turnosIA[0].minaDisparada).toBeDefined();  // Ha explotado una mina
+    expect(res._json.turnosIA[0].disparosRespuestaMina.length).toBe(5);  // La mina ha respondido con 5 disparos
+    partidaActual = await Partida.findOne({codigo: _codigo});
+    let iMinaExplotada = res._json.turnosIA[0].disparoRealizado.i;
+    let jMinaExplotada = res._json.turnosIA[0].disparoRealizado.j;
+    let minaExplotada = partidaActual.minas1.find(mina => mina.i === iMinaExplotada && mina.j === jMinaExplotada 
+      && mina.estado === "Hundido");
+    expect(minaExplotada).toBeDefined();  // La mina disparada está hundida
+    expect(partidaActual.contadorTurno).toBe(3);
+  });
+});
+
+describe("Respuesta de mina de la IA a un disparo básico mío", () => {
+  beforeAll(async () => {
+    const connection = mongoose.connection;
+    await connection.dropDatabase();
+    const req = { body: { nombreId: 'usuario1', contraseña: 'Passwd1.',
+    correo: 'usuario1@example.com' } };
+    const res = { json: () => {}, status: function(s) { 
+      this.statusCode = s; return this; }, send: () => {} };
+    try {
+      await registrarUsuario(req, res);
+    } catch (error) {}
+    expect(res.statusCode).toBe(undefined);
+
+    const req3 = { body: { nombreId1: 'usuario1', bioma: 'Norte' } };
+    const res3 = { json: function(_json) {this._json = _json; return this;}, status: function(s) {
+        this.statusCode = s; return this; }, send: () => {} };
+    try {
+        await crearPartida(req3, res3);
+    } catch (error) {}
+    expect(res3.statusCode).toBe(undefined);
+    _codigo = res3._json.codigo;
+  });
+  it("Debería responder la IA con 5 disparos", async () => {
+    let partidaActual = await Partida.findOne({codigo: _codigo});
+    // Quitar todos los barcos de la IA
+    partidaActual.tableroBarcos2 = [];
+    // Colocar mina en tablero de la IA
+    partidaActual.minas2.push({i: 1, j: 1});
+    // Actualizar la partida
+    await Partida.findOneAndUpdate(
+      {codigo: _codigo}, // Filtrar
+      partidaActual, // Actualizar (partida contiene los cambios)
+      { new: true } // Para devolver el documento actualizado
+    );
+    // Disparar a una mina de la IA
+    let req = { body: { codigo: _codigo, nombreId: 'usuario1', i: 1, j: 1} };
+    let res = { json: function(_json) {this._json = _json; return this;}, status: function(s) {
+        this.statusCode = s; return this; }, send: () => {} };
+    try {
+      await realizarDisparo(req, res);
+    } catch (error) {}    
+    expect(res.statusCode).toBe(undefined);
+    expect(res._json.turnosIA.length).toBeGreaterThan(0);
+    expect(res._json.minaDisparada).toBeDefined();  // He explotado una mina
+    expect(res._json.disparosRespuestaMina.length).toBe(5);  // La mina ha respondido con 5 disparos
+    partidaActual = await Partida.findOne({codigo: _codigo});
+    let iMinaExplotada = res._json.disparoRealizado.i;
+    let jMinaExplotada = res._json.disparoRealizado.j;
+    let minaExplotada = partidaActual.minas2.find(mina => mina.i === iMinaExplotada && mina.j === jMinaExplotada 
+      && mina.estado === "Hundido");
+    expect(minaExplotada).toBeDefined();  // La mina disparada está hundida
+    expect(partidaActual.contadorTurno).toBe(3);
+  });
+});
+
+describe("Respuesta de mina de la IA a un disparo de ráfaga mío", () => {
+  beforeAll(async () => {
+    const connection = mongoose.connection;
+    await connection.dropDatabase();
+    const req = { body: { nombreId: 'usuario1', contraseña: 'Passwd1.',
+    correo: 'usuario1@example.com' } };
+    const res = { json: () => {}, status: function(s) { 
+      this.statusCode = s; return this; }, send: () => {} };
+    try {
+      await registrarUsuario(req, res);
+    } catch (error) {}
+    expect(res.statusCode).toBe(undefined);
+
+    const req3 = { body: { nombreId1: 'usuario1', bioma: 'Norte' } };
+    const res3 = { json: function(_json) {this._json = _json; return this;}, status: function(s) {
+        this.statusCode = s; return this; }, send: () => {} };
+    try {
+        await crearPartida(req3, res3);
+    } catch (error) {}
+    expect(res3.statusCode).toBe(undefined);
+    _codigo = res3._json.codigo;
+  });
+  it("Debería responder la IA con 5 disparos", async () => {
+    let partidaActual = await Partida.findOne({codigo: _codigo});
+    // Quitar todos los barcos de la IA
+    partidaActual.tableroBarcos2 = [];
+    // Colocar mina en tablero de la IA
+    partidaActual.minas2.push({i: 1, j: 1});
+    // Actualizar la partida
+    await Partida.findOneAndUpdate(
+      {codigo: _codigo}, // Filtrar
+      partidaActual, // Actualizar (partida contiene los cambios)
+      { new: true } // Para devolver el documento actualizado
+    );
+    // Disparar a la minas de la IA
+    let req = { body: { codigo: _codigo, nombreId: 'usuario1', i: 1, j: 1, misilesRafagaRestantes: 1} };
+    let res = { json: function(_json) {this._json = _json; return this;}, status: function(s) {
+        this.statusCode = s; return this; }, send: () => {} };
+    try {
+      await realizarDisparoMisilRafaga(req, res);
+    } catch (error) {}    
+    expect(res.statusCode).toBe(undefined);
+    expect(res._json.turnosIA.length).toBeGreaterThan(0);
+    expect(res._json.usosHab).toBe(2);
+    expect(res._json.minaDisparada).toBeDefined();  // He explotado una mina
+    expect(res._json.disparosRespuestaMina.length).toBe(5);  // La mina ha respondido con 5 disparos
+    partidaActual = await Partida.findOne({codigo: _codigo});
+    let iMinaExplotada = res._json.disparoRealizado.i;
+    let jMinaExplotada = res._json.disparoRealizado.j;
+    let minaExplotada = partidaActual.minas2.find(mina => mina.i === iMinaExplotada && mina.j === jMinaExplotada 
+      && mina.estado === "Hundido");
+    expect(minaExplotada).toBeDefined();  // La mina disparada está hundida
+    expect(partidaActual.contadorTurno).toBe(3);
+  });
+});
+
+describe("Respuesta de mina de la IA a un disparo de torpedo recargado mío", () => {
+  beforeAll(async () => {
+    const connection = mongoose.connection;
+    await connection.dropDatabase();
+    const req = { body: { nombreId: 'usuario1', contraseña: 'Passwd1.',
+    correo: 'usuario1@example.com' } };
+    const res = { json: () => {}, status: function(s) { 
+      this.statusCode = s; return this; }, send: () => {} };
+    try {
+      await registrarUsuario(req, res);
+    } catch (error) {}
+    expect(res.statusCode).toBe(undefined);
+
+    const req3 = { body: { nombreId1: 'usuario1', bioma: 'Norte' } };
+    const res3 = { json: function(_json) {this._json = _json; return this;}, status: function(s) {
+        this.statusCode = s; return this; }, send: () => {} };
+    try {
+        await crearPartida(req3, res3);
+    } catch (error) {}
+    expect(res3.statusCode).toBe(undefined);
+    _codigo = res3._json.codigo;
+  });
+  it("Debería responder la IA con 5 disparos", async () => {
+    let partidaActual = await Partida.findOne({codigo: _codigo});
+    // Quitar todos los barcos de la IA
+    partidaActual.tableroBarcos2 = [];
+    // Colocar minas en tablero de la IA
+    for (let i = 1; i <= 3; i++) {
+      for (let j = 1; j <= 3; j++) {
+        partidaActual.minas2.push({i: i, j: j});
+      }
+    }
+    // Actualizar la partida
+    await Partida.findOneAndUpdate(
+      {codigo: _codigo}, // Filtrar
+      partidaActual, // Actualizar (partida contiene los cambios)
+      { new: true } // Para devolver el documento actualizado
+    );
+    // Disparar a la minas de la IA
+    let req = { body: { codigo: _codigo, nombreId: 'usuario1', i: 2, j: 2} };
+    let res = { json: function(_json) {this._json = _json; return this;}, status: function(s) {
+        this.statusCode = s; return this; }, send: () => {} };
+    try {
+      await realizarDisparoTorpedoRecargado(req, res);
+    } catch (error) {}    
+    expect(res.statusCode).toBe(undefined);
+    expect(res._json.turnosIA.length).toBeGreaterThan(0);
+    expect(res._json.usosHab).toBe(2);
+    expect(res._json.minasDisparadas.length).toBe(9);  // He explotado 9 minas
+    expect(res._json.disparosRespuestasMinas.length).toBe(45);  // Las minas ha respondido con 5 disparos cada una
+    partidaActual = await Partida.findOne({codigo: _codigo});
+    let disparosRealizados = res._json.disparosRealizados;
+    for (let disparo of disparosRealizados) {
+      let iMinaExplotada = disparo.i;
+      let jMinaExplotada = disparo.j;
+      let minaExplotada = partidaActual.minas2.find(mina => mina.i === iMinaExplotada && mina.j === jMinaExplotada 
+        && mina.estado === "Hundido");
+      expect(minaExplotada).toBeDefined();  // La mina disparada está hundida
+    }
+    expect(partidaActual.contadorTurno).toBe(3);
+  });
+});
+
+describe("Pierdo la partida por explotar minas", () => {
+  beforeAll(async () => {
+    const connection = mongoose.connection;
+    await connection.dropDatabase();
+    const req = { body: { nombreId: 'usuario1', contraseña: 'Passwd1.',
+    correo: 'usuario1@example.com' } };
+    const res = { json: () => {}, status: function(s) { 
+      this.statusCode = s; return this; }, send: () => {} };
+    try {
+      await registrarUsuario(req, res);
+    } catch (error) {}
+    expect(res.statusCode).toBe(undefined);
+
+    const req3 = { body: { nombreId1: 'usuario1', bioma: 'Norte' } };
+    const res3 = { json: function(_json) {this._json = _json; return this;}, status: function(s) {
+        this.statusCode = s; return this; }, send: () => {} };
+    try {
+        await crearPartida(req3, res3);
+    } catch (error) {}
+    expect(res3.statusCode).toBe(undefined);
+    _codigo = res3._json.codigo;
+  });
+  it("Debería responder la IA con 5 disparos", async () => {
+    let partidaActual = await Partida.findOne({codigo: _codigo});
+    // Quitar todos los barcos de la IA
+    partidaActual.tableroBarcos2 = [];
+    // Dejarme sólo un barco
+    partidaActual.tableroBarcos1 = [partidaActual.tableroBarcos1[0]];
+    // Colocar minas en tablero de la IA
+    for (let i = 1; i <= 3; i++) {
+      for (let j = 1; j <= 3; j++) {
+        partidaActual.minas2.push({i: i, j: j});
+      }
+    }
+    // Actualizar la partida
+    await Partida.findOneAndUpdate(
+      {codigo: _codigo}, // Filtrar
+      partidaActual, // Actualizar (partida contiene los cambios)
+      { new: true } // Para devolver el documento actualizado
+    );
+    // Disparar a minas hasta perder la partida
+    while (true) {
+      // Disparar a la minas de la IA
+      let req = { body: { codigo: _codigo, nombreId: 'usuario1', i: 2, j: 2} };
+      let res = { json: function(_json) {this._json = _json; return this;}, status: function(s) {
+          this.statusCode = s; return this; }, send: () => {} };
+      try {
+        await realizarDisparoTorpedoRecargado(req, res);
+      } catch (error) {}    
+      expect(res.statusCode).toBe(undefined);
+      // Verificar si he perdido
+      if (res._json.finPartida) {
+        partidaActual = await Partida.findOne({codigo: _codigo});
+        expect(partidaActual.ganador).toBe('IA');
+        break;
+      }
+      // Restaurar minas y uso de habilidad
+      await Partida.findOneAndUpdate(
+        {codigo: _codigo}, // Filtrar
+        partidaActual, // Actualizar (partida contiene los cambios)
+        { new: true } // Para devolver el documento actualizado
+      );
+    }
+  }, 10000);
+});
+
 
 // Test for enviarMensaje
 describe("Enviar mensaje", () => {

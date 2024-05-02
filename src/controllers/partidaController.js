@@ -690,10 +690,9 @@ function dispararCoordenada(tablero, minas, i, j) {
 }
 
 // Función que dispara en la cordenada indicada, actualiza partidaActual y estadisticasJugadores y devuelve el disparo y el barco disparado (si existe)
-// También actualiza el turno si se falla un disparo básico o es el último de una ráfaga
+// También actualiza el turno si se falla un disparo y noActualizarTurno no es true
 function gestionarDisparo(jugador, partidaActual, estadisticasJugadores, i, j, // args de disparo básico
-  misilesRafagaRestantes, // arg adicional para disparo de ráfaga (actualizar turno sólo si vale 1)
-  noActualizarTurno) {  // arg adicional para disparo recargado o respuesta de mina (necesario pasar undefined en misilesRafagaRestantes)
+  noActualizarTurno) {  // arg adicional para disparo recargado o respuesta de mina
   let {barcoDisparado, minaDisparada} = jugador === 1 ? 
     dispararCoordenada(partidaActual.tableroBarcos2, partidaActual.minas2, i, j) :
     dispararCoordenada(partidaActual.tableroBarcos1, partidaActual.minas1, i, j);
@@ -725,7 +724,7 @@ function gestionarDisparo(jugador, partidaActual, estadisticasJugadores, i, j, /
     }
   } else {  // Sólo cambia el turno si se falla el disparo
     estadisticasJugadores[jugador - 1].nuevosDisparosFallados++;
-    if (!misilesRafagaRestantes && !noActualizarTurno || misilesRafagaRestantes <= 1) {  // Si disparo básico o último de la ráfaga
+    if (!noActualizarTurno) {
       partidaActual.contadorTurno++;
     }
     // Si se ha explotado una mina, recibir disparos
@@ -747,7 +746,7 @@ function gestionarDisparo(jugador, partidaActual, estadisticasJugadores, i, j, /
         }
 
         let {disparo: disparoRespuesta, barcoDisparado: barcoDisparadoRespuesta} = 
-          gestionarDisparo(jugadorEnemigo, partidaActual, estadisticasJugadores, iRespuesta, jRespuesta, undefined, true);
+          gestionarDisparo(jugadorEnemigo, partidaActual, estadisticasJugadores, iRespuesta, jRespuesta, true);
         disparosRespuestaMina.push(disparoRespuesta);
         if (disparoRespuesta.estado === 'Hundido') {
           barcosHundidosRespuestaMina.push(barcoDisparadoRespuesta);
@@ -1129,7 +1128,7 @@ exports.realizarDisparoMisilRafaga = async (req, res) => {
       }
       // Realizar disparo
       const {disparo, barcoDisparado, minaDisparada, disparosRespuestaMina, barcosHundidosRespuestaMina} = 
-        gestionarDisparo(jugador, partidaActual, estadisticasJugadores, i, j, misilesRafagaRestantes);
+        gestionarDisparo(jugador, partidaActual, estadisticasJugadores, i, j, !ultimoMisilRafaga); // No actualizar turno si es el último misil de la ráfaga
       // Comprobar si la partida ha terminado
       let finPartida = false;
       if (disparo.estado === 'Hundido') { // He podido ganar si he hundido el último barco
@@ -1278,7 +1277,7 @@ exports.realizarDisparoTorpedoRecargado = async (req, res) => {
             let jDisparo = j + jVecino;
             if (iDisparo >= 1 && iDisparo <= tableroDim && jDisparo >= 1 && jDisparo <= tableroDim) {
               var {disparo, barcoDisparado, minaDisparada, disparosRespuestaMina, barcosHundidosRespuestaMina} = 
-                gestionarDisparo(jugador, partidaActual, estadisticasJugadores, iDisparo, jDisparo, undefined, true);
+                gestionarDisparo(jugador, partidaActual, estadisticasJugadores, iDisparo, jDisparo, true);  // No actualizar turno
               disparosTorpedo.push(disparo);
               if (disparo.estado === 'Tocado' || disparo.estado === 'Hundido') {
                 numBarcosTocados++;
@@ -1287,8 +1286,8 @@ exports.realizarDisparoTorpedoRecargado = async (req, res) => {
                 }
               } else if (minaDisparada) {
                 minasDisparadas.push(minaDisparada);
-                disparosRespuestasMinas.concat(disparosRespuestaMina);
-                barcosHundidosRespuestasMinas.concat(barcosHundidosRespuestaMina);
+                disparosRespuestasMinas = disparosRespuestasMinas.concat(disparosRespuestaMina);
+                barcosHundidosRespuestasMinas = barcosHundidosRespuestasMinas.concat(barcosHundidosRespuestaMina);
               }
             }
           }
@@ -1491,7 +1490,7 @@ exports.realizarDisparoMisilTeledirigido = async (req, res) => {
  * @param {Number} req.body.i - La coordenada i de la mina
  * @param {Number} req.body.j - La coordenada j de la mina
  * @param {Object} res - El objeto de respuesta HTTP
- * @param {Object} res.minaColocada - Las coordenadas de la mina colocada
+ * @param {Coordenada} res.minaColocada - Las coordenadas de la mina colocada
  * @param {String} res.eventoOcurrido - El evento ocurrido en la partida
  * @param {Boolean} res.finPartida - Indica si la partida ha terminado
  * @param {String} res.clima - El clima de la partida
