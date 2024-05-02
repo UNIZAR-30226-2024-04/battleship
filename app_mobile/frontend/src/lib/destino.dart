@@ -1,12 +1,10 @@
 import 'package:battleship/main.dart';
 import 'package:flutter/material.dart';
-
 import 'ajustes.dart';
 import 'atacar.dart';
-import 'colocarBarcos.dart';
-import 'defender.dart';
 import 'flota.dart';
-import 'habilidades.dart';
+import 'defender.dart';
+import 'mazo.dart';
 import 'juego.dart';
 import 'login.dart';
 import 'recContrasena.dart';
@@ -32,12 +30,10 @@ class DestinoManager {
       return '/Perfil';
     } else if (_destino is Principal) {
       return '/Principal';
-    } else if (_destino is ColocarBarcos) {
-      return '/ColocarBarcos';
-    } else if (_destino is Habilidades) {
-      return '/Habilidades';
     } else if (_destino is Flota) {
       return '/Flota';
+    } else if (_destino is Mazo) {
+      return '/Mazo';
     } else if (_destino is Ajustes) {
       return '/Ajustes';
     } else if (_destino is Social) {

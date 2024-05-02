@@ -15,4 +15,8 @@ class ServerRoute {
   String urlModificarDatosPersonales = 'http://localhost:8080/perfil/modificarDatosPersonales';
   String urlEliminarUsuario = 'http://localhost:8080/perfil/eliminarUsuario';
   String urlObtenerPerfil = 'http://localhost:8080/perfil/obtenerUsuario';
+  String urlDispararRafaga = 'http://localhost:8080/partida/realizarDisparoMisilRafaga';
+  String urlDispararTorpedo = 'http://localhost:8080/partida/realizarDisparoTorpedoRecargado';
+  String urlDispararMisil = 'http://localhost:8080/partida/realizarDisparoMisilTeledirigido';
+  String urlModificarMazo = 'http://localhost:8080/perfil/modificarMazo';
 }

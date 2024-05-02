@@ -50,29 +50,22 @@ class AuthProvider with ChangeNotifier {
       }),
     );
 
-    print(response.body);
-
     // Verificar si la cadena ya está en formato JSON
     dynamic responseBody;
     try {
       responseBody = jsonDecode(response.body);
-      print("La cadena ya está en formato JSON");
 
       if (responseBody.containsKey('message')) {
         mensajeErrorModel.setMensaje(responseBody['message']);
       }
       
     } catch (e) {
-      print("La cadena no está en formato JSON");
       mensajeErrorModel.setMensaje(response.body);
     }
 
     if (response.statusCode == 200) {
       var data = jsonDecode(response.body);
-      print("RESPUESTA OK");
-      print(data);
       if (data != null) {
-        print("DATOS MODIFICADOS CORRECTAMENTE");
         mensajeErrorModel.cleanErrorMessage();
         return true;
       }
@@ -98,13 +91,8 @@ class AuthProvider with ChangeNotifier {
 
     if (response.statusCode == 200) {
       var data = jsonDecode(response.body);
-      print("RESPUESTA OK");
-      print(data);
       if (data != null) {
-        print("DATA NO NULL");
-        print(data['token']);
         tokenSesion = data['token'];
-        print("LOGIN CORRECTO");
         return true;
       }
 
@@ -132,27 +120,21 @@ class AuthProvider with ChangeNotifier {
     dynamic responseBody;
     try {
       responseBody = jsonDecode(response.body);
-      print("La cadena ya está en formato JSON");
 
       if (responseBody.containsKey('message')) {
         mensajeErrorModel.setMensaje(responseBody['message']);
       }
       
     } catch (e) {
-      print("La cadena no está en formato JSON");
       mensajeErrorModel.setMensaje(response.body);
     }
 
     if (response.statusCode == 200) {
-      print("RESPUESTA OK");
-      print(responseBody);
       if (responseBody != null) {
         tokenSesion = responseBody['token'];
-        print("REGISTRO CORRECTO");
         return true;
       }
     } else {
-      print("RESPUESTA NO OK");
       return false;
     }
     
@@ -170,7 +152,6 @@ class AuthProvider with ChangeNotifier {
         await Juego().cargarPartida();
         document.cookie = 'usuario=$name';
         document.cookie = 'tokenSesion=$tokenSesion';
-        print("USUARIO EN JUEGO:${Juego().miPerfil.name}");
         notifyListeners(); // Notifica a los listeners que la variable ha cambiado
         return true;
       } else {
@@ -198,10 +179,6 @@ class AuthProvider with ChangeNotifier {
       mensajeErrorModel.cleanErrorMessage();
       return false;
     }
-
-
-    print("RESPUESTA: ");
-    print(response);
 
     if(response) {
       _isLoggedIn = true;

@@ -1,24 +1,17 @@
-
+import 'dart:math';
 import 'dart:ui';
-
 import 'juego.dart';
 
 abstract class Habilidad {
   String nombre = '';
-  int turno = 1;
-  bool usada = false;
+  bool disponible = true;
 
-  Habilidad(int turnoAsignado) {
+  Habilidad() {
     nombre = '';
-    turno = turnoAsignado;
-    usada = false;
+    disponible = true;
   }
 
-  List<Offset> ejecutar(int i, int j);
-
-  bool disponible();
-
-  void informarHabilidad();
+  void ejecutar();
 
   String getImagePath() {
     return 'images/$nombre.png';
@@ -26,106 +19,89 @@ abstract class Habilidad {
 }
 
 class Sonar extends Habilidad {
-  Sonar(super.turnoAsignado) {
+  Sonar() {
     nombre = 'sonar';
   }
 
   @override
-  List<Offset> ejecutar(int i, int j) {
-    print("EJEUCTANDO SONAR");
-    usada = true;
-    return [Offset(i.toDouble(), j.toDouble())];
-  }
-
-  @override
-  bool disponible() {
-    return !usada;
-  }
-
-  @override
-  void informarHabilidad() {
-    // No hace nada
+  void ejecutar() {
+    if(disponible == true) {
+      disponible = false;
+      Juego().indiceHabilidadSeleccionadaEnTurno = -1;
+    }
+    else {
+      disponible = true;
+    }
   }
 }
 
 class Mina extends Habilidad {
-  Mina(super.turnoAsignado) {
+  Mina() {
     nombre = 'mina';
   }
 
   @override
-  List<Offset> ejecutar(int i, int j) {
-    print("EJEUCTANDO MINA");
-    usada = true;
-    return [Offset(i.toDouble(), j.toDouble())];
-  }
-
-  @override
-  bool disponible() {
-    return !usada;
-  }
-
-  @override
-  void informarHabilidad() {
-    // No hace nada
+  void ejecutar() {
+    if(disponible == true) {
+      disponible = false;
+      Juego().indiceHabilidadSeleccionadaEnTurno = -1;
+    }
+    else {
+      disponible = true;
+    }
   }
 }
 
-class MisilTeledirigido extends Habilidad {
-  MisilTeledirigido(super.turnoAsignado) {
+class Misil extends Habilidad {
+  Misil() {
     nombre = 'misil';
   }
 
   @override
-  List<Offset> ejecutar(int i, int j) {
-    print("EJEUCTANDO MISIL");
-    usada = true;
-    return [Offset(i.toDouble(), j.toDouble())];
-  }
-
-  @override
-  bool disponible() {
-    return !usada;
-  }
-
-  @override
-  void informarHabilidad() {
-    // No hace nada
+  void ejecutar() {
+    if(disponible == true) {
+      disponible = false;
+      Juego().indiceHabilidadSeleccionadaEnTurno = -1;
+    }
+    else {
+      disponible = true;
+    }
   }
 }
 
-class RafagaDeMisiles extends Habilidad {
-  RafagaDeMisiles(super.turnoAsignado) {
+class Rafaga extends Habilidad {
+  int disparosRealizados = 0;
+
+  Rafaga() {
     nombre = 'rafaga';
   }
   
   @override
-  List<Offset> ejecutar(int i, int j) {
-    print("EJEUCTANDO RAFAGA");
-    if(!usada) {
-      Juego().disparosPendientes = 3;
-      usada = true;
+  void ejecutar() {
+    if(disparosRealizados == 0) {
+      Juego().disparosPendientes = 2;
+      disparosRealizados = 1;
+      disponible = true;
     }
-    
-    return [Offset(i.toDouble(), j.toDouble())];
-  }
-
-  @override
-  bool disponible() {
-    return !usada;
-  }
-
-  @override
-  void informarHabilidad() {
-    // No hace nada
+    else if(disparosRealizados < 3) {
+      Juego().disparosPendientes --;
+      disparosRealizados ++;
+      disponible = true;
+    }
+    else if(disparosRealizados == 3) {
+      Juego().disparosPendientes = 0;
+      disparosRealizados = 0;
+      disponible = false;
+      Juego().indiceHabilidadSeleccionadaEnTurno = -1;
+    }
   }
 }
 
-class TorpedoRecargado extends Habilidad {
+class Torpedo extends Habilidad {
   String estado = 'disponible';
   int turnosPerdidosRestantes = 1;
 
-  TorpedoRecargado(super.turnoAsignado) {
+  Torpedo() {
     nombre = 'torpedo';
   }
 
@@ -134,38 +110,13 @@ class TorpedoRecargado extends Habilidad {
   }
 
   @override
-  List<Offset> ejecutar(int i, int j) {
-    print("EJEUCTANDO TORPEDO");
-    usada = true;
-
-    List<Offset> casillasAAtacar = [];
-    for (int delta = -1; delta <= 1; delta++) {
-      casillasAAtacar.add(Offset(i.toDouble() + delta, j.toDouble()));
+  void ejecutar() {
+    if(disponible == true) {
+      disponible = false;
+      Juego().indiceHabilidadSeleccionadaEnTurno = -1;
     }
-
-    casillasAAtacar.add(Offset(i.toDouble(), j.toDouble() - 1));
-    casillasAAtacar.add(Offset(i.toDouble(), j.toDouble() + 1));
-
-    return casillasAAtacar;
-  }
-
-  @override
-  void informarHabilidad() {
-    if (estado == 'recargando') {
-      if (turnosPerdidosRestantes == 0) {
-        turnosPerdidosRestantes = 1;
-        usada = false;
-        cambiarEstado();
-      }
+    else {
+      disponible = true;
     }
-    else if(usada) {
-      turnosPerdidosRestantes --;
-      cambiarEstado();
-    }
-  }
-
-  @override
-  bool disponible() {
-    return estado == 'disponible';
   }
 }

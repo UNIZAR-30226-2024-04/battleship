@@ -1,11 +1,10 @@
-import 'package:battleship/colocarBarcos.dart';
 import 'package:battleship/defender.dart';
 import 'package:battleship/registro.dart';
 import 'package:flutter/material.dart';
 import 'ajustes.dart';
 import 'atacar.dart';
 import 'flota.dart';
-import 'habilidades.dart';
+import 'mazo.dart';
 import 'juego.dart';
 import 'login.dart';
 import 'authProvider.dart';
@@ -44,14 +43,11 @@ class _MyAppState extends State<MyApp> {
           case '/Principal':
             builder = (BuildContext _) => Principal();
             break;
-          case '/ColocarBarcos':
-            builder = (BuildContext _) => const ColocarBarcos();
-            break;
-          case '/Habilidades':
-            builder = (BuildContext _) => Habilidades();
-            break;
           case '/Flota':
             builder = (BuildContext _) => const Flota();
+            break;
+          case '/Mazo':
+            builder = (BuildContext _) => Mazo();
             break;
           case '/Ajustes':
             builder = (BuildContext _) => const Ajustes();
@@ -132,62 +128,74 @@ class Principal extends StatelessWidget {
   }
 
   void _handleCompetitivaPressed(BuildContext context, AuthProvider authProvider) {
-    DestinoManager.setDestino(const Sala());
     Juego().modalidadPartida = "COMPETITIVA";
+    if (Juego().codigo != -1) {
+      if (Juego().anfitrion) {
+        DestinoManager.setDestino(const Atacar());
+      }
+      else {
+        DestinoManager.setDestino(const Defender());
+      }
+    }
+    else {
+      DestinoManager.setDestino(const Sala());
+    }
     if (!authProvider.isLoggedIn) {
       Navigator.pushNamed(context, '/InicioSesion');
     } 
-    else if (Juego().codigo != -1) {
-      DestinoManager.setDestino(const Atacar());
-      Navigator.pushNamed(context, '/Atacar');
-    }
     else {
-      Navigator.pushNamed(context, '/Sala');
+      Navigator.pushNamed(context, DestinoManager.getRutaDestino());
     }
   }
 
   void _handleAmistosaPressed(BuildContext context, AuthProvider authProvider) {
-    DestinoManager.setDestino(const Sala());
     Juego().modalidadPartida = "AMISTOSA";
+    if (Juego().codigo != -1) {
+      if (Juego().anfitrion) {
+        DestinoManager.setDestino(const Atacar());
+      }
+      else {
+        DestinoManager.setDestino(const Defender());
+      }
+    }
+    else {
+      DestinoManager.setDestino(const Sala());
+    }
     if (!authProvider.isLoggedIn) {
       Navigator.pushNamed(context, '/InicioSesion');
     } 
-    else if (Juego().codigo != -1) {
-      DestinoManager.setDestino(const Atacar());
-      Navigator.pushNamed(context, '/Atacar');
-    }
     else {
-      Navigator.pushNamed(context, '/Sala');
+      Navigator.pushNamed(context, DestinoManager.getRutaDestino());
     }
   }
 
-  void _handleIndividualPressed(BuildContext context, AuthProvider authProvider) {
-    DestinoManager.setDestino(const ColocarBarcos());
+  Future<void> _handleIndividualPressed(BuildContext context, AuthProvider authProvider) async {
+    DestinoManager.setDestino(const Atacar());
     Juego().modalidadPartida = "INDIVIDUAL";
     if (!authProvider.isLoggedIn) {
       Navigator.pushNamed(context, '/InicioSesion');
     } 
-    else if (Juego().codigo != -1) {
+    else {
+      if (Juego().codigo == -1) {
+        await Juego().crearPartida();
+      } 
       DestinoManager.setDestino(const Atacar());
       Navigator.pushNamed(context, '/Atacar');
     }
-    else {
-      Navigator.pushNamed(context, '/ColocarBarcos');
-    }
   }
 
-  void _handleTorneoPressed(BuildContext context, AuthProvider authProvider) {
-    DestinoManager.setDestino(const ColocarBarcos());
+  Future<void> _handleTorneoPressed(BuildContext context, AuthProvider authProvider) async {
+    DestinoManager.setDestino(const Atacar());
     Juego().modalidadPartida = "TORNEO";
     if (!authProvider.isLoggedIn) {
       Navigator.pushNamed(context, '/InicioSesion');
     } 
-    else if (Juego().codigo != -1) {
+    else {
+      if (Juego().codigo == -1) {
+        await Juego().crearPartida();
+      }
       DestinoManager.setDestino(const Atacar());
       Navigator.pushNamed(context, '/Atacar');
-    }
-    else {
-      Navigator.pushNamed(context, '/ColocarBarcos');
     }
   }
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'authProvider.dart';
 import 'comun.dart';
 import 'botones.dart';
+import 'destino.dart';
 import 'juego.dart';
 
 
@@ -71,23 +72,12 @@ class Registro extends StatelessWidget {
     }
     else if(await _authProvider.signUp(_nameController.text, _passwordController.text, _emailController.text, context)) {
       showSuccessSnackBar(context, 'Usuario registrado correctamente');
-      if (Juego().modalidadPartida == "COMPETITIVA") {
-        Navigator.pushNamed(context, '/Sala');
-      }
-      else if (Juego().modalidadPartida == "AMISTOSA") {
-        Navigator.pushNamed(context, '/Sala');
-      }
-      else if (Juego().modalidadPartida == "INDIVIDUAL") {
+      if (Juego().modalidadPartida == "INDIVIDUAL") {
         if (Juego().codigo == -1) {
-          Navigator.pushNamed(context, '/ColocarBarcos');
-        }
-        else {
-          Navigator.pushNamed(context, '/Atacar');
+          await Juego().crearPartida();
         }
       }
-      else if (Juego().modalidadPartida == "TORNEO") {
-        Navigator.pushNamed(context, '/Atacar');
-      }
+      Navigator.pushNamed(context, DestinoManager.getRutaDestino());
     }
   }
 }

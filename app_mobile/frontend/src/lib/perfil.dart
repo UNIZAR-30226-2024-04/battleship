@@ -21,8 +21,6 @@ class Perfil extends StatefulWidget {
   final TextEditingController _repNewPasswordController = TextEditingController();
   final bool _rememberMe = false;
   final AuthProvider _authProvider = AuthProvider();
-  List<Habilidad> _habilidades = [];  // habilidades desbloqueadas
-  List<Habilidad> _habilidadesSeleccionadas = [];  // habilidades seleccionadas para la partida
   int partidasJugadas = 0;
   int partidasGanadas = 0;
   int partidasPerdidas = 0;
@@ -38,10 +36,7 @@ class Perfil extends StatefulWidget {
 
   Perfil({String name = "", super.key, int turno = 1}) {
     if (name != "") {
-      print("Nombre del perfil en el constructor de Perfil: $_name");
       _name = name;
-      _habilidades = [Sonar(turno), Mina(turno), MisilTeledirigido(turno), RafagaDeMisiles(turno), TorpedoRecargado(turno)];
-      _habilidadesSeleccionadas = [RafagaDeMisiles(turno), TorpedoRecargado(turno), MisilTeledirigido(turno)];
     }
   }
 
@@ -51,10 +46,6 @@ class Perfil extends StatefulWidget {
 
   void updateState() {
     createState();
-  }
-
-  List<Habilidad> getHabilidadesSeleccionadas() {
-    return _habilidadesSeleccionadas;
   }
 
   // Gettters
@@ -123,7 +114,6 @@ class _PerfilState extends State<Perfil> {
   }
 
   Future<void> actualizarEstadisticasPerfil(String nombrePerfil) async {
-    print("LLAMANDO A OBTENER PERFIL CON USUARIO: $nombrePerfil");
     var response = await http.post(
       Uri.parse(serverRoute.urlObtenerPerfil),
       headers: <String, String>{
@@ -136,8 +126,6 @@ class _PerfilState extends State<Perfil> {
 
     if (response.statusCode == 200) {
       var data = jsonDecode(response.body);
-      print("PERFIL OBTENIDO: ");
-      print(data);
 
       setState(() {
         widget.trofeos = data['trofeos'];
@@ -177,9 +165,7 @@ class _PerfilState extends State<Perfil> {
 
     if (response.statusCode == 200) {
       var data = jsonDecode(response.body);
-      print(data);
       if (data != null) {
-        print("CUENTA ELIMINADA");
         AuthProvider().logOut();
       }
 
@@ -278,20 +264,16 @@ class _PerfilState extends State<Perfil> {
     if (widget._paisController.text.isEmpty) {
       widget._paisController.text = widget.pais;
     }
-    print("LLAMANDO A MODIFICAR PERFIL CON USUARIO:  ${widget._newPasswordController.text} ${widget._emailController.text} ${widget._paisController.text}");
     Future<bool> res = authProvider.modificarPerfil(widget.name, widget._newPasswordController.text, widget._emailController.text, widget._paisController.text);
     res.then((value) {
       if (value) {
-        print("PERFIL MODIFICADO");
         widget.email = widget._emailController.text;
         widget.password = widget._newPasswordController.text;
         showSuccessSnackBar(context, 'Perfil modificado correctamente');
       } else {
-        print("ERROR AL MODIFICAR PERFIL");
         showErrorSnackBar(context, widget.mensajeErrorModel.mensaje);
       }
     }).catchError((error) {
-      print("ERROR AL MODIFICAR PERFIL: $error");
       showErrorSnackBar(context, widget.mensajeErrorModel.mensaje);
     });
   }

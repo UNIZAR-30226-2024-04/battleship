@@ -26,6 +26,19 @@ router.post('/mostrarTableros', verificarToken, partidaController.mostrarTablero
 // Ruta para abandonar partida
 router.post('/abandonarPartida', verificarToken, partidaController.abandonarPartida);
 
+// -------------------------------------------- //
+// ---------------- HABILIDADES --------------- //
+// -------------------------------------------- //
+
+// Ruta para disparo de un misil de ráfaga
+router.post('/realizarDisparoMisilRafaga', verificarToken, partidaController.realizarDisparoMisilRafaga);
+
+// Ruta para un turno de disparo de torpedo recargado
+router.post('/realizarDisparoTorpedoRecargado', verificarToken, partidaController.realizarDisparoTorpedoRecargado);
+
+// Ruta para disparo de un misil teledirigido
+router.post('/realizarDisparoMisilTeledirigido', verificarToken, partidaController.realizarDisparoMisilTeledirigido);
+
 // --------------------------------------------- //
 // -------------- CHAT DE PARTIDA -------------- //
 // --------------------------------------------- //

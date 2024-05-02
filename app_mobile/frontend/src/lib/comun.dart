@@ -1,7 +1,7 @@
 import 'package:battleship/authProvider.dart';
 import 'package:battleship/destino.dart';
 import 'package:flutter/material.dart';
-import 'habilidades.dart';
+import 'mazo.dart';
 import 'flota.dart';
 import 'juego.dart';
 import 'social.dart';
@@ -28,7 +28,6 @@ Widget buildHeader(BuildContext context, {bool ponerPerfil = true}) {
             child: GestureDetector(
               onTap: () {
                 if (ModalRoute.of(context)?.settings.name == '/Perfil') {
-                  print("RUTA: /Perfil");
                   return;
                 }
 
@@ -53,8 +52,6 @@ Widget buildHeader(BuildContext context, {bool ponerPerfil = true}) {
   );
 }
 
-
-
 // Panel inferior.
 Widget buildActions(BuildContext context) {
   return Column(
@@ -65,23 +62,21 @@ Widget buildActions(BuildContext context) {
           _buildActionItem('Jugar', 'images/jugar.png', () {
             Navigator.pushNamed(context, '/Principal');
           }),
-          _buildActionItem('Habilidades', 'images/habilidad.png', () {
-            if (ModalRoute.of(context)?.settings.name == '/Habilidades') {
-              print("RUTA: /Habilidades");
+          _buildActionItem('Mazo', 'images/mazo.png', () {
+            if (ModalRoute.of(context)?.settings.name == '/Mazo') {
               return;
             }
 
-            DestinoManager.setDestino(Habilidades());
+            DestinoManager.setDestino(Mazo());
 
             if (!AuthProvider().isLoggedIn) {
               Navigator.pushNamed(context, '/InicioSesion');
             } else {
-              Navigator.pushNamed(context, '/Habilidades');
+              Navigator.pushNamed(context, '/Mazo');
             }
           }),
           _buildActionItem('Flota', 'images/flota.png', () {
             if (ModalRoute.of(context)?.settings.name == '/Flota') {
-              print("RUTA: /Flota");
               return;
             }
 
@@ -112,7 +107,14 @@ Widget buildActions(BuildContext context) {
               print("RUTA: /Ajustes");
               return;
             }
-            Navigator.pushNamed(context, '/Ajustes');
+
+            DestinoManager.setDestino(Mazo());
+
+            if (!AuthProvider().isLoggedIn) {
+              Navigator.pushNamed(context, '/InicioSesion');
+            } else {
+              Navigator.pushNamed(context, '/Ajustes');
+            }
           }),
         ],
       ),

@@ -18,7 +18,7 @@ class Barco {
     _hundido = hundido;
   }
 
-  // MOstrar información del barco
+  // Mostrar información del barco
   void showInfo() {
     print("Nombre: $_nombre");
     print("Posición: $_barcoPosition");

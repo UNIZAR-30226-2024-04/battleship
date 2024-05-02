@@ -11,65 +11,49 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'serverRoute.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
+import 'dart:async';
+import 'mazo.dart';
 
 class Juego {
-  Tablero tablero_jugador1 = Tablero();
-  Tablero tablero_jugador2 = Tablero();
+  Tablero miTablero = Tablero();
   int numBarcos = 5;
-  int barcosRestantesJugador1 = 0;
-  int barcosRestantesJugador2 = 0;
-  int turno = 1;
+  int misBarcosRestantes = 5;
+  int barcosRestantesRival = 5;
   int ganador = 0;
-  List<Habilidad> habilidadesJugador1 = [];   // habilidades en el mazo del jugador 1
-  List<Habilidad> habilidadesJugador2 = [];   // habilidades en el mazo del jugador 2
   Perfil miPerfil = Perfil();     // perfil del jugador con sesión iniciada
-  List<bool> habilidadesUtilizadasJugador1 = [];
-  List<bool> habilidadesUtilizadasJugador2 = [];
-  int disparosPendientes = 0; // disparo básico 1. Habilidades depende
-  bool habilidadSeleccionadaEnTurno = false;
-  int numHabilidades = 3;
-  int indexHabilidad = 0;
+  int disparosPendientes = 1; // disparo básico 1. Habilidades depende
   int codigo = -1;                // código de la partida
   String tokenSesion = '';        // token de la sesión
-  List<Offset> disparosAcertadosJugador1 = [];
-  List<Offset> disparosAcertadosJugador2 = [];
-  List<Offset> disparosFalladosJugador1 = [];
-  List<Offset> disparosFalladosJugador2 = [];
-  List<Barco> barcosHundidosPorJugador1 = [];
-  List<Barco> barcosHundidosPorJugador2 = [];
+  List<Offset> disparosAcertadosPorMi = [];
+  List<Offset> disparosAcertadosRival = [];
+  List<Offset> disparosFalladosPorMi = [];
+  List<Offset> disparosFalladosRival = [];
+  List<Barco> barcosHundidosPorMi = [];
+  List<Barco> barcosHundidosPorRival = [];
   String modalidadPartida = '';
   ServerRoute serverRoute = ServerRoute();
-  late IO.Socket socket;
+  final socket = IO.io('http://localhost:8080', <String, dynamic>{
+    'transports': ['websocket'],
+  });
   bool anfitrion = true;
+  List<Habilidad> habilidades = [];
+  int indiceHabilidadSeleccionadaEnTurno = -1;
+  Map<String, bool> selectedAbilities = {
+    'rafaga': false,
+    'torpedo': false,
+    'sonar': false,
+    'mina': false,
+    'misil': false,
+  };
 
   // Instancia privada y estática del singleton
   static final Juego _singleton = Juego._internal();
 
   // Constructor privado
   Juego._internal() {
-    tablero_jugador1 = Tablero();
-    tablero_jugador2 = Tablero();
-    numBarcos = 5;
-    barcosRestantesJugador1 = numBarcos;
-    barcosRestantesJugador2 = numBarcos;
-    turno = 1;
-    habilidadesJugador1 = miPerfil.getHabilidadesSeleccionadas();
-    //habilidadesJugador2 = perfilJugador2.getHabilidadesSeleccionadas();
-    habilidadesUtilizadasJugador1 = List.filled(habilidadesJugador1.length, false);
-    habilidadesUtilizadasJugador2 = List.filled(habilidadesJugador2.length, false);
-    disparosPendientes = 1;
-    habilidadSeleccionadaEnTurno = false;
-    numHabilidades = 3;
-    indexHabilidad = 0;
-    print("PERFIL DEL JUGADOR EN INTERNAL JUEGO: ${miPerfil.name} ${miPerfil.email} ${miPerfil.password}");
-    anfitrion = true;
-    // Conecta con el servidor de socket
-    socket = IO.io('http://localhost:8080', <String, dynamic>{
-      'transports': ['websocket'],
-      'autoConnect': false,
+    socket.on('connect', (_) {
+      print('connect');
     });
-
-    socket.connect();
   }
 
   // Método para obtener la instancia del singleton
@@ -86,101 +70,13 @@ class Juego {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////// MÉTODOS DE LA CLASE ////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-  Tablero get tablero_jugador {
-    return turno == 1 ? tablero_jugador1 : tablero_jugador2;
-  }
-
-  Tablero get tablero_oponente {
-    return turno == 1 ? tablero_jugador2 : tablero_jugador1;
-  }
-
-  List<Barco> get barcos_jugador {
-    return turno == 1 ? tablero_jugador1.barcos : tablero_jugador2.barcos;
-  }
-
-  List<Barco> get barcos_oponente {
-    return turno == 1 ? tablero_jugador2.barcos : tablero_jugador1.barcos;
-  }
-
-  List<Offset> get disparosAcertadosJugador {
-    return turno == 1 ? disparosAcertadosJugador1 : disparosAcertadosJugador2;
-  }
-
-  List<Offset> get disparosFalladosJugador {
-    return turno == 1 ? disparosFalladosJugador1 : disparosFalladosJugador2;
-  }
-
-  List<Offset> get disparosAcertadosOponente {
-    return turno == 1 ? disparosAcertadosJugador2 : disparosAcertadosJugador1;
-  }
-
-  List<Offset> get disparosFalladosOponente {
-    return turno == 1 ? disparosFalladosJugador2 : disparosFalladosJugador1;
-  }
-
-  List<Barco> get barcosHundidosPorJugador {
-    return turno == 1 ? barcosHundidosPorJugador1 : barcosHundidosPorJugador2;
-  }
-
-  List<Barco> get barcosHundidosPorOponente {
-    return turno == 1 ? barcosHundidosPorJugador2 : barcosHundidosPorJugador1;
-  }
-
-  List<Habilidad> getHabilidadesJugador() {
-    return turno == 1 ? habilidadesJugador1 : habilidadesJugador2;
-  }
-
-  List<Habilidad> getHabilidadesOponente() {
-    return turno == 1 ? habilidadesJugador2 : habilidadesJugador1;
-  }
-
-  List<bool> getHabilidadesUtilizadasJugador() {
-    return turno == 1 ? habilidadesUtilizadasJugador1 : habilidadesUtilizadasJugador2;
-  }
-
-  List<bool> getHabilidadesUtilizadasOponente() {
-    return turno == 1 ? habilidadesUtilizadasJugador2 : habilidadesUtilizadasJugador1;
-  }
-
-  void cambiarTurno() {
-    turno = turno == 1 ? 2 : 1;
-  }
-
-  void decrementarBarcosRestantesOponente() {
-    if (turno == 1) {
-      barcosRestantesJugador2--;
-    } else {
-      barcosRestantesJugador1--;
-    }
-  }
-
-  void decrementarBarcosRestantesJugador() {
-    if (turno == 1) {
-      barcosRestantesJugador1--;
-    } else {
-      barcosRestantesJugador2--;
-    }
-  }
-
-  bool esMiTurno() {
-    return anfitrion == true ? turno == 1 : turno == 2;
-  }
-
-  int getBarcosRestantesOponente() {
-    return turno == 1 ? barcosRestantesJugador2 : barcosRestantesJugador1;
-  }
-
-  int getBarcosRestantesJugador() {
-    return turno == 1 ? barcosRestantesJugador1 : barcosRestantesJugador2;
-  }
-
+///
   bool juegoTerminado() {
-    if (barcosRestantesJugador1 == 0) {
+    if (misBarcosRestantes == 0) {
       ganador = 2;
       return true;
     }
-    if (barcosRestantesJugador2 == 0) {
+    if (barcosRestantesRival == 0) {
       ganador = 1;
       return true;
     }
@@ -193,20 +89,20 @@ class Juego {
 
   void reiniciarPartida() {
     numBarcos = 5;
-    barcosRestantesJugador1 = numBarcos;
-    barcosRestantesJugador2 = numBarcos;
-    turno = 1;
+    misBarcosRestantes = numBarcos;
+    barcosRestantesRival = numBarcos;
     ganador = 0;
     codigo = -1;
-    disparosAcertadosJugador1 = [];
-    disparosAcertadosJugador2 = [];
-    disparosFalladosJugador1 = [];
-    disparosFalladosJugador2 = [];
-    barcosHundidosPorJugador1 = [];
-    barcosHundidosPorJugador2 = [];
+    disparosAcertadosPorMi = [];
+    disparosAcertadosRival = [];
+    disparosFalladosPorMi = [];
+    disparosFalladosRival = [];
+    barcosHundidosPorMi = [];
+    barcosHundidosPorRival = [];
     anfitrion = true;
     if(modalidadPartida == 'COMPETITIVA' || modalidadPartida == 'AMISTOSA') {
-      socket.close();
+      socket.on('disconnect', (_) => print('disconnect'));
+      socket.on('fromServer', (_) => print(_));
     }
   }
 
@@ -217,8 +113,48 @@ class Juego {
       miPerfil.password = password;
       tokenSesion = token;
       miPerfil.updateState();
-      print("PONGO EL PERFIL A $name ${miPerfil.name} ${miPerfil.email} ${miPerfil.password}");
-      print("PERFIL JUGADOR: ${miPerfil.name} ${miPerfil.email} ${miPerfil.password}");
+    }
+  }
+
+  Future<void> actualizarMazo() async {
+    habilidades = Mazo().getSelectedAbilities();
+    var mazoHabilidades = [];
+    habilidades.forEach((habilidad) {
+      switch (habilidad.nombre) {
+        case 'rafaga':
+          mazoHabilidades.add('Rafaga');
+          break;
+        case 'torpedo':
+          mazoHabilidades.add('Recargado');
+          break;
+        case 'sonar':
+          mazoHabilidades.add('Sonar');
+          break;
+        case 'mina':
+          mazoHabilidades.add('Mina');
+          break;
+        case 'misil':
+          mazoHabilidades.add('Teledirigido');
+          break;
+      }
+    });
+
+    var response = await http.post(
+      Uri.parse(serverRoute.urlModificarMazo),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+        'Authorization': 'Bearer ${Juego().tokenSesion}',
+      },
+      body: jsonEncode(<String, dynamic>{
+        'nombreId': Juego().miPerfil.name,
+        'mazoHabilidades': mazoHabilidades ,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      print("MAZO ACTUALIZADO CORRECTAMENTE");
+    } else {
+      throw Exception('La solicitud ha fallado');
     }
   }
 
@@ -235,33 +171,47 @@ class Juego {
     dy = dy < 1 ? 1 : dy;
 
     // Aseguramos que el barco no se salga por la derecha o la parte inferior del tablero
-    dx = dx + height / Juego().tablero_jugador.casillaSize > Juego().tablero_jugador.numFilas ? Juego().tablero_jugador.numFilas - height / Juego().tablero_jugador.casillaSize : dx;
-    dy = dy + width / Juego().tablero_jugador.casillaSize > Juego().tablero_jugador.numColumnas ? Juego().tablero_jugador.numColumnas - width / Juego().tablero_jugador.casillaSize : dy;
+    dx = dx + height / Juego().miTablero.casillaSize > Juego().miTablero.numFilas ? Juego().miTablero.numFilas - height / Juego().miTablero.casillaSize : dx;
+    dy = dy + width / Juego().miTablero.casillaSize > Juego().miTablero.numColumnas ? Juego().miTablero.numColumnas - width / Juego().miTablero.casillaSize : dy;
 
     return Offset(dx, dy);
   }
 
-  List<Barco> obtenerBarcosRestantes() {
+  List<Barco> obtenerBarcosRestantesRival() {
     List<Barco> barcosRestantes = [];
     bool hundido = false;
-    for (var barco in Juego().tablero_jugador1.barcos) {
+    for (var barco in Juego().miTablero.barcos) {
       hundido = false;
-      print("NOMBRE BARCO: ${barco.nombre}");
-      for (var barcoHundido in Juego().barcosHundidosPorJugador) {
-        print("NOMBRE BARCO HUNDIDO: ${barcoHundido.nombre}");
+      for (var barcoHundido in Juego().barcosHundidosPorMi) {
         if (barcoHundido.nombre.toLowerCase() == barco.nombre.toLowerCase()) {
-          print("DETECTO HUNDIDO");
           hundido = true;
           break;
         }
       }
       if (!hundido) {
-        print("LO AÑADO A BARCOS RESTANTES");
         barcosRestantes.add(barco);
       }
     }
     return barcosRestantes;
   }
+
+  List<Barco> obtenerMisBarcosRestantes() {
+    List<Barco> barcosRestantes = [];
+    bool hundido = false;
+    for (var barco in Juego().miTablero.barcos) {
+      hundido = false;
+      for (var barcoHundido in Juego().barcosHundidosPorRival) {
+        if (barcoHundido.nombre.toLowerCase() == barco.nombre.toLowerCase()) {
+          hundido = true;
+          break;
+        }
+      }
+      if (!hundido) {
+        barcosRestantes.add(barco);
+      }
+    }
+    return barcosRestantes;
+  }  
 
   List<List<Offset>> getCoordinates(List<dynamic> inputList) {
     List<List<Offset>> coordinates = [];
@@ -298,7 +248,6 @@ class Juego {
       bool rotado = tablero[i][0].dy == tablero[i][1].dy ? true : false;
       bool hundido = barcosHundidos[i];
       barcos.add(Barco(nombre, barcoPos, long, rotado, hundido));
-      barcos[i].showInfo();
     }
     return barcos;
   }
@@ -324,9 +273,6 @@ class Juego {
     List<dynamic> coordenadas = datosJuego['coordenadas'];
     String tipo = datosJuego['tipo'];
 
-    print('Tipo de barco: $tipo');
-    print('coordenadas: $coordenadas');
-
     List<Offset> casillasBarco = [];
     for (var coordenada in coordenadas) {
       double i = coordenada['i'].toDouble();
@@ -341,7 +287,6 @@ class Juego {
     bool rotado = casillasBarco[0].dy == casillasBarco[1].dy ? true : false;
     bool hundido = true;
     Barco barcoHundido = Barco(nombre, barcoPos, long, rotado, hundido);
-    barcoHundido.showInfo();
     return barcoHundido;
   }
 
@@ -364,8 +309,6 @@ class Juego {
 
     if (response.statusCode == 200) {
       var data = jsonDecode(response.body);
-      print("ACTUALIZAR ESTADO Jugador:");
-      print(data);
 
       if (data.containsKey('misDisparos')) {
         var misDisparos = data['misDisparos'] as List;
@@ -373,9 +316,9 @@ class Juego {
           double i = disparo['i'].toDouble();
           double j = disparo['j'].toDouble();
           if (disparo['estado'] == 'Agua') {
-            disparosFalladosJugador.add(Offset(i, j));
+            disparosFalladosPorMi.add(Offset(i, j));
           } else {
-            disparosAcertadosJugador.add(Offset(i, j));
+            disparosAcertadosPorMi.add(Offset(i, j));
           }
         }
       }
@@ -383,9 +326,9 @@ class Juego {
       if (data.containsKey('barcosHundidos')) {
         var barcosHundidosPorMi = data['barcosHundidos'] as List;
         for (var barco in barcosHundidosPorMi) {
-          decrementarBarcosRestantesOponente();
+          barcosRestantesRival--;
           Barco barcoHundido = buscarBarcoHundido(barco);
-          barcosHundidosPorJugador.add(barcoHundido);
+          barcosHundidosPorMi.add(barcoHundido);
         }
       }
     } else {
@@ -408,9 +351,6 @@ class Juego {
 
     if (response.statusCode == 200) {
       var data = jsonDecode(response.body);
-      print("ACTUALIZAR ESTADO Oponente:");
-      print(data);
-      print(data.runtimeType);
 
       if (data.containsKey('disparosEnemigos')) {
         var disparosEnemigos = data['disparosEnemigos'] as List;
@@ -418,45 +358,31 @@ class Juego {
           double i = disparo['i'].toDouble();
           double j = disparo['j'].toDouble();
           if (disparo['estado'] == 'Agua') {
-            disparosFalladosOponente.add(Offset(i, j));
+            disparosFalladosRival.add(Offset(i, j));
           } else {
-            disparosAcertadosOponente.add(Offset(i, j));
+            disparosAcertadosRival.add(Offset(i, j));
           }
         }
       }
 
-      print("AÑADIENDO BARCOS HUNDIDOS POR IA:");
       if (data.containsKey('barcosHundidos')) {
         var barcosHundidosPorMi = data['barcosHundidos'] as List;
         for (var barco in barcosHundidosPorMi) {
-          decrementarBarcosRestantesJugador();
+          misBarcosRestantes--;
           Barco barcoHundido = buscarBarcoHundido(barco);
-          barcosHundidosPorOponente.add(barcoHundido);
-          barcoHundido.showInfo();
+          barcosHundidosPorRival.add(barcoHundido);
         }
       }
-      print("FIN AÑADIENDO BARCOS HUNDIDOS POR IA:");
     } else {
       throw Exception('La solicitud ha fallado');
     }
   }
 
   Future<void> cargarPartida() async {
-    tablero_jugador1.barcos = await obtenerBarcos(AuthProvider().name);
+    miTablero.barcos = await obtenerBarcos(AuthProvider().name);
     if (codigo != -1) {
-      print("VOY A ACTUALIZAR ESTADO JUGADOR");
       await actualizarEstadoJugador();
-      print("VOY A ACTUALIZAR ESTADO OPONENTE");
       await actualizarEstadoOponente();
-      print("HE CARGADO LA PARTIDA");
-      print("DISPAROS FALLADOS JUGADOR:");
-      print(disparosFalladosJugador);
-      print("DISPAROS ACERTADOS JUGADOR:");
-      print(disparosAcertadosJugador);
-      print("DISPAROS FALLADOS OPONENTE:");
-      print(disparosFalladosOponente);
-      print("DISPAROS ACERTADOS OPONENTE:");
-      print(disparosAcertadosOponente);
     }
   }
 
@@ -474,27 +400,42 @@ class Juego {
 
     if (response.statusCode == 200) {
       var data = jsonDecode(response.body);
+      print("BARCOS");
+      print(data);
 
-      Map<String, dynamic> userMap = jsonDecode(response.body);
+      var userMap = jsonDecode(response.body);
+
+      var mazoHabilidades = userMap['mazoHabilidades'];
+      habilidades = [];
+      for (var habilidad in mazoHabilidades) {
+        switch (habilidad) {
+          case 'Rafaga':
+            habilidades.add(Rafaga());
+            break;
+          case 'Recargado':
+            habilidades.add(Torpedo());
+            break;
+          case 'Sonar':
+            habilidades.add(Sonar());
+            break;
+          case 'Mina':
+            habilidades.add(Mina());
+            break;
+          case 'Teledirigido':
+            habilidades.add(Misil());
+            break;
+        }
+      }
 
       int codigoPartida = userMap['codigoPartidaActual'];
-      print("EL CODIGO ES: $codigoPartida");
       if (codigoPartida != -1) {
         codigo = codigoPartida;
       }
 
       List<dynamic> tableroInicial = userMap['tableroInicial'];
-
-      print("AL OBTENER BARCOS OBTENGO:");
-      print(data);
-      print(tableroInicial);
       List<List<Offset>> coordenadas = getCoordinates(tableroInicial);
-      print(coordenadas);
       List<String> nombres = getNames(tableroInicial);
-      print(nombres);
       List<bool> barcosHundidos = obtenerHundidos(tableroInicial);
-      print(barcosHundidos);
-      print(procesaTableroBD(coordenadas, nombres, barcosHundidos));
 
       return procesaTableroBD(coordenadas, nombres, barcosHundidos);
 
@@ -523,10 +464,8 @@ class Juego {
 
     if (response.statusCode == 200) {
       dynamic data = jsonDecode(response.body);
-      print(data);
 
       if(data['fueraTablero'] == false && data['colisiona'] == false) {
-        print("BARCO MOVIDO");
         return true;
       }
       return false;
@@ -549,18 +488,10 @@ class Juego {
       
     );
 
-    print("AL CREAR PARTIDA: ");
-    print(response);
-    print(response.body);
     var data = jsonDecode(response.body);
-    print(data);
     if (response.statusCode == 200) {
       var data = jsonDecode(response.body);
-      print(data);
-
       codigo = data['codigo'];
-
-      print(codigo);  
 
     } else {
       throw Exception('La solicitud ha fallado');
@@ -582,7 +513,6 @@ class Juego {
 
     if (response.statusCode == 200) {
       var data = jsonDecode(response.body);
-      print(data);
       showErrorSnackBar(context, 'Has abandonado la partida');
 
     } else {
@@ -610,15 +540,9 @@ class Juego {
     );
 
     var data = jsonDecode(response.body);
-    print("AL CREAR PARTIDA MULTI: ");
-    print(data);
     if (response.statusCode == 200) {
       var data = jsonDecode(response.body);
-      print(data);
-
-      codigo = data['codigo'];
-
-      print(codigo);  
+      codigo = data['codigo']; 
 
     } else {
       throw Exception('La solicitud ha fallado');
@@ -640,18 +564,24 @@ class Juego {
 
     if (response.statusCode == 200) {
       var data = jsonDecode(response.body);
-      print("CREAR SALA:");
-      print(data);
       codigo = data['codigo'];
-      print("ESPERANDO RIVAL ...");
-      socket.on('esperandoRival', (data) {
-        print('Mensaje recibido del servidor: $data');
+      socket.emit('entrarSala', codigo);
+
+      var completer = Completer();
+
+      socket.on('partidaEncontrada', (data) {
+        print('Partida encontrada: $data');
+        if (!completer.isCompleted) {
+          completer.complete();
+        }
       });
-      print("SALGO DE ESPERANDO RIVAL");
+
+      await completer.future;
     } else {
       throw Exception('La solicitud ha fallado');
     }
   }
+
 
   Future<bool> buscarSala() async {
     var response = await http.post(
@@ -667,17 +597,11 @@ class Juego {
 
     if (response.statusCode == 200) {
       var data = jsonDecode(response.body);
-      print("BUSCAR SALA:");
-      print(data);
       codigo = data['codigo'];
       if (codigo == -1) {
         return false;
       }
-      print("ESPERANDO SALA ...");
-      socket.on('partidaEncontrada', (data) {
-        print('Mensaje recibido del servidor: $data');
-      });
-      print("SALGO DE ESPERANDO SALA");
+      socket.emit('entrarSala', codigo);
       return true;
 
     } else {

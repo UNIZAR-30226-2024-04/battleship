@@ -19,10 +19,35 @@ class Defender extends StatefulWidget {
 class _DefenderState extends State<Defender> {
   bool _isLoading = true;
   ServerRoute serverRoute = ServerRoute();
+  Completer completerAbandono = Completer();
+  Completer continuaTurno = Completer();
+  Completer finTurnos = Completer();
 
   @override
   void initState() {
     super.initState();
+
+    Juego().socket.on('abandono', (data) {
+      print('Abandono: $data');
+      if (!completerAbandono.isCompleted) {
+        completerAbandono.complete();
+      }
+    });
+
+    Juego().socket.on('continuaTurno', (data) {
+      print('Continua turno: $data');
+      if (!continuaTurno.isCompleted) {
+        continuaTurno.complete();
+      }
+    });     
+
+    Juego().socket.on('finTurnos', (data) {
+      print('Fin turnos: $data');
+      if (!finTurnos.isCompleted) {
+        finTurnos.complete();
+      }
+    });   
+
     Future.delayed(const Duration(seconds: 1), () {
       setState(() {
         _isLoading = false;
@@ -31,22 +56,11 @@ class _DefenderState extends State<Defender> {
     if (Juego().modalidadPartida == 'INDIVIDUAL') {
       iniciarTransicionAutomatica();
     }
-    else if (Juego().modalidadPartida == 'COMPETITIVA' || Juego().modalidadPartida == 'AMISTOSA') {
-      esperarDisparoRival();
-      Timer(const Duration(seconds: 4), () {
-      setState(() {
-        Juego().disparosPendientes = 1;
-        Juego().habilidadSeleccionadaEnTurno = false;
-        Juego().cambiarTurno();
-      });
-      DestinoManager.setDestino(const Atacar());
-      Navigator.pushNamed(context, '/Atacar');
-    });
-    }
   }
 
   @override
   Widget build(BuildContext context) {
+    esperarTurno();
     return Container(
       decoration: const BoxDecoration(
         image: DecorationImage(
@@ -86,11 +100,7 @@ class _DefenderState extends State<Defender> {
   }
 
   Widget _construirBarcosRestantes() {
-    print("TURNO EN DEFENDER: ${Juego().turno}");
-    List<Barco> barcosRestantes = Juego().obtenerBarcosRestantes();
-    for (var barco in barcosRestantes) {
-      barco.showInfo();
-    }
+    List<Barco> barcosRestantes = Juego().obtenerMisBarcosRestantes();
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
@@ -100,7 +110,7 @@ class _DefenderState extends State<Defender> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          buildTitle('Tus barcos restantes: ${Juego().getBarcosRestantesOponente()}', 16),
+          buildTitle('Tus barcos restantes: ${Juego().misBarcosRestantes}', 16),
           const SizedBox(height: 10),
           Wrap(
             alignment: WrapAlignment.center,
@@ -140,8 +150,8 @@ class _DefenderState extends State<Defender> {
 
     children.add(
       SizedBox(
-        width: Juego().tablero_oponente.boardSize + Juego().tablero_oponente.casillaSize,
-        height: Juego().tablero_oponente.boardSize + Juego().tablero_oponente.casillaSize,
+        width: Juego().miTablero.boardSize + Juego().miTablero.casillaSize,
+        height: Juego().miTablero.boardSize + Juego().miTablero.casillaSize,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: await buildTableroDefensa(),
@@ -159,29 +169,28 @@ class _DefenderState extends State<Defender> {
   }
 
   Future<Widget> buildFilaCasillasDefensa() async {
-    print("TURNO EN DEFENDER: ${Juego().turno}");
-    List<Barco> barcosRestantes = Juego().obtenerBarcosRestantes();
+    List<Barco> barcosRestantes = Juego().obtenerMisBarcosRestantes();
     return Stack(
       children: [
         SizedBox(
-          width: Juego().tablero_jugador.boardSize + Juego().tablero_jugador.casillaSize,
-          height: Juego().tablero_jugador.boardSize + Juego().tablero_jugador.casillaSize,
+          width: Juego().miTablero.boardSize + Juego().miTablero.casillaSize,
+          height: Juego().miTablero.boardSize + Juego().miTablero.casillaSize,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: buildTablero(),
           ),
         ),
-        for (var barco in Juego().tablero_oponente.barcos)
+        for (var barco in Juego().miTablero.barcos)
           Positioned(
-            top: barco.barcoPosition.dx * Juego().tablero_oponente.casillaSize,
-            left: barco.barcoPosition.dy * Juego().tablero_oponente.casillaSize,
+            top: barco.barcoPosition.dx * Juego().miTablero.casillaSize,
+            left: barco.barcoPosition.dy * Juego().miTablero.casillaSize,
             child: Column(
               children: [
                 GestureDetector(
                   child: Image.asset(
                     barco.getImagePath(),
-                    width: barco.getWidth(Juego().tablero_oponente.casillaSize),
-                    height: barco.getHeight(Juego().tablero_oponente.casillaSize),
+                    width: barco.getWidth(Juego().miTablero.casillaSize),
+                    height: barco.getHeight(Juego().miTablero.casillaSize),
                     fit: BoxFit.fill,
                     color: barcosRestantes.contains(barco) ? null : Colors.black.withOpacity(0.5),
                     colorBlendMode: barcosRestantes.contains(barco) ? null : BlendMode.darken,
@@ -198,7 +207,7 @@ class _DefenderState extends State<Defender> {
     List<Widget> filas = [];
     // Añade una fila adicional para las etiquetas de las coordenadas
     filas.add(buildFilaCoordenadas());
-    for (int i = 0; i < Juego().tablero_oponente.numFilas - 1; i++) {
+    for (int i = 1; i < Juego().miTablero.numFilas; i++) {
       filas.add(buildFilaCasillas(i));
     }
     return filas;
@@ -209,41 +218,63 @@ class _DefenderState extends State<Defender> {
     // Etiqueta de fila
     casillas.add(
       Container(
-        width: Juego().tablero_oponente.casillaSize,
-        height: Juego().tablero_oponente.casillaSize,
+        width: Juego().miTablero.casillaSize,
+        height: Juego().miTablero.casillaSize,
         alignment: Alignment.center,
         child: Text(
-          (rowIndex + 1).toString(),
+          rowIndex.toString(),
           style: const TextStyle(color: Colors.white),
         ),
       ),
     );
     // Casillas del tablero
-    for (int j = 0; j < Juego().tablero_oponente.numColumnas - 1; j++) {
-      casillas.add(Container(
-        width: Juego().tablero_oponente.casillaSize,
-        height: Juego().tablero_oponente.casillaSize,
-        decoration: BoxDecoration(
-          color: const Color.fromARGB(128, 116, 181, 213),
-          border: Border.all(color: Colors.black, width: 1),
+    for (int j = 1; j < Juego().miTablero.numColumnas; j++) {
+      String imagePath = '';
+      if (Juego().disparosFalladosRival.contains(Offset(rowIndex.toDouble(), j.toDouble()))) {
+        imagePath = 'images/redCross.png';
+      } else if (Juego().disparosAcertadosRival.contains(Offset(rowIndex.toDouble(), j.toDouble()))) {
+        imagePath = 'images/explosion.png';
+      }
+
+      if (Juego().barcosHundidosPorRival.isNotEmpty) {
+        Offset pos = Offset(rowIndex.toDouble(), j.toDouble());
+        if (Juego().barcosHundidosPorRival.contains(pos)) {
+          // Obtener el barco hundido en la posición pos.
+          Barco barcoHundido = Juego().barcosHundidosPorRival.firstWhere((element) => element.barcoPosition == pos);
+          imagePath = barcoHundido.getImagePath();
+        }
+      }
+
+      casillas.add(
+        GestureDetector(
+          child: Container(
+            width: Juego().miTablero.casillaSize,
+            height: Juego().miTablero.casillaSize,
+            decoration: BoxDecoration(
+              color: const Color.fromARGB(128, 116, 181, 213),
+              border: Border.all(color: Colors.black, width: 1),
+            ),
+            child: imagePath != '' ? Image.asset(imagePath, fit: BoxFit.cover) : null,
+          ),
         ),
-      ));
+      );
     }
+
     return Row(children: casillas);
   }
 
   Widget buildFilaCoordenadas() {
     List<Widget> coordenadas = [];
     coordenadas.add(SizedBox(
-      width: Juego().tablero_oponente.casillaSize,
-      height: Juego().tablero_oponente.casillaSize,
+      width: Juego().miTablero.casillaSize,
+      height: Juego().miTablero.casillaSize,
     ));
     // Etiquetas de columna
-    for (int j = 1; j < Juego().tablero_oponente.numColumnas; j++) {
+    for (int j = 1; j < Juego().miTablero.numColumnas; j++) {
       coordenadas.add(
         Container(
-          width: Juego().tablero_oponente.casillaSize,
-          height: Juego().tablero_oponente.casillaSize,
+          width: Juego().miTablero.casillaSize,
+          height: Juego().miTablero.casillaSize,
           alignment: Alignment.center,
           child: Text(
             String.fromCharCode(65 + j - 1),
@@ -263,8 +294,6 @@ class _DefenderState extends State<Defender> {
     Timer(const Duration(seconds: 4), () {
       setState(() {
         Juego().disparosPendientes = 1;
-        Juego().habilidadSeleccionadaEnTurno = false;
-        Juego().cambiarTurno();
       });
       DestinoManager.setDestino(const Atacar());
       Navigator.pushNamed(context, '/Atacar');
@@ -287,8 +316,6 @@ class _DefenderState extends State<Defender> {
 
     if (response.statusCode == 200) {
       var data = jsonDecode(response.body);
-      print(data);
-      print(data.runtimeType);
 
       var disparosEnemigos = data['disparosEnemigos'] as List;
       List<Offset> disparosAgua = [];
@@ -304,8 +331,16 @@ class _DefenderState extends State<Defender> {
         }
       }
 
-      print(disparosAgua);
-      print(disparosAcertados);
+      // Mostar disparos enemigos agua
+      for (var disparo in disparosAgua) {
+        print('Disparo enemigo agua: ${disparo.dx}, ${disparo.dy}');
+      }
+
+      // Mostar disparos enemigos acertados
+      for (var disparo in disparosAcertados) {
+        print('Disparo enemigo acertado: ${disparo.dx}, ${disparo.dy}');
+      }
+
 
       return {
         'Agua': disparosAgua,
@@ -359,9 +394,16 @@ class _DefenderState extends State<Defender> {
 /////////////////////////////////////////////// PARTIDA COMPETITIVA ////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  void esperarDisparoRival() { // CAMBIAR EVENTO DE SOCKET!!!!!!
-    Juego().socket.on('esperandoDisparo', (data) {
-      print('Mensaje recibido del servidor: $data');
-    });
+  Future<void> esperarTurno() async {
+    await Future.wait([completerAbandono.future, continuaTurno.future, finTurnos.future]);
+    print('Se ha completado el futuro');
+    if (completerAbandono.isCompleted) {
+      print('Abandono');
+    } else if (continuaTurno.isCompleted) {
+      print('Continua turno');
+    } else if (finTurnos.isCompleted) {
+      print('Fin turnos');
+      Juego().socket.emit('turnoRecibido');
+    }
   }
 }

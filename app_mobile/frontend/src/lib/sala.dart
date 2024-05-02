@@ -22,12 +22,13 @@ class _SalaState extends State<Sala> {
     if (await Juego().buscarSala()) {
       print("SALA ENCONTRADA");
       Juego().anfitrion = false;
+      Navigator.pushNamed(context, '/Defender');
     } else {
       await Juego().crearSala();
       Juego().anfitrion = true;
       print("SALA CREADA");
+      Navigator.pushNamed(context, '/Atacar');
     }
-    Navigator.pushNamed(context, '/ColocarBarcos');
   }
 
   @override

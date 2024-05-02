@@ -1,4 +1,6 @@
+import 'package:battleship/destino.dart';
 import 'package:flutter/material.dart';
+import 'atacar.dart';
 import 'juego.dart';
 import 'botones.dart';
 import 'authProvider.dart';
@@ -105,28 +107,15 @@ class _InicioSesionState extends State<InicioSesion> {
 
   Future<void> _handlePressed(BuildContext context, AuthProvider authProvider) async {
     if(await _authProvider.login(_nombreController.text, _passwordController.text, context)) {
-      print("TRAS PULSAR, EL CODIGO DE LA PARTIDA ES: ${Juego().codigo}");
-
-      if (Juego().modalidadPartida == "COMPETITIVA") {
-        Navigator.pushNamed(context, '/Sala');
-      }
-      else if (Juego().modalidadPartida == "AMISTOSA") {
-        Navigator.pushNamed(context, '/Sala');
-      }
-      else if (Juego().modalidadPartida == "INDIVIDUAL") {
+      if (Juego().modalidadPartida == "INDIVIDUAL") {
         if (Juego().codigo == -1) {
-          Navigator.pushNamed(context, '/ColocarBarcos');
-        }
-        else {
-          Navigator.pushNamed(context, '/Atacar');
+          await Juego().crearPartida();
         }
       }
-      else if (Juego().modalidadPartida == "TORNEO") {
-        Navigator.pushNamed(context, '/Atacar');
-      }
+      Navigator.pushNamed(context, DestinoManager.getRutaDestino());
   }
     else {
-      print("ERROR: Credenciales incorrectas");
+      showErrorSnackBar(context, "Credenciales incorrectas");
     }
   }
 }
