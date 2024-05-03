@@ -1035,6 +1035,7 @@ exports.realizarDisparo = async (req, res) => {
         }
         res.json(respuestaDisparo);
         console.log("Partida modificada con éxito");
+        return (disparo.estado === 'Hundido' || disparo.estado === 'Tocado');
       } else {
         res.status(404).send('No se ha encontrado la partida a actualizar');
         console.error("No se ha encontrado la partida a actualizar");
@@ -1180,6 +1181,7 @@ exports.realizarDisparoMisilRafaga = async (req, res) => {
         }
         res.json(respuestaDisparo);
         console.log("Partida modificada con éxito");
+        return (!ultimoMisilRafaga || disparo.estado === 'Hundido' || disparo.estado === 'Tocado');
       } else {
         res.status(404).send('No se ha encontrado la partida a actualizar');
         console.error("No se ha encontrado la partida a actualizar");
@@ -1347,6 +1349,7 @@ exports.realizarDisparoTorpedoRecargado = async (req, res) => {
         }
         res.json(respuestaDisparo);
         console.log("Partida modificada con éxito");
+        return (numBarcosTocados > 0);
       } else {
         res.status(404).send('No se ha encontrado la partida a actualizar');
         console.error("No se ha encontrado la partida a actualizar");
@@ -1470,6 +1473,7 @@ exports.realizarDisparoMisilTeledirigido = async (req, res) => {
         }
         res.json(respuestaDisparo);
         console.log("Partida modificada con éxito");
+        return (disparo.estado === 'Hundido' || disparo.estado === 'Tocado');
       } else {
         res.status(404).send('No se ha encontrado la partida a actualizar');
         console.error("No se ha encontrado la partida a actualizar");

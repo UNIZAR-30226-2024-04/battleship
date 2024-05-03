@@ -54,14 +54,14 @@ function initializeSocket(server) {
             io.to(`/partida${codigo}`).emit(eventosSocket.partidaEncontrada, codigo);
         });
 
-        socket.on(eventosSocket.continuaTurno, (codigo, coordenada) => {
+        socket.on(eventosSocket.continuaTurno, (codigo, coordenada, habilidad) => {
             console.log('Continua turno tras disparo recibido en backend:', codigo);
-            io.to(`/partida${codigo['codigo']}`).emit(eventosSocket.continuaTurno, codigo, coordenada);
+            io.to(`/partida${codigo['codigo']}`).emit(eventosSocket.continuaTurno, codigo, coordenada, habilidad);
         });
         
-        socket.on(eventosSocket.finTurnos, (codigo, coordenada) => {
+        socket.on(eventosSocket.finTurnos, (codigo, coordenada, habilidad) => {
             console.log('Fin turno disparo recibido en backend:', codigo);
-            io.to(`/partida${codigo['codigo']}`).emit(eventosSocket.finTurnos, codigo, coordenada);
+            io.to(`/partida${codigo['codigo']}`).emit(eventosSocket.finTurnos, codigo, coordenada, habilidad);
         });
 
         socket.on(eventosSocket.abandono, (codigo) => {
