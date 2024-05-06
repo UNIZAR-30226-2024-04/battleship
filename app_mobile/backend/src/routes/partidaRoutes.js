@@ -39,6 +39,12 @@ router.post('/realizarDisparoTorpedoRecargado', verificarToken, partidaControlle
 // Ruta para disparo de un misil teledirigido
 router.post('/realizarDisparoMisilTeledirigido', verificarToken, partidaController.realizarDisparoMisilTeledirigido);
 
+// Ruta para colocar mina
+router.post('/colocarMina', verificarToken, partidaController.colocarMina);
+
+// Ruta para usar sonar
+router.post('/usarSonar', verificarToken, partidaController.usarSonar);
+
 // --------------------------------------------- //
 // -------------- CHAT DE PARTIDA -------------- //
 // --------------------------------------------- //
