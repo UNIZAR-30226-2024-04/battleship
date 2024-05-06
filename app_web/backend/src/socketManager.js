@@ -13,14 +13,11 @@ const eventosSocket = {
     partidaEncontrada: 'partidaEncontrada', // Se emite cuando se encuentra una sala para jugar partida
                                             // Se escucha cuando se encuentra una sala para jugar partida
 
-    continuaTurno: 'continuaTurno',         // Se emite cuando un jugador acierta el disparo
+    resultadoTurno: 'resultadoTurno',        // Se emite cuando un jugador realiza el disparo
                                             // Se escucha despues de emitir turnoRecibido
 
-    turnoRecibido: 'turnoRecibido',         // Se emite cuando se recibe el continua Turno o finTurnos
+    turnoRecibido: 'turnoRecibido',         // Se emite cuando se recibe el finTurnos
                                             // Se escucha despues de emitir finTurnos
-
-    finTurnos: 'finTurnos',                 // Se emite cuando termina el jugador falla disparo (o hunde todos los barcos)
-                                            // Se escucha cuando se recibe turnoRecibido
 
     abandono: 'abandono',                   // Se emite cuando un jugador abandona la partida
                                             // Se escucha al iniciar la partida en un hilo aparte
@@ -54,16 +51,16 @@ function initializeSocket(server) {
             io.to(`/partida${codigo}`).emit(eventosSocket.partidaEncontrada, codigo);
         });
 
-        socket.on(eventosSocket.continuaTurno, (codigo, coordenada) => {
-            console.log('Continua turno tras disparo recibido en backend:', codigo);
-            io.to(`/partida${codigo['codigo']}`).emit(eventosSocket.continuaTurno, codigo, coordenada);
-        });
-        
-        socket.on(eventosSocket.finTurnos, (codigo, coordenada) => {
-            console.log('Fin turno disparo recibido en backend:', codigo);
-            io.to(`/partida${codigo['codigo']}`).emit(eventosSocket.finTurnos, codigo, coordenada);
+        socket.on(eventosSocket.resultadoTurno, (habilidad, coordenada, barcoHundido, finpartida, clima) => {
+            console.log('Resultado turno tras disparo recibido en backend:', habilidad, coordenada, barcoHundido, finpartida, clima);
+            io.to(`/partida${codigo['codigo']}`).emit(eventosSocket.resultadoTurno, habilidad, coordenada, barcoHundido, finpartida, clima);
         });
 
+        socket.on(eventosSocket.turnoRecibido, (codigo) => {
+            console.log('Turno recibido en backend:', codigo);
+            io.to(`/partida${codigo}`).emit(eventosSocket.turnoRecibido, codigo);
+        });
+        
         socket.on(eventosSocket.abandono, (codigo) => {
             console.log('Abandono recibido en backend:', codigo, idJugador);
             io.to(`/partida${codigo}`).emit(eventosSocket.abandono, codigo, idJugador);

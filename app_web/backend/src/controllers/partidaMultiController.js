@@ -245,11 +245,7 @@ exports.mostrarTableros = async (req, res) => {
 exports.realizarDisparo = async (req, res) => {
   const repetirTurno = await PartidaController.realizarDisparo(req, res);
   const io = getIO();
-  if (repetirTurno) {
-    io.of('/partida' + req.body.codigo).emit(eventosSocket.continuaTurno, req.body.codigo, res.disparoRealizado);
-  } else if (!repetirTurno){
-    io.of('/partida' + req.body.codigo).emit(eventosSocket.finTurnos, req.body.codigo, res.disparoRealizado);
-  }
+  io.of('/partida' + req.body.codigo).emit(eventosSocket.resultadoTurno, "disparo", res.disparoRealizado, res.barcoCoordenadas, res.finPartida, res.clima);
 };
 
 /**
@@ -273,11 +269,7 @@ exports.realizarDisparo = async (req, res) => {
 exports.realizarDisparoMisilRafaga = async (req, res) => {
   const repetirTurno = await PartidaController.realizarDisparoMisilRafaga(req, res);
   const io = getIO();
-  if (repetirTurno) {
-    io.of('/partida' + req.body.codigo).emit(eventosSocket.continuaTurno, req.body.codigo, res.disparoRealizado);
-  } else if (!repetirTurno){
-    io.of('/partida' + req.body.codigo).emit(eventosSocket.finTurnos, req.body.codigo, res.disparoRealizado);
-  }
+  io.of('/partida' + req.body.codigo).emit(eventosSocket.resultadoTurno, "misilRafaga", res.disparoRealizado, res.barcoCoordenadas, res.finPartida, res.clima);
 };
 
 /**
@@ -292,7 +284,7 @@ exports.realizarDisparoMisilRafaga = async (req, res) => {
  * @param {Object} res - El objeto de respuesta HTTP
  * @param {Object} res.disparoRealizado - Los 9 disparos realizados con sus coordenadas y estado
  * @param {Boolean} [res.algunoTocado] - Indica si algun disparo del torpedo ha tocado (o hundido) un barco
- * @param {Object} [res.barcosCoordenadas] - Las coordenadas de los barcos hundidos, si los hay
+ * @param {Object} [res.barcoCoordenadas] - Las coordenadas de los barcos hundidos, si los hay
  * @param {String} res.eventoOcurrido - El evento ocurrido en la partida
  * @param {Boolean} res.finPartida - Indica si la partida ha terminado
  * @param {String} res.clima - El clima de la partida
@@ -302,11 +294,7 @@ exports.realizarDisparoMisilRafaga = async (req, res) => {
 exports.realizarDisparoTorpedoRecargado = async (req, res) => {
   const repetirTurno = await PartidaController.realizarDisparoTorpedoRecargado(req, res);
   const io = getIO();
-  if (repetirTurno) {
-    io.of('/partida' + req.body.codigo).emit(eventosSocket.continuaTurno, req.body.codigo, res.disparoRealizado);
-  } else if (!repetirTurno){
-    io.of('/partida' + req.body.codigo).emit(eventosSocket.finTurnos, req.body.codigo, res.disparoRealizado);
-  }
+  io.of('/partida' + req.body.codigo).emit(eventosSocket.resultadoTurno, "torpedoRecargado", res.disparoRealizado, res.algunoTocado, res.barcoCoordenadas, res.finPartida, res.clima);
 };
 
 // Funcion para obtener el chat de una partida

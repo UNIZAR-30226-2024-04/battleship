@@ -24,7 +24,7 @@ export function Home() {
     const tokenCookie = cookies.get('JWT');
     const nombreIdCookie = cookies.get('perfil')['nombreId'];
 
-    const handleOnClickBuscarPartida = async () => {
+    const handleOnClickPartidaMulti = async () => {
         try {
             const response = await fetch(buscarSalaURI, {
                 method: 'POST',
@@ -42,20 +42,29 @@ export function Home() {
     
             const responseData = await response.json();
             console.log('Respuesta del servidor:', responseData);
-    
-            // Conectar al socket de la sala
-            const salaSocket = io.connect(`/partida${responseData['codigo']}`);
-            console.log('partidaEncontrada en sala:', responseData['codigo']);
-            salaSocket.emit(info['entrarSala'], responseData['codigo']);
-            // esperar unos milisegundos para que el servidor pueda procesar el evento
-            navigate('/game');
+
+            if (responseData['codigo'] == -1) {
+                // No existe sala, crear una
+                CrearSala();
+                cookies.remove('jugador', { path: '/' });
+                cookies.set('jugador', 1, { path: '/' });
+            } else if (responseData['codigo']) { // Nos devuelve el código de la sala    
+                // Conectar al socket de la sala
+                const salaSocket = io.connect(`/partida${responseData['codigo']}`);
+                console.log('partidaEncontrada en sala:', responseData['codigo']);
+                salaSocket.emit(info['entrarSala'], responseData['codigo']);
+                // esperar unos milisegundos para que el servidor pueda procesar el evento
+                cookies.remove('jugador', { path: '/' });
+                cookies.set('jugador', 2, { path: '/' });
+                navigate('/gameMulti');
+            }
         }
         catch (error) {
             console.error('Error en el al buscar Sala', error);
         }
     };
     
-    const handleOnClickCrearSala = async () => {
+    const CrearSala = async () => {
         try {
             const response = await fetch(crearSalaURI, {
                 method: 'POST',
@@ -81,7 +90,7 @@ export function Home() {
             // Escuchar evento de partida encontrada
             salaSocket.on(info['partidaEncontrada'], (codigo) => {
                 console.log('Partida encontrada en:', codigo);
-                navigate('/game');
+                navigate('/gameMulti');
             });
         }
         catch (error) {
@@ -104,19 +113,12 @@ export function Home() {
                         <button className="home-button" onClick={
                             // Crear sala de juego y navegar a game tras recibir respuesta del socket
                             () => {
-                                handleOnClickCrearSala();
+                                handleOnClickPartidaMulti();
                             }
                         }>
                             <span> Jugar Online </span>
                         </button>
-                        <button className="home-button" onClick={
-                            // Buscar sala de juego y navegar a game
-                            () => {
-                                handleOnClickBuscarPartida();
-                            }                                
-                        }>
-                            <span> Unirse partida </span>
-                        </button>
+                        
                         <button className="home-button" onClick={() => navigate('/game')}>
                             <span> Jugar Offline </span>
                         </button>

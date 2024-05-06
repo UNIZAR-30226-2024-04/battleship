@@ -1140,7 +1140,7 @@ exports.realizarDisparoMisilRafaga = async (req, res) => {
  * @param {Object} res - El objeto de respuesta HTTP
  * @param {Object} res.disparoRealizado - Los 9 disparos realizados con sus coordenadas y estado
  * @param {Boolean} [res.algunoTocado] - Indica si algun disparo del torpedo ha tocado (o hundido) un barco
- * @param {Object} [res.barcosCoordenadas] - Las coordenadas de los barcos hundidos, si los hay
+ * @param {Object} [res.barcoCoordenadas] - Las coordenadas de los barcos hundidos, si los hay
  * @param {String} res.eventoOcurrido - El evento ocurrido en la partida
  * @param {Boolean} res.finPartida - Indica si la partida ha terminado
  * @param {String} res.clima - El clima de la partida
@@ -1276,7 +1276,7 @@ exports.realizarDisparoTorpedoRecargado = async (req, res) => {
         let respuestaDisparo = {
           disparosRealizados: disparosTorpedo,
           algunoTocado: numBarcosTocados > 0,
-          barcosCoordenadas: (barcosHundidos && barcosHundidos.length > 0) ? barcosHundidos : undefined,
+          barcoCoordenadas: (barcosHundidos && barcosHundidos.length > 0) ? barcosHundidos : undefined,
           eventoOcurrido: undefined, // Evento ocurrido en la partida
           finPartida: finPartida,
           clima: partidaActual.clima,
