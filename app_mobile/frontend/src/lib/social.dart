@@ -49,17 +49,66 @@ class Social extends StatelessWidget {
           TabBar(
             indicatorSize: TabBarIndicatorSize.tab,
             tabs: [
-              Tab(icon: Icon(Icons.message)),
-              Tab(icon: Icon(Icons.people)),
+              Tab(
+                icon: Icon(Icons.message)
+              ),
+              Tab(
+                icon: Icon(Icons.people)
+              ),
             ],
           ),
-          Text(
-            'Social',
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 20,
+          // Editar el contenido de cada pestaña
+          TabBarView(children: [
+            // Pestaña de mensajes
+            Column(
+              children: [
+                Text(
+                  'Mensajes',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 20,
+                  ),
+                ),
+                //Historial de mensajes con mis amigos:
+              ],
             ),
-          ),
+
+            // Pestaña de amigos
+            /*Column(
+              children: [
+              
+              ],
+            ),*/
+          ])
+          /*TabBarView(
+            children: [
+              // Pestaña de mensajes
+              Center(
+                child: Text(
+                  'Mensajes',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 20,
+                  ),
+                  //Historial de mensajes con mis amigos:
+
+                ),
+              ),
+
+              // Pestaña de amigos
+              Center(
+                child: Text(
+                  'Amigos',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 20,
+                  ),
+                  //Lista de mis publicaciones y las de mis amigos:
+
+                ),
+              ),
+            ],
+          ),*/
         ],
       ),
     );
