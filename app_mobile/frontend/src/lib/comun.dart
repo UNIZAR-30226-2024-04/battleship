@@ -6,7 +6,7 @@ import 'flota.dart';
 import 'juego.dart';
 import 'social.dart';
 
-// Panel superior.
+// Cabecera común a todas las pantallas.
 Widget buildHeader(BuildContext context, {bool ponerPerfil = true}) {
   return Transform.translate(
     offset: const Offset(0, 10),
@@ -52,16 +52,18 @@ Widget buildHeader(BuildContext context, {bool ponerPerfil = true}) {
   );
 }
 
-// Panel inferior.
+// Panel inferior común a todas las pantallas.
 Widget buildActions(BuildContext context) {
   return Column(
     children: [
       Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
+          // Botón para pantalla "Jugar"
           _buildActionItem('Jugar', 'images/jugar.png', () {
             Navigator.pushNamed(context, '/Principal');
           }),
+          // Botón para pantalla "Mazo", es decir, los barcos y las habilidades seleccionadas.
           _buildActionItem('Mazo', 'images/mazo.png', () {
             if (ModalRoute.of(context)?.settings.name == '/Mazo') {
               return;
@@ -75,6 +77,7 @@ Widget buildActions(BuildContext context) {
               Navigator.pushNamed(context, '/Mazo');
             }
           }),
+          // Botón para pantalla "Flota", es decir, el cómo están nuestros barcos colocados.
           _buildActionItem('Flota', 'images/flota.png', () {
             if (ModalRoute.of(context)?.settings.name == '/Flota') {
               return;
@@ -88,6 +91,7 @@ Widget buildActions(BuildContext context) {
               Navigator.pushNamed(context, '/Flota');
             }
           }),
+          // Botón para pantalla "Social", donde encontramos los mensajes con nuestros amigos y las diferentes publicaciones.
           _buildActionItem('Social', 'images/social.png', () {
             if (ModalRoute.of(context)?.settings.name == '/Social') {
               print("RUTA: /Social");
@@ -102,12 +106,13 @@ Widget buildActions(BuildContext context) {
               Navigator.pushNamed(context, '/Social');
             }
           }),
+          // Botón para pantalla "Ajustes", donde podemos cambiar la configuración de la aplicación.
           _buildActionItem('Ajustes', 'images/ajustes.png', () {
             if (ModalRoute.of(context)?.settings.name == '/Ajustes') {
               print("RUTA: /Ajustes");
               return;
             }
-
+            
             DestinoManager.setDestino(Mazo());
 
             if (!AuthProvider().isLoggedIn) {

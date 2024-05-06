@@ -7,6 +7,9 @@ import 'error.dart';
 import 'dart:html';
 import 'serverRoute.dart';
 
+/*
+ * Clase que gestiona la autenticación del usuario.
+ */
 class AuthProvider with ChangeNotifier {
   bool _isLoggedIn = false;
   String tokenSesion = "";
@@ -33,7 +36,9 @@ class AuthProvider with ChangeNotifier {
 
   AuthProvider._internal();
 
-
+  /*
+   * Método que permite modificar el perfil del usuario.
+   */
   Future<bool> modificarPerfil(String nombre, String password, String email, String pais) async {
     var uri = Uri.parse(serverRoute.urlModificarDatosPersonales);
     var response = await http.post(
@@ -71,11 +76,15 @@ class AuthProvider with ChangeNotifier {
       }
 
       return false;
-    } else {
+    }
+    else {
       return false;
     }
   }
 
+  /*
+   * Método que permite iniciar sesión en la base de datos.
+   */
   Future<bool> loginDB(String nombre, String password) async {
     var uri = Uri.parse(serverRoute.urlInicioSesion);
     var response = await http.post(
@@ -97,11 +106,15 @@ class AuthProvider with ChangeNotifier {
       }
 
       return false;
-    } else {
+    }
+    else {
       return false;
     }
   }
 
+  /*
+   * Método que permite registrar un usuario en la base de datos.
+   */
   Future<bool> signUpDB(String nombre, String password, String email) async {
     var uri = Uri.parse(serverRoute.urlRegistro);
     var response = await http.post(
@@ -134,7 +147,8 @@ class AuthProvider with ChangeNotifier {
         tokenSesion = responseBody['token'];
         return true;
       }
-    } else {
+    }
+    else {
       return false;
     }
     
@@ -142,6 +156,9 @@ class AuthProvider with ChangeNotifier {
   }
 
 
+  /*
+   * Método que permite iniciar sesión en la aplicación.
+   */
   Future<bool> login(String name, String password, BuildContext context) async {
     try {
       bool response = await loginDB(name, password);
@@ -154,7 +171,9 @@ class AuthProvider with ChangeNotifier {
         document.cookie = 'tokenSesion=$tokenSesion';
         notifyListeners(); // Notifica a los listeners que la variable ha cambiado
         return true;
-      } else {
+      }
+      else {
+        // Mostrar mensaje de error 
         showErrorSnackBar(context, 'Credenciales incorrectas');
         mensajeErrorModel.cleanErrorMessage();
         return false;
@@ -165,9 +184,13 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
+  /*
+   * Método que permite registrar un usuario en la aplicación.
+   */
   Future<bool> signUp(String name, String password, String email, BuildContext context) async {
     bool response = await signUpDB(name, password, email);
 
+    // Si el email no es válido, mostrar mensaje de error.
     if(!isValidEmail(email)) {
       showErrorSnackBar(context, 'El email no es válido');
       mensajeErrorModel.cleanErrorMessage();
@@ -187,7 +210,7 @@ class AuthProvider with ChangeNotifier {
       document.cookie = 'usuario=$name';
       document.cookie = 'tokenSesion=$tokenSesion';
       mensajeErrorModel.cleanErrorMessage();
-      notifyListeners(); // Notifica a los listeners que la variable ha cambiado
+      notifyListeners();      // Notifica a los listeners que la variable ha cambiado
       return true;
     }
     else {
@@ -197,6 +220,10 @@ class AuthProvider with ChangeNotifier {
 
     return false;
   }
+
+  /*
+   * Método que permite cerrar sesión en la aplicación.
+   */
   void logOut() {
     _isLoggedIn = false;
     mensajeErrorModel.cleanErrorMessage();

@@ -19,6 +19,7 @@ class _AjustesState extends State<Ajustes> {
   final TextEditingController _ocanoController = TextEditingController();
   AudioPlayer audioPlayer = AudioPlayer();
   
+  //Declaración de variables a modificar en los ajustes.
   bool musica = true;
   bool sonido = true;
   bool chatPartidas = true;
@@ -49,8 +50,8 @@ class _AjustesState extends State<Ajustes> {
               child: SingleChildScrollView(
                 child: Column(
                   children: [
-                    buildTitle('Ajustes', 28),
-                    _buildAjustes(context),
+                    buildTitle('Ajustes', 28),  // Título de la pantalla de ajustes.
+                    _buildAjustes(context), // Construcción de la pantalla de ajustes.
                   ],
                 ),
               ),
@@ -63,19 +64,24 @@ class _AjustesState extends State<Ajustes> {
   }
 
 
-
+  // Construcción de la pantalla de ajustes.
   Widget _buildAjustes(BuildContext context) {
     return Container(
       child: Column(
         children: [
+          // Botones para activar/desactivar música y sonido.
           buildEntryToggleButton('Música', musica, () => _handlePressed(context, AuthProvider(), musica, (value) => musica = value)),
           buildEntryToggleButton('Sonido', sonido, () => _handlePressed(context, AuthProvider(), sonido, (value) => sonido = value)),
+
+          // Dropdowns para seleccionar opciones: archivar, peticiones del chat, marcas de tiempo, sonido, chat de partidas y océano.
           buildDropdownButton(context, 'Activar chat de partidas', ['Todos', 'Solo yo'], _activarChatController),
           buildDropdownButton(context, 'Peticiones de chat', ['Amigos', 'Todos'], _peticionesChatController),
           buildDropdownButton(context, 'Mostrar marcas de tiempo', ['Nunca', 'Siempre'], _mostrarMarcasController),
           buildDropdownButton(context, 'Efectos de sonido', ['Por defecto', 'Desactivado', 'Activado'], _efectosSonidoController),
           buildDropdownButton(context, 'Activar chat de partidas', ['Todos', 'Solo yo'], _activarChatController),
           buildDropdownButton(context, 'Océano', ['Estático', 'En movimiento'], _ocanoController),
+          
+          // Botones para activar/desactivar efectos de barco, efectos de barco hundido, ver nombre y elo del rival y ver emoticonos durante una partida.
           buildEntryToggleButton('Efectos de barco tocado', efectosBarcoTocado, () => _handlePressed(context, AuthProvider(), efectosBarcoTocado, (value) => efectosBarcoTocado = value)),
           buildEntryToggleButton('Efectos de barco hundido', efectosBarcoHundido, () => _handlePressed(context, AuthProvider(), efectosBarcoHundido, (value) => efectosBarcoHundido = value)),
           buildEntryToggleButton('Ver nombre del rival', verNombreRival, () => _handlePressed(context, AuthProvider(), verNombreRival, (value) => verNombreRival = value)),
@@ -87,6 +93,7 @@ class _AjustesState extends State<Ajustes> {
     );
   }
 
+  // Función para manejar el estado de los botones de activar/desactivar.
   void _handlePressed(BuildContext context, AuthProvider authProvider, bool isActive, Function(bool) setStateFunc) async {
     setState(() {
       setStateFunc(!isActive);

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
 
-// Checkbox
+/*
+ * Clase que contiene los botones personalizados.
+ */
 class CustomCheckbox extends StatefulWidget {
   final bool value;
   final ValueChanged<bool>? onChanged;
@@ -16,6 +18,9 @@ class CustomCheckbox extends StatefulWidget {
   _CustomCheckboxState createState() => _CustomCheckboxState();
 }
 
+/*
+ * Clase que contiene el estado de los botones personalizados.
+ */
 class _CustomCheckboxState extends State<CustomCheckbox> {
   bool _value = false;
 
@@ -57,7 +62,9 @@ class _CustomCheckboxState extends State<CustomCheckbox> {
   }
 }
 
-// Botones circulares.
+/*
+ * Clase que contiene los botones circulares.
+ */
 Widget buildCircledButton(String imagePath, String text, bool showTick, VoidCallback onPressed) {
   return Column(
     children: [
@@ -94,7 +101,9 @@ Widget buildCircledButton(String imagePath, String text, bool showTick, VoidCall
   );
 }
 
-// Botón amarillo.
+/*
+ * Clase que contiene los botones naranjas.
+ */
 Widget buildActionButton(BuildContext context, VoidCallback? onPressed, String text) {
   return Column(
     children: [
@@ -126,7 +135,9 @@ Widget buildActionButton(BuildContext context, VoidCallback? onPressed, String t
   );
 }
 
-// Texto clicable.
+/*
+ * Clase que contiene los botones de texto.
+ */
 Widget buildTextButton (BuildContext context, VoidCallback onTapAction, String text) {
   return GestureDetector(
     onTap: onTapAction,
@@ -140,7 +151,9 @@ Widget buildTextButton (BuildContext context, VoidCallback onTapAction, String t
   );
 }
 
-// Entrada de texto blanca con pista e icono.
+/*
+ * Clase que contiene las entradas de texto blancas con pista e icono.
+ */
 Widget buildEntryButton(String text, String hintText, IconData icono, TextEditingController controller) {
   return Padding(
     padding: const EdgeInsets.all(10),
@@ -163,7 +176,9 @@ Widget buildEntryButton(String text, String hintText, IconData icono, TextEditin
   );
 }
 
-// Entrada de texto blanca con pista, icono y escrito con asteriscos.
+/*
+ * Clase que contiene las entradas de texto blancas con pista, icono y escrito con asteriscos.
+ */
 Widget buildEntryAstButton(String text, String hintText, IconData icono, TextEditingController controller) {
   return Padding(
     padding: const EdgeInsets.all(10),
@@ -187,7 +202,9 @@ Widget buildEntryAstButton(String text, String hintText, IconData icono, TextEdi
   );
 }
 
-// Entrada de texto blanca con texto permanente y desplegable.
+/*
+ * Clase que contiene las entradas de texto blancas con texto permanente y desplegable.
+ */
 Widget buildDropdownButton(BuildContext context, String text, List<String> items, TextEditingController controller, {String? defaultValue}) {
   String? selectedItem;
 
@@ -226,7 +243,9 @@ Widget buildDropdownButton(BuildContext context, String text, List<String> items
 }
 
 
-
+/*
+ * Clase que contiene los botones de cambio de estado.
+ */
 Widget buildToggleButton({required bool isActive, required VoidCallback onPressed}) {
   return GestureDetector(
     onTap: onPressed,
@@ -257,7 +276,9 @@ Widget buildToggleButton({required bool isActive, required VoidCallback onPresse
   );
 }
 
-
+/*
+ * Clase que contiene las entradas de texto con botón de cambio de estado.
+ */
 Widget buildEntryToggleButton(String text, bool isActive, VoidCallback onPressed) {
   return Padding(
     padding: const EdgeInsets.all(10),

@@ -20,7 +20,7 @@ class Atacar extends StatefulWidget {
   @override
   _AtacarState createState() => _AtacarState();
 }
-
+//
 class _AtacarState extends State<Atacar> {
   ServerRoute serverRoute = ServerRoute();
   Completer completerAbandono = Completer();
@@ -56,7 +56,8 @@ class _AtacarState extends State<Atacar> {
               ),
             ),
           );
-        } else {
+        } 
+        else {
           return Container(
             decoration: const BoxDecoration(
               image: DecorationImage(
@@ -76,9 +77,11 @@ class _AtacarState extends State<Atacar> {
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return const CircularProgressIndicator();
-                      } else if (snapshot.hasError) {
+                      }
+                      else if (snapshot.hasError) {
                         return Text('Error: ${snapshot.error}');
-                      } else {
+                      }
+                      else {
                         return AnimatedOpacity(
                           opacity: snapshot.data == null ? 0.0 : 1.0,
                           duration: const Duration(milliseconds: 500),
@@ -87,8 +90,9 @@ class _AtacarState extends State<Atacar> {
                       }
                     },
                   ),
-                  _construirHabilidades(),
+                  _construirHabilidades(),  // Habilidades del jugador.
                   const Spacer(),
+                  // Botón para abandonar la partida.
                   buildActionButton(context, () {
                     Juego().abandonarPartida(context);
                     Juego().reiniciarPartida();
@@ -104,7 +108,9 @@ class _AtacarState extends State<Atacar> {
     );
   }
 
-
+  /*
+   * Construir tablero con barcos atacables.
+   */
   Future<Widget> _construirTableroConBarcosAtacable() async {
     return SizedBox(
       width: Juego().miTablero.boardSize + Juego().miTablero.casillaSize,
@@ -116,7 +122,9 @@ class _AtacarState extends State<Atacar> {
     );
   }
 
-
+  /*
+   * Construir widget en el que se indican los barcos restantes del rival.
+   */
   Widget _construirBarcosRestantes() {
     List<Barco> barcosRestantes = Juego().obtenerBarcosRestantesRival();
     return Container(
@@ -136,6 +144,7 @@ class _AtacarState extends State<Atacar> {
               for (int i = 0; i < barcosRestantes.length; i++)  
                 Column(
                   children: [
+                    // Imagen de los barcos restantes.
                     Padding(
                       padding: const EdgeInsets.all(5),
                       child: Image.asset(
@@ -144,6 +153,7 @@ class _AtacarState extends State<Atacar> {
                         height: 50,
                       ),
                     ),
+                    // Longitud de los barcos restantes.
                     Padding(
                       padding: const EdgeInsets.all(5), 
                       child: Text(
@@ -163,6 +173,9 @@ class _AtacarState extends State<Atacar> {
     );
   }
 
+  /*
+   * Construir widget con las habilidades disponibles del jugador.
+   */
   Widget _construirHabilidades() {
     return Container(
       padding: const EdgeInsets.all(10),
@@ -178,22 +191,27 @@ class _AtacarState extends State<Atacar> {
                     Padding(
                       padding: const EdgeInsets.all(5),
                       child: ElevatedButton(
+                        // Seleccionar habilidad.
                         onPressed: () {
                           if (Juego().indiceHabilidadSeleccionadaEnTurno != -1) {
                             showErrorSnackBar(context, 'Ya has seleccionado una habilidad para este turno');
                             return;
                           }
+                          
                           Juego().indiceHabilidadSeleccionadaEnTurno = i;
                           print("HABILIDAD SELECCIONADA: ${Juego().habilidades[i].nombre}");
+
                           if(Juego().habilidades[i].nombre == 'misil') {
                             _handleTap(1, 1);
                           }
                         },
+
                         style: ElevatedButton.styleFrom(
                           shape: const CircleBorder(),
                           padding: const EdgeInsets.all(20),
                           backgroundColor: Colors.black.withOpacity(0.5),
                         ),
+
                         child: Stack(
                           alignment: Alignment.center,
                           children: [
@@ -218,18 +236,25 @@ class _AtacarState extends State<Atacar> {
     );
   }
 
+  /*
+   * Construir tablero con los barcos hundidos.
+   */
   Future<List<Widget>> buildTableroClicable(Function(int, int) onTap) async {
     List<Widget> filas = [];
     filas.add(await buildTableroConBarcosHundidos(onTap));
     return filas;
   }
 
+  /*
+   * Construir fila con las coordenadas de las columnas.
+   */
   Widget buildFilaCoordenadas() {
     List<Widget> coordenadas = [];
     coordenadas.add(SizedBox(
       width: Juego().miTablero.casillaSize,
       height: Juego().miTablero.casillaSize,
     ));
+
     // Etiquetas de columna
     for (int j = 1; j < Juego().miTablero.numColumnas; j++) {
       coordenadas.add(
@@ -246,7 +271,10 @@ class _AtacarState extends State<Atacar> {
     }
     return Row(children: coordenadas);
   }
-      
+  
+  /*
+   * Construir fila con las casillas del tablero.
+   */
   Future<Widget> buildFilaCasillas(int rowIndex, Function(int, int) onTap) async {
     List<Widget> casillas = [];
     casillas.add(
@@ -261,11 +289,15 @@ class _AtacarState extends State<Atacar> {
       ),
     );
 
+    // Casillas del tablero
     for (int j = 1; j < Juego().miTablero.numColumnas; j++) {
       String imagePath = 'images/dot.png';
       if (Juego().disparosFalladosPorMi.contains(Offset(rowIndex.toDouble(), j.toDouble()))) {
+        // Si fallo el disparo, coloco una cruz roja en la casilla.
         imagePath = 'images/redCross.png';
-      } else if (Juego().disparosAcertadosPorMi.contains(Offset(rowIndex.toDouble(), j.toDouble()))) {
+      } 
+      else if (Juego().disparosAcertadosPorMi.contains(Offset(rowIndex.toDouble(), j.toDouble()))) {
+        // Si acierto el disparo, coloco una explosión en la casilla.
         imagePath = 'images/explosion.png';
       }
 
@@ -281,7 +313,7 @@ class _AtacarState extends State<Atacar> {
               color: const Color.fromARGB(128, 116, 181, 213),
               border: Border.all(color: Colors.black, width: 1),
             ),
-            child: Image.asset(imagePath, fit: BoxFit.cover),
+            child: Image.asset(imagePath, fit: BoxFit.cover),    // Imagen de la casilla (cruz o explosión).
           ),
         ),
       );
@@ -290,6 +322,9 @@ class _AtacarState extends State<Atacar> {
     return Row(children: casillas);
   }
 
+  /*
+   * Construir tablero con los barcos del rival hundidos.
+   */
   Future<Widget> buildTableroConBarcosHundidos(Function(int, int) onTap) async {
     return Stack(
       children: [
@@ -297,10 +332,11 @@ class _AtacarState extends State<Atacar> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: await buildTablero(onTap),
         ),
-        for (var barco in Juego().barcosHundidosPorMi)
+        for (var barco in Juego().barcosHundidosPorMi)  
           Positioned(
             top: barco.barcoPosition.dx * Juego().miTablero.casillaSize,
             left: barco.barcoPosition.dy * Juego().miTablero.casillaSize,
+            // Coloco la imagen del barco hundido
             child: Image.asset(
               barco.getImagePath(),
               width: barco.getWidth(Juego().miTablero.casillaSize),
@@ -314,6 +350,9 @@ class _AtacarState extends State<Atacar> {
     );
   }
 
+  /*
+   * Buscar barco hundido en las coordenadas del disparo.
+   */
   Barco buscarBarcoHundidoDisparo(Map<String, dynamic> datosJuego) {
     if (datosJuego.containsKey('barcoCoordenadas')) {
       Map<String, dynamic> barcoCoordenadas = datosJuego['barcoCoordenadas'];
@@ -340,6 +379,9 @@ class _AtacarState extends State<Atacar> {
     return Barco('', const Offset(0, 0), 0, false, false);
   }
 
+  /*
+   * Construir tablero con las casillas clicables.
+   */
   Future<List<Widget>> buildTablero(Function(int, int) onTap) async {
     List<Widget> filas = [];
     filas.add(buildFilaCoordenadas());
@@ -349,6 +391,9 @@ class _AtacarState extends State<Atacar> {
     return filas;
   }
 
+  /*
+   * Manejar el disparo sobre una casilla del tablero.
+   */
   Future<void> _handleTap(int i, int j) async {
     // Comprobar si ya se ha disparado en esa casilla.
     if (Juego().disparosAcertadosPorMi.contains(Offset(i.toDouble(), j.toDouble())) || 
@@ -360,6 +405,7 @@ class _AtacarState extends State<Atacar> {
     bool acertado = false;
     bool fin = false;
 
+    // Si la partida es de tipo "INDIVIDUAL" (contra la IA)
     if(Juego().modalidadPartida == "INDIVIDUAL") {
       if (Juego().indiceHabilidadSeleccionadaEnTurno != -1) {
         if (Juego().habilidades[Juego().indiceHabilidadSeleccionadaEnTurno].nombre == 'rafaga') {
@@ -391,6 +437,7 @@ class _AtacarState extends State<Atacar> {
         Juego().disparosPendientes--;
       }
     }
+    // Si la partida es de tipo "COMPETITIVA"
     else if(Juego().modalidadPartida == "COMPETITIVA") {
       var respuestaFuture = realizarDisparoMulti(i, j);
       Juego().disparosPendientes--;
@@ -399,6 +446,7 @@ class _AtacarState extends State<Atacar> {
         fin = result[1];
       });
     }
+    // Si la partida es de tipo "AMISTOSA"
     else if (Juego().modalidadPartida == "AMISTOSA") {
       var respuestaFuture = realizarDisparoMulti(i, j);
       Juego().disparosPendientes--;
@@ -407,6 +455,7 @@ class _AtacarState extends State<Atacar> {
         fin = result[1];
       });
     }
+    // Si la partida es de tipo "TORNEO"
     else if (Juego().modalidadPartida == "TORNEO") {
       var respuestaFuture = realizarDisparoMulti(i, j);
       Juego().disparosPendientes--;
@@ -415,29 +464,31 @@ class _AtacarState extends State<Atacar> {
         fin = result[1];
       });
     }
+    // Si la partida es de un tipo que no existe
     else {
       showErrorSnackBar(context, 'Modalidad de juego no válida');
     }
 
-    // Si la casilla tiene un barco.
+    // Si la casilla señalada tiene un barco (acierta el disparo).
     if(acertado) {
       print("ACERTADO");
       Juego().disparosPendientes ++;
 
-      if(fin) {
+      if(fin) { //Si finaliza la partida
         final snackBar = SnackBar(
           content: Text(
-            '¡Ganador: ${Juego().getGanador()}!',
+            '¡Ganador: ${Juego().getGanador()}!',   //Muestra el ganador de dicha partida
             style: const TextStyle(color: Colors.white),
           ),
           behavior: SnackBarBehavior.floating,
         );
         ScaffoldMessenger.of(context).showSnackBar(snackBar);
         Juego().reiniciarPartida();
-        Navigator.pushNamed(context, '/Principal');
+        Navigator.pushNamed(context, '/Principal'); //Vuelve a la pantalla principal
       }
     }
 
+    // Si aún no ha acabado la partida.
     else if (Juego().disparosPendientes == 0) {
       Juego().disparosPendientes = 1;
       DestinoManager.setDestino(const Defender());
@@ -445,10 +496,14 @@ class _AtacarState extends State<Atacar> {
     }
   }
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////// HABILIDADES ///////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+/**************************************************************************************************************/
+/*                                                                                                            */
+/*                                               HABILIDADES                                                  */
+/*                                                                                                            */
+/**************************************************************************************************************/
+
+// Habilidad: RÁFAGA
  Future<List<bool>> realizarDisparoRafaga(int i, int j, int restantes) async {
     var response = await http.post(
       Uri.parse(serverRoute.urlDispararRafaga),
@@ -480,16 +535,20 @@ class _AtacarState extends State<Atacar> {
       Offset disparoCoordenadas = Offset(i as double, j as double);
 
       if (acertado) {
+        // Actualizar disparos acertados.
         setState(() {
           Juego().disparosAcertadosPorMi.add(disparoCoordenadas);
         });
-      } else {
+      }
+      else {
+        // Actualizar disparos fallados.
         setState(() {
           Juego().disparosFalladosPorMi.add(disparoCoordenadas);
         });
       }
 
       if (hundido) {
+        // Actualizar barcos hundidos.
         setState(() {
           Juego().barcosRestantesRival--;
           nombreBarcoHundido = data['barcoCoordenadas']['tipo'];
@@ -508,7 +567,7 @@ class _AtacarState extends State<Atacar> {
         acertado = estado == 'Tocado' || estado == 'Hundido';
         hundido = estado == 'Hundido';
 
-        if(finPartida) {
+        if(finPartida) {  //Si finaliza la partida
           final snackBar = SnackBar(
             content: Text(
               '¡Ganador: ${Juego().getGanador()}!',
@@ -518,30 +577,33 @@ class _AtacarState extends State<Atacar> {
           );
           ScaffoldMessenger.of(context).showSnackBar(snackBar);
           Juego().reiniciarPartida();
-          Navigator.pushNamed(context, '/Principal');
+          Navigator.pushNamed(context, '/Principal');   //Vuelve a la pantalla principal
         }
 
         if (acertado) {
+          // Actualizar disparos acertados del rival.
           Juego().disparosAcertadosRival.add(Offset(disparo['i'].toDouble(), disparo['j'].toDouble()));
         }
         else {
+          // Actualizar disparos fallados del rival.
           Juego().disparosFalladosRival.add(Offset(disparo['i'].toDouble(), disparo['j'].toDouble()));
         }
 
         if (hundido) {
+          // Actualizar barcos hundidos del rival.
           Barco barcoHundido = buscarBarcoHundidoDisparo(elemento);
           Juego().barcosHundidosPorRival.add(barcoHundido);
           Juego().misBarcosRestantes--;
         }
       }
-
       return Future.value([acertado, fin]);
-    } else {
+    }
+    else {
       throw Exception('Failed to load data');
     }
   }
 
-
+// Habilidad: MISIL
  Future<void> realizarDisparoMisil() async {
     var response = await http.post(
       Uri.parse(serverRoute.urlDispararMisil),
@@ -563,7 +625,7 @@ class _AtacarState extends State<Atacar> {
     }
   }
 
-
+// Habilidad: TORPEDO
   Future<List<bool>> realizarDisparoTorpedo(int i, int j, bool turnoRecarga) async {
     var response;
     if (turnoRecarga) {
@@ -611,16 +673,20 @@ class _AtacarState extends State<Atacar> {
       Offset disparoCoordenadas = Offset(i as double, j as double);
 
       if (acertado) {
+        // Actualizar disparos acertados.
         setState(() {
           Juego().disparosAcertadosPorMi.add(disparoCoordenadas);
         });
-      } else {
+      } 
+      else {
+        // Actualizar disparos fallados.
         setState(() {
           Juego().disparosFalladosPorMi.add(disparoCoordenadas);
         });
       }
 
       if (hundido) {
+        // Actualizar barcos hundidos.
         setState(() {
         Juego().barcosRestantesRival--;
         nombreBarcoHundido = data['barcoCoordenadas']['tipo'];
@@ -639,7 +705,7 @@ class _AtacarState extends State<Atacar> {
         acertado = estado == 'Tocado' || estado == 'Hundido';
         hundido = estado == 'Hundido';
 
-        if(finPartida) {
+        if(finPartida) {  //Si finaliza la partida
           final snackBar = SnackBar(
             content: Text(
               '¡Ganador: ${Juego().getGanador()}!',
@@ -649,33 +715,41 @@ class _AtacarState extends State<Atacar> {
           );
           ScaffoldMessenger.of(context).showSnackBar(snackBar);
           Juego().reiniciarPartida();
-          Navigator.pushNamed(context, '/Principal');
+          Navigator.pushNamed(context, '/Principal'); //Vuelve a la pantalla principal
         }
 
         if (acertado) {
+          // Actualizar disparos acertados del rival.
           Juego().disparosAcertadosRival.add(Offset(disparo['i'].toDouble(), disparo['j'].toDouble()));
         }
         else {
+          // Actualizar disparos fallados del rival.
           Juego().disparosFalladosRival.add(Offset(disparo['i'].toDouble(), disparo['j'].toDouble()));
         }
 
         if (hundido) {
+          // Actualizar barcos hundidos del rival.
           Barco barcoHundido = buscarBarcoHundidoDisparo(elemento);
           Juego().barcosHundidosPorRival.add(barcoHundido);
           Juego().misBarcosRestantes--;
         }
       }
-
       return Future.value([acertado, fin]);
-    } else {
+    } 
+    else {
       throw Exception('Failed to load data');
     }
   }  
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////// PARTIDA VS IA  /////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/**************************************************************************************************************/
+/*                                                                                                            */
+/*                                              PARTIDA VS IA                                                 */
+/*                                                                                                            */
+/**************************************************************************************************************/
 
+/*
+ * Realizar disparo contra la IA.
+ */
  Future<List<bool>> realizarDisparoIndividual(int i, int j) async {
     var response = await http.post(
       Uri.parse(serverRoute.urlDisparar),
@@ -706,16 +780,20 @@ class _AtacarState extends State<Atacar> {
       Offset disparoCoordenadas = Offset(i as double, j as double);
 
       if (acertado) {
+        // Actualizar disparos acertados.
         setState(() {
           Juego().disparosAcertadosPorMi.add(disparoCoordenadas);
         });
-      } else {
+      }
+      else {
+        // Actualizar disparos fallados.
         setState(() {
           Juego().disparosFalladosPorMi.add(disparoCoordenadas);
         });
       }
 
       if (hundido) {
+        // Actualizar barcos hundidos.
         setState(() {
           Juego().barcosRestantesRival--;
           nombreBarcoHundido = data['barcoCoordenadas']['tipo'];
@@ -727,14 +805,14 @@ class _AtacarState extends State<Atacar> {
       // Procesar disparo de la IA.
       bool finPartida = false;
 
-      for (var elemento in turnosIA) {
+      for (var elemento in turnosIA) {  
         var disparo = elemento['disparoRealizado'];
         finPartida = elemento['finPartida'];
         estado = disparo['estado'];
         acertado = estado == 'Tocado' || estado == 'Hundido';
         hundido = estado == 'Hundido';
 
-        if(finPartida) {
+        if(finPartida) {  //Si finaliza la partida
           final snackBar = SnackBar(
             content: Text(
               '¡Ganador: ${Juego().getGanador()}!',
@@ -744,21 +822,24 @@ class _AtacarState extends State<Atacar> {
           );
           ScaffoldMessenger.of(context).showSnackBar(snackBar);
           Juego().reiniciarPartida();
-          Navigator.pushNamed(context, '/Principal');
+          Navigator.pushNamed(context, '/Principal'); //Vuelve a la pantalla principal
         }
 
         if (acertado) {
+          // Actualizar disparos acertados del rival.
           setState(() {
             Juego().disparosAcertadosRival.add(Offset(disparo['i'].toDouble(), disparo['j'].toDouble()));
           });
         }
         else {
+          // Actualizar disparos fallados del rival.
           setState(() {
             Juego().disparosFalladosRival.add(Offset(disparo['i'].toDouble(), disparo['j'].toDouble()));
           });
         }
 
         if (hundido) {
+          // Actualizar barcos hundidos del rival.
           setState(() {
             Barco barcoHundido = buscarBarcoHundidoDisparo(elemento);
             Juego().barcosHundidosPorRival.add(barcoHundido);
@@ -766,17 +847,20 @@ class _AtacarState extends State<Atacar> {
           });
         }
       }
-
       return Future.value([acertado, fin]);
     } else {
       throw Exception('Failed to load data');
     }
   }
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////// PARTIDA MULTI  /////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+/**************************************************************************************************************/
+/*                                                                                                            */
+/*                                              PARTIDA MULTI                                                 */
+/*                                                                                                            */
+/**************************************************************************************************************/
+
+// Realizar disparo en una partida multijugador.
   Future<List<bool>> realizarDisparoMulti(int i, int j) async {
     var response = await http.post(
       Uri.parse(serverRoute.urlDispararMulti),
