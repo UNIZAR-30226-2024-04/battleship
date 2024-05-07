@@ -6,7 +6,7 @@ mongoose.connect('mongodb://localhost/BattleshipDB', { useNewUrlParser: true, us
   .then(async () => {
     console.log('Conectado a MongoDB...');
     try {
-      const codigo =  291446521806;
+      const codigo = 891471716883;
       // Lista de disparos realizados a crear
       const disparos = [
         // {codigo: codigo, nombreId: 1, i: 1, j: 1}, // Tocado

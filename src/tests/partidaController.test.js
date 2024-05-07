@@ -397,6 +397,8 @@ describe("Realizar disparo", () => {
             }
         catch (error) {}
         expect(res.statusCode).toBe(undefined);
+        // Reestablecer el clima a 'Calma'
+        await Partida.updateOne({codigo: _codigo}, {clima: 'Calma'});
     });
     it("Debería fallar al realizar un disparo con demasiados campos", async () => {
         const req = { body: { codigo: _codigo, nombreId: 'usuario1', i: 1, j: 1, extra: 1 } };
@@ -406,6 +408,7 @@ describe("Realizar disparo", () => {
             await realizarDisparo(req, res);
         } catch (error) {}
         expect(res.statusCode).toBe(400);
+        await Partida.updateOne({codigo: _codigo}, {clima: 'Calma'});
     });
     it("Debería fallar al realizar un disparo sin jugador", async () => {
         const req = { body: { codigo: _codigo, i: 1, j: 1 } };
@@ -415,6 +418,7 @@ describe("Realizar disparo", () => {
             await realizarDisparo(req, res);
         } catch (error) {}
         expect(res.statusCode).toBe(400);
+        await Partida.updateOne({codigo: _codigo}, {clima: 'Calma'});
     });
     it("Debería fallar al realizar un disparo sin coordenadas", async () => {
         const req = { body: { codigo: _codigo, nombreId: 'usuario1'} };
@@ -424,6 +428,7 @@ describe("Realizar disparo", () => {
             await realizarDisparo(req, res);
         } catch (error) {}
         expect(res.statusCode).toBe(400);
+        await Partida.updateOne({codigo: _codigo}, {clima: 'Calma'});
     });
     it("Debería fallar al realizar un disparo con un jugador inválido", async () => {
         const req = { body: { codigo: _codigo, nombreId: 'usuario3', i: 1, j: 1 } };
@@ -433,6 +438,7 @@ describe("Realizar disparo", () => {
             await realizarDisparo(req, res);
         } catch (error) {}
         expect(res.statusCode).toBe(404);
+        await Partida.updateOne({codigo: _codigo}, {clima: 'Calma'});
     });
     it("Debería fallar al realizar un disparo con coordenadas inválidas", async () => {
         const req = { body: { codigo: _codigo, nombreId: 'usuario1', i: -1, j: 1 } };
@@ -442,6 +448,7 @@ describe("Realizar disparo", () => {
             await realizarDisparo(req, res);
         } catch (error) {}
         expect(res.statusCode).toBe(400);
+        await Partida.updateOne({codigo: _codigo}, {clima: 'Calma'});
     });
     it("Debería fallar al realizar un disparo con un código de partida inexistente", async () => {
         const req = { body: { codigo: 1, nombreId: 'usuario1', i: 1, j: 1 } };
@@ -451,6 +458,7 @@ describe("Realizar disparo", () => {
             await realizarDisparo(req, res);
         } catch (error) {}
         expect(res.statusCode).toBe(404);
+        await Partida.updateOne({codigo: _codigo}, {clima: 'Calma'});
     });
     it("Debería fallar al no ser el turno del jugador", async () => {
         const req = { body: { codigo: _codigo, nombreId: 'usuario2', i: 1, j: 2 } };
@@ -460,6 +468,7 @@ describe("Realizar disparo", () => {
             await realizarDisparo(req, res);
         } catch (error) {}
         expect(res.statusCode).toBe(404);
+        await Partida.updateOne({codigo: _codigo}, {clima: 'Calma'});
     });
     it("Debería hundir el barco", async () => {
         const req = { body: { codigo: _codigo, nombreId: 'usuario1', i: 1, j: 2 } };
@@ -469,8 +478,9 @@ describe("Realizar disparo", () => {
             await realizarDisparo(req, res);
         } catch (error) {}
         expect(res.statusCode).toBe(undefined);
+        await Partida.updateOne({codigo: _codigo}, {clima: 'Calma'});
     });
-    it("Debería al disparar al agua", async () => {
+    it("Debería disparar al agua", async () => {
         const req = { body: { codigo: _codigo, nombreId: 'usuario1', i: 1, j: 3 } };
         const res = { json: () => {}, status: function(s) { 
           this.statusCode = s; return this; }, send: () => {} };
@@ -478,6 +488,7 @@ describe("Realizar disparo", () => {
             await realizarDisparo(req, res);
         } catch (error) {}
         expect(res.statusCode).toBe(undefined);
+        await Partida.updateOne({codigo: _codigo}, {clima: 'Calma'});
     });
 });
 
@@ -549,6 +560,7 @@ describe("Realizar disparo contra la IA", () => {
       try {
           await realizarDisparo(req, res);
       } catch (error) {}
+      await Partida.updateOne({codigo: _codigo}, {clima: 'Calma'});
       expect(res.statusCode).toBe(undefined);
       expect(res._json.disparoRealizado.estado).toBe('Agua');
       expect(res._json.turnosIA.length).toBeGreaterThan(0);
@@ -565,6 +577,7 @@ describe("Realizar disparo contra la IA", () => {
           try {
               await realizarDisparo(req, res);
           } catch (error) {}
+          await Partida.updateOne({codigo: _codigo}, {clima: 'Calma'});
           expect(res.statusCode).toBe(undefined);
           if (res._json.finPartida) {
               fin = true;
@@ -1276,6 +1289,9 @@ describe("Usar sónar", () => {
     ]);
   });
 });
+
+// Test de climas
+
 
 // Test for enviarMensaje
 describe("Enviar mensaje", () => {
