@@ -939,6 +939,7 @@ exports.realizarDisparo = async (req, res) => {
         }
         res.json(respuestaDisparo);
         console.log("Partida modificada con éxito");
+        return(respuestaDisparo)
       } else {
         res.status(404).send('No se ha encontrado la partida a actualizar');
         console.error("No se ha encontrado la partida a actualizar");

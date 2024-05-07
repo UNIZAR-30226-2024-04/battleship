@@ -9,6 +9,7 @@ const {actualizarEstadisticas, actualizarPuntosExperiencia} = require('./perfilC
 const PartidaController = require('./partidaController');
 const socketIo = require('socket.io');
 const { getIO, eventosSocket } = require('../socketManager');
+const { json } = require('stream/consumers');
 const tableroDim = Coordenada.i.max;  // Dimensiones del tablero
 /**
  * @module partidaMulti
@@ -126,6 +127,7 @@ exports.buscarSala = async (req, res) => {
       await PartidaController.crearPartida({ body: { codigo: sala.codigo, nombreId1: sala.nombreId1, nombreId2: sala.nombreId2, bioma: sala.bioma, amistosa: sala.amistosa } }, res);
       const io = getIO();
       io.to('/partida' + sala.codigo).emit(eventosSocket.partidaEncontrada, sala.codigo);
+      console.log('Partida encontrada en backend:', sala.codigo);
     } else {
       res.json({ codigo: -1 });
     }
@@ -243,9 +245,11 @@ exports.mostrarTableros = async (req, res) => {
  * await realizarDisparo(peticion, respuesta)
  */
 exports.realizarDisparo = async (req, res) => {
-  const repetirTurno = await PartidaController.realizarDisparo(req, res);
+
+  const respuesta = await PartidaController.realizarDisparo(req, res);
   const io = getIO();
-  io.of('/partida' + req.body.codigo).emit(eventosSocket.resultadoTurno, "disparo", res.disparoRealizado, res.barcoCoordenadas, res.finPartida, res.clima);
+  io.to('/partida' + req.body.codigo).emit(eventosSocket.resultadoTurno, "disparo", req.body.nombreId, respuesta.disparoRealizado, respuesta.barcoCoordenadas, respuesta.finPartida, respuesta.clima);
+  console.log('Resultado turno tras disparo recibido en backend:', req.body.nombreId, respuesta.disparoRealizado, respuesta.barcoCoordenadas, respuesta.finPartida, respuesta.clima);
 };
 
 /**
@@ -269,7 +273,7 @@ exports.realizarDisparo = async (req, res) => {
 exports.realizarDisparoMisilRafaga = async (req, res) => {
   const repetirTurno = await PartidaController.realizarDisparoMisilRafaga(req, res);
   const io = getIO();
-  io.of('/partida' + req.body.codigo).emit(eventosSocket.resultadoTurno, "misilRafaga", res.disparoRealizado, res.barcoCoordenadas, res.finPartida, res.clima);
+  io.to('/partida' + req.body.codigo).emit(eventosSocket.resultadoTurno, "misilRafaga", res.disparoRealizado, res.barcoCoordenadas, res.finPartida, res.clima);
 };
 
 /**
@@ -294,7 +298,8 @@ exports.realizarDisparoMisilRafaga = async (req, res) => {
 exports.realizarDisparoTorpedoRecargado = async (req, res) => {
   const repetirTurno = await PartidaController.realizarDisparoTorpedoRecargado(req, res);
   const io = getIO();
-  io.of('/partida' + req.body.codigo).emit(eventosSocket.resultadoTurno, "torpedoRecargado", res.disparoRealizado, res.algunoTocado, res.barcoCoordenadas, res.finPartida, res.clima);
+  io.to('/partida' + req.body.codigo).emit(eventosSocket.resultadoTurno, "torpedoRecargado", res.disparoRealizado, res.algunoTocado, res.barcoCoordenadas, res.finPartida, res.clima);
+  console.log('Resultado turno tras disparo recibido en backend:', res.disparoRealizado, res.algunoTocado, res.barcoCoordenadas, res.finPartida, res.clima);
 };
 
 // Funcion para obtener el chat de una partida
@@ -313,6 +318,7 @@ exports.realizarDisparoTorpedoRecargado = async (req, res) => {
  */
 exports.obtenerChat = async (req, res) => {
   await PartidaController.obtenerChat(req, res);
+  console.log('Chat obtenido');
 };
 
 // Funcion para enviar un mensaje al chat de una partida
@@ -332,6 +338,7 @@ exports.obtenerChat = async (req, res) => {
  */
 exports.enviarMensaje = async (req, res) => {
   await PartidaController.enviarMensaje(req, res);
-  io.of('/partida' + req.body.codigo).emit(eventosSocket.chat, req.body.codigo, req.body.mensaje);
+  io.to('/partida' + req.body.codigo).emit(eventosSocket.chat, req.body.codigo, req.body.mensaje);
+  console.log('Mensaje enviado en backend');
 };
 

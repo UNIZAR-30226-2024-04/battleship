@@ -71,7 +71,6 @@ const shipInfo = {
 };
 
 
-
 function resetEndgameMsg() {
     const endgameContainer = document.querySelector("#endgame-container");
     endgameContainer.style.display = "none"
@@ -117,60 +116,63 @@ export function GameMulti() {
     const [lastClickedCell, setLastClickedCell] = useState(null);
 
     function escuchaTurno(partidaSocket) {
-        partidaSocket.on(info['resultadoTurno'], (data) => {
-            console.log('Respuesta del servidor al disparar:', data);
-    
-            const disparoRival = data['disparoRealizado'];
-            const filaRival = disparoRival.i;
-            const columnaRival = disparoRival.j;
-            const estadoRival = disparoRival.estado;
-    
-            const locationCasillaRival = (filaRival-1)*10 + columnaRival - 1;
-            const casillaRival = document.querySelector(`#miTablero .casilla[location="${locationCasillaRival}"]`);
-    
-            let imgXRival = document.createElement('img');
-            imgXRival.style.width = '50%';
-            imgXRival.style.height = '50%';
-            imgXRival.style.marginLeft = '25%';
-            imgXRival.style.marginTop = '25%';
-            imgXRival.style.objectFit = 'cover';
-    
-            switch (estadoRival) {
-                case "Tocado":
-                    if (casillaRival.childElementCount === 0) {  // Solo 1 img
-                        imgXRival.src = explosionImg;
-                        casillaRival.appendChild(imgXRival);
-                        escuchaTurno(partidaSocket);
-                    }
-                    break;
-                case "Hundido":
-                    if (casillaRival.childElementCount === 0) { // Solo 1 img
-                        imgXRival.src = explosionImg;
-                        casillaRival.appendChild(imgXRival);
-                        escuchaTurno(partidaSocket);
-                    }
-                    break;
-                case "Agua":
-                    if (casillaRival.childElementCount === 0) {  // Solo 1 img
-                        imgXRival.src = crossImg;
-                        imgXRival.style.opacity = '0.7';
-                        casillaRival.appendChild(imgXRival);
-                        partidaSocket.emit(info['turnoRecibido'], {codigo: idPartida});
-                        desbloqueaTableroRival();
-                    }
-    
-                    break;
-                default:
-                    console.log("Error: disparo mal hecho -1 para backend");
-            }
-    
-            if(disparoRival.barcoCoordenadas) {
-                mostrarBarcosHundidos2(disparoRival.barcoCoordenadas);
-                triggerFinPartida(disparoRival.finPartida, false);       // comprobamos fin partida
+        console.log('Escuchando turno');
+        partidaSocket.on(info['resultadoTurno'], (tipo, idJugador, disparoRival, barcoCoordenadas, finPartida, clima) => {
+            if (idJugador != nombreId1Cookie) {
+                const filaRival = disparoRival.i;
+                const columnaRival = disparoRival.j;
+                const estadoRival = disparoRival.estado;
+        
+                const locationCasillaRival = (filaRival-1)*10 + columnaRival - 1;
+                const casillaRival = document.querySelector(`#miTablero .casilla[location="${locationCasillaRival}"]`);
+        
+                let imgXRival = document.createElement('img');
+                imgXRival.style.width = '50%';
+                imgXRival.style.height = '50%';
+                imgXRival.style.marginLeft = '25%';
+                imgXRival.style.marginTop = '25%';
+                imgXRival.style.objectFit = 'cover';
+        
+                console.log('Voy a dibujar en mi tablero');
+                switch (estadoRival) {
+                    case "Tocado":
+                        if (casillaRival.childElementCount === 0) {  // Solo 1 img
+                            imgXRival.src = explosionImg;
+                            casillaRival.appendChild(imgXRival);
+                            escuchaTurno(partidaSocket);
+                        }
+                        break;
+                    case "Hundido":
+                        if (casillaRival.childElementCount === 0) { // Solo 1 img
+                            imgXRival.src = explosionImg;
+                            casillaRival.appendChild(imgXRival);
+                            escuchaTurno(partidaSocket);
+                        }
+                        break;
+                    case "Agua":
+                        if (casillaRival.childElementCount === 0) {  // Solo 1 img
+                            imgXRival.src = crossImg;
+                            imgXRival.style.opacity = '0.7';
+                            casillaRival.appendChild(imgXRival);
+                            partidaSocket.emit(info['turnoRecibido'], {codigo: idPartida});
+                            desbloqueaTableroRival();
+                        }
+        
+                        break;
+                    default:
+                        console.log("Error: disparo mal hecho -1 para backend");
+                }
+        
+                if(barcoCoordenadas) {
+                    mostrarBarcosHundidos2(barcoCoordenadas);
+                    triggerFinPartida(finPartida, false);       // comprobamos fin partida
+                }
             }
         });
     }
-    
+
+    // socket de la partida
+    let [partidaSocket, setPartidaSocket] = useState(null);
 
     const handleClickedCell = (fila, columna) => {
         console.log(`Celda clickeada: Fila ${fila}, Columna ${columna}`);
@@ -187,13 +189,13 @@ export function GameMulti() {
         })
         .then(response => {
             if (!response.ok) {
-                console.log('Respuesta del servidor al disparar:', response);
+                // console.log('Respuesta del servidor al disparar:', response);
                 throw new Error('Realizar Disparo ha fallado');
             }
             return response.json();
         })
         .then(data => {
-            console.log('Respuesta del servidor al disparar:', data);
+            // console.log('Respuesta del servidor al disparar:', data);
 
             const locationCasilla = (fila-1)*10 + columna - 1;
             const casilla = document.querySelector(`#rivalTablero .casilla[location="${locationCasilla}"]`);
@@ -205,6 +207,7 @@ export function GameMulti() {
             imgX.style.marginTop = '25%';
             imgX.style.objectFit = 'cover';
 
+            console.log('Voy a dibujar en el tablero rival');
             switch (data['disparoRealizado'].estado) {
                 case "Tocado":
                     if (casilla.childElementCount === 0) {  // Solo 1 img
@@ -233,6 +236,8 @@ export function GameMulti() {
                 default:
                     console.log("Error: disparo mal hecho -1 para backend");
             }
+            console.log('Ya he dibujado en el tablero rival');
+            
             if(data['barcoCoordenadas']) {
                 mostrarContadorBarcosHundidos([data['barcoCoordenadas']]);
                 mostrarBarcosHundidos([data['barcoCoordenadas']], opponentBoard);
@@ -251,7 +256,6 @@ export function GameMulti() {
 
     // Datos partida
     let [idPartida, setIdPartida] = useState(null);
-    let partidaSocket; // socket de la partida
     let tablero1;
     let tablero2;
     let disparos1;
@@ -313,17 +317,15 @@ export function GameMulti() {
                     // Bloque extra multi al cargar partida
                     console.log('connect:', data.codigoPartidaActual);
                     partidaSocket = io.connect(`/partida${data.codigoPartidaActual}`);
-                    console.log('emit:', data.codigoPartidaActual);
                     partidaSocket.emit(info['entrarSala'], data.codigoPartidaActual);
-                    console.log('Emite entrar sala en: ', data.codigoPartidaActual, ' con socket: ');
-                    console.log(partidaSocket);
+                    setPartidaSocket(partidaSocket);
                     // Mirar si soy el jugador 1 o 2
                     jugadorCookie = cookies.get('jugador');
-                    if (jugadorCookie === '1') {
+                    if (jugadorCookie === 1) {
                         console.log('Soy el jugador 1');
                         desbloqueaTableroRival();
                     }
-                    else if (jugadorCookie === '2') {
+                    else if (jugadorCookie === 2) {
                         console.log('Soy el jugador 2');
                         bloqueaTableroRival();
                         escuchaTurno(partidaSocket);
