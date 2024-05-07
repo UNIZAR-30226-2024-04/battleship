@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Navbar } from "../Components/Navbar";
 import { GridStack } from 'gridstack';
+import { useNavigate } from 'react-router-dom';
 import Cookies from "universal-cookie";
 import '../Styles/fleet-style.css';
 import '../Styles/game-style.css';
@@ -31,6 +32,7 @@ import crossImg from '../Images/ingame/cross.png';
 import explosionImg from '../Images/ingame/explosion.png';
 
 import { useSocket } from '../Contexts/SocketContext';
+import { Navigate } from 'react-router-dom';
 
 // Establecer la url de obtenerPerfil, moverBarcoInicial del backend
 const urlObtenerDatosPersonales = 'http://localhost:8080/perfil/obtenerDatosPersonales';
@@ -39,6 +41,7 @@ const urlModificarMazoHabilidades = 'http://localhost:8080/perfil/modificarMazo'
 const urlCrearPartida = 'http://localhost:8080/partida/crearPartida';
 const urlRealizarDisparo = 'http://localhost:8080/partida/realizarDisparo';
 const urlMostrarTableros = 'http://localhost:8080/partida/mostrarTableros';
+const urlAbandonarPartida = 'http://localhost:8080/partida/abandonarPartida';
 
 const cookies = new Cookies();
 
@@ -96,6 +99,7 @@ function esBarcoHorizontal(barco) {
 }
 
 export function Game() {
+    const navigate = useNavigate();
     const { socket } = useSocket();
     const [lastClickedCell, setLastClickedCell] = useState(null);
 
@@ -763,6 +767,30 @@ export function Game() {
         }
     }, [skillQueue]);
 
+    const rendirse = () => {
+        fetch(urlAbandonarPartida, {
+            method: 'POST',
+            headers: {
+            'Content-Type': 'application/json',
+            'authorization': tokenCookie
+            },
+            body: JSON.stringify({ codigo: idPartida, nombreId: nombreId1Cookie})
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('La solicitud ha fallado');
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Respuesta del servidor al rendirse:', data);
+            navigate('/home');
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    }
+
 
     return (
         <>
@@ -773,6 +801,12 @@ export function Game() {
                         ¡A batallar!
                     </h1>
                     <div className='game-rivalship-counter'>
+                        <div className='end-button-container'>
+                            <button className="home-button" onClick={() => {rendirse()}} >
+                                    <span> Abandonar </span>
+                            </button>
+                        </div>
+                        <div className='tab'></div>
                         <div className='game-rivalship-counter-content'>
                             <img className="game-counter-aircraft" src={shipInfo['Aircraft'].imgRotated} />
                             <img className="game-counter-bship" src={shipInfo['Bship'].imgRotated} />
