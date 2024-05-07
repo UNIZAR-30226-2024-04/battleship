@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Navbar } from "../Components/Navbar";
 import { GridStack } from 'gridstack';
+import { useNavigate } from 'react-router-dom';
 import Cookies from "universal-cookie";
 import '../Styles/fleet-style.css';
 import '../Styles/game-style.css';
@@ -41,6 +42,7 @@ const urlModificarMazoHabilidades = 'http://localhost:8080/perfil/modificarMazo'
 const urlCrearPartida = 'http://localhost:8080/partidaMulti/crearPartida';
 const urlRealizarDisparo = 'http://localhost:8080/partidaMulti/realizarDisparo';
 const urlMostrarTableros = 'http://localhost:8080/partidaMulti/mostrarTableros';
+const urlAbandonarPartida = 'http://localhost:8080/partidaMulti/abandonarPartida';
 
 const cookies = new Cookies();
 const io = socketIO(info['serverAddress']); // Puerto del backend en local
@@ -79,20 +81,6 @@ function resetEndgameMsg() {
 }
 
 
-function triggerFinPartida(finPartida, soyYo) {
-    if (finPartida) {
-        const endgameContainer = document.querySelector("#endgame-container");
-        endgameContainer.style.display = "block"
-        const endgameMsg = document.querySelector("#endgame-container span");
-        if (soyYo) {
-            endgameMsg.innerHTML = "¡Victoria!";
-        } else {
-            endgameMsg.innerHTML = "¡Derrota!";
-        }
-    }
-}
-
-
 function esBarcoHorizontal(barco) {
     return barco.coordenadas[0].i === barco.coordenadas[1].i;
 }
@@ -110,10 +98,33 @@ function desbloqueaTableroRival() {
 }
 
 
-
 export function GameMulti() {
+    const navigate = useNavigate();
     const { socket } = useSocket();
     const [lastClickedCell, setLastClickedCell] = useState(null);
+
+    function escuchaRendicion(partidaSocket) {
+        console.log('Escuchando rendición');
+        partidaSocket.on(info['abandono'], (codigo, nombreId) => {
+            triggerFinPartida(true, nombreId != nombreId1Cookie);
+        });
+    }
+
+    function triggerFinPartida(finPartida, soyYo) {
+        if (finPartida) {
+            const endgameContainer = document.querySelector("#endgame-container");
+            endgameContainer.style.display = "block"
+            const endgameMsg = document.querySelector("#endgame-container span");
+            if (soyYo) {
+                endgameMsg.innerHTML = "¡Victoria!";
+            } else {
+                endgameMsg.innerHTML = "¡Derrota!";
+            }
+            setTimeout(() => {
+                navigate('/home');
+            }, 3000);
+        }
+    }
 
     function escuchaTurno(partidaSocket) {
         console.log('Escuchando turno');
@@ -330,6 +341,7 @@ export function GameMulti() {
                         bloqueaTableroRival();
                         escuchaTurno(partidaSocket);
                     }
+                    escuchaRendicion(partidaSocket);
                     setIdPartida(data.codigoPartidaActual);
                     console.log('SetidPartida:', data.codigoPartidaActual);
                     setPartidaInicializada(true);
@@ -795,6 +807,32 @@ export function GameMulti() {
     }, [skillQueue]);
 
 
+    const rendirse = () => {
+        fetch(urlAbandonarPartida, {
+            method: 'POST',
+            headers: {
+            'Content-Type': 'application/json',
+            'authorization': tokenCookie
+            },
+            body: JSON.stringify({ codigo: idPartida, nombreId: nombreId1Cookie})
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('La solicitud ha fallado');
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Respuesta del servidor al rendirse:', data);
+            // navigate('/home');
+            triggerFinPartida(true, false);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    }
+
+
     return (
         <>
             <div className="fleet-page-container">
@@ -804,6 +842,12 @@ export function GameMulti() {
                         ¡A batallar!
                     </h1>
                     <div className='game-rivalship-counter'>
+                        <div className='end-button-container'>
+                            <button className="home-button" onClick={() => {rendirse()}} >
+                                    <span> Abandonar </span>
+                            </button>
+                        </div>
+                        <div className='tab'></div>
                         <div className='game-rivalship-counter-content'>
                             <img className="game-counter-aircraft" src={shipInfo['Aircraft'].imgRotated} />
                             <img className="game-counter-bship" src={shipInfo['Bship'].imgRotated} />

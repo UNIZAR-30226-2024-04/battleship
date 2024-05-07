@@ -80,20 +80,6 @@ function resetEndgameMsg() {
 }
 
 
-function triggerFinPartida(finPartida, soyYo) {
-    if (finPartida) {
-        const endgameContainer = document.querySelector("#endgame-container");
-        endgameContainer.style.display = "block"
-        const endgameMsg = document.querySelector("#endgame-container span");
-        if (soyYo) {
-            endgameMsg.innerHTML = "¡Victoria!";
-        } else {
-            endgameMsg.innerHTML = "¡Derrota!";
-        }
-    }
-}
-
-
 function esBarcoHorizontal(barco) {
     return barco.coordenadas[0].i === barco.coordenadas[1].i;
 }
@@ -102,6 +88,22 @@ export function Game() {
     const navigate = useNavigate();
     const { socket } = useSocket();
     const [lastClickedCell, setLastClickedCell] = useState(null);
+
+    function triggerFinPartida(finPartida, soyYo) {
+        if (finPartida) {
+            const endgameContainer = document.querySelector("#endgame-container");
+            endgameContainer.style.display = "block"
+            const endgameMsg = document.querySelector("#endgame-container span");
+            if (soyYo) {
+                endgameMsg.innerHTML = "¡Victoria!";
+            } else {
+                endgameMsg.innerHTML = "¡Derrota!";
+            }
+            setTimeout(() => {
+                navigate('/home');
+            }, 3000);
+        }
+    }
 
     const handleClickedCell = (fila, columna) => {
         console.log(`Celda clickeada: Fila ${fila}, Columna ${columna}`);
@@ -784,7 +786,8 @@ export function Game() {
         })
         .then(data => {
             console.log('Respuesta del servidor al rendirse:', data);
-            navigate('/home');
+            // navigate('/home');
+            triggerFinPartida(true, false);
         })
         .catch(error => {
             console.error('Error:', error);
