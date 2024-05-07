@@ -51,9 +51,9 @@ function initializeSocket(server) {
             io.to(`/partida${codigo}`).emit(eventosSocket.partidaEncontrada, codigo);
         });
 
-        socket.on(eventosSocket.resultadoTurno, (codigo, coordenada, habilidad) => {
-            console.log('Resultado turno tras disparo recibido en backend:', codigo);
-            io.to(`/partida${codigo['codigo']}`).emit(eventosSocket.resultadoTurno, codigo, coordenada, habilidad);
+        socket.on(eventosSocket.resultadoTurno, (habilidad, idJugador, coordenada, barcoHundido, finpartida, clima) => {
+            console.log('Resultado turno tras disparo recibido en backend:', habilidad, idJugador, coordenada, barcoHundido, finpartida, clima);
+            io.to(`/partida${codigo['codigo']}`).emit(eventosSocket.resultadoTurno, habilidad, idJugador, coordenada, barcoHundido, finpartida, clima);
         });
         
         socket.on(eventosSocket.turnoRecibido, (codigo) => {
