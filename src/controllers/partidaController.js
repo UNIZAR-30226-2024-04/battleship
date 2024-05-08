@@ -774,11 +774,11 @@ function gestionarDisparo(jugador, partidaActual, estadisticasJugadores, i, j, /
     partidaActual.disparosRealizados2.push(disparo);
 
   return {
-    disparo, // Último disparo
-    barcoDisparado, // Barco disparado por disparo, si existe
-    minaDisparada, // Mina disparada por disparo, si existe
-    disparosRespuestaMina, // Disparos enemigos en respuesta de mina, si los hay
-    barcosHundidosRespuestaMina // Barcos propios hundidos por respuesta de mina, si los hay
+    disparo: disparo, // Último disparo
+    barcoDisparado: barcoDisparado, // Barco disparado por disparo, si existe
+    minaDisparada: minaDisparada, // Mina disparada por disparo, si existe
+    disparosRespuestaMina: disparosRespuestaMina, // Disparos enemigos en respuesta de mina, si los hay
+    barcosHundidosRespuestaMina: barcosHundidosRespuestaMina // Barcos propios hundidos por respuesta de mina, si los hay
   };
 }
 
@@ -1136,7 +1136,9 @@ exports.realizarDisparo = async (req, res) => {
       var finPartida = false;
       if (iClima !== undefined && jClima !== undefined) {
         // Realizar disparo
+        console.log('Hay clima raro, : ', nuevoClima);
         let gestionDisparo = gestionarDisparo(jugador, partidaActual, estadisticasJugadores, iClima, jClima);
+        console.log('Resultado gestion disparo: ', gestionDisparo);
         disparo = gestionDisparo.disparo;
         barcoDisparado = gestionDisparo.barcoDisparado;
         minaDisparada = gestionDisparo.minaDisparada;
