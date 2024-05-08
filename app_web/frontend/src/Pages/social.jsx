@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Navbar } from "../Components/Navbar";
-import settingsIcon from '../Images/settings_icon.png';
+import socialIcon from '../Images/social_icon.png';
 import '../Styles/social-style.css';
 import TablonMenu from './socialMenu/TablonMenu';
 import SolicitudesMenu from './socialMenu/SolicitudesMenu';
@@ -40,7 +40,7 @@ export function Social() {
             <div className="settings-container">
                 <div className="settings-all-content">
                     <div className="settings-banner-container">
-                        <img src={settingsIcon} />
+                        <img src={socialIcon} />
                         <span>{menuTitle}</span>
                     </div>
                     <div className="settings-main-content">
