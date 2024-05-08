@@ -31,6 +31,7 @@ class Juego {
   List<Barco> barcosHundidosPorMi = [];
   List<Barco> barcosHundidosPorRival = [];
   String modalidadPartida = '';
+  int turno = 1; // 0: defecto, 1: anfitrión, 2: invitado
   ServerRoute serverRoute = ServerRoute();
   final socket = IO.io('http://localhost:8080', <String, dynamic>{
     'transports': ['websocket'],

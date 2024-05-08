@@ -29,7 +29,7 @@ class _AtacarState extends State<Atacar> {
   void initState() {
     super.initState();
     Juego().socket.on('abandono', (data) {
-      print('Abandono: $data');
+      //print('Abandono: $data');
       if (!completerAbandono.isCompleted) {
         completerAbandono.complete();
       }
@@ -199,7 +199,7 @@ class _AtacarState extends State<Atacar> {
                           }
                           
                           Juego().indiceHabilidadSeleccionadaEnTurno = i;
-                          print("HABILIDAD SELECCIONADA: ${Juego().habilidades[i].nombre}");
+                          //print("HABILIDAD SELECCIONADA: ${Juego().habilidades[i].nombre}");
 
                           if(Juego().habilidades[i].nombre == 'misil') {
                             _handleTap(1, 1);
@@ -439,21 +439,18 @@ class _AtacarState extends State<Atacar> {
     }
     // Si la partida es de tipo "COMPETITIVA"
     else if(Juego().modalidadPartida == "COMPETITIVA") {
-      var respuestaFuture = realizarDisparoMulti(i, j);
+      var result = await realizarDisparoMulti(i, j);
+      //print("ACERTADO:" + result[0].toString() + " FIN:" + result[1].toString());
       Juego().disparosPendientes--;
-      respuestaFuture.then((result) {
-        acertado = result[0];
-        fin = result[1];
-      });
+      acertado = result[0];
+      fin = result[1];
     }
     // Si la partida es de tipo "AMISTOSA"
     else if (Juego().modalidadPartida == "AMISTOSA") {
-      var respuestaFuture = realizarDisparoMulti(i, j);
+      var result = await realizarDisparoMulti(i, j);
       Juego().disparosPendientes--;
-      respuestaFuture.then((result) {
-        acertado = result[0];
-        fin = result[1];
-      });
+      acertado = result[0];
+      fin = result[1];
     }
     // Si la partida es de tipo "TORNEO"
     else if (Juego().modalidadPartida == "TORNEO") {
@@ -471,7 +468,7 @@ class _AtacarState extends State<Atacar> {
 
     // Si la casilla señalada tiene un barco (acierta el disparo).
     if(acertado) {
-      print("ACERTADO");
+      //print("ACERTADO");
       Juego().disparosPendientes ++;
 
       if(fin) { //Si finaliza la partida
@@ -522,7 +519,7 @@ class _AtacarState extends State<Atacar> {
 
     if (response.statusCode == 200) {
       var data = jsonDecode(response.body);
-      print(data);
+      //print(data);
       var turnosIA = data['turnosIA'].cast<Map<String, dynamic>>();
       var disparo = data['disparoRealizado'];
       var estado = disparo['estado'];
@@ -619,7 +616,7 @@ class _AtacarState extends State<Atacar> {
 
     if (response.statusCode == 200) {
       var data = jsonDecode(response.body);
-      print(data);
+      //print(data);
     } else {
       throw Exception('Failed to load data');
     }
@@ -660,7 +657,7 @@ class _AtacarState extends State<Atacar> {
 
     if (response.statusCode == 200) {
       var data = jsonDecode(response.body);
-      print(data);
+      //print(data);
       var turnosIA = data['turnosIA'].cast<Map<String, dynamic>>();
       var disparo = data['disparoRealizado'];
       var estado = disparo['estado'];
@@ -767,7 +764,7 @@ class _AtacarState extends State<Atacar> {
 
     if (response.statusCode == 200) {
       var data = jsonDecode(response.body);
-      print(data);
+      //print(data);
       var turnosIA = data['turnosIA'].cast<Map<String, dynamic>>();
       var disparo = data['disparoRealizado'];
       var estado = disparo['estado'];
@@ -878,8 +875,43 @@ class _AtacarState extends State<Atacar> {
 
     if (response.statusCode == 200) {
       var data = jsonDecode(response.body);
+      //print("RESPUESTA EN ATAQUE: ");
+      //print(data);
+      var disparo = data['disparoRealizado'];
+      var estado = disparo['estado'];
+      bool acertado = estado == 'Tocado' || estado == 'Hundido';
+      bool fin = data['finPartida'];
+      bool hundido = estado == 'Hundido';
+      String nombreBarcoHundido = "";
 
-      return Future.value([true, true]);
+      // Offset con las coordenadas del disparo.
+      Offset disparoCoordenadas = Offset(i as double, j as double);
+
+      if (acertado) {
+        // Actualizar disparos acertados.
+        setState(() {
+          print("DISPARO ACERTADO");
+          Juego().disparosAcertadosPorMi.add(disparoCoordenadas);
+        });
+      }
+      else {
+        // Actualizar disparos fallados.
+        setState(() {
+          print("DISPARO FALLADO");
+          Juego().disparosFalladosPorMi.add(disparoCoordenadas);
+        });
+      }
+
+      if (hundido) {
+        // Actualizar barcos hundidos.
+        setState(() {
+          Juego().barcosRestantesRival--;
+          nombreBarcoHundido = data['barcoCoordenadas']['tipo'];
+          Barco barcoHundido = buscarBarcoHundidoDisparo(data);
+          Juego().barcosHundidosPorMi.add(barcoHundido);
+        });
+      }
+      return Future.value([acertado, fin]);
     } else {
       throw Exception('Failed to load data');
     }

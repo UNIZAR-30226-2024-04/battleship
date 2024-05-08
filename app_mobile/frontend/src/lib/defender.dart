@@ -20,33 +20,36 @@ class _DefenderState extends State<Defender> {
   bool _isLoading = true;
   ServerRoute serverRoute = ServerRoute();
   Completer completerAbandono = Completer();
-  Completer continuaTurno = Completer();
-  Completer finTurnos = Completer();
+  Completer resultadoTurno = Completer();
+  bool atacar = false;  // indica si me toca atacar tras el evento recibido
 
   @override
   void initState() {
     super.initState();
 
     Juego().socket.on('abandono', (data) {
-      print('Abandono: $data');
+      //print('Abandono: $data');
       if (!completerAbandono.isCompleted) {
         completerAbandono.complete();
       }
     });
 
-    Juego().socket.on('continuaTurno', (data) {
-      print('Continua turno: $data');
-      if (!continuaTurno.isCompleted) {
-        continuaTurno.complete();
+    Juego().socket.on('resultadoTurno', (data) {
+      atacar = data[2]['estado'] == 'Agua';
+      // Si el estado es agua y el usuario es el otro
+      if(atacar && data[1] != Juego().miPerfil.name) {
+        print('Resultado turno: $data');
+        setState(() {
+          Juego().disparosPendientes = 1;
+        });
+        DestinoManager.setDestino(const Atacar());
+        Navigator.pushNamed(context, '/Atacar');        
+      }
+      else if (!atacar) {
+        //print('El rival ha acertado y voy a refrescar: $data');
+
       }
     });     
-
-    Juego().socket.on('finTurnos', (data) {
-      print('Fin turnos: $data');
-      if (!finTurnos.isCompleted) {
-        finTurnos.complete();
-      }
-    });   
 
     Future.delayed(const Duration(seconds: 1), () {
       setState(() {
@@ -333,12 +336,12 @@ class _DefenderState extends State<Defender> {
 
       // Mostar disparos enemigos agua
       for (var disparo in disparosAgua) {
-        print('Disparo enemigo agua: ${disparo.dx}, ${disparo.dy}');
+        //print('Disparo enemigo agua: ${disparo.dx}, ${disparo.dy}');
       }
 
       // Mostar disparos enemigos acertados
       for (var disparo in disparosAcertados) {
-        print('Disparo enemigo acertado: ${disparo.dx}, ${disparo.dy}');
+        //print('Disparo enemigo acertado: ${disparo.dx}, ${disparo.dy}');
       }
 
 
@@ -395,15 +398,10 @@ class _DefenderState extends State<Defender> {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   Future<void> esperarTurno() async {
-    await Future.wait([completerAbandono.future, continuaTurno.future, finTurnos.future]);
-    print('Se ha completado el futuro');
+    await Future.wait([completerAbandono.future, resultadoTurno.future]);
+    //('Se ha completado el futuro');
     if (completerAbandono.isCompleted) {
-      print('Abandono');
-    } else if (continuaTurno.isCompleted) {
-      print('Continua turno');
-    } else if (finTurnos.isCompleted) {
-      print('Fin turnos');
-      Juego().socket.emit('turnoRecibido');
+      //print('Abandono');
     }
   }
 }

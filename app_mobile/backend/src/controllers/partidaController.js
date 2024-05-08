@@ -247,6 +247,7 @@ exports.crearPartida = async (req, res) => {
       tableroBarcos1,
       tableroBarcos2,
       bioma,
+      clima: bioma == 'Bermudas' ? 'Tormenta' : 'Calma',
       amistosa: (jugador2 === undefined) ? true : amistosa,
     });
 
@@ -300,6 +301,13 @@ exports.abandonarPartida = async (req, res) => {
           { new: true } // Para devolver el documento actualizado
         );
       }
+      // Cambiar el ganador de la partida
+      partidaActual.ganador = jugador.nombreId === nombreId ? partidaActual.nombreId2 : partidaActual.nombreId1;
+      await Partida.findOneAndUpdate(
+        filtro, // Filtrar
+        partidaActual, // Actualizar (partidaActual contiene los cambios)
+        { new: true } // Para devolver el documento actualizado
+      );
       res.json({ mensaje: 'Partida abandonada con éxito' });
       
     } else {
@@ -649,11 +657,17 @@ async function verificarTurno(filtro, nombreId, habilidad) {
       console.error('No es el turno del jugador');
       return {mensajeError};
     }
-    // Comprobar si el jugador puede usar una habilidad
+    // Comprobar si el jugador tiene habilidades disponibles
     if (habilidad && (jugador === 1 && partidaActual.usosHab1 === 0 || 
       jugador === 2 && partidaActual.usosHab2 === 0)) {
       mensajeError = 'Las habilidades han sido consumidas';
       console.error('Las habilidades han sido consumidas');
+      return {mensajeError};
+    }
+    // Comprobar si el clima permite usar habilidades
+    if (habilidad && partidaActual.clima === 'Tormenta') {
+      mensajeError = 'No se puede usar habilidades con el clima actual';
+      console.error('No se puede usar habilidades con el clima actual');
       return {mensajeError};
     }
     return {partidaActual, jugador1, jugador2, jugador};
@@ -760,11 +774,11 @@ function gestionarDisparo(jugador, partidaActual, estadisticasJugadores, i, j, /
     partidaActual.disparosRealizados2.push(disparo);
 
   return {
-    disparo, // Último disparo
-    barcoDisparado, // Barco disparado por disparo, si existe
-    minaDisparada, // Mina disparada por disparo, si existe
-    disparosRespuestaMina, // Disparos enemigos en respuesta de mina, si los hay
-    barcosHundidosRespuestaMina // Barcos propios hundidos por respuesta de mina, si los hay
+    disparo: disparo, // Último disparo
+    barcoDisparado: barcoDisparado, // Barco disparado por disparo, si existe
+    minaDisparada: minaDisparada, // Mina disparada por disparo, si existe
+    disparosRespuestaMina: disparosRespuestaMina, // Disparos enemigos en respuesta de mina, si los hay
+    barcosHundidosRespuestaMina: barcosHundidosRespuestaMina // Barcos propios hundidos por respuesta de mina, si los hay
   };
 }
 
@@ -909,6 +923,138 @@ function añadirEstadisticasEnRespuesta(respuestaDisparo, partidaActual, estadis
   respuestaDisparo.estadisticas = estadisticas;
 }
 
+//-------------------------------------------Funciones de clima----------------------------------------------
+// Funcion para seleccionar el clima en funcion del bioma de la partida 
+function seleccionarClima(bioma, clima) {
+  // Número aleatorio para determinar si hay un cambio de clima
+  let cambioClima = Math.random();
+
+  // Número aleatorio para determinar el nuevo clima
+  let nuevoClima = Math.random();
+
+  // Número aleatorio para decidir un viento
+  let v = Math.random();
+  if (v < 0.25) { viento = 'VientoSur'; }
+  else if(v < 0.5) { viento = 'VientoNorte'; }
+  else if(v < 0.75) { viento = 'VientoEste'; }
+  else { viento = 'VientoOeste'; }
+
+  // Climas del bioma Mediterraneo: calma, viento, niebla
+  // Cambia de climas con frecuencia 10 %
+  // Calma -> Viento 60%, Niebla 40%
+  // Viento -> Calma 70%, Niebla 30%
+  // Niebla -> Calma 70%, Viento 30%
+  if(bioma === 'Mediterraneo') {
+    if(cambioClima < 0.1) {
+      if(clima == 'Calma') {
+        if(nuevoClima < 0.6) { return viento; }
+        else { return 'Niebla'; }
+      }
+      else if(clima == 'VientoSur' || clima == 'VientoNorte' || clima == 'VientoEste' || clima == 'VientoOeste') {
+        if(nuevoClima < 0.7) { return 'Calma'; }
+        else { return 'Tormenta'; }
+      }
+      else if(clima == 'Niebla') { return 'Calma'; }
+      else if(clima == 'Tormenta') {
+        if(nuevoClima < 0.3) { return viento; }
+        else { return 'Calma'; }
+      }
+    }
+  }
+  // Climas del bioma Cantabrico: Calma, Viento, Niebla, Tormenta
+  // Cambia de climas con frecuencia 30 %
+  // Calma -> Viento 50%, Niebla 50%
+  // Viento -> Calma 50%, Tormenta 50%
+  // Niebla -> Calma 100%
+  // Tormenta -> Viento 50%, Calma 50%
+  else if(bioma === 'Cantabrico') {
+    if(cambioClima < 0.3) {
+      if(clima == 'Calma') {
+        if(nuevoClima < 0.5) { return viento; }
+        else { return 'Niebla'; }
+      }
+      else if(clima == 'VientoSur' || clima == 'VientoNorte' || clima == 'VientoEste' || clima == 'VientoOeste') {
+        if(nuevoClima < 0.5) { return 'Calma'; }
+        else { return 'Tormenta'; }
+      }
+      else if(clima == 'Niebla') { return 'Calma'; }
+      else if(clima == 'Tormenta') {
+        if(nuevoClima < 0.5) { return viento; }
+        else { return 'Calma'; }
+      }
+    }
+  }
+  // Climas del bioma Norte: Calma, Viento, Niebla, Tormenta
+  // Cambia de climas con frecuencia 50 %
+  // Calma -> Viento 60%, Niebla 40%
+  // Viento -> Calma 40%, Tormenta 60%
+  // Niebla -> Calma 80%, Viento 20%
+  // Tormenta -> Viento 50%, Calma 30%, Niebla 20%
+  else if(bioma === 'Norte') {
+    if(cambioClima < 0.5) {
+      if(clima == 'Calma') {
+        if(nuevoClima < 0.6) { return viento; }
+        else { return 'Niebla'; }
+      }
+      else if(clima == 'VientoSur' || clima == 'VientoNorte' || clima == 'VientoEste' || clima == 'VientoOeste') {
+        if(nuevoClima < 0.4) { return 'Calma'; }
+        else { return 'Tormenta'; }
+      }
+      else if(clima == 'Niebla') {
+        if(nuevoClima < 0.8) { return 'Calma'; }
+        else { return viento; }
+      }
+      else if(clima == 'Tormenta') {
+        if(nuevoClima < 0.5) { return viento; }
+        else if(nuevoClima < 0.8) { return 'Calma'; }
+        else { return 'Niebla'; }
+      }
+    }
+
+  }
+  else if(bioma === 'Bermudas') {
+    return 'Tormenta'
+  }
+  else {
+    // El bioma no está definido
+    console.error('El bioma no está definido');
+    return undefined;
+  }
+}  
+
+// Función que dada una casilla (i, j) la desplaza una posición (si no se sale del tablero) en función de la dirección
+// de origen del viento
+function desplazarCasilla(i, j, direccion) {
+  if (direccion === 'VientoSur') {
+    if (i > 1) i--;
+  } else if (direccion === 'VientoNorte') {
+    if (i < tableroDim) i++;
+  } else if (direccion === 'VientoEste') {
+    if (j > 1) j--;
+  } else if (direccion === 'VientoOeste') {
+    if (j < tableroDim) j++;
+  } else {
+    console.error('La dirección del viento no está definida');
+  }
+  return { i: i, j: j, eventoOcurrido: true };
+}
+
+// Función que devuelve true o false con probabilidad 0.5
+function tirarMoneda() {
+  return Math.random() < 0.5;
+}
+
+// Función que devuelve la nueva casilla de disparo si se ha aplicado el efecto del clima o la misma casiila si no
+function efectoClima(clima, i, j) {
+  if (clima == 'Niebla') {
+    return tirarMoneda() ? {i: undefined, j: undefined, eventoOcurrido: true} : {i: i, j: j, eventoOcurrido: false};
+  } else if (clima == 'VientoNorte' || clima == 'VientoSur' || clima == 'VientoEste' || clima == 'VientoOeste') {
+    return desplazarCasilla(i, j, clima);
+  } else {
+    return {i: i, j: j, eventoOcurrido: false};
+  }
+}
+
 /**
  * @typedef {Object} TurnoIA
  * @property {Coordenada} disparoRealizado - El disparo realizado por la IA
@@ -932,7 +1078,7 @@ function añadirEstadisticasEnRespuesta(respuestaDisparo, partidaActual, estadis
  * @param {Object} res - El objeto de respuesta HTTP
  * @param {Coordenada} res.disparoRealizado - El disparo realizado con sus coordenadas y estado
  * @param {Barco} [res.barcoCoordenadas] - Las coordenadas del barco disparado, si se ha hundido
- * @param {String} res.eventoOcurrido - El evento ocurrido en la partida
+ * @param {String} res.eventoOcurrido - true si ha ocurrido el evento del clima
  * @param {Boolean} res.finPartida - Indica si la partida ha terminado
  * @param {String} res.clima - El clima de la partida
  * @param {Coordenada} [res.minaDisparada] - La mina disparada, si se ha hundido
@@ -981,22 +1127,38 @@ exports.realizarDisparo = async (req, res) => {
       ]
 
       const partidaContraIA = !partidaActual.nombreId2;
-      // Realizar disparo
-      const {disparo, barcoDisparado, minaDisparada, disparosRespuestaMina, barcosHundidosRespuestaMina} = 
-        gestionarDisparo(jugador, partidaActual, estadisticasJugadores, i, j);
+      // Aplicar efecto de clima y actualizar el clima
+      const {i: iClima, j: jClima, eventoOcurrido} = efectoClima(partidaActual.clima, i, j);
+      const nuevoClima = seleccionarClima(partidaActual.bioma, partidaActual.clima);
+      partidaActual.clima = nuevoClima;
 
-      // Comprobar si la partida ha terminado
-      let finPartida = false;
-      if (disparo.estado === 'Hundido') { // He podido ganar si he hundido el último barco
-        finPartida = await comprobarFinDePartida(jugador, jugador1, jugador2, partidaActual, estadisticasJugadores, partidaContraIA);
-      } else if (minaDisparada) { // He podido perder
-        let jugadorEnemigo =  jugador === 1 ? 2 : 1;
-        finPartida = await comprobarFinDePartida(jugadorEnemigo, jugador1, jugador2, partidaActual, estadisticasJugadores, partidaContraIA);
+      var disparo = undefined, barcoDisparado, minaDisparada, disparosRespuestaMina, barcosHundidosRespuestaMina;
+      var finPartida = false;
+      if (iClima !== undefined && jClima !== undefined) {
+        // Realizar disparo
+        console.log('Hay clima raro, : ', nuevoClima);
+        let gestionDisparo = gestionarDisparo(jugador, partidaActual, estadisticasJugadores, iClima, jClima);
+        console.log('Resultado gestion disparo: ', gestionDisparo);
+        disparo = gestionDisparo.disparo;
+        barcoDisparado = gestionDisparo.barcoDisparado;
+        minaDisparada = gestionDisparo.minaDisparada;
+        disparosRespuestaMina = gestionDisparo.disparosRespuestaMina;
+        barcosHundidosRespuestaMina = gestionDisparo.barcosHundidosRespuestaMina;
+        
+        // Comprobar si la partida ha terminado
+        if (disparo.estado === 'Hundido') { // He podido ganar si he hundido el último barco
+          finPartida = await comprobarFinDePartida(jugador, jugador1, jugador2, partidaActual, estadisticasJugadores, partidaContraIA);
+        } else if (minaDisparada) { // He podido perder
+          let jugadorEnemigo =  jugador === 1 ? 2 : 1;
+          finPartida = await comprobarFinDePartida(jugadorEnemigo, jugador1, jugador2, partidaActual, estadisticasJugadores, partidaContraIA);
+        }
+      } else {  // Se ha fallado el disparo por niebla
+        partidaActual.contadorTurno++;
       }
 
       let turnosIA = [];
       let finPartidaIA = false;
-      if (partidaContraIA && disparo.estado === 'Agua' && !finPartida) {
+      if (partidaContraIA && (disparo === undefined || disparo.estado === 'Agua' && !finPartida)) {
         finPartidaIA = await juegaIA(jugador1, jugador2, partidaActual, estadisticasJugadores, turnosIA);
       }
       console.log('Disparo realizado con éxito');
@@ -1010,8 +1172,8 @@ exports.realizarDisparo = async (req, res) => {
       if (partidaModificada) {
         let respuestaDisparo = {
           disparoRealizado: disparo,
-          barcoCoordenadas: (disparo.estado === 'Hundido') ? barcoDisparado : undefined,
-          eventoOcurrido: undefined, // Evento ocurrido en la partida
+          barcoCoordenadas: (disparo && disparo.estado === 'Hundido') ? barcoDisparado : undefined,
+          eventoOcurrido: eventoOcurrido, // Evento ocurrido en la partida
           finPartida: finPartida,
           clima: partidaActual.clima,
           minaDisparada: minaDisparada,
@@ -1035,7 +1197,7 @@ exports.realizarDisparo = async (req, res) => {
         }
         res.json(respuestaDisparo);
         console.log("Partida modificada con éxito");
-        return (disparo.estado === 'Hundido' || disparo.estado === 'Tocado');
+        return (respuestaDisparo);
       } else {
         res.status(404).send('No se ha encontrado la partida a actualizar');
         console.error("No se ha encontrado la partida a actualizar");
@@ -1181,7 +1343,7 @@ exports.realizarDisparoMisilRafaga = async (req, res) => {
         }
         res.json(respuestaDisparo);
         console.log("Partida modificada con éxito");
-        return (!ultimoMisilRafaga || disparo.estado === 'Hundido' || disparo.estado === 'Tocado');
+        return (respuestaDisparo);
       } else {
         res.status(404).send('No se ha encontrado la partida a actualizar');
         console.error("No se ha encontrado la partida a actualizar");
@@ -1205,7 +1367,7 @@ exports.realizarDisparoMisilRafaga = async (req, res) => {
  * @param {Object} res - El objeto de respuesta HTTP
  * @param {Coordenada} res.disparosRealizados - Los 9 disparos realizados con sus coordenadas y estado
  * @param {Boolean} [res.algunoTocado] - Indica si algun disparo del torpedo ha tocado (o hundido) un barco
- * @param {Barco[]} [res.barcosCoordenadas] - Las coordenadas de los barcos hundidos, si los hay
+ * @param {Barco[]} [res.barcoCoordenadas] - Las coordenadas de los barcos hundidos, si los hay
  * @param {String} res.eventoOcurrido - El evento ocurrido en la partida
  * @param {Boolean} res.finPartida - Indica si la partida ha terminado
  * @param {String} res.clima - El clima de la partida
@@ -1324,7 +1486,7 @@ exports.realizarDisparoTorpedoRecargado = async (req, res) => {
         let respuestaDisparo = {
           disparosRealizados: disparosTorpedo,
           algunoTocado: numBarcosTocados > 0,
-          barcosCoordenadas: (barcosHundidos && barcosHundidos.length > 0) ? barcosHundidos : undefined,
+          barcoCoordenadas: (barcosHundidos && barcosHundidos.length > 0) ? barcosHundidos : undefined,
           eventoOcurrido: undefined, // Evento ocurrido en la partida
           finPartida: finPartida,
           clima: partidaActual.clima,
@@ -1349,7 +1511,7 @@ exports.realizarDisparoTorpedoRecargado = async (req, res) => {
         }
         res.json(respuestaDisparo);
         console.log("Partida modificada con éxito");
-        return (numBarcosTocados > 0);
+        return (respuestaDisparo);
       } else {
         res.status(404).send('No se ha encontrado la partida a actualizar');
         console.error("No se ha encontrado la partida a actualizar");
@@ -1473,7 +1635,7 @@ exports.realizarDisparoMisilTeledirigido = async (req, res) => {
         }
         res.json(respuestaDisparo);
         console.log("Partida modificada con éxito");
-        return (disparo.estado === 'Hundido' || disparo.estado === 'Tocado');
+        return (respuestaDisparo);
       } else {
         res.status(404).send('No se ha encontrado la partida a actualizar');
         console.error("No se ha encontrado la partida a actualizar");
@@ -1611,6 +1773,7 @@ exports.colocarMina = async (req, res) => {
         }
         res.json(respuestaDisparo);
         console.log("Partida modificada con éxito");
+        return (respuestaDisparo);
       } else {
         res.status(404).send('No se ha encontrado la partida a actualizar');
         console.error("No se ha encontrado la partida a actualizar");
@@ -1756,6 +1919,7 @@ exports.usarSonar = async (req, res) => {
         }
         res.json(respuestaDisparo);
         console.log("Partida modificada con éxito");
+        return(respuestaDisparo);
       } else {
         res.status(404).send('No se ha encontrado la partida a actualizar');
         console.error("No se ha encontrado la partida a actualizar");
@@ -1890,108 +2054,3 @@ exports.enviarMensaje = async (req, res) => {
     res.status(500).send('Hubo un error');
   }
 };
-
-
-
-
-// Funcion para seleccionar el clima en funcion del bioma de la partida 
-function seleccionarClima(bioma, clima) {
-  // Número aleatorio para determinar si hay un cambio de clima
-  let cambioClima = Math.random();
-
-  // Número aleatorio para determinar el nuevo clima
-  let nuevoClima = Math.random();
-
-  // Número aleatorio para decidir un viento
-  let v = Math.random();
-  if(v > 0.25) { viento = 'VientoSur'; }
-  else if(v > 0.5) { viento = 'VientoNorte'; }
-  else if(v > 0.75) { viento = 'VientoEste'; }
-  else { viento = 'VientoOeste'; }
-
-  // Climas del bioma Mediterraneo: calma, viento, niebla
-  // Cambia de climas con frecuencia 10 %
-  // Calma -> Viento 60%, Niebla 40%
-  // Viento -> Calma 70%, Niebla 30%
-  // Niebla -> Calma 70%, Viento 30%
-  if(bioma === 'Mediterraneo') {
-    if(clima == 'Calma') {
-      if(cambioClima > 0.1) {
-        if(nuevoClima > 0.6) { return viento; }
-        else { return 'Niebla'; }
-      }
-    }
-    else if(clima == 'VientoSur' || clima == 'VientoNorte' || clima == 'VientoEste' || clima == 'VientoOeste') {
-      if(cambioClima > 0.7) {
-        if(nuevoClima > 0.7) { return 'Calma'; }  
-        else { return 'Niebla'; }
-      }
-    }
-    else if(clima == 'Niebla') {
-      if(cambioClima > 0.7) {
-        if(nuevoClima > 0.7) { return 'Calma'; }
-        else { return viento; }
-      }
-    }
-
-  }
-  // Climas del bioma Cantabrico: Calma, Viento, Niebla, Tormenta
-  // Cambia de climas con frecuencia 30 %
-  // Calma -> Viento 50%, Niebla 50%
-  // Viento -> Calma 50%, Tormenta 50%
-  // Niebla -> Calma 100%
-  // Tormenta -> Viento 50%, Calma 50%
-  else if(bioma === 'Cantabrico') {
-    if(cambioClima > 0.3) {
-      if(clima == 'Calma') {
-        if(nuevoClima > 0.5) { return viento; }
-        else { return 'Niebla'; }
-      }
-      else if(clima == 'VientoSur' || clima == 'VientoNorte' || clima == 'VientoEste' || clima == 'VientoOeste') {
-        if(nuevoClima > 0.5) { return 'Calma'; }
-        else { return 'Tormenta'; }
-      }
-      else if(clima == 'Niebla') { return 'Calma'; }
-      else if(clima == 'Tormenta') {
-        if(nuevoClima > 0.5) { return viento; }
-        else { return 'Calma'; }
-      }
-    }
-  }
-  // Climas del bioma Norte: Calma, Viento, Niebla, Tormenta
-  // Cambia de climas con frecuencia 50 %
-  // Calma -> Viento 60%, Niebla 40%
-  // Viento -> Calma 40%, Tormenta 60%
-  // Niebla -> Calma 80%, Viento 20%
-  // Tormenta -> Viento 50%, Calma 30%, Niebla 20%
-  else if(bioma === 'Norte') {
-    if(cambioClima > 0.5) {
-      if(clima == 'Calma') {
-        if(nuevoClima > 0.6) { return viento; }
-        else { return 'Niebla'; }
-      }
-      else if(clima == 'VientoSur' || clima == 'VientoNorte' || clima == 'VientoEste' || clima == 'VientoOeste') {
-        if(nuevoClima > 0.4) { return 'Calma'; }
-        else { return 'Tormenta'; }
-      }
-      else if(clima == 'Niebla') {
-        if(nuevoClima > 0.8) { return 'Calma'; }
-        else { return viento; }
-      }
-      else if(clima == 'Tormenta') {
-        if(nuevoClima > 0.5) { return viento; }
-        else if(nuevoClima > 0.8) { return 'Calma'; }
-        else { return 'Niebla'; }
-      }
-    }
-
-  }
-  else if(bioma === 'Bermudas') {
-    return 'Tormenta'
-  }
-  else {
-    // El bioma no está definido
-    console.error('El bioma no está definido');
-    return undefined;
-  }
-}  
