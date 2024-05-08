@@ -1,0 +1,45 @@
+import React, { useState } from 'react';
+import countriesData from '../../Resources/countries.json';
+import Flag from 'react-world-flags';
+import Cookies from 'universal-cookie';
+
+const TablonMenu = () => {
+    const [selectedCountry, setSelectedCountry] = useState('');
+
+    const handleChange = (event) => {
+        setSelectedCountry(event.target.value);
+    };
+
+    const cookies = new Cookies();
+    const profileCookie = cookies.get('perfil');
+
+    return (
+        <>
+            <div className="profile-activity-container">
+                <div className="profile-activity-header">
+                    <span>ACTIVIDAD RECIENTE</span>
+                </div>
+                <div className="profile-activity-content">
+                    <div className="profile-activity-info">
+                        <span>Has vencido a Snatilla ganando 120 puntos.</span>
+                        <span>21:00  16 May 2024</span>
+                    </div>
+                    <div className="profile-activity-info">
+                        <span>Has vencido a Carlitos ganando 120 puntos.</span>
+                        <span>21:00  16 May 2024</span>
+                    </div>
+                    <div className="profile-activity-info">
+                        <span>Has vencido a Dlad ganando 120 puntos.</span>
+                        <span>21:00  16 May 2024</span>
+                    </div>
+                    <div className="profile-activity-info">
+                        <span>Has vencido a MT ganando 120 puntos.</span>
+                        <span>21:00  16 May 2024</span>
+                    </div>
+                </div>
+            </div>
+        </>
+    )
+}
+
+export default TablonMenu;

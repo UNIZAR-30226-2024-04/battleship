@@ -27,6 +27,7 @@
     flex-direction: row;
     background-color: #1D3461;
     width: 50em;
+    margin-bottom: 2em;
 }
 
 .profile-banner-img {
@@ -47,8 +48,12 @@
     font-weight: bold;
 }
 
+
+/***********************************
+            Activity
+***********************************/
+
 .profile-activity-container {
-    margin-top: 2em;
     background-color: #1D3461;
     width: 50em;
     height: 35em;
@@ -72,8 +77,13 @@
 /***********************************
             Sidebar
 ***********************************/
-.profile-sidebar-stats-container {
+
+.profile-sidebar-container {
     margin-left: 1.5em;
+}
+
+.profile-sidebar-stats-container {
+    margin-bottom: 2em;
     background-color: #1D3461;
     width: 15em;
 }
@@ -98,7 +108,6 @@
 
 .profile-sidebar-friends-container {
     background-color: #1D3461;
-    margin: 2em 0 0 1.5em;
     width: 15em;
 
     &> :last-child {

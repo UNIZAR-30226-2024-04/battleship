@@ -51,7 +51,7 @@ export function Login() {
             cookies.set('JWT', responseData['token'], {path: '/'});
             cookies.set('perfil', responseData['perfilDevuelto'], {path: '/'});
 
-            navigate("/");
+            navigate("/home");
         } catch (error) {
             console.error('Error en el login:', error);
         }
