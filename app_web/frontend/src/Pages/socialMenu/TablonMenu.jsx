@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
-import countriesData from '../../Resources/countries.json';
-import Flag from 'react-world-flags';
-import Cookies from 'universal-cookie';
+
 
 const TablonMenu = () => {
     const [selectedCountry, setSelectedCountry] = useState('');
@@ -9,9 +7,6 @@ const TablonMenu = () => {
     const handleChange = (event) => {
         setSelectedCountry(event.target.value);
     };
-
-    const cookies = new Cookies();
-    const profileCookie = cookies.get('perfil');
 
     return (
         <>

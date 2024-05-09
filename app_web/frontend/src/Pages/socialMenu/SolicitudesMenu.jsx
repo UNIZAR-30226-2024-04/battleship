@@ -1,84 +1,163 @@
-import React, { useState } from 'react';
-import countriesData from '../../Resources/countries.json';
-import Flag from 'react-world-flags';
+import React, { useState, useEffect } from 'react';
 import Cookies from 'universal-cookie';
 
-const TablonMenu = () => {
-    const [selectedCountry, setSelectedCountry] = useState('');
+const urlRoot = 'http://localhost:8080/perfil/';
+const urlObtenerSolicitudes = urlRoot + 'obtenerSolicitudesAmistad';
+const urlEnviarSolicitud = urlRoot + 'enviarSolicitudAmistad';
+const urlEliminarSolicitud = urlRoot + 'eliminarSolicitudAmistad';
+const urlAgnadirAmigo = urlRoot + 'agnadirAmigo';
 
-    const handleChange = (event) => {
-        setSelectedCountry(event.target.value);
-    };
+
+const SolicitudesMenu = () => {
+    const [nombreAmigo, setNombreAmigo] = useState('');
 
     const cookies = new Cookies();
-    const profileCookie = cookies.get('perfil');
+    const tokenCookie = cookies.get('JWT');
+    const perfilCookie = cookies.get('perfil');
+
+    // Función que muestra en el submenú de "Amigos" los amigos del usuario loggeado
+    const mostrarAmigos = () => {
+        const feed = document.querySelector('.profile-activity-content');
+    }
+
+    // Función que obtiene los amigos del usuario loggeado y los muestra en el menú
+    const getSolicitudes = () => {
+        fetch(urlObtenerSolicitudes, {
+            method: 'POST',
+            headers: {
+            'Content-Type': 'application/json',
+            'authorization': tokenCookie
+            },
+            body: JSON.stringify({ nombreId: perfilCookie['nombreId'] })
+        })
+        .then(response => {
+            if (!response.ok) {
+                console.log('Respuesta del servidor obtenerSolicitudes:', response);
+                throw new Error('Obtener solicitudes ha fallado');
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Respuesta del servidor obtenerSolicitudes:', data);
+            mostrarAmigos(data);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    }
+
+    // Función que se ejecuta tras aceptar las solicitudes de amistad
+    const agnadirAmigo = () => {
+        fetch(urlAgnadirAmigo, {
+            method: 'POST',
+            headers: {
+            'Content-Type': 'application/json',
+            'authorization': tokenCookie
+            },
+            body: JSON.stringify({ nombreId: perfilCookie['nombreId'], nombreIdAmigo: "pendiente"})
+        })
+        .then(response => {
+            if (!response.ok) {
+                console.log('Respuesta del servidor agnadirAmigo:', response);
+                throw new Error('Agnadir amigo ha fallado');
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Respuesta del servidor agnadirAmigo:', data);
+            mostrarAmigos(data);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    }
+
+    // Función que se ejecuta tras aceptar las solicitudes de amistad
+    const eliminarSolicitudAmistad = () => {
+        fetch(urlEliminarSolicitud, {
+            method: 'POST',
+            headers: {
+            'Content-Type': 'application/json',
+            'authorization': tokenCookie
+            },
+            body: JSON.stringify({ nombreId: perfilCookie['nombreId'], nombreIdAmigo: "pendiente"})
+        })
+        .then(response => {
+            if (!response.ok) {
+                console.log('Respuesta del servidor eliminarSolicitudAmistad:', response);
+                throw new Error('Eliminar solicitud de amistad ha fallado');
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Respuesta del servidor eliminarSolicitudAmistad:', data);
+            mostrarAmigos(data);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    }
+    
+    // Función que actualiza el nombre del amigo al que vamos a enviar solicitud de amistad
+    const handleInputChange = (event) => {
+        setNombreAmigo(event.target.value);
+    };
+
+    // Función que envía una solicitud de amistad a "nombreAmigo"
+    const handleEnviarSolicitud = () => {
+        fetch(urlEnviarSolicitud, {
+            method: 'POST',
+            headers: {
+            'Content-Type': 'application/json',
+            'authorization': tokenCookie
+            },
+            body: JSON.stringify({ nombreId: perfilCookie['nombreId'], nombreIdAmigo: nombreAmigo})
+        })
+        .then(response => {
+            if (!response.ok) {
+                console.log('Respuesta del servidor obtenerSolicitudes:', response);
+                throw new Error('Obtener solicitudes ha fallado');
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Respuesta del servidor obtenerSolicitudes:', data);
+            mostrarAmigos(data);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    }
+
+    // Se ejecuta después de que el componente SolicitudesMenu() se renderice
+    useEffect(() => {
+        getSolicitudes();
+    }, []);
 
     return (
         <>
+            <span>Nombre amigo:</span>
+            <input
+                className='campoNombreAmigo'
+                type="text"
+                value={nombreAmigo}
+                onChange={handleInputChange}
+            />
+            <button onClick={() => handleEnviarSolicitud()}>Enviar solicitud</button>
+            <div className='relleno'></div>
+            <span>Solicitudes recibidas:</span>
+            <div className='relleno'></div>
+            <span>Mis Amigos:</span>
             <div className="settings-profile-header">
                 <div className="settings-profile-img">
-                    <Flag code={ selectedCountry } height="auto" fallback={ <span>Nada</span> }/>
+                    <span>img</span>
                 </div>
                 <div className="settings-profile-name">
-                    <span>{profileCookie['nombreId']}</span>
+                    <span>amigo</span>
                 </div>
             </div>
-            <form className="settings-profile-body settings-menu-body" name="userdata" method="post" action="/backend/">
-                <div className="settings-profile-user-header">
-                    <span>Cambiar nombre</span>
-                </div>
-                <div className="settings-profile-user-input">
-                    <input
-                        name="username"
-                        autoComplete="off"
-                        placeholder="Introduzca su nombre de usuario..."
-                        type="text"
-                        size="30"
-                    >        
-                    </input>
-                </div>
-                <div className="settings-profile-email-header">
-                    <span>Cambiar email</span>
-                </div>
-                <div className="settings-profile-email-input">
-                    <input
-                        name="email"
-                        autoComplete="on"
-                        placeholder="Introduzca su correo electrónico..."
-                        type="email"
-                        size="30"
-                    ></input>
-                </div>
-                <div className="settings-profile-country-header">
-                    <span>País</span>
-                </div>
-                <div className="settings-profile-country-input">
-                    <select name="country" onChange={handleChange}>
-                        <option value=''>Seleccionar</option>
-                        {countriesData.map(country => (
-                        <option key={country.iso2} value={country.iso2}>
-                            {country.nameES}
-                        </option>
-                        ))}
-                    </select>
-                </div>
-                <div className="settings-profile-about-header">
-                    <span>Acerca de mí</span>
-                </div>
-                <div className="settings-profile-about-input">
-                    <textarea
-                        name="about"
-                        placeholder="Introduzca su descripción..."
-                        cols="28"
-                        rows="4"
-                    ></textarea>
-                </div>
-                <div className="settings-profile-apply">
-                    <input type="submit" value="Aplicar cambios"></input>
-                </div>
-            </form>
         </>
     )
 }
 
-export default TablonMenu;
+export default SolicitudesMenu;
