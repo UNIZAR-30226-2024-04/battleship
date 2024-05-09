@@ -1,5 +1,3 @@
-import 'dart:math';
-import 'dart:ui';
 import 'juego.dart';
 
 abstract class Habilidad {

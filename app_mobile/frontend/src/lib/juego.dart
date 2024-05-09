@@ -28,10 +28,14 @@ class Juego {
   List<Offset> disparosAcertadosRival = [];
   List<Offset> disparosFalladosPorMi = [];
   List<Offset> disparosFalladosRival = [];
+  List<Offset> misDisparosDesviadosDerecha = [];
+  List<Offset> misDisparosDesviadosIzquierda = [];
+  List<Offset> misDisparosDesviadosArriba = [];
+  List<Offset> misDisparosDesviadosAbajo = [];
   List<Barco> barcosHundidosPorMi = [];
   List<Barco> barcosHundidosPorRival = [];
   String modalidadPartida = '';
-  int turno = 1; // 0: defecto, 1: anfitrión, 2: invitado
+  bool hayNiebla = false;
   ServerRoute serverRoute = ServerRoute();
   final socket = IO.io('http://localhost:8080', <String, dynamic>{
     'transports': ['websocket'],
@@ -120,7 +124,7 @@ class Juego {
   Future<void> actualizarMazo() async {
     habilidades = Mazo().getSelectedAbilities();
     var mazoHabilidades = [];
-    habilidades.forEach((habilidad) {
+    for (var habilidad in habilidades) {
       switch (habilidad.nombre) {
         case 'rafaga':
           mazoHabilidades.add('Rafaga');
@@ -138,7 +142,7 @@ class Juego {
           mazoHabilidades.add('Teledirigido');
           break;
       }
-    });
+    }
 
     var response = await http.post(
       Uri.parse(serverRoute.urlModificarMazo),

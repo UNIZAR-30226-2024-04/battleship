@@ -12,7 +12,6 @@ import 'defender.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'serverRoute.dart';
-import 'package:socket_io_client/socket_io_client.dart' as IO;
 
 class Atacar extends StatefulWidget {
   const Atacar({super.key});
@@ -38,74 +37,122 @@ class _AtacarState extends State<Atacar> {
 
   @override
   Widget build(BuildContext context) {
+    if (DestinoManager.getDestino() is Defender) {
+      return Container(
+        decoration: const BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage('images/fondo.jpg'),
+            fit: BoxFit.cover,
+          ),
+        ),
+        child: Scaffold(
+          backgroundColor: Colors.transparent,
+          body: Column(
+            children: [
+              buildHeader(context, ponerPerfil: false),
+              const SizedBox(height: 20),
+              _construirBarcosRestantes(),
+              FutureBuilder<Widget>(
+                future: _construirTableroConBarcosAtacable(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const CircularProgressIndicator();
+                  }
+                  else if (snapshot.hasError) {
+                    return Text('Error: ${snapshot.error}');
+                  }
+                  else {
+                    return AnimatedOpacity(
+                      opacity: snapshot.data == null ? 0.0 : 1.0,
+                      duration: const Duration(milliseconds: 500),
+                      child: snapshot.data,
+                    );
+                  }
+                },
+              ),
+              _construirHabilidades(),  // Habilidades del jugador.
+              const Spacer(),
+              // Botón para abandonar la partida.
+              buildActionButton(context, () {
+                Juego().abandonarPartida(context);
+                Juego().reiniciarPartida();
+                Navigator.pushNamed(context, '/Principal');
+              }, "Abandonar partida"),
+              const Spacer(),
+            ],
+          ),
+        ),
+      );
+    }
+    else {
     return FutureBuilder(
-      future: Future.delayed(const Duration(seconds: 1)), // Espera un segundo para cargar el tablero.
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return Container(
-            decoration: const BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage('images/fondo.jpg'),
-                fit: BoxFit.cover,
-              ),
-            ),
-            child: const Scaffold(
-              backgroundColor: Colors.transparent,
-              body: Center(
-                child: Text('¡Tu turno!', style: TextStyle(color: Colors.white, fontSize: 28)),
-              ),
-            ),
-          );
-        } 
-        else {
-          return Container(
-            decoration: const BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage('images/fondo.jpg'),
-                fit: BoxFit.cover,
-              ),
-            ),
-            child: Scaffold(
-              backgroundColor: Colors.transparent,
-              body: Column(
-                children: [
-                  buildHeader(context, ponerPerfil: false),
-                  const SizedBox(height: 20),
-                  _construirBarcosRestantes(),
-                  FutureBuilder<Widget>(
-                    future: _construirTableroConBarcosAtacable(),
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const CircularProgressIndicator();
-                      }
-                      else if (snapshot.hasError) {
-                        return Text('Error: ${snapshot.error}');
-                      }
-                      else {
-                        return AnimatedOpacity(
-                          opacity: snapshot.data == null ? 0.0 : 1.0,
-                          duration: const Duration(milliseconds: 500),
-                          child: snapshot.data,
-                        );
-                      }
-                    },
-                  ),
-                  _construirHabilidades(),  // Habilidades del jugador.
-                  const Spacer(),
-                  // Botón para abandonar la partida.
-                  buildActionButton(context, () {
-                    Juego().abandonarPartida(context);
-                    Juego().reiniciarPartida();
-                    Navigator.pushNamed(context, '/Principal');
-                  }, "Abandonar partida"),
-                  const Spacer(),
-                ],
-              ),
-            ),
-          );
-        }
-      },
-    );
+              future: Future.delayed(Duration(seconds: 1)),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Container(
+                    decoration: const BoxDecoration(
+                      image: DecorationImage(
+                        image: AssetImage('images/fondo.jpg'),
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                    child: Scaffold(
+                      backgroundColor: Colors.transparent,
+                      body: Center(
+                        child: Text('¡Tu turno!', style: TextStyle(color: Colors.white, fontSize: 28)),
+                      ),
+                    ),
+                  );
+                } else {
+                  return Container(
+                    decoration: const BoxDecoration(
+                      image: DecorationImage(
+                        image: AssetImage('images/fondo.jpg'),
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                    child: Scaffold(
+                      backgroundColor: Colors.transparent,
+                      body: Column(
+                        children: [
+                          buildHeader(context, ponerPerfil: false),
+                          const SizedBox(height: 20),
+                          _construirBarcosRestantes(),
+                          FutureBuilder<Widget>(
+                            future: _construirTableroConBarcosAtacable(),
+                            builder: (context, snapshot) {
+                              if (snapshot.connectionState == ConnectionState.waiting) {
+                                return const CircularProgressIndicator();
+                              }
+                              else if (snapshot.hasError) {
+                                return Text('Error: ${snapshot.error}');
+                              }
+                              else {
+                                return AnimatedOpacity(
+                                  opacity: snapshot.data == null ? 0.0 : 1.0,
+                                  duration: const Duration(milliseconds: 500),
+                                  child: snapshot.data,
+                                );
+                              }
+                            },
+                          ),
+                          _construirHabilidades(),  // Habilidades del jugador.
+                          const Spacer(),
+                          // Botón para abandonar la partida.
+                          buildActionButton(context, () {
+                            Juego().abandonarPartida(context);
+                            Juego().reiniciarPartida();
+                            Navigator.pushNamed(context, '/Principal');
+                          }, "Abandonar partida"),
+                          const Spacer(),
+                        ],
+                      ),
+                    ),
+                  );
+                }
+              },
+            );
+    }
   }
 
   /*
@@ -300,6 +347,27 @@ class _AtacarState extends State<Atacar> {
         // Si acierto el disparo, coloco una explosión en la casilla.
         imagePath = 'images/explosion.png';
       }
+      else if (Juego().misDisparosDesviadosArriba.contains(Offset(rowIndex.toDouble(), j.toDouble()))) {
+        // Si el disparo ha sido desviado hacia arriba, coloco una flecha hacia arriba.
+        imagePath = 'images/arriba.png';
+      }
+      else if (Juego().misDisparosDesviadosAbajo.contains(Offset(rowIndex.toDouble(), j.toDouble()))) {
+        // Si el disparo ha sido desviado hacia abajo, coloco una flecha hacia abajo.
+        imagePath = 'images/abajo.png';
+      }
+      else if (Juego().misDisparosDesviadosIzquierda.contains(Offset(rowIndex.toDouble(), j.toDouble()))) {
+        // Si el disparo ha sido desviado hacia la izquierda, coloco una flecha hacia la izquierda.
+        imagePath = 'images/izquierda.png';
+      }
+      else if (Juego().misDisparosDesviadosDerecha.contains(Offset(rowIndex.toDouble(), j.toDouble()))) {
+        // Si el disparo ha sido desviado hacia la derecha, coloco una flecha hacia la derecha.
+        imagePath = 'images/derecha.png';
+      }
+      else if (Juego().hayNiebla) {
+        // Si hay niebla, coloco una interrogación en la casilla.
+        imagePath = 'images/question.png';
+        Juego().hayNiebla = false;
+      }
 
       casillas.add(
         GestureDetector(
@@ -440,7 +508,6 @@ class _AtacarState extends State<Atacar> {
     // Si la partida es de tipo "COMPETITIVA"
     else if(Juego().modalidadPartida == "COMPETITIVA") {
       var result = await realizarDisparoMulti(i, j);
-      //print("ACERTADO:" + result[0].toString() + " FIN:" + result[1].toString());
       Juego().disparosPendientes--;
       acertado = result[0];
       fin = result[1];
@@ -454,12 +521,10 @@ class _AtacarState extends State<Atacar> {
     }
     // Si la partida es de tipo "TORNEO"
     else if (Juego().modalidadPartida == "TORNEO") {
-      var respuestaFuture = realizarDisparoMulti(i, j);
+      var result = await realizarDisparoMulti(i, j);
       Juego().disparosPendientes--;
-      respuestaFuture.then((result) {
-        acertado = result[0];
-        fin = result[1];
-      });
+      acertado = result[0];
+      fin = result[1];
     }
     // Si la partida es de un tipo que no existe
     else {
@@ -474,20 +539,25 @@ class _AtacarState extends State<Atacar> {
       if(fin) { //Si finaliza la partida
         final snackBar = SnackBar(
           content: Text(
-            '¡Ganador: ${Juego().getGanador()}!',   //Muestra el ganador de dicha partida
+            '¡Ganador: ${Juego().getGanador()}!',
             style: const TextStyle(color: Colors.white),
           ),
           behavior: SnackBarBehavior.floating,
         );
         ScaffoldMessenger.of(context).showSnackBar(snackBar);
         Juego().reiniciarPartida();
-        Navigator.pushNamed(context, '/Principal'); //Vuelve a la pantalla principal
+        Navigator.pushNamed(context, '/Principal'); 
       }
     }
 
     // Si aún no ha acabado la partida.
-    else if (Juego().disparosPendientes == 0) {
-      Juego().disparosPendientes = 1;
+    if (Juego().disparosPendientes == 0) {
+      setState(() {
+        Juego().disparosPendientes = 1;
+        Juego().misDisparosDesviadosArriba.clear();
+      });
+
+      // Cambiar destino
       DestinoManager.setDestino(const Defender());
       Navigator.pushNamed(context, '/Defender');
     }
@@ -526,10 +596,25 @@ class _AtacarState extends State<Atacar> {
       bool acertado = estado == 'Tocado' || estado == 'Hundido';
       bool fin = data['finPartida'];
       bool hundido = estado == 'Hundido';
-      String nombreBarcoHundido = "";
 
       // Offset con las coordenadas del disparo.
       Offset disparoCoordenadas = Offset(i as double, j as double);
+
+      // Comprobar si el disparo ha sido desviado.
+      if (disparoCoordenadas != Offset(i.toDouble(), j.toDouble())) {
+        if (disparoCoordenadas.dx > i.toDouble()) {
+          Juego().misDisparosDesviadosAbajo.add(Offset(i.toDouble(), j.toDouble()));
+        }
+        else if (disparoCoordenadas.dx < i.toDouble()) {
+          Juego().misDisparosDesviadosArriba.add(Offset(i.toDouble(), j.toDouble()));
+        }
+        else if (disparoCoordenadas.dy > j.toDouble()) {
+          Juego().misDisparosDesviadosDerecha.add(Offset(i.toDouble(), j.toDouble()));
+        }
+        else if (disparoCoordenadas.dy < j.toDouble()) {
+          Juego().misDisparosDesviadosIzquierda.add(Offset(i.toDouble(), j.toDouble()));
+        }
+      }
 
       if (acertado) {
         // Actualizar disparos acertados.
@@ -548,7 +633,6 @@ class _AtacarState extends State<Atacar> {
         // Actualizar barcos hundidos.
         setState(() {
           Juego().barcosRestantesRival--;
-          nombreBarcoHundido = data['barcoCoordenadas']['tipo'];
           Barco barcoHundido = buscarBarcoHundidoDisparo(data);
           Juego().barcosHundidosPorMi.add(barcoHundido);
         });
@@ -559,6 +643,10 @@ class _AtacarState extends State<Atacar> {
 
       for (var elemento in turnosIA) {
         var disparo = elemento['disparoRealizado'];
+        var iReal = disparo['i'];
+        var jReal = disparo['j'];
+        Offset disparoCoordenadas = Offset(iReal as double, jReal as double);
+        print("CASILLA REAL DE DISPARO: " + disparoCoordenadas.toString());
         finPartida = elemento['finPartida'];
         estado = disparo['estado'];
         acertado = estado == 'Tocado' || estado == 'Hundido';
@@ -574,16 +662,32 @@ class _AtacarState extends State<Atacar> {
           );
           ScaffoldMessenger.of(context).showSnackBar(snackBar);
           Juego().reiniciarPartida();
-          Navigator.pushNamed(context, '/Principal');   //Vuelve a la pantalla principal
+          Navigator.pushNamed(context, '/Principal');
         }
+
+      // Comprobar si el disparo ha sido desviado.
+      if (disparoCoordenadas != Offset(i.toDouble(), j.toDouble())) {
+        if (disparoCoordenadas.dx > i.toDouble()) {
+          Juego().misDisparosDesviadosAbajo.add(Offset(i.toDouble(), j.toDouble()));
+        }
+        else if (disparoCoordenadas.dx < i.toDouble()) {
+          Juego().misDisparosDesviadosArriba.add(Offset(i.toDouble(), j.toDouble()));
+        }
+        else if (disparoCoordenadas.dy > j.toDouble()) {
+          Juego().misDisparosDesviadosDerecha.add(Offset(i.toDouble(), j.toDouble()));
+        }
+        else if (disparoCoordenadas.dy < j.toDouble()) {
+          Juego().misDisparosDesviadosIzquierda.add(Offset(i.toDouble(), j.toDouble()));
+        }
+      } 
 
         if (acertado) {
           // Actualizar disparos acertados del rival.
-          Juego().disparosAcertadosRival.add(Offset(disparo['i'].toDouble(), disparo['j'].toDouble()));
+          Juego().disparosAcertadosRival.add(disparoCoordenadas);
         }
         else {
           // Actualizar disparos fallados del rival.
-          Juego().disparosFalladosRival.add(Offset(disparo['i'].toDouble(), disparo['j'].toDouble()));
+          Juego().disparosFalladosRival.add(disparoCoordenadas);
         }
 
         if (hundido) {
@@ -660,14 +764,30 @@ class _AtacarState extends State<Atacar> {
       //print(data);
       var turnosIA = data['turnosIA'].cast<Map<String, dynamic>>();
       var disparo = data['disparoRealizado'];
+      var iReal = disparo['i'];
+      var jReal = disparo['j'];
+      Offset disparoCoordenadas = Offset(iReal as double, jReal as double);
+      print("CASILLA REAL DE DISPARO: " + disparoCoordenadas.toString());
       var estado = disparo['estado'];
       bool acertado = estado == 'Tocado' || estado == 'Hundido';
       bool fin = data['finPartida'];
       bool hundido = estado == 'Hundido';
-      String nombreBarcoHundido = "";
-
-      // Offset con las coordenadas del disparo.
-      Offset disparoCoordenadas = Offset(i as double, j as double);
+  
+      // Comprobar si el disparo ha sido desviado.
+      if (disparoCoordenadas != Offset(i.toDouble(), j.toDouble())) {
+        if (disparoCoordenadas.dx > i.toDouble()) {
+          Juego().misDisparosDesviadosAbajo.add(Offset(i.toDouble(), j.toDouble()));
+        }
+        else if (disparoCoordenadas.dx < i.toDouble()) {
+          Juego().misDisparosDesviadosArriba.add(Offset(i.toDouble(), j.toDouble()));
+        }
+        else if (disparoCoordenadas.dy > j.toDouble()) {
+          Juego().misDisparosDesviadosDerecha.add(Offset(i.toDouble(), j.toDouble()));
+        }
+        else if (disparoCoordenadas.dy < j.toDouble()) {
+          Juego().misDisparosDesviadosIzquierda.add(Offset(i.toDouble(), j.toDouble()));
+        }
+      }
 
       if (acertado) {
         // Actualizar disparos acertados.
@@ -686,7 +806,6 @@ class _AtacarState extends State<Atacar> {
         // Actualizar barcos hundidos.
         setState(() {
         Juego().barcosRestantesRival--;
-        nombreBarcoHundido = data['barcoCoordenadas']['tipo'];
         Barco barcoHundido = buscarBarcoHundidoDisparo(data);
         Juego().barcosHundidosPorMi.add(barcoHundido);
         });
@@ -697,6 +816,10 @@ class _AtacarState extends State<Atacar> {
 
       for (var elemento in turnosIA) {
         var disparo = elemento['disparoRealizado'];
+        var iReal = disparo['i'];
+        var jReal = disparo['j'];
+        Offset disparoCoordenadas = Offset(iReal as double, jReal as double);
+        print("CASILLA REAL DE DISPARO: " + disparoCoordenadas.toString());
         finPartida = elemento['finPartida'];
         estado = disparo['estado'];
         acertado = estado == 'Tocado' || estado == 'Hundido';
@@ -712,16 +835,32 @@ class _AtacarState extends State<Atacar> {
           );
           ScaffoldMessenger.of(context).showSnackBar(snackBar);
           Juego().reiniciarPartida();
-          Navigator.pushNamed(context, '/Principal'); //Vuelve a la pantalla principal
+          Navigator.pushNamed(context, '/Principal');
+        }
+
+        // Comprobar si el disparo ha sido desviado.
+        if (disparoCoordenadas != Offset(i.toDouble(), j.toDouble())) {
+          if (disparoCoordenadas.dx > i.toDouble()) {
+            Juego().misDisparosDesviadosAbajo.add(Offset(i.toDouble(), j.toDouble()));
+          }
+          else if (disparoCoordenadas.dx < i.toDouble()) {
+            Juego().misDisparosDesviadosArriba.add(Offset(i.toDouble(), j.toDouble()));
+          }
+          else if (disparoCoordenadas.dy > j.toDouble()) {
+            Juego().misDisparosDesviadosDerecha.add(Offset(i.toDouble(), j.toDouble()));
+          }
+          else if (disparoCoordenadas.dy < j.toDouble()) {
+            Juego().misDisparosDesviadosIzquierda.add(Offset(i.toDouble(), j.toDouble()));
+          }
         }
 
         if (acertado) {
           // Actualizar disparos acertados del rival.
-          Juego().disparosAcertadosRival.add(Offset(disparo['i'].toDouble(), disparo['j'].toDouble()));
+          Juego().disparosAcertadosRival.add(disparoCoordenadas);
         }
         else {
           // Actualizar disparos fallados del rival.
-          Juego().disparosFalladosRival.add(Offset(disparo['i'].toDouble(), disparo['j'].toDouble()));
+          Juego().disparosFalladosRival.add(disparoCoordenadas);
         }
 
         if (hundido) {
@@ -767,14 +906,30 @@ class _AtacarState extends State<Atacar> {
       //print(data);
       var turnosIA = data['turnosIA'].cast<Map<String, dynamic>>();
       var disparo = data['disparoRealizado'];
+      var iReal = disparo['i'];
+      var jReal = disparo['j'];
+      Offset disparoCoordenadas = Offset(iReal as double, jReal as double);
+      print("CASILLA REAL DE DISPARO: " + disparoCoordenadas.toString());
       var estado = disparo['estado'];
       bool acertado = estado == 'Tocado' || estado == 'Hundido';
       bool fin = data['finPartida'];
       bool hundido = estado == 'Hundido';
-      String nombreBarcoHundido = "";
 
-      // Offset con las coordenadas del disparo.
-      Offset disparoCoordenadas = Offset(i as double, j as double);
+      // Comprobar si el disparo ha sido desviado.
+      if (disparoCoordenadas != Offset(i.toDouble(), j.toDouble())) {
+        if (disparoCoordenadas.dx > i.toDouble()) {
+          Juego().misDisparosDesviadosAbajo.add(Offset(i.toDouble(), j.toDouble()));
+        }
+        else if (disparoCoordenadas.dx < i.toDouble()) {
+          Juego().misDisparosDesviadosArriba.add(Offset(i.toDouble(), j.toDouble()));
+        }
+        else if (disparoCoordenadas.dy > j.toDouble()) {
+          Juego().misDisparosDesviadosDerecha.add(Offset(i.toDouble(), j.toDouble()));
+        }
+        else if (disparoCoordenadas.dy < j.toDouble()) {
+          Juego().misDisparosDesviadosIzquierda.add(Offset(i.toDouble(), j.toDouble()));
+        }
+      }
 
       if (acertado) {
         // Actualizar disparos acertados.
@@ -793,7 +948,6 @@ class _AtacarState extends State<Atacar> {
         // Actualizar barcos hundidos.
         setState(() {
           Juego().barcosRestantesRival--;
-          nombreBarcoHundido = data['barcoCoordenadas']['tipo'];
           Barco barcoHundido = buscarBarcoHundidoDisparo(data);
           Juego().barcosHundidosPorMi.add(barcoHundido);
         });
@@ -804,6 +958,10 @@ class _AtacarState extends State<Atacar> {
 
       for (var elemento in turnosIA) {  
         var disparo = elemento['disparoRealizado'];
+        var iReal = disparo['i'];
+        var jReal = disparo['j'];
+        Offset disparoCoordenadas = Offset(iReal as double, jReal as double);
+        print("CASILLA REAL DE DISPARO: " + disparoCoordenadas.toString());
         finPartida = elemento['finPartida'];
         estado = disparo['estado'];
         acertado = estado == 'Tocado' || estado == 'Hundido';
@@ -819,19 +977,19 @@ class _AtacarState extends State<Atacar> {
           );
           ScaffoldMessenger.of(context).showSnackBar(snackBar);
           Juego().reiniciarPartida();
-          Navigator.pushNamed(context, '/Principal'); //Vuelve a la pantalla principal
+          Navigator.pushNamed(context, '/Principal');
         }
 
         if (acertado) {
           // Actualizar disparos acertados del rival.
           setState(() {
-            Juego().disparosAcertadosRival.add(Offset(disparo['i'].toDouble(), disparo['j'].toDouble()));
+            Juego().disparosAcertadosRival.add(disparoCoordenadas);
           });
         }
         else {
           // Actualizar disparos fallados del rival.
           setState(() {
-            Juego().disparosFalladosRival.add(Offset(disparo['i'].toDouble(), disparo['j'].toDouble()));
+            Juego().disparosFalladosRival.add(disparoCoordenadas);
           });
         }
 
@@ -875,42 +1033,81 @@ class _AtacarState extends State<Atacar> {
 
     if (response.statusCode == 200) {
       var data = jsonDecode(response.body);
-      //print("RESPUESTA EN ATAQUE: ");
-      //print(data);
-      var disparo = data['disparoRealizado'];
-      var estado = disparo['estado'];
-      bool acertado = estado == 'Tocado' || estado == 'Hundido';
+      print("RESPUESTA EN ATAQUE: ");
+      print(data);
       bool fin = data['finPartida'];
-      bool hundido = estado == 'Hundido';
-      String nombreBarcoHundido = "";
+      bool acertado = false;
+      String evento = data['eventoOcurrido'];
 
-      // Offset con las coordenadas del disparo.
-      Offset disparoCoordenadas = Offset(i as double, j as double);
 
-      if (acertado) {
-        // Actualizar disparos acertados.
+      // Comprobar si en el siguiente turno hay niebla.
+      if (evento == 'Niebla') {
+        print("El ultimo disparo no ha llegado a su destino por la niebla.");
         setState(() {
-          print("DISPARO ACERTADO");
-          Juego().disparosAcertadosPorMi.add(disparoCoordenadas);
+          Juego().hayNiebla = true;
         });
+        acertado = false;
       }
       else {
-        // Actualizar disparos fallados.
-        setState(() {
-          print("DISPARO FALLADO");
-          Juego().disparosFalladosPorMi.add(disparoCoordenadas);
-        });
+        print("ENTRO EN NO HAY NIEBLA");
+        var disparo = data['disparoRealizado'];
+        var iReal = disparo['i'];
+        var jReal = disparo['j'];
+        Offset disparoCoordenadas = Offset(iReal as double, jReal as double);
+        print("CASILLA REAL DE DISPARO: " + disparoCoordenadas.toString());
+        var estado = disparo['estado'];
+        acertado = estado == 'Tocado' || estado == 'Hundido';
+        bool hundido = estado == 'Hundido';
+
+        // Comprobar si el disparo ha sido desviado.
+        if (disparoCoordenadas != Offset(i.toDouble(), j.toDouble())) {
+          if (disparoCoordenadas.dx > i.toDouble()) {
+            setState(() {
+              Juego().misDisparosDesviadosAbajo.add(Offset(i.toDouble(), j.toDouble()));
+            });
+          }
+          else if (disparoCoordenadas.dx < i.toDouble()) {
+            setState(() {
+              Juego().misDisparosDesviadosArriba.add(Offset(i.toDouble(), j.toDouble()));
+            });
+          }
+          else if (disparoCoordenadas.dy > j.toDouble()) {
+            setState(() {
+              Juego().misDisparosDesviadosDerecha.add(Offset(i.toDouble(), j.toDouble()));
+            });
+          }
+          else if (disparoCoordenadas.dy < j.toDouble()) {
+            setState(() {
+              Juego().misDisparosDesviadosIzquierda.add(Offset(i.toDouble(), j.toDouble()));
+            });
+          }
+        }
+
+        if (acertado) {
+          // Actualizar disparos acertados.
+          setState(() {
+            print("DISPARO ACERTADO");
+            Juego().disparosAcertadosPorMi.add(disparoCoordenadas);
+          });
+        }
+        else {
+          // Actualizar disparos fallados.
+          setState(() {
+            print("DISPARO FALLADO");
+            Juego().disparosFalladosPorMi.add(disparoCoordenadas);
+          });
+        }
+
+        if (hundido) {
+          // Actualizar barcos hundidos.
+          setState(() {
+            Juego().barcosRestantesRival--;
+            Barco barcoHundido = buscarBarcoHundidoDisparo(data);
+            Juego().barcosHundidosPorMi.add(barcoHundido);
+          });
+        }
       }
 
-      if (hundido) {
-        // Actualizar barcos hundidos.
-        setState(() {
-          Juego().barcosRestantesRival--;
-          nombreBarcoHundido = data['barcoCoordenadas']['tipo'];
-          Barco barcoHundido = buscarBarcoHundidoDisparo(data);
-          Juego().barcosHundidosPorMi.add(barcoHundido);
-        });
-      }
       return Future.value([acertado, fin]);
     } else {
       throw Exception('Failed to load data');

@@ -1034,9 +1034,9 @@ function desplazarCasilla(i, j, direccion) {
   } else if (direccion === 'VientoOeste') {
     if (j < tableroDim) j++;
   } else {
-    console.error('La dirección del viento no está definida');
+    console.error('La dirección del viento no está definida');    // Este caso no puede darse nunca porque se comprueba antes
   }
-  return { i: i, j: j, eventoOcurrido: true };
+  return { i: i, j: j, eventoOcurrido: direccion };
 }
 
 // Función que devuelve true o false con probabilidad 0.5
@@ -1047,11 +1047,11 @@ function tirarMoneda() {
 // Función que devuelve la nueva casilla de disparo si se ha aplicado el efecto del clima o la misma casiila si no
 function efectoClima(clima, i, j) {
   if (clima == 'Niebla') {
-    return tirarMoneda() ? {i: undefined, j: undefined, eventoOcurrido: true} : {i: i, j: j, eventoOcurrido: false};
+    return tirarMoneda() ? {i: undefined, j: undefined, eventoOcurrido: "Niebla"} : {i: i, j: j, eventoOcurrido: "Calma"};
   } else if (clima == 'VientoNorte' || clima == 'VientoSur' || clima == 'VientoEste' || clima == 'VientoOeste') {
     return desplazarCasilla(i, j, clima);
   } else {
-    return {i: i, j: j, eventoOcurrido: false};
+    return {i: i, j: j, eventoOcurrido: "Calma"};
   }
 }
 
@@ -1171,6 +1171,7 @@ exports.realizarDisparo = async (req, res) => {
 
       if (partidaModificada) {
         let respuestaDisparo = {
+          coordenadasOriginales : { i: i, j: j },
           disparoRealizado: disparo,
           barcoCoordenadas: (disparo && disparo.estado === 'Hundido') ? barcoDisparado : undefined,
           eventoOcurrido: eventoOcurrido, // Evento ocurrido en la partida

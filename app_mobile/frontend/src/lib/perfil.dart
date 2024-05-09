@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'authProvider.dart';
 import 'botones.dart';
 import 'comun.dart';
-import 'habilidad.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'serverRoute.dart';

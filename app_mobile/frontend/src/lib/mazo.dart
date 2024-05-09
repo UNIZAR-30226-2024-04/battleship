@@ -8,6 +8,8 @@ import 'juego.dart';
 class Mazo extends StatefulWidget {
   MensajeErrorModel mensajeErrorModel = MensajeErrorModel.getInstance();
 
+  Mazo({super.key});
+
   @override
   _MazoState createState() => _MazoState();
 
@@ -45,7 +47,7 @@ class Mazo extends StatefulWidget {
     Juego().selectedAbilities['mina'] = false;
     Juego().selectedAbilities['misil'] = false;
 
-    habilidades.forEach((habilidad) {
+    for (var habilidad in habilidades) {
       switch (habilidad.nombre) {
         case 'rafaga':
           Juego().selectedAbilities['rafaga'] = true;
@@ -63,7 +65,7 @@ class Mazo extends StatefulWidget {
           Juego().selectedAbilities['misil'] = true;
           break;
       }
-    });
+    }
   }
 }
 

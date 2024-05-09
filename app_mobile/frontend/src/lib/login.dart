@@ -1,6 +1,5 @@
 import 'package:battleship/destino.dart';
 import 'package:flutter/material.dart';
-import 'atacar.dart';
 import 'juego.dart';
 import 'botones.dart';
 import 'authProvider.dart';

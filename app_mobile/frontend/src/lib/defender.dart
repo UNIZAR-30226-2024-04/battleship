@@ -35,13 +35,26 @@ class _DefenderState extends State<Defender> {
     });
 
     Juego().socket.on('resultadoTurno', (data) {
-      atacar = data[2]['estado'] == 'Agua';
+      Juego().hayNiebla = data[6] == 'Niebla';
+
+      print("Niebla: ${Juego().hayNiebla}");
+
+      if(!Juego().hayNiebla) {
+        print("Entro al if");
+        atacar = data[2]['estado'] == 'Agua';
+      }
+      else {
+        print("No entro en el if porque ha habido un disparo con efecto niebla");
+        atacar = true;
+      }
+
       // Si el estado es agua y el usuario es el otro
       if(atacar && data[1] != Juego().miPerfil.name) {
         print('Resultado turno: $data');
         setState(() {
           Juego().disparosPendientes = 1;
         });
+
         DestinoManager.setDestino(const Atacar());
         Navigator.pushNamed(context, '/Atacar');        
       }
@@ -399,7 +412,6 @@ class _DefenderState extends State<Defender> {
 
   Future<void> esperarTurno() async {
     await Future.wait([completerAbandono.future, resultadoTurno.future]);
-    //('Se ha completado el futuro');
     if (completerAbandono.isCompleted) {
       //print('Abandono');
     }
