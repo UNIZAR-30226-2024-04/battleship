@@ -1699,15 +1699,31 @@ exports.colocarMina = async (req, res) => {
       const miTablero = jugador === 1 ? partidaActual.tableroBarcos1 : partidaActual.tableroBarcos2;
       const ocupadaPorBarco = miTablero.some(barco => barco.coordenadas.some(coordenada => coordenada.i === i && coordenada.j === j && coordenada.estado === 'Agua'));
       if (ocupadaPorBarco) {
-        res.status(404).send('La casilla está ocupada por un barco');
+        let respuestaDisparo = {
+          minaColocada: false,
+          eventoOcurrido: undefined, // Evento ocurrido en la partida
+          finPartida: undefined,
+          clima: undefined,
+          usosHab: jugador === 1 ? partidaActual.usosHab1 : partidaActual.usosHab2,
+          turnosIA: undefined
+        };
+        res.json(respuestaDisparo);
         console.error("La casilla está ocupada por un barco");
         return;
       }
       const misMinas = jugador === 1 ? partidaActual.minas1 : partidaActual.minas2;
       const ocupadaPorMina = misMinas.some(mina => mina.i === i && mina.j === j && mina.estado === 'Agua');
       if (ocupadaPorMina) {
-        res.status(404).send('La casilla está ocupada por una mina');
-        console.error("La casilla está ocupada por una mina");
+        let respuestaDisparo = {
+          minaColocada: false,
+          eventoOcurrido: undefined, // Evento ocurrido en la partida
+          finPartida: undefined,
+          clima: undefined,
+          usosHab: jugador === 1 ? partidaActual.usosHab1 : partidaActual.usosHab2,
+          turnosIA: undefined
+        };
+        res.json(respuestaDisparo);
+        console.error("La casilla está ocupada por un barco");
         return;
       }
 

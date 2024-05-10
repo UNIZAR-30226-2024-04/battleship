@@ -113,6 +113,14 @@ export function Game() {
         }
     }
 
+    const handleMinaMiTablero = (fila, columna) => {
+        setLastClickedCell({ fila, columna });
+        if (skill === "Mina") {
+            console.log('Colocando mina en tu tablero');
+            colocarMina(fila, columna);
+            setSkill(null);
+        }
+    };
 
     const handleClickedCell = (fila, columna) => {
         console.log(`Celda clickeada: Fila ${fila}, Columna ${columna}`);
@@ -123,7 +131,7 @@ export function Game() {
             disparoNormal(fila, columna);
         } else if (skill === "Mina") {
             // Lógica para la habilidad Mina
-            console.log('Habilidad Mina');
+            console.log('La Habilidad Mina se tiene que utilizar en tu tablero');
             // TO DO: Implementar habilidad mina
         } else if (skill === "Teledirigido") {
             // Lógica para la habilidad Teledirigido
@@ -518,6 +526,12 @@ export function Game() {
 
     // MOSTRAR RESULTADO DE DISPARO EN TABLERO
     function mostrarDisparo(fila, columna, estado) {
+
+
+        // -------------------------------
+        // TO DO: Añadir lógica para mostrar minas
+        // -------------------------------
+
         const locationCasilla = (fila-1)*10 + columna - 1;
         const casilla = document.querySelector(`#rivalTablero .casilla[location="${locationCasilla}"]`);
 
@@ -530,20 +544,22 @@ export function Game() {
 
         switch (estado) {
             case "Tocado":
-                console.log("tocado y habia:");
-                console.log((casilla.lastChild).src);
-                console.log(sonarBarcoImg);
-                if (casilla.childElementCount === 0 || (casilla.lastChild).src == sonarBarcoImg ) {  // Solo 1 img
+                if (casilla.childElementCount === 0 || casilla.classList.contains("sonarBarco")) {  // Solo 1 img
                     imgX.src = explosionImg;
-                    console.log("tocado");
-                    if(casilla.childElementCount > 0) casilla.removeChild(casilla.lastChild);
+                    if(casilla.childElementCount > 0) {
+                        casilla.classList.remove("sonarBarco");
+                        casilla.removeChild(casilla.lastChild);
+                    }
                     casilla.appendChild(imgX);
                 }
                 break;
             case "Hundido":
-                if (casilla.childElementCount === 0 || (casilla.lastChild).src == sonarBarcoImg ) { // Solo 1 img
+                if (casilla.childElementCount === 0 || casilla.classList.contains("sonarBarco")) { // Solo 1 img
                     imgX.src = explosionImg;
-                    if(casilla.childElementCount > 0) casilla.removeChild(casilla.lastChild);
+                    if(casilla.childElementCount > 0) {
+                        casilla.removeChild(casilla.lastChild);
+                        casilla.classList.remove("sonarBarco");
+                    } 
                     casilla.appendChild(imgX);
                     //mostrarBarcoPorDebajo();
                 }
@@ -747,6 +763,7 @@ export function Game() {
 
                     switch (matriz[i][j]) {
                         case "Barco":
+                            casilla.classList.add("sonarBarco");
                             imgX.src = sonarBarcoImg;
                             imgX.style.opacity = '0.3';
                             break;
@@ -773,6 +790,45 @@ export function Game() {
 
 
     // COLOCAR MINA
+    function colocarMina(fila, columna) {
+        fetch(urlColocarMina, {
+            method: 'POST',
+            headers: {
+            'Content-Type': 'application/json',
+            'authorization': tokenCookie
+            },
+            body: JSON.stringify({ codigo:idPartida, nombreId: nombreId1Cookie, i: fila, j: columna})
+        })
+        .then(response => {
+            if (!response.ok) {
+                console.log('Respuesta del servidor al disparar:', response);
+                throw new Error('Realizar Disparo ha fallado');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.minaColocada) {
+                // Mostrar la mina en nuestro tablero
+                const locationCasilla = (fila-1)*10 + columna - 1;
+                const casilla = document.querySelector(`#miTablero .casilla[location="${locationCasilla}"]`);
+                let imgX = document.createElement('img');
+                imgX.style.width = '50%';
+                imgX.style.height = '50%';
+                imgX.style.marginLeft = '25%';
+                imgX.style.marginTop = '25%';
+                imgX.style.objectFit = 'cover';
+                imgX.src = sonarMinaImg;
+                casilla.appendChild(imgX);
+    
+                // Representar las jugadas de la IA
+                funcionTurnosIA(data['turnosIA']);
+                setSkill(null);
+            }
+            else {
+                console.log("Mina no se puede colocar allí");
+            }
+        })
+    }
 
 
 
@@ -1034,7 +1090,7 @@ export function Game() {
                     <div className='game-rivalship-counter'>
                         <div className='end-button-container'>
                             <button className="home-button" onClick={() => {rendirse()}} >
-                                    <span> Abandonar </span>
+                                <span> Abandonar </span>
                             </button>
                         </div>
                         <div className='tab'></div>
@@ -1048,7 +1104,7 @@ export function Game() {
                     </div>
                     <div className="fleet-main-content-container">
                         <div className="grid-stack fleet-board1">
-                            <Tablero id="miTablero" clickable={false}/>
+                            <Tablero id="miTablero" onCellClick={handleMinaMiTablero} clickable={true}/>
                         </div>
                         <div className="fleet-board-separator"></div>
                         <div className="grid-stack fleet-board2" /*onClick={handleItemClick}*/>
