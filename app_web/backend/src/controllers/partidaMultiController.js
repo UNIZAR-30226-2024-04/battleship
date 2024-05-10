@@ -339,7 +339,7 @@ exports.obtenerChat = async (req, res) => {
  */
 exports.enviarMensaje = async (req, res) => {
   await PartidaController.enviarMensaje(req, res);
-  io.to('/partida' + req.body.codigo).emit(eventosSocket.chat, req.body.codigo, req.body.mensaje);
+  io.to('/partida' + req.body.codigo).emit(eventosSocket.chat, req.body.codigo, req.body.nombreId, req.body.mensaje);
   console.log('Mensaje enviado en backend');
 };
 

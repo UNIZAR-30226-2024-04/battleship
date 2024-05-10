@@ -66,6 +66,11 @@ function initializeSocket(server) {
             io.to(`/partida${codigo}`).emit(eventosSocket.abandono, codigo, idJugador);
         });
 
+        socket.on(eventosSocket.chat, (codigo, idJugador, mensaje) => {
+            console.log('Mensaje recibido en backend:', codigo, idJugador, mensaje);
+            io.to(`/partida${codigo}`).emit(eventosSocket.chat, idJugador, mensaje);
+        });
+
         socket.on('disconnect', () => {
             console.log('Cliente desconectado');
         });
