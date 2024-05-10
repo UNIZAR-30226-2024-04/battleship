@@ -1047,11 +1047,11 @@ function tirarMoneda() {
 // Función que devuelve la nueva casilla de disparo si se ha aplicado el efecto del clima o la misma casiila si no
 function efectoClima(clima, i, j) {
   if (clima == 'Niebla') {
-    return tirarMoneda() ? {i: undefined, j: undefined, eventoOcurrido: "Disparo fallado niebla"} : {i: i, j: j, eventoOcurrido: "Disparo exitoso niebla"};
+    return tirarMoneda() ? {i: undefined, j: undefined, eventoOcurrido: "Niebla"} : {i: i, j: j, eventoOcurrido: "Calma"};
   } else if (clima == 'VientoNorte' || clima == 'VientoSur' || clima == 'VientoEste' || clima == 'VientoOeste') {
-    return desplazarCasilla(i, j, "Disparo afectado " + clima);
+    return desplazarCasilla(i, j, clima);
   } else {
-    return {i: i, j: j, eventoOcurrido: "Disparo en calma"};
+    return {i: i, j: j, eventoOcurrido: "Calma"};
   }
 }
 
