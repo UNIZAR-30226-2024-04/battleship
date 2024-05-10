@@ -247,6 +247,7 @@ exports.crearPartida = async (req, res) => {
       tableroBarcos1,
       tableroBarcos2,
       bioma,
+      clima: bioma == 'Bermudas' ? 'Tormenta' : 'Calma',
       amistosa: (jugador2 === undefined) ? true : amistosa,
     });
 
@@ -300,6 +301,13 @@ exports.abandonarPartida = async (req, res) => {
           { new: true } // Para devolver el documento actualizado
         );
       }
+      // Cambiar el ganador de la partida
+      partidaActual.ganador = jugador.nombreId === nombreId ? partidaActual.nombreId2 : partidaActual.nombreId1;
+      await Partida.findOneAndUpdate(
+        filtro, // Filtrar
+        partidaActual, // Actualizar (partidaActual contiene los cambios)
+        { new: true } // Para devolver el documento actualizado
+      );
       res.json({ mensaje: 'Partida abandonada con éxito' });
       
     } else {
@@ -316,12 +324,13 @@ exports.abandonarPartida = async (req, res) => {
 
 /**
  * @function mostrarMiTablero
- * @description Devuelve el tablero de barcos y los disparos realizados del jugador en la partida
+ * @description Devuelve el tablero de barcos, las minas y los disparos realizados del jugador en la partida
  * @param {Object} req - El objeto de solicitud HTTP
  * @param {Number} req.body.codigo - El codigo de la partida
  * @param {String} req.body.nombreId - El nombreId del jugador
  * @param {Object} res - El tablero de barcos y los disparos realizados del jugador
  * @param {Tablero} res.tableroBarcos - El tablero de barcos del jugador y su estado actual
+ * @param {Coordenada[]} res.minas - Las minas colocadas por el jugador
  * @param {Coordenada[]} res.disparosEnemigos - Los disparos realizados por el jugador enemigo
  * @example
  * peticion = { body: { codigo: '1234567890', nombreId: 'jugador1' } }
@@ -377,8 +386,14 @@ exports.mostrarMiTablero = async (req, res) => {
         disparo._id = undefined;
       }
 
+      let minas = jugador === 1 ? partidaActual.minas1 : partidaActual.minas2;
+      for (let mina of minas) {
+        mina._id = undefined;
+      }
+
       const tableroDisparos = {
         tableroBarcos: tableroBarcos,
+        minas: minas,
         disparosEnemigos: disparosEnemigos
       };
       res.json(tableroDisparos);
@@ -397,13 +412,14 @@ exports.mostrarMiTablero = async (req, res) => {
 
 /**
  * @function mostrarTableroEnemigo
- * @description Devuelve el tablero de barcos del jugador enemigo en la partida
+ * @description Devuelve el tablero de barcos hundidos del jugador enemigo en la partida, las minas explotadas y sus disparos recibidos
  * @param {Object} req - El objeto de solicitud HTTP
  * @param {String} req.body.codigo - El codigo de la partida
  * @param {String} req.body.nombreId - El nombreId del jugador
  * @param {Object} res - El objeto de respuesta HTTP
  * @param {Coordenada[]} res.misDisparos - Los disparos realizados por mi
  * @param {Coordenada[]} res.barcosHundidos - Los barcos del enemigo hundidos por mi
+ * @param {Coordenada[]} res.minasExplotadas - Las minas explotadas por mi
  * @example
  * peticion = { body: { codigo: '1234567890', nombreId: 'jugador1' } }
  * respuesta = { json: () => {} }
@@ -460,8 +476,16 @@ exports.mostrarTableroEnemigo = async (req, res) => {
         disparo._id = undefined;
       }
 
+      let minasExplotadas = [];
+      for (let mina of jugador === 1 ? partidaActual.minas2 : partidaActual.minas1) {
+        mina._id = undefined;
+        if (mina.estado === 'Hundido') {
+          minasExplotadas.push(mina);
+        }
+      }
       const disparosBarcos = {
         misDisparos: misDisparos,
+        minasExplotadas: minasExplotadas,
         barcosHundidos: listaBarcosHundidos
       };
       res.json(disparosBarcos);
@@ -480,15 +504,17 @@ exports.mostrarTableroEnemigo = async (req, res) => {
 
 /**
  * @function mostrarTableros
- * @description Devuelve los tableros y disparos realizados de ambos jugadores en la partida
+ * @description Devuelve los tableros con barcos, minas (del enemigo sólo los hundidos) y disparos realizados de ambos jugadores en la partida
  * @param {Object} req - El objeto de solicitud HTTP
  * @param {String} req.body.codigo - El codigo de la partida
  * @param {String} req.body.nombreId - El nombreId del jugador
  * @param {Object} res - El objeto de respuesta HTTP
  * @param {Tablero} res.tableroBarcos - El tablero de barcos del jugador y su estado actual
  * @param {Coordenada[]} res.disparosEnemigos - Los disparos realizados por el jugador enemigo
+ * @param {Coordenada[]} res.misMinas - Las minas colocadas por mi
  * @param {Coordenada[]} res.misDisparos - Los disparos realizados por mi
  * @param {Coordenada[]} res.barcosHundidos - Los barcos del enemigo hundidos por mi
+ * @param {Coordenada[]} res.minasEnemigas - Las minas del enemigo que he hundido
  * @example
  * peticion = { body: { codigo: '1234567890', nombreId: 'jugador1' } }
  * respuesta = { json: () => {} }
@@ -558,11 +584,26 @@ exports.mostrarTableros = async (req, res) => {
         disparo._id = undefined;
       }
 
+      let misMinas = jugador === 1 ? partidaActual.minas1 : partidaActual.minas2;
+      for (let mina of misMinas) {
+        mina._id = undefined;
+      }
+
+      let minasEnemigas = [];
+      for (let mina of jugador === 1 ? partidaActual.minas2 : partidaActual.minas1) {
+        mina._id = undefined;
+        if (mina.estado === 'Hundido') {
+          minasEnemigas.push(mina);
+        }
+      }
+
       const tableros = {
         tableroBarcos: tableroBarcos,
         disparosEnemigos: disparosEnemigos,
+        misMinas: misMinas,
         misDisparos: misDisparos,
-        barcosHundidos: listaBarcosHundidos
+        barcosHundidos: listaBarcosHundidos,
+        minasEnemigas: minasEnemigas
       };
       res.json(tableros);
       console.log('Tableros obtenidos con éxito');
@@ -579,32 +620,99 @@ exports.mostrarTableros = async (req, res) => {
 };
 
 //-------------------------------------------Funciones de disparo----------------------------------------------
+// Función que verifica si la partida existe, no ha terminado y es el turno del jugador
+// Opcionalmente, verifica si el jugador puede usar una habilidad si recibe el parámetro habilidad (con true por ejemplo)
+// En tal caso, devuelve la partida, jugador1, jugador2 y jugador (1 si nombreId es el jugador1, 2 si es el jugador2)
+// En caso contrario, devuelve mensaje con el error
+async function verificarTurno(filtro, nombreId, habilidad) {
+  let mensajeError = undefined;
+  const partidaActual = await Partida.findOne(filtro);
+  if (partidaActual) {
+    let jugador1 = await Perfil.findOne({ nombreId: partidaActual.nombreId1 });
+    let jugador2 = { nombreId: "IA" };
+    if (partidaActual.nombreId2) {
+      jugador2 = await Perfil.findOne({ nombreId: partidaActual.nombreId2 });
+    }
+    // Comprobamos que el jugador está en la partida
+    let jugador = 0;
+    if (jugador1.nombreId === nombreId) {
+      jugador = 1;
+    } else if (jugador2.nombreId === nombreId) {
+      jugador = 2;
+    } else {
+      mensajeError = 'El jugador no está en la partida';
+      console.error('El jugador no está en la partida');
+      return {mensajeError};
+    }
+    // Comprobar que la partida no ha terminado
+    if (partidaActual.ganador) {
+      mensajeError = 'La partida ha terminado';
+      console.error('La partida ha terminado');
+      return {mensajeError};
+    }
+    // Comprobar si es el turno del jugador
+    if (jugador === 1 && partidaActual.contadorTurno % 2 === 0 || 
+          jugador === 2 && partidaActual.contadorTurno % 2 === 1) {
+      mensajeError = 'No es el turno del jugador';
+      console.error('No es el turno del jugador');
+      return {mensajeError};
+    }
+    // Comprobar si el jugador tiene habilidades disponibles
+    if (habilidad && (jugador === 1 && partidaActual.usosHab1 === 0 || 
+      jugador === 2 && partidaActual.usosHab2 === 0)) {
+      mensajeError = 'Las habilidades han sido consumidas';
+      console.error('Las habilidades han sido consumidas');
+      return {mensajeError};
+    }
+    // Comprobar si el clima permite usar habilidades
+    if (habilidad && partidaActual.clima === 'Tormenta') {
+      mensajeError = 'No se puede usar habilidades con el clima actual';
+      console.error('No se puede usar habilidades con el clima actual');
+      return {mensajeError};
+    }
+    return {partidaActual, jugador1, jugador2, jugador};
+  } else {
+    mensajeError = 'No se ha encontrado la partida a actualizar';
+    console.error('No se ha encontrado la partida a actualizar');
+    return {mensajeError};
+  }
+}
 
-// Funcion que devuelve el barco (si existe) disparado en la coordenada (i, j).
-// Si no hay barco en la coordenada, devuelve null.
-function dispararCoordenada(tablero, i, j) {
+// Funcion que devuelve:
+// - El barco (si existe) disparado en la coordenada (i, j), tocándolo.
+// - La mina (si existe) disparada en la coordenada (i, j), hundiéndola.
+function dispararCoordenada(tablero, minas, i, j) {
   for (let barco of tablero) {
     for (let coordenada of barco.coordenadas) {
       if (coordenada.i === i && coordenada.j === j) {
         if (coordenada.estado === 'Agua') {
           coordenada.estado = 'Tocado';
-          return barco;
-        } else return null;
+          return {barcoDisparado: barco, minaDisparada: undefined};
+        } else return {barcoDisparado: undefined, minaDisparada: undefined};
       }
     }
   }
-  return null;
+  for (let mina of minas) {
+    if (mina.i === i && mina.j === j) {
+      if (mina.estado === 'Agua') {
+        mina.estado = 'Hundido';
+        return {barcoDisparado: undefined, minaDisparada: mina};
+      } else return {barcoDisparado: undefined, minaDisparada: undefined};
+    }
+  }
+  return {barcoDisparado: undefined, minaDisparada: undefined};
 }
 
 // Función que dispara en la cordenada indicada, actualiza partidaActual y estadisticasJugadores y devuelve el disparo y el barco disparado (si existe)
-// También actualiza el turno si se falla un disparo básico o es el último de una ráfaga
+// También actualiza el turno si se falla un disparo y noActualizarTurno no es true
 function gestionarDisparo(jugador, partidaActual, estadisticasJugadores, i, j, // args de disparo básico
-  misilesRafagaRestantes = 0, // arg adicional para disparo de ráfaga (actualizar turno sólo si vale 1)
-  recargado = false) {  // arg adicional para disparo recargado (no se actualiza turno) 
-
-  let barcoDisparado = jugador === 1 ? dispararCoordenada(partidaActual.tableroBarcos2, i, j) :
-      dispararCoordenada(partidaActual.tableroBarcos1, i, j);
+  noActualizarTurno) {  // arg adicional para disparo recargado o respuesta de mina
+  let {barcoDisparado, minaDisparada} = jugador === 1 ? 
+    dispararCoordenada(partidaActual.tableroBarcos2, partidaActual.minas2, i, j) :
+    dispararCoordenada(partidaActual.tableroBarcos1, partidaActual.minas1, i, j);
   let disparo = { i, j, estado: 'Agua' };
+  let disparosRespuestaMina = [];
+  let barcosHundidosRespuestaMina = [];
   if (barcoDisparado) {
     barcoDisparado._id = undefined;
     barcoDisparado.coordenadas._id = undefined;
@@ -630,8 +738,35 @@ function gestionarDisparo(jugador, partidaActual, estadisticasJugadores, i, j, /
     }
   } else {  // Sólo cambia el turno si se falla el disparo
     estadisticasJugadores[jugador - 1].nuevosDisparosFallados++;
-    if (misilesRafagaRestantes <= 1 && !recargado) {  // (Si disparo básico o último de la ráfaga) y no es parte de un disparo recargado
+    if (!noActualizarTurno) {
       partidaActual.contadorTurno++;
+    }
+    // Si se ha explotado una mina, recibir disparos
+    if (minaDisparada) {
+      const jugadorEnemigo = jugador === 1 ? 2 : 1;
+      for (let k = 0; k < 5; k++) {
+        while (true) {  // Buscar coordenada aleatoria en la que no hay una mina
+          var iRespuesta = Math.floor(Math.random() * tableroDim) + 1;
+          var jRespuesta = Math.floor(Math.random() * tableroDim) + 1;
+          if (jugador === 1) {
+            if (!partidaActual.minas1.some(mina => mina.i === iRespuesta && mina.j === jRespuesta && mina.estado === 'Agua')) {
+              break;
+            }
+          } else {
+            if (!partidaActual.minas2.some(mina => mina.i === iRespuesta && mina.j === jRespuesta && mina.estado === 'Agua')) {
+              break;
+            }
+          }
+        }
+
+        let {disparo: disparoRespuesta, barcoDisparado: barcoDisparadoRespuesta} = 
+          gestionarDisparo(jugadorEnemigo, partidaActual, estadisticasJugadores, iRespuesta, jRespuesta, true);
+        disparosRespuestaMina.push(disparoRespuesta);
+        if (disparoRespuesta.estado === 'Hundido') {
+          barcosHundidosRespuestaMina.push(barcoDisparadoRespuesta);
+        }
+
+      }
     }
   }
   
@@ -639,14 +774,17 @@ function gestionarDisparo(jugador, partidaActual, estadisticasJugadores, i, j, /
     partidaActual.disparosRealizados2.push(disparo);
 
   return {
-    disparo, // Último disparo
-    barcoDisparado // Barco disparado por disparo, si existe
+    disparo: disparo, // Último disparo
+    barcoDisparado: barcoDisparado, // Barco disparado por disparo, si existe
+    minaDisparada: minaDisparada, // Mina disparada por disparo, si existe
+    disparosRespuestaMina: disparosRespuestaMina, // Disparos enemigos en respuesta de mina, si los hay
+    barcosHundidosRespuestaMina: barcosHundidosRespuestaMina // Barcos propios hundidos por respuesta de mina, si los hay
   };
 }
 
 // Función que verifica si la partida ha finalizado y en tal caso actualiza los datos de los jugadores.
 // Devuelve true si la partida ha finalizado, false en caso contrario.
-async function comprobarFinDePartida(jugador, jugador1, jugador2, partidaActual, estadisticasJugadores) {
+async function comprobarFinDePartida(jugador, jugador1, jugador2, partidaActual, estadisticasJugadores, partidaContraIA) {
   let finPartida;
   if (jugador === 1) {
     finPartida = partidaActual.tableroBarcos2.every(barco =>
@@ -667,80 +805,63 @@ async function comprobarFinDePartida(jugador, jugador1, jugador2, partidaActual,
       partidaActual.ganador = jugador2.nombreId;
     }
     jugador1.codigoPartidaActual = -1;
-    jugador2.codigoPartidaActual = -1;
     await Perfil.findOneAndUpdate(
       { nombreId: jugador1.nombreId }, // Filtrar
       jugador1, // Actualizar (jugador1 contiene los cambios)
       { new: true } // Para devolver el documento actualizado
     );
-    await Perfil.findOneAndUpdate(
-      { nombreId: jugador2.nombreId }, // Filtrar
-      jugador2, // Actualizar (jugador2 contiene los cambios)
-      { new: true } // Para devolver el documento actualizado
-    );
+
+    if (!partidaContraIA) {
+      jugador2.codigoPartidaActual = -1;
+      await Perfil.findOneAndUpdate(
+        { nombreId: jugador2.nombreId }, // Filtrar
+        jugador2, // Actualizar (jugador2 contiene los cambios)
+        { new: true } // Para devolver el documento actualizado
+      );
+    }
   }
   return finPartida;
 }
 
 // Función que realiza los turnos de la IA, actualizando la partida, estadísticas y los turnos de la IA y devuelve true si la partida ha finalizado
-function juegaIA(partidaActual, estadisticasJugadores, turnosIA) {
+async function juegaIA(jugador1, jugador2, partidaActual, estadisticasJugadores, turnosIA) {
   console.log('Turno de la IA');
-  let juegaIA = true;
-  while (juegaIA) {
+  let sigueIA = true;
+  let finPartida = false;
+  while (sigueIA) {
     let posibleDisparoIA = generarDisparoAleatorio(partidaActual.disparosRealizados2);
-    let barcoDisparadoIA = dispararCoordenada(partidaActual.tableroBarcos1, 
-      posibleDisparoIA.i, posibleDisparoIA.j);
-    let disparoIA = { i: posibleDisparoIA.i, j: posibleDisparoIA.j, estado: 'Agua' };
-    if (barcoDisparadoIA) {
-      barcoDisparadoIA._id = undefined;
-      barcoDisparadoIA.coordenadas._id = undefined;
-      for (let coord of barcoDisparadoIA.coordenadas) {
-        coord._id = undefined;
-      }
-      disparoIA.estado = 'Tocado';
-      let hundido = true;
-      for (let coord of barcoDisparadoIA.coordenadas) {
-        if (coord.estado === 'Agua') {
-          hundido = false;
-          break;
-        }
-      }
-      if (hundido) {
-        estadisticasJugadores[0].nuevosBarcosPerdidos++;
-        for (let coord of barcoDisparadoIA.coordenadas) {
-          coord.estado = 'Hundido';
-        }
-        disparoIA.estado = 'Hundido';
-      }
-    } else {
-      partidaActual.contadorTurno++;
-    }
-    partidaActual.disparosRealizados2.push(disparoIA);
+    let {disparo, barcoDisparado, minaDisparada, disparosRespuestaMina, barcosHundidosRespuestaMina} = 
+      gestionarDisparo(2, partidaActual, estadisticasJugadores, posibleDisparoIA.i, posibleDisparoIA.j);
 
     // Comprobar si la partida ha terminado
-    finPartidaIA = partidaActual.tableroBarcos1.every(barco =>
-      barco.coordenadas.every(coordenada => coordenada.estado === 'Hundido'));
-    if (finPartidaIA) {
-      partidaActual.ganador = 'IA';
+    finPartida = false;
+    if (disparo.estado === 'Hundido') { // He podido ganar si he hundido el último barco
+      finPartida = await comprobarFinDePartida(2, jugador1, jugador2, partidaActual, estadisticasJugadores, true);
+    } else if (minaDisparada) { // He podido perder
+      finPartida = await comprobarFinDePartida(1, jugador1, jugador2, partidaActual, estadisticasJugadores, true);
     }
 
     let turnoIA = {
-      disparoRealizado: disparoIA,
-      barcoCoordenadas: (disparoIA.estado === 'Hundido') ? barcoDisparadoIA : undefined,
+      disparoRealizado: disparo,
+      barcoCoordenadas: (disparo.estado === 'Hundido') ? barcoDisparado : undefined,
       eventoOcurrido: undefined, // Evento ocurrido en la partida
-      finPartida: finPartidaIA,
-      clima: partidaActual.clima
+      finPartida: finPartida,
+      clima: partidaActual.clima,
+      minaDisparada: minaDisparada,
+      disparosRespuestaMina: disparosRespuestaMina,
+      barcosHundidosRespuestaMina: barcosHundidosRespuestaMina
     };
     turnosIA.push(turnoIA);
-    juegaIA = disparoIA.estado !== 'Agua' && !finPartidaIA;
+    sigueIA = disparo.estado !== 'Agua' && !finPartida;
   }
 
-  return finPartidaIA;
+  return finPartida;
 }
 
 // Función que actualiza las estadísticas de los jugadores en la base de datos tras finalizar un turno
-// Devuelve 0 si se ha realizado correctamente, 1 si ha habido error actualizando los puntos de experiencia y 2 si ha habido error actualizando las estadísticas
+// Devuelve mensaje de error si hay algún problema
 async function actualizarEstadisticasTurno(nuevosTrofeos, partidaActual, estadisticasJugadores, jugador1, jugador2, partidaContraIA) {
+  let mensajeError = undefined;
   let tempRes1 = { json: () => {}, status: function(s) { 
     this.statusCode = s; return this;} };
   // Actualizar ptos de experiencia y ELO si la partida no es amistosa
@@ -757,12 +878,14 @@ async function actualizarEstadisticasTurno(nuevosTrofeos, partidaActual, estadis
     await actualizarPuntosExperiencia({ body: { nombreId: estadisticasJugadores[0].nombreId, 
       nuevosPuntosExperiencia: experienciaJ1 } }, tempRes1);
     if (tempRes1.statusCode !== undefined && tempRes1.statusCode !== 200) {
-      return 1;
+      mensajeError = 'Error al actualizar los puntos de experiencia del jugador 1';
+      return {mensajeError};
     }
   }
   await actualizarEstadisticas({ body: estadisticasJugadores[0] }, tempRes1);
   if (tempRes1.statusCode !== undefined && tempRes1.statusCode !== 200) {
-    return 2;
+    mensajeError = 'Error al actualizar las estadísticas del jugador 1';
+    return {mensajeError};
   }
 
   if (!partidaContraIA) {
@@ -779,32 +902,169 @@ async function actualizarEstadisticasTurno(nuevosTrofeos, partidaActual, estadis
       await actualizarPuntosExperiencia({ body: { nombreId: estadisticasJugadores[1].nombreId,
         nuevosPuntosExperiencia: experienciaJ2 } }, tempRes2);
       if (tempRes2.statusCode !== undefined && tempRes2.statusCode !== 200) {
-        return 1;
+        mensajeError = 'Error al actualizar los puntos de experiencia del jugador 2';
+        return {mensajeError};
       }
     }
     await actualizarEstadisticas({ body: estadisticasJugadores[1] }, tempRes2);
     if (tempRes2.statusCode !== undefined && tempRes2.statusCode !== 200) {
-      return 2;
+      mensajeError = 'Error al actualizar las estadísticas del jugador 2';
+      return {mensajeError};
     }
   }
-  return 0;
+  return {mensajeError};
 }
 
 // Función que añade las estadísticas de la partida en la respuesta de disparo
 function añadirEstadisticasEnRespuesta(respuestaDisparo, partidaActual, estadisticasJugadores, jugador, nuevosTrofeos){
   let estadisticas = calcularEstadisticasPartida(partidaActual, jugador);
-  estadisticas.nuevosPuntosExperiencia += 10*estadisticasJugadores[0].victoria;
-  estadisticas.nuevosTrofeos = nuevosTrofeos[0];
+  estadisticas.nuevosPuntosExperiencia += 10*estadisticasJugadores[jugador - 1].victoria;
+  estadisticas.nuevosTrofeos = nuevosTrofeos[jugador - 1];
   respuestaDisparo.estadisticas = estadisticas;
+}
+
+//-------------------------------------------Funciones de clima----------------------------------------------
+// Funcion para seleccionar el clima en funcion del bioma de la partida 
+function seleccionarClima(bioma, clima) {
+  // Número aleatorio para determinar si hay un cambio de clima
+  let cambioClima = Math.random();
+
+  // Número aleatorio para determinar el nuevo clima
+  let nuevoClima = Math.random();
+
+  // Número aleatorio para decidir un viento
+  let v = Math.random();
+  if (v < 0.25) { viento = 'VientoSur'; }
+  else if(v < 0.5) { viento = 'VientoNorte'; }
+  else if(v < 0.75) { viento = 'VientoEste'; }
+  else { viento = 'VientoOeste'; }
+
+  // Climas del bioma Mediterraneo: calma, viento, niebla
+  // Cambia de climas con frecuencia 10 %
+  // Calma -> Viento 60%, Niebla 40%
+  // Viento -> Calma 70%, Niebla 30%
+  // Niebla -> Calma 70%, Viento 30%
+  if(bioma === 'Mediterraneo') {
+    if(cambioClima < 0.1) {
+      if(clima == 'Calma') {
+        if(nuevoClima < 0.6) { return viento; }
+        else { return 'Niebla'; }
+      }
+      else if(clima == 'VientoSur' || clima == 'VientoNorte' || clima == 'VientoEste' || clima == 'VientoOeste') {
+        if(nuevoClima < 0.7) { return 'Calma'; }
+        else { return 'Tormenta'; }
+      }
+      else if(clima == 'Niebla') { return 'Calma'; }
+      else if(clima == 'Tormenta') {
+        if(nuevoClima < 0.3) { return viento; }
+        else { return 'Calma'; }
+      }
+    }
+  }
+  // Climas del bioma Cantabrico: Calma, Viento, Niebla, Tormenta
+  // Cambia de climas con frecuencia 30 %
+  // Calma -> Viento 50%, Niebla 50%
+  // Viento -> Calma 50%, Tormenta 50%
+  // Niebla -> Calma 100%
+  // Tormenta -> Viento 50%, Calma 50%
+  else if(bioma === 'Cantabrico') {
+    if(cambioClima < 0.3) {
+      if(clima == 'Calma') {
+        if(nuevoClima < 0.5) { return viento; }
+        else { return 'Niebla'; }
+      }
+      else if(clima == 'VientoSur' || clima == 'VientoNorte' || clima == 'VientoEste' || clima == 'VientoOeste') {
+        if(nuevoClima < 0.5) { return 'Calma'; }
+        else { return 'Tormenta'; }
+      }
+      else if(clima == 'Niebla') { return 'Calma'; }
+      else if(clima == 'Tormenta') {
+        if(nuevoClima < 0.5) { return viento; }
+        else { return 'Calma'; }
+      }
+    }
+  }
+  // Climas del bioma Norte: Calma, Viento, Niebla, Tormenta
+  // Cambia de climas con frecuencia 50 %
+  // Calma -> Viento 60%, Niebla 40%
+  // Viento -> Calma 40%, Tormenta 60%
+  // Niebla -> Calma 80%, Viento 20%
+  // Tormenta -> Viento 50%, Calma 30%, Niebla 20%
+  else if(bioma === 'Norte') {
+    if(cambioClima < 0.5) {
+      if(clima == 'Calma') {
+        if(nuevoClima < 0.6) { return viento; }
+        else { return 'Niebla'; }
+      }
+      else if(clima == 'VientoSur' || clima == 'VientoNorte' || clima == 'VientoEste' || clima == 'VientoOeste') {
+        if(nuevoClima < 0.4) { return 'Calma'; }
+        else { return 'Tormenta'; }
+      }
+      else if(clima == 'Niebla') {
+        if(nuevoClima < 0.8) { return 'Calma'; }
+        else { return viento; }
+      }
+      else if(clima == 'Tormenta') {
+        if(nuevoClima < 0.5) { return viento; }
+        else if(nuevoClima < 0.8) { return 'Calma'; }
+        else { return 'Niebla'; }
+      }
+    }
+
+  }
+  else if(bioma === 'Bermudas') {
+    return 'Tormenta'
+  }
+  else {
+    // El bioma no está definido
+    console.error('El bioma no está definido');
+    return undefined;
+  }
+}  
+
+// Función que dada una casilla (i, j) la desplaza una posición (si no se sale del tablero) en función de la dirección
+// de origen del viento
+function desplazarCasilla(i, j, direccion) {
+  if (direccion === 'VientoSur') {
+    if (i > 1) i--;
+  } else if (direccion === 'VientoNorte') {
+    if (i < tableroDim) i++;
+  } else if (direccion === 'VientoEste') {
+    if (j > 1) j--;
+  } else if (direccion === 'VientoOeste') {
+    if (j < tableroDim) j++;
+  } else {
+    console.error('La dirección del viento no está definida');    // Este caso no puede darse nunca porque se comprueba antes
+  }
+  return { i: i, j: j, eventoOcurrido: direccion };
+}
+
+// Función que devuelve true o false con probabilidad 0.5
+function tirarMoneda() {
+  return Math.random() < 0.5;
+}
+
+// Función que devuelve la nueva casilla de disparo si se ha aplicado el efecto del clima o la misma casiila si no
+function efectoClima(clima, i, j) {
+  if (clima == 'Niebla') {
+    return tirarMoneda() ? {i: undefined, j: undefined, eventoOcurrido: "Niebla"} : {i: i, j: j, eventoOcurrido: "Calma"};
+  } else if (clima == 'VientoNorte' || clima == 'VientoSur' || clima == 'VientoEste' || clima == 'VientoOeste') {
+    return desplazarCasilla(i, j, clima);
+  } else {
+    return {i: i, j: j, eventoOcurrido: "Calma"};
+  }
 }
 
 /**
  * @typedef {Object} TurnoIA
- * @property {Object} disparoRealizado - El disparo realizado por la IA
- * @property {Object} [barcoCoordenadas] - Las coordenadas del barco disparado por la IA, si se ha hundido
+ * @property {Coordenada} disparoRealizado - El disparo realizado por la IA
+ * @property {Barco} [barcoCoordenadas] - Las coordenadas del barco disparado por la IA, si se ha hundido
  * @property {String} eventoOcurrido - El evento ocurrido en la partida
  * @property {Boolean} finPartida - Indica si la partida ha terminado
  * @property {String} clima - El clima de la partida
+ * @property {Coordenada} [minaDisparada] - La mina disparada por la IA, si se ha hundido
+ * @property {Coordenada[]} [disparosRespuestaMina] - Los disparos realizados por el jugador en respuesta a una mina
+ * @property {Barco[]} [barcosHundidosRespuestaMina] - Los barcos de la IA hundidos por respuesta a una mina
  */
 
 /**
@@ -816,11 +1076,14 @@ function añadirEstadisticasEnRespuesta(respuestaDisparo, partidaActual, estadis
  * @param {Number} req.body.i - La coordenada i del disparo
  * @param {Number} req.body.j - La coordenada j del disparo
  * @param {Object} res - El objeto de respuesta HTTP
- * @param {Object} res.disparoRealizado - El disparo realizado con sus coordenadas y estado
- * @param {Object} [res.barcoCoordenadas] - Las coordenadas del barco disparado, si se ha hundido
- * @param {String} res.eventoOcurrido - El evento ocurrido en la partida
+ * @param {Coordenada} res.disparoRealizado - El disparo realizado con sus coordenadas y estado
+ * @param {Barco} [res.barcoCoordenadas] - Las coordenadas del barco disparado, si se ha hundido
+ * @param {String} res.eventoOcurrido - true si ha ocurrido el evento del clima
  * @param {Boolean} res.finPartida - Indica si la partida ha terminado
  * @param {String} res.clima - El clima de la partida
+ * @param {Coordenada} [res.minaDisparada] - La mina disparada, si se ha hundido
+ * @param {Coordenada[]} [res.disparosRespuestaMina] - Los disparos realizados por el enemigo en respuesta a una mina
+ * @param {Barco[]} [res.barcosHundidosRespuestaMina] - Los barcos propios hundidos por respuesta a una mina
  * @param {TurnoIA[]} [res.turnosIA] - Los turnos de la IA, si la partida es contra la IA
  * @example
  * peticion = { body: { codigo: '1234567890', nombreId: 'jugador1', i: 1, j: 1 } }
@@ -847,40 +1110,13 @@ exports.realizarDisparo = async (req, res) => {
       console.error("Las coordenadas i, j deben estar entre 1 y 10");
       return;
     }
-    // Verificar que existe la partida
+    // Verificar que el turno es válido: partida existe, no ha terminado y es el turno del jugador
     const filtro = { codigo: codigo };
-    const partidaActual = await Partida.findOne(filtro);
-    if (partidaActual) {
-      let jugador1 = await Perfil.findOne({ nombreId: partidaActual.nombreId1 });
-      let jugador2 = { nombreId: "IA" };
-      if (partidaActual.nombreId2) {
-        jugador2 = await Perfil.findOne({ nombreId: partidaActual.nombreId2 });
-      }
-      // Comprobamos que el jugador está en la partida
-      var jugador = 0;
-      if (jugador1.nombreId === nombreId) {
-        jugador = 1;
-      } else if (jugador2.nombreId === nombreId) {
-        jugador = 2;
-      } else {
-        res.status(404).send('El jugador no está en la partida');
-        console.error('El jugador no está en la partida');
-        return;
-      }
-      // Comprobar que la partida no ha terminado
-      if (partidaActual.ganador) {
-        res.status(400).send('La partida ha terminado');
-        console.error('La partida ha terminado');
-        return;
-      }
-      // Comprobar si es el turno del jugador
-      if (jugador === 1 && partidaActual.contadorTurno % 2 === 0 || 
-            jugador === 2 && partidaActual.contadorTurno % 2 === 1) {
-        res.status(400).send('No es el turno del jugador');
-        console.error('No es el turno del jugador');
-        return;
-      }
-
+    let {partidaActual, jugador1, jugador2, jugador, mensajeError} = await verificarTurno(filtro, nombreId);
+    if (mensajeError) {
+      res.status(404).send(mensajeError);
+      return;
+    } else {
       let estadisticasJugadores = [
         { victoria: undefined, nuevosBarcosHundidos: 0, nuevosBarcosPerdidos: 0,
           nuevosDisparosAcertados: 0, nuevosDisparosFallados: 0, nuevosTrofeos: 0,
@@ -891,16 +1127,39 @@ exports.realizarDisparo = async (req, res) => {
       ]
 
       const partidaContraIA = !partidaActual.nombreId2;
-      // Realizar disparo
-      const {disparo, barcoDisparado} = gestionarDisparo(jugador, partidaActual, estadisticasJugadores, i, j);
+      // Aplicar efecto de clima y actualizar el clima
+      const {i: iClima, j: jClima, eventoOcurrido} = efectoClima(partidaActual.clima, i, j);
+      const nuevoClima = seleccionarClima(partidaActual.bioma, partidaActual.clima);
+      partidaActual.clima = nuevoClima;
 
-      // Comprobar si la partida ha terminado
-      const finPartida = await comprobarFinDePartida(jugador, jugador1, jugador2, partidaActual, estadisticasJugadores);
+      var disparo = undefined, barcoDisparado, minaDisparada, disparosRespuestaMina, barcosHundidosRespuestaMina;
+      var finPartida = false;
+      if (iClima !== undefined && jClima !== undefined) {
+        // Realizar disparo
+        console.log('Hay clima raro, : ', nuevoClima);
+        let gestionDisparo = gestionarDisparo(jugador, partidaActual, estadisticasJugadores, iClima, jClima);
+        console.log('Resultado gestion disparo: ', gestionDisparo);
+        disparo = gestionDisparo.disparo;
+        barcoDisparado = gestionDisparo.barcoDisparado;
+        minaDisparada = gestionDisparo.minaDisparada;
+        disparosRespuestaMina = gestionDisparo.disparosRespuestaMina;
+        barcosHundidosRespuestaMina = gestionDisparo.barcosHundidosRespuestaMina;
+        
+        // Comprobar si la partida ha terminado
+        if (disparo.estado === 'Hundido') { // He podido ganar si he hundido el último barco
+          finPartida = await comprobarFinDePartida(jugador, jugador1, jugador2, partidaActual, estadisticasJugadores, partidaContraIA);
+        } else if (minaDisparada) { // He podido perder
+          let jugadorEnemigo =  jugador === 1 ? 2 : 1;
+          finPartida = await comprobarFinDePartida(jugadorEnemigo, jugador1, jugador2, partidaActual, estadisticasJugadores, partidaContraIA);
+        }
+      } else {  // Se ha fallado el disparo por niebla
+        partidaActual.contadorTurno++;
+      }
 
       let turnosIA = [];
       let finPartidaIA = false;
-      if (partidaContraIA && disparo.estado === 'Agua' && !finPartida) {
-        finPartidaIA = juegaIA(partidaActual, estadisticasJugadores, turnosIA);
+      if (partidaContraIA && (disparo === undefined || disparo.estado === 'Agua' && !finPartida)) {
+        finPartidaIA = await juegaIA(jugador1, jugador2, partidaActual, estadisticasJugadores, turnosIA);
       }
       console.log('Disparo realizado con éxito');
       // Actualizar la partida
@@ -912,24 +1171,24 @@ exports.realizarDisparo = async (req, res) => {
 
       if (partidaModificada) {
         let respuestaDisparo = {
+          coordenadasOriginales : { i: i, j: j },
           disparoRealizado: disparo,
-          barcoCoordenadas: (disparo.estado === 'Hundido') ? barcoDisparado : undefined,
-          eventoOcurrido: undefined, // Evento ocurrido en la partida
+          barcoCoordenadas: (disparo && disparo.estado === 'Hundido') ? barcoDisparado : undefined,
+          eventoOcurrido: eventoOcurrido, // Evento ocurrido en la partida
           finPartida: finPartida,
           clima: partidaActual.clima,
+          minaDisparada: minaDisparada,
+          disparosRespuestaMina: (minaDisparada !== undefined) ? disparosRespuestaMina : undefined,
+          barcosHundidosRespuestaMina: (minaDisparada !== undefined) ? barcosHundidosRespuestaMina : undefined,
           turnosIA: turnosIA
         };
 
         // Actualizar estadisticas de los jugadores
         let nuevosTrofeos = [0, 0];
-        const resultado = await actualizarEstadisticasTurno(nuevosTrofeos, partidaActual, estadisticasJugadores, jugador1, jugador2, partidaContraIA);
-        if (resultado === 1) {
-          res.status(500).send('Hubo un error actualizando los puntos de experiencia');
-          console.error("Hubo un error actualizando los puntos de experiencia");
-          return;
-        } else if (resultado === 2) {
-          res.status(500).send('Hubo un error actualizando las estadísticas');
-          console.error("Hubo un error actualizando las estadísticas");
+        const {mensajeError} = await actualizarEstadisticasTurno(nuevosTrofeos, partidaActual, estadisticasJugadores, jugador1, jugador2, partidaContraIA);
+        if (mensajeError) {
+          res.status(500).send(mensajeError);
+          console.error(mensajeError);
           return;
         }
 
@@ -939,14 +1198,11 @@ exports.realizarDisparo = async (req, res) => {
         }
         res.json(respuestaDisparo);
         console.log("Partida modificada con éxito");
-        return(respuestaDisparo)
+        return (respuestaDisparo);
       } else {
         res.status(404).send('No se ha encontrado la partida a actualizar');
         console.error("No se ha encontrado la partida a actualizar");
       }
-    } else {
-      res.status(404).send('Partida no encontrada');
-      console.error("Partida no encontrada");
     }
   } catch (error) {
     res.status(500).send('Hubo un error');
@@ -964,11 +1220,14 @@ exports.realizarDisparo = async (req, res) => {
  * @param {Number} req.body.j - La coordenada j del disparo
  * @param {Number} req.body.misilesRafagaRestantes - Los misiles de rafaga restantes (3, 2 o 1)
  * @param {Object} res - El objeto de respuesta HTTP
- * @param {Object} res.disparoRealizado - El disparo realizado con sus coordenadas y estado
- * @param {Object} [res.barcoCoordenadas] - Las coordenadas del barco disparado, si se ha hundido
+ * @param {Coordenada} res.disparoRealizado - El disparo realizado con sus coordenadas y estado
+ * @param {Barco} [res.barcoCoordenadas] - Las coordenadas del barco disparado, si se ha hundido
  * @param {String} res.eventoOcurrido - El evento ocurrido en la partida
  * @param {Boolean} res.finPartida - Indica si la partida ha terminado
  * @param {String} res.clima - El clima de la partida
+ * @param {Coordenada} [res.minaDisparada] - La mina disparada, si se ha hundido
+ * @param {Coordenada[]} [res.disparosRespuestaMina] - Los disparos realizados por el enemigo en respuesta a una mina
+ * @param {Barco[]} [res.barcosHundidosRespuestaMina] - Los barcos propios hundidos por respuesta a una mina
  * @param {Number} res.usosHab - Los usos restantes de la habilidad del jugador
  * @param {TurnoIA[]} [res.turnosIA] - Los turnos de la IA, si la partida es contra la IA
  * @example
@@ -1008,47 +1267,13 @@ exports.realizarDisparoMisilRafaga = async (req, res) => {
       console.error("misilesRafagaRestantes debe ser un entero positivo");
       return;
     }
-    // Verificar que existe la partida
+    // Verificar que el turno es válido: partida existe, no ha terminado, es el turno del jugador y puede usar habilidad
     const filtro = { codigo: codigo };
-    const partidaActual = await Partida.findOne(filtro);
-    if (partidaActual) {
-      let jugador1 = await Perfil.findOne({ nombreId: partidaActual.nombreId1 });
-      let jugador2 = { nombreId: "IA" };
-      if (partidaActual.nombreId2) {
-        jugador2 = await Perfil.findOne({ nombreId: partidaActual.nombreId2 });
-      }
-      // Comprobamos que el jugador está en la partida
-      var jugador = 0;
-      if (jugador1.nombreId === nombreId) {
-        jugador = 1;
-      } else if (jugador2.nombreId === nombreId) {
-        jugador = 2;
-      } else {
-        res.status(404).send('El jugador no está en la partida');
-        console.error('El jugador no está en la partida');
-        return;
-      }
-      // Comprobar que la partida no ha terminado
-      if (partidaActual.ganador) {
-        res.status(400).send('La partida ha terminado');
-        console.error('La partida ha terminado');
-        return;
-      }
-      // Comprobar si es el turno del jugador
-      if (jugador === 1 && partidaActual.contadorTurno % 2 === 0 || 
-            jugador === 2 && partidaActual.contadorTurno % 2 === 1) {
-        res.status(400).send('No es el turno del jugador');
-        console.error('No es el turno del jugador');
-        return;
-      }
-      // Comprobar si el jugador y puede usar una habilidad
-      if (jugador === 1 && partidaActual.usosHab1 === 0 || 
-            jugador === 2 && partidaActual.usosHab2 === 0) {
-        res.status(400).send('Las habilidades han sido consumidas');
-        console.error('Las habilidades han sido consumidas');
-        return;
-      }
-
+    let {partidaActual, jugador1, jugador2, jugador, mensajeError} = await verificarTurno(filtro, nombreId, habilidad=true);
+    if (mensajeError) {
+      res.status(404).send(mensajeError);
+      return;
+    } else {
       let estadisticasJugadores = [
         { victoria: undefined, nuevosBarcosHundidos: 0, nuevosBarcosPerdidos: 0,
           nuevosDisparosAcertados: 0, nuevosDisparosFallados: 0, nuevosTrofeos: 0,
@@ -1066,16 +1291,21 @@ exports.realizarDisparoMisilRafaga = async (req, res) => {
         else partidaActual.usosHab2--;
       }
       // Realizar disparo
-      const {disparo, barcoDisparado} = gestionarDisparo(jugador, partidaActual, estadisticasJugadores, i, j, misilesRafagaRestantes);
-
+      const {disparo, barcoDisparado, minaDisparada, disparosRespuestaMina, barcosHundidosRespuestaMina} = 
+        gestionarDisparo(jugador, partidaActual, estadisticasJugadores, i, j, !ultimoMisilRafaga); // No actualizar turno si es el último misil de la ráfaga
       // Comprobar si la partida ha terminado
-      const finPartida = await comprobarFinDePartida(jugador, jugador1, jugador2, partidaActual, estadisticasJugadores);
-      
+      let finPartida = false;
+      if (disparo.estado === 'Hundido') { // He podido ganar si he hundido el último barco
+        finPartida = await comprobarFinDePartida(jugador, jugador1, jugador2, partidaActual, estadisticasJugadores, partidaContraIA);
+      } else if (minaDisparada) { // He podido perder
+        let jugadorEnemigo =  jugador === 1 ? 2 : 1;
+        finPartida = await comprobarFinDePartida(jugadorEnemigo, jugador1, jugador2, partidaActual, estadisticasJugadores, partidaContraIA);
+      }
       let turnosIA = [];
       let finPartidaIA = false;
       // La IA no juega si no es el último misil de ráfaga
       if (partidaContraIA && disparo.estado === 'Agua' && !finPartida && ultimoMisilRafaga) {
-        finPartidaIA = juegaIA(partidaActual, estadisticasJugadores, turnosIA);
+        finPartidaIA = await juegaIA(jugador1, jugador2, partidaActual, estadisticasJugadores, turnosIA);
       }
       console.log('Disparo realizado con éxito');
       // Actualizar la partida
@@ -1093,19 +1323,18 @@ exports.realizarDisparoMisilRafaga = async (req, res) => {
           finPartida: finPartida,
           clima: partidaActual.clima,
           usosHab: jugador === 1 ? partidaActual.usosHab1 : partidaActual.usosHab2,
+          minaDisparada: minaDisparada,
+          disparosRespuestaMina: (minaDisparada !== undefined) ? disparosRespuestaMina : undefined,
+          barcosHundidosRespuestaMina: (minaDisparada !== undefined) ? barcosHundidosRespuestaMina : undefined,
           turnosIA: turnosIA
         };
 
         // Actualizar estadisticas de los jugadores
         let nuevosTrofeos = [0, 0];
-        const resultado = await actualizarEstadisticasTurno(nuevosTrofeos, partidaActual, estadisticasJugadores, jugador1, jugador2, partidaContraIA);
-        if (resultado === 1) {
-          res.status(500).send('Hubo un error actualizando los puntos de experiencia');
-          console.error("Hubo un error actualizando los puntos de experiencia");
-          return;
-        } else if (resultado === 2) {
-          res.status(500).send('Hubo un error actualizando las estadísticas');
-          console.error("Hubo un error actualizando las estadísticas");
+        const {mensajeError} = await actualizarEstadisticasTurno(nuevosTrofeos, partidaActual, estadisticasJugadores, jugador1, jugador2, partidaContraIA);
+        if (mensajeError) {
+          res.status(500).send(mensajeError);
+          console.error(mensajeError);
           return;
         }
 
@@ -1115,13 +1344,11 @@ exports.realizarDisparoMisilRafaga = async (req, res) => {
         }
         res.json(respuestaDisparo);
         console.log("Partida modificada con éxito");
+        return (respuestaDisparo);
       } else {
         res.status(404).send('No se ha encontrado la partida a actualizar');
         console.error("No se ha encontrado la partida a actualizar");
       }
-    } else {
-      res.status(404).send('Partida no encontrada');
-      console.error("Partida no encontrada");
     }
   } catch (error) {
     res.status(500).send('Hubo un error');
@@ -1139,13 +1366,16 @@ exports.realizarDisparoMisilRafaga = async (req, res) => {
  * @param {Number} [req.body.j] - La coordenada j del disparo, necesaria si turnoRecarga es false
  * @param {Boolean} [req.body.turnoRecarga = false] - Indica si es el turno de recarga
  * @param {Object} res - El objeto de respuesta HTTP
- * @param {Object} res.disparoRealizado - Los 9 disparos realizados con sus coordenadas y estado
+ * @param {Coordenada[]} res.disparosRealizados - Los 9 disparos realizados con sus coordenadas y estado
  * @param {Boolean} [res.algunoTocado] - Indica si algun disparo del torpedo ha tocado (o hundido) un barco
- * @param {Object} [res.barcoCoordenadas] - Las coordenadas de los barcos hundidos, si los hay
+ * @param {Barco[]} [res.barcoCoordenadas] - Las coordenadas de los barcos hundidos, si los hay
  * @param {String} res.eventoOcurrido - El evento ocurrido en la partida
  * @param {Boolean} res.finPartida - Indica si la partida ha terminado
  * @param {String} res.clima - El clima de la partida
  * @param {Number} res.usosHab - Los usos restantes de la habilidad del jugador
+ * @param {Coordenada[]} res.minasDisparadas - Las minas disparadas por el jugador
+ * @param {Coordenada[]} res.disparosRespuestasMinas - Los disparos realizados por el enemigo en respuesta a las minas
+ * @param {Barco[]} res.barcosHundidosRespuestasMinas - Los barcos propios hundidos por respuesta a las minas
  * @param {TurnoIA[]} [res.turnosIA] - Los turnos de la IA, si la partida es contra la IA
  * @example
  * peticion = { body: { codigo: '1234567890', nombreId: 'jugador1', turnoRecarga: true } }
@@ -1175,47 +1405,13 @@ exports.realizarDisparoTorpedoRecargado = async (req, res) => {
       console.error("Las coordenadas i, j deben estar entre 1 y 10");
       return;
     }
-    // Verificar que existe la partida
+    // Verificar que el turno es válido: partida existe, no ha terminado, es el turno del jugador y puede usar habilidad
     const filtro = { codigo: codigo };
-    const partidaActual = await Partida.findOne(filtro);
-    if (partidaActual) {
-      let jugador1 = await Perfil.findOne({ nombreId: partidaActual.nombreId1 });
-      let jugador2 = { nombreId: "IA" };
-      if (partidaActual.nombreId2) {
-        jugador2 = await Perfil.findOne({ nombreId: partidaActual.nombreId2 });
-      }
-      // Comprobamos que el jugador está en la partida
-      var jugador = 0;
-      if (jugador1.nombreId === nombreId) {
-        jugador = 1;
-      } else if (jugador2.nombreId === nombreId) {
-        jugador = 2;
-      } else {
-        res.status(404).send('El jugador no está en la partida');
-        console.error('El jugador no está en la partida');
-        return;
-      }
-      // Comprobar que la partida no ha terminado
-      if (partidaActual.ganador) {
-        res.status(400).send('La partida ha terminado');
-        console.error('La partida ha terminado');
-        return;
-      }
-      // Comprobar si es el turno del jugador
-      if (jugador === 1 && partidaActual.contadorTurno % 2 === 0 || 
-            jugador === 2 && partidaActual.contadorTurno % 2 === 1) {
-        res.status(400).send('No es el turno del jugador');
-        console.error('No es el turno del jugador');
-        return;
-      }
-      // Comprobar si el jugador puede usar una habilidad
-      if (jugador === 1 && partidaActual.usosHab1 === 0 || 
-        jugador === 2 && partidaActual.usosHab2 === 0) {
-        res.status(400).send('Las habilidades han sido consumidas');
-        console.error('Las habilidades han sido consumidas');
-        return;
-      }
-
+    let {partidaActual, jugador1, jugador2, jugador, mensajeError} = await verificarTurno(filtro, nombreId, habilidad=true);
+    if (mensajeError) {
+      res.status(404).send(mensajeError);
+      return;
+    } else {
       var estadisticasJugadores = [
         { victoria: undefined, nuevosBarcosHundidos: 0, nuevosBarcosPerdidos: 0,
           nuevosDisparosAcertados: 0, nuevosDisparosFallados: 0, nuevosTrofeos: 0,
@@ -1236,19 +1432,27 @@ exports.realizarDisparoTorpedoRecargado = async (req, res) => {
         var disparosTorpedo = [];
         var numBarcosTocados = 0;
         var barcosHundidos = [];
+        var minasDisparadas = [];
+        var disparosRespuestasMinas = [];
+        var barcosHundidosRespuestasMinas = [];
         const vecinidad = [-1, 0, 1];
         for (let iVecino of vecinidad) {
           for (let jVecino of vecinidad) {
             let iDisparo = i + iVecino;
             let jDisparo = j + jVecino;
             if (iDisparo >= 1 && iDisparo <= tableroDim && jDisparo >= 1 && jDisparo <= tableroDim) {
-              var {disparo, barcoDisparado} = gestionarDisparo(jugador, partidaActual, estadisticasJugadores, iDisparo, jDisparo, recargado=true);
+              var {disparo, barcoDisparado, minaDisparada, disparosRespuestaMina, barcosHundidosRespuestaMina} = 
+                gestionarDisparo(jugador, partidaActual, estadisticasJugadores, iDisparo, jDisparo, true);  // No actualizar turno
               disparosTorpedo.push(disparo);
               if (disparo.estado === 'Tocado' || disparo.estado === 'Hundido') {
                 numBarcosTocados++;
                 if (disparo.estado === 'Hundido') {
                   barcosHundidos.push(barcoDisparado);
                 }
+              } else if (minaDisparada) {
+                minasDisparadas.push(minaDisparada);
+                disparosRespuestasMinas = disparosRespuestasMinas.concat(disparosRespuestaMina);
+                barcosHundidosRespuestasMinas = barcosHundidosRespuestasMinas.concat(barcosHundidosRespuestaMina);
               }
             }
           }
@@ -1259,12 +1463,18 @@ exports.realizarDisparoTorpedoRecargado = async (req, res) => {
         }
 
         // Comprobar si la partida ha terminado
-        var finPartida = await comprobarFinDePartida(jugador, jugador1, jugador2, partidaActual, estadisticasJugadores);
+        var finPartida = false;
+        if (barcosHundidos.length > 0) { // He podido ganar si he hundido el último barco
+          finPartida = await comprobarFinDePartida(jugador, jugador1, jugador2, partidaActual, estadisticasJugadores, partidaContraIA);
+        } else if (minasDisparadas.length > 0) { // He podido perder
+          let jugadorEnemigo =  jugador === 1 ? 2 : 1;
+          finPartida = await comprobarFinDePartida(jugadorEnemigo, jugador1, jugador2, partidaActual, estadisticasJugadores, partidaContraIA);
+        }
       }
       let turnosIA = [];
       let finPartidaIA = false;
       if (partidaContraIA && (turnoRecarga || numBarcosTocados === 0 && !finPartida)) {
-        finPartidaIA = juegaIA(partidaActual, estadisticasJugadores, turnosIA);
+        finPartidaIA = await juegaIA(jugador1, jugador2, partidaActual, estadisticasJugadores, turnosIA);
       }
       console.log('Disparo o recarga realizado con éxito');
       // Actualizar la partida
@@ -1282,18 +1492,17 @@ exports.realizarDisparoTorpedoRecargado = async (req, res) => {
           finPartida: finPartida,
           clima: partidaActual.clima,
           usosHab: jugador === 1 ? partidaActual.usosHab1 : partidaActual.usosHab2,
+          minasDisparadas: (minasDisparadas && minasDisparadas.length > 0) ? minasDisparadas : undefined,
+          disparosRespuestasMinas: (disparosRespuestasMinas && disparosRespuestasMinas.length > 0) ? disparosRespuestasMinas : undefined,
+          barcosHundidosRespuestasMinas: (barcosHundidosRespuestasMinas && barcosHundidosRespuestasMinas.length > 0) ? barcosHundidosRespuestasMinas : undefined,
           turnosIA: turnosIA
         };
         // Actualizar estadisticas de los jugadores
         let nuevosTrofeos = [0, 0];
-        const resultado = await actualizarEstadisticasTurno(nuevosTrofeos, partidaActual, estadisticasJugadores, jugador1, jugador2, partidaContraIA);
-        if (resultado === 1) {
-          res.status(500).send('Hubo un error actualizando los puntos de experiencia');
-          console.error("Hubo un error actualizando los puntos de experiencia");
-          return;
-        } else if (resultado === 2) {
-          res.status(500).send('Hubo un error actualizando las estadísticas');
-          console.error("Hubo un error actualizando las estadísticas");
+        const {mensajeError} = await actualizarEstadisticasTurno(nuevosTrofeos, partidaActual, estadisticasJugadores, jugador1, jugador2, partidaContraIA);
+        if (mensajeError) {
+          res.status(500).send(mensajeError);
+          console.error(mensajeError);
           return;
         }
 
@@ -1303,13 +1512,419 @@ exports.realizarDisparoTorpedoRecargado = async (req, res) => {
         }
         res.json(respuestaDisparo);
         console.log("Partida modificada con éxito");
+        return (respuestaDisparo);
       } else {
         res.status(404).send('No se ha encontrado la partida a actualizar');
         console.error("No se ha encontrado la partida a actualizar");
       }
+    }
+  } catch (error) {
+    res.status(500).send('Hubo un error');
+    console.error("Hubo un error");
+  }
+};
+
+/**
+ * @function realizarDisparoMisilTeledirigido
+ * @description Realiza un disparo teledirigido a una casilla al azar ocupada por un barco enemigo y actualiza el estado de la partida
+ * @param {Object} req - El objeto de solicitud HTTP
+ * @param {String} req.body.codigo - El codigo de la partida
+ * @param {String} req.body.nombreId - El nombreId del jugador
+ * @param {Object} res - El objeto de respuesta HTTP
+ * @param {Coordenada} res.disparoRealizado - El disparo realizado con sus coordenadas y estado
+ * @param {Barco} [res.barcoCoordenadas] - Las coordenadas del barco disparado, si se ha hundido
+ * @param {String} res.eventoOcurrido - El evento ocurrido en la partida
+ * @param {Boolean} res.finPartida - Indica si la partida ha terminado
+ * @param {String} res.clima - El clima de la partida
+ * @param {Number} res.usosHab - Los usos restantes de la habilidad del jugador
+ * @param {Coordenada} [res.minaDisparada] - La mina disparada, si se ha hundido
+ * @param {Coordenada[]} [res.disparosRespuestaMina] - Los disparos realizados por el enemigo en respuesta a una mina
+ * @param {Barco[]} [res.barcosHundidosRespuestaMina] - Los barcos propios hundidos por respuesta a una mina
+ * @param {TurnoIA[]} [res.turnosIA] - Los turnos de la IA, si la partida es contra la IA
+ * @example
+ * peticion = { body: { codigo: '1234567890', nombreId: 'jugador1' } }
+ * respuesta = { json: () => {} }
+ * await realizarDisparoMisilTeledirigido(peticion, respuesta)
+ */
+exports.realizarDisparoMisilTeledirigido = async (req, res) => {
+  try {
+    const { codigo, nombreId, ...extraParam } = req.body;
+    // Verificar si hay algún parámetro extra que no se espera
+    if (Object.keys(extraParam).length > 0) {
+      res.status(400).send('Sobran parámetros, se espera codigo, jugador');
+      console.error("Sobran parámetros, se espera codigo, jugador");
+      return;
+    }
+    // Verificar si alguno de los parámetros está ausente
+    if (!codigo || !nombreId) {
+      res.status(400).send('Falta alguno de los siguientes parámetros: codigo, nombreId');
+      return;
+    }
+    // Verificar que el turno es válido: partida existe, no ha terminado, es el turno del jugador y puede usar habilidad
+    const filtro = { codigo: codigo };
+    let {partidaActual, jugador1, jugador2, jugador, mensajeError} = await verificarTurno(filtro, nombreId, habilidad=true);
+    if (mensajeError) {
+      res.status(404).send(mensajeError);
+      return;
     } else {
-      res.status(404).send('Partida no encontrada');
-      console.error("Partida no encontrada");
+      let estadisticasJugadores = [
+        { victoria: undefined, nuevosBarcosHundidos: 0, nuevosBarcosPerdidos: 0,
+          nuevosDisparosAcertados: 0, nuevosDisparosFallados: 0, nuevosTrofeos: 0,
+          nombreId: jugador1.nombreId },
+        { victoria: undefined, nuevosBarcosHundidos: 0, nuevosBarcosPerdidos: 0,
+          nuevosDisparosAcertados: 0, nuevosDisparosFallados: 0, nuevosTrofeos: 0,
+          nombreId: jugador2.nombreId }
+      ]
+
+      const partidaContraIA = !partidaActual.nombreId2;
+      // Consumir habilidad
+      if (jugador === 1) partidaActual.usosHab1--;
+      else partidaActual.usosHab2--;
+      // Obtener la casilla aleatoria ocupada por un barco enemigo
+      const tableroEnemigo = jugador === 1 ? partidaActual.tableroBarcos2 : partidaActual.tableroBarcos1;
+      const coordenadasCandidatas = tableroEnemigo.flatMap(barco => barco.coordenadas.filter(coordenada => coordenada.estado === 'Agua'));
+      const coordenadaAleatoria = coordenadasCandidatas[Math.floor(Math.random() * coordenadasCandidatas.length)];
+      // Realizar disparo
+      const {disparo, barcoDisparado, minaDisparada, disparosRespuestaMina, barcosHundidosRespuestaMina} = 
+        gestionarDisparo(jugador, partidaActual, estadisticasJugadores, coordenadaAleatoria.i, coordenadaAleatoria.j);
+
+      // Comprobar si la partida ha terminado
+      let finPartida = false;
+      if (disparo.estado === 'Hundido') { // He podido ganar si he hundido el último barco
+        finPartida = await comprobarFinDePartida(jugador, jugador1, jugador2, partidaActual, estadisticasJugadores, partidaContraIA);
+      } else if (minaDisparada) { // He podido perder
+        let jugadorEnemigo =  jugador === 1 ? 2 : 1;
+        finPartida = await comprobarFinDePartida(jugadorEnemigo, jugador1, jugador2, partidaActual, estadisticasJugadores, partidaContraIA);
+      }
+
+      let turnosIA = [];
+      let finPartidaIA = false; // La IA no juega porque el disparo siempre es tocado o hundido
+      console.log('Disparo realizado con éxito');
+      // Actualizar la partida
+      const partidaModificada = await Partida.findOneAndUpdate(
+        filtro, // Filtrar
+        partidaActual, // Actualizar (partida contiene los cambios)
+        { new: true } // Para devolver el documento actualizado
+      );
+
+      if (partidaModificada) {
+        let respuestaDisparo = {
+          disparoRealizado: disparo,
+          barcoCoordenadas: (disparo.estado === 'Hundido') ? barcoDisparado : undefined,
+          eventoOcurrido: undefined, // Evento ocurrido en la partida
+          finPartida: finPartida,
+          clima: partidaActual.clima,
+          usosHab: jugador === 1 ? partidaActual.usosHab1 : partidaActual.usosHab2,
+          minaDisparada: minaDisparada,
+          disparosRespuestaMina: (minaDisparada !== undefined) ? disparosRespuestaMina : undefined,
+          barcosHundidosRespuestaMina: (minaDisparada !== undefined) ? barcosHundidosRespuestaMina : undefined,
+          turnosIA: turnosIA
+        };
+
+        // Actualizar estadisticas de los jugadores
+        let nuevosTrofeos = [0, 0];
+        const {mensajeError} = await actualizarEstadisticasTurno(nuevosTrofeos, partidaActual, estadisticasJugadores, jugador1, jugador2, partidaContraIA);
+        if (mensajeError) {
+          res.status(500).send(mensajeError);
+          console.error(mensajeError);
+          return;
+        }
+
+        // Si acaba la partida, devolver las estadisticas totales del jugador
+        if (finPartida || finPartidaIA) {
+          añadirEstadisticasEnRespuesta(respuestaDisparo, partidaActual, estadisticasJugadores, jugador, nuevosTrofeos);
+        }
+        res.json(respuestaDisparo);
+        console.log("Partida modificada con éxito");
+        return (respuestaDisparo);
+      } else {
+        res.status(404).send('No se ha encontrado la partida a actualizar');
+        console.error("No se ha encontrado la partida a actualizar");
+      }
+    }
+  } catch (error) {
+    res.status(500).send('Hubo un error');
+    console.error("Hubo un error");
+  }
+};
+
+/**
+ * @function colocarMina
+ * @description Coloca una mina en la coordenada (i, j) del tablero del jugador (si no está ocupada) y actualiza el estado de la partida
+ * @param {Object} req - El objeto de solicitud HTTP
+ * @param {String} req.body.codigo - El codigo de la partida
+ * @param {String} req.body.nombreId - El nombreId del jugador
+ * @param {Number} req.body.i - La coordenada i de la mina
+ * @param {Number} req.body.j - La coordenada j de la mina
+ * @param {Object} res - El objeto de respuesta HTTP
+ * @param {Coordenada} res.minaColocada - Las coordenadas de la mina colocada
+ * @param {String} res.eventoOcurrido - El evento ocurrido en la partida
+ * @param {Boolean} res.finPartida - Indica si la partida ha terminado
+ * @param {String} res.clima - El clima de la partida
+ * @param {Number} res.usosHab - Los usos restantes de la habilidad del jugador
+ * @param {TurnoIA[]} [res.turnosIA] - Los turnos de la IA, si la partida es contra la IA
+ * @example
+ * peticion = { body: { codigo: '1234567890', nombreId: 'jugador1', i: 1, j: 1 } }
+ * respuesta = { json: () => {} }
+ * await colocarMina(peticion, respuesta)
+ */
+exports.colocarMina = async (req, res) => {
+  try {
+    const { codigo, nombreId, i, j, ...extraParam } = req.body;
+    // Verificar si hay algún parámetro extra que no se espera
+    if (Object.keys(extraParam).length > 0) {
+      res.status(400).send('Sobran parámetros, se espera codigo, jugador, i, j');
+      console.error("Sobran parámetros, se espera codigo, jugador, i, j");
+      return;
+    }
+    // Verificar si alguno de los parámetros está ausente
+    if (!codigo || !nombreId || !i || !j) {
+      res.status(400).send('Falta alguno de los siguientes parámetros: codigo, nombreId, i, j');
+      return;
+    }
+    // Comprobar si i, j es casilla válida
+    if (i < 1 || i > tableroDim || j < 1 || j > tableroDim) {
+      res.status(400).send('Las coordenadas i, j deben estar entre 1 y 10');
+      console.error("Las coordenadas i, j deben estar entre 1 y 10");
+      return;
+    }
+    // Verificar que el turno es válido: partida existe, no ha terminado, es el turno del jugador y puede usar habilidad
+    const filtro = { codigo: codigo };
+    let {partidaActual, jugador1, jugador2, jugador, mensajeError} = await verificarTurno(filtro, nombreId, habilidad=true);
+    if (mensajeError) {
+      res.status(404).send(mensajeError);
+      return;
+    } else {
+      // Comprobar si la casilla está ocupada por un barco propio u otra mina
+      const miTablero = jugador === 1 ? partidaActual.tableroBarcos1 : partidaActual.tableroBarcos2;
+      const ocupadaPorBarco = miTablero.some(barco => barco.coordenadas.some(coordenada => coordenada.i === i && coordenada.j === j && coordenada.estado === 'Agua'));
+      if (ocupadaPorBarco) {
+        res.status(404).send('La casilla está ocupada por un barco');
+        console.error("La casilla está ocupada por un barco");
+        return;
+      }
+      const misMinas = jugador === 1 ? partidaActual.minas1 : partidaActual.minas2;
+      const ocupadaPorMina = misMinas.some(mina => mina.i === i && mina.j === j && mina.estado === 'Agua');
+      if (ocupadaPorMina) {
+        res.status(404).send('La casilla está ocupada por una mina');
+        console.error("La casilla está ocupada por una mina");
+        return;
+      }
+
+      let estadisticasJugadores = [
+        { victoria: undefined, nuevosBarcosHundidos: 0, nuevosBarcosPerdidos: 0,
+          nuevosDisparosAcertados: 0, nuevosDisparosFallados: 0, nuevosTrofeos: 0,
+          nombreId: jugador1.nombreId },
+        { victoria: undefined, nuevosBarcosHundidos: 0, nuevosBarcosPerdidos: 0,
+          nuevosDisparosAcertados: 0, nuevosDisparosFallados: 0, nuevosTrofeos: 0,
+          nombreId: jugador2.nombreId }
+      ]
+
+      const partidaContraIA = !partidaActual.nombreId2;
+      // Consumir habilidad y colocar mina
+      if (jugador === 1) {
+        partidaActual.usosHab1--;
+        partidaActual.minas1.push({i: i, j: j});
+      } else {
+        partidaActual.usosHab2--;
+        partidaActual.minas2.push({i: i, j: j});
+      }
+      // Actualizar turno
+      partidaActual.contadorTurno++;
+
+      // Comprobar si la partida ha terminado
+      const finPartida = false; // No puede acabar la partida al colocar una mina
+      
+      let turnosIA = [];
+      let finPartidaIA = false;
+      // La IA no juega si no es el último misil de ráfaga
+      if (partidaContraIA) {  // La IA juega siempre tras colocar una mina
+        finPartidaIA = await juegaIA(jugador1, jugador2, partidaActual, estadisticasJugadores, turnosIA);
+      }
+      console.log('Mina colocada con éxito');
+      // Actualizar la partida
+      const partidaModificada = await Partida.findOneAndUpdate(
+        filtro, // Filtrar
+        partidaActual, // Actualizar (partida contiene los cambios)
+        { new: true } // Para devolver el documento actualizado
+      );
+
+      if (partidaModificada) {
+        let respuestaDisparo = {
+          minaColocada: {i: i, j: j},
+          eventoOcurrido: undefined, // Evento ocurrido en la partida
+          finPartida: finPartida,
+          clima: partidaActual.clima,
+          usosHab: jugador === 1 ? partidaActual.usosHab1 : partidaActual.usosHab2,
+          turnosIA: turnosIA
+        };
+
+        // Actualizar estadisticas de los jugadores
+        let nuevosTrofeos = [0, 0];
+        const {mensajeError} = await actualizarEstadisticasTurno(nuevosTrofeos, partidaActual, estadisticasJugadores, jugador1, jugador2, partidaContraIA);
+        if (mensajeError) {
+          res.status(500).send(mensajeError);
+          console.error(mensajeError);
+          return;
+        }
+
+        // Si acaba la partida, devolver las estadisticas totales del jugador
+        if (finPartida || finPartidaIA) {
+          añadirEstadisticasEnRespuesta(respuestaDisparo, partidaActual, estadisticasJugadores, jugador, nuevosTrofeos);
+        }
+        res.json(respuestaDisparo);
+        console.log("Partida modificada con éxito");
+        return (respuestaDisparo);
+      } else {
+        res.status(404).send('No se ha encontrado la partida a actualizar');
+        console.error("No se ha encontrado la partida a actualizar");
+      }
+    }
+  } catch (error) {
+    res.status(500).send('Hubo un error');
+    console.error("Hubo un error");
+  }
+};
+
+/**
+ * @function usarSonar
+ * @description Usa la habilidad del sónar para revelar lo que hay en la casilla (i, j) y sus vecinas del enemigo y actualiza el estado de la partida
+ * @param {Object} req - El objeto de solicitud HTTP
+ * @param {String} req.body.codigo - El codigo de la partida
+ * @param {String} req.body.nombreId - El nombreId del jugador
+ * @param {Number} req.body.i - La coordenada i de la mina
+ * @param {Number} req.body.j - La coordenada j de la mina
+ * @param {Object} res - El objeto de respuesta HTTP
+ * @param {String[][]} res.sonar - El resultado del sónar en la casilla (i, j) y sus vecinas: 'Barco', 'Mina' o 'Agua' (o null si fuera de rango)
+ * @param {String} res.eventoOcurrido - El evento ocurrido en la partida
+ * @param {Boolean} res.finPartida - Indica si la partida ha terminado
+ * @param {String} res.clima - El clima de la partida
+ * @param {Number} res.usosHab - Los usos restantes de la habilidad del jugador
+ * @param {TurnoIA[]} [res.turnosIA] - Los turnos de la IA, si la partida es contra la IA
+ * @example
+ * peticion = { body: { codigo: '1234567890', nombreId: 'jugador1', i: 2, j: 2 } }
+ * respuesta = { json: () => {} }
+ * await usarSonar(peticion, respuesta)
+ */
+exports.usarSonar = async (req, res) => {
+  try {
+    const { codigo, nombreId, i, j, ...extraParam } = req.body;
+    // Verificar si hay algún parámetro extra que no se espera
+    if (Object.keys(extraParam).length > 0) {
+      res.status(400).send('Sobran parámetros, se espera codigo, jugador, i, j');
+      console.error("Sobran parámetros, se espera codigo, jugador, i, j");
+      return;
+    }
+    // Verificar si alguno de los parámetros está ausente
+    if (!codigo || !nombreId || !i || !j) {
+      res.status(400).send('Falta alguno de los siguientes parámetros: codigo, nombreId, i, j');
+      return;
+    }
+    // Comprobar si i, j es casilla válida
+    if (i < 1 || i > tableroDim || j < 1 || j > tableroDim) {
+      res.status(400).send('Las coordenadas i, j deben estar entre 1 y 10');
+      console.error("Las coordenadas i, j deben estar entre 1 y 10");
+      return;
+    }
+    // Verificar que el turno es válido: partida existe, no ha terminado, es el turno del jugador y puede usar habilidad
+    const filtro = { codigo: codigo };
+    let {partidaActual, jugador1, jugador2, jugador, mensajeError} = await verificarTurno(filtro, nombreId, habilidad=true);
+    if (mensajeError) {
+      res.status(404).send(mensajeError);
+      return;
+    } else {
+      let estadisticasJugadores = [
+        { victoria: undefined, nuevosBarcosHundidos: 0, nuevosBarcosPerdidos: 0,
+          nuevosDisparosAcertados: 0, nuevosDisparosFallados: 0, nuevosTrofeos: 0,
+          nombreId: jugador1.nombreId },
+        { victoria: undefined, nuevosBarcosHundidos: 0, nuevosBarcosPerdidos: 0,
+          nuevosDisparosAcertados: 0, nuevosDisparosFallados: 0, nuevosTrofeos: 0,
+          nombreId: jugador2.nombreId }
+      ]
+
+      const partidaContraIA = !partidaActual.nombreId2;
+      // Consumir habilidad 
+      if (jugador === 1) {
+        partidaActual.usosHab1--;
+      } else {
+        partidaActual.usosHab2--;
+      }
+
+      // Descubrir casillas enemigas
+      let sonar = [
+        [null, null, null],
+        [null, null, null],
+        [null, null, null]
+      ];
+      const tableroEnemigo = jugador === 1 ? partidaActual.tableroBarcos2 : partidaActual.tableroBarcos1;
+      const minasEnemigas = jugador === 1 ? partidaActual.minas2 : partidaActual.minas1;
+      const vecinidad = [-1, 0, 1];
+      for (let iVecino of vecinidad) {
+        for (let jVecino of vecinidad) {
+          let iCasilla = i + iVecino;
+          let jCasilla = j + jVecino;
+          if (iCasilla >= 1 && iCasilla <= tableroDim && jCasilla >= 1 && jCasilla <= tableroDim) {
+            if (tableroEnemigo.some(barco => barco.coordenadas.some(coordenada => coordenada.i === iCasilla && coordenada.j === jCasilla && coordenada.estado === 'Agua'))) {
+              sonar[iVecino + 1][jVecino + 1] = 'Barco';
+            } else if (minasEnemigas.some(mina => mina.i === iCasilla && mina.j === jCasilla && mina.estado === 'Agua')) {
+              sonar[iVecino + 1][jVecino + 1] = 'Mina';
+            } else {
+              sonar[iVecino + 1][jVecino + 1] = 'Agua';
+            }
+          }
+        }
+      }
+
+      // Actualizar turno
+      partidaActual.contadorTurno++;
+
+      // Comprobar si la partida ha terminado
+      const finPartida = false; // No puede acabar la partida al usar el sónar
+      
+      let turnosIA = [];
+      let finPartidaIA = false;
+      // La IA no juega si no es el último misil de ráfaga
+      if (partidaContraIA) {  // La IA juega siempre tras usar el sónar
+        finPartidaIA = await juegaIA(jugador1, jugador2, partidaActual, estadisticasJugadores, turnosIA);
+      }
+      console.log('Sónar usado con éxito');
+      // Actualizar la partida
+      const partidaModificada = await Partida.findOneAndUpdate(
+        filtro, // Filtrar
+        partidaActual, // Actualizar (partida contiene los cambios)
+        { new: true } // Para devolver el documento actualizado
+      );
+
+      if (partidaModificada) {
+        let respuestaDisparo = {
+          sonar: sonar,
+          eventoOcurrido: undefined, // Evento ocurrido en la partida
+          finPartida: finPartida,
+          clima: partidaActual.clima,
+          usosHab: jugador === 1 ? partidaActual.usosHab1 : partidaActual.usosHab2,
+          turnosIA: turnosIA
+        };
+
+        // Actualizar estadisticas de los jugadores
+        let nuevosTrofeos = [0, 0];
+        const {mensajeError} = await actualizarEstadisticasTurno(nuevosTrofeos, partidaActual, estadisticasJugadores, jugador1, jugador2, partidaContraIA);
+        if (mensajeError) {
+          res.status(500).send(mensajeError);
+          console.error(mensajeError);
+          return;
+        }
+
+        // Si acaba la partida, devolver las estadisticas totales del jugador
+        if (finPartida || finPartidaIA) {
+          añadirEstadisticasEnRespuesta(respuestaDisparo, partidaActual, estadisticasJugadores, jugador, nuevosTrofeos);
+        }
+        res.json(respuestaDisparo);
+        console.log("Partida modificada con éxito");
+        return(respuestaDisparo);
+      } else {
+        res.status(404).send('No se ha encontrado la partida a actualizar');
+        console.error("No se ha encontrado la partida a actualizar");
+      }
     }
   } catch (error) {
     res.status(500).send('Hubo un error');
@@ -1440,108 +2055,3 @@ exports.enviarMensaje = async (req, res) => {
     res.status(500).send('Hubo un error');
   }
 };
-
-
-
-
-// Funcion para seleccionar el clima en funcion del bioma de la partida 
-function seleccionarClima(bioma, clima) {
-  // Número aleatorio para determinar si hay un cambio de clima
-  let cambioClima = Math.random();
-
-  // Número aleatorio para determinar el nuevo clima
-  let nuevoClima = Math.random();
-
-  // Número aleatorio para decidir un viento
-  let v = Math.random();
-  if(v > 0.25) { viento = 'VientoSur'; }
-  else if(v > 0.5) { viento = 'VientoNorte'; }
-  else if(v > 0.75) { viento = 'VientoEste'; }
-  else { viento = 'VientoOeste'; }
-
-  // Climas del bioma Mediterraneo: calma, viento, niebla
-  // Cambia de climas con frecuencia 10 %
-  // Calma -> Viento 60%, Niebla 40%
-  // Viento -> Calma 70%, Niebla 30%
-  // Niebla -> Calma 70%, Viento 30%
-  if(bioma === 'Mediterraneo') {
-    if(clima == 'Calma') {
-      if(cambioClima > 0.1) {
-        if(nuevoClima > 0.6) { return viento; }
-        else { return 'Niebla'; }
-      }
-    }
-    else if(clima == 'VientoSur' || clima == 'VientoNorte' || clima == 'VientoEste' || clima == 'VientoOeste') {
-      if(cambioClima > 0.7) {
-        if(nuevoClima > 0.7) { return 'Calma'; }  
-        else { return 'Niebla'; }
-      }
-    }
-    else if(clima == 'Niebla') {
-      if(cambioClima > 0.7) {
-        if(nuevoClima > 0.7) { return 'Calma'; }
-        else { return viento; }
-      }
-    }
-
-  }
-  // Climas del bioma Cantabrico: Calma, Viento, Niebla, Tormenta
-  // Cambia de climas con frecuencia 30 %
-  // Calma -> Viento 50%, Niebla 50%
-  // Viento -> Calma 50%, Tormenta 50%
-  // Niebla -> Calma 100%
-  // Tormenta -> Viento 50%, Calma 50%
-  else if(bioma === 'Cantabrico') {
-    if(cambioClima > 0.3) {
-      if(clima == 'Calma') {
-        if(nuevoClima > 0.5) { return viento; }
-        else { return 'Niebla'; }
-      }
-      else if(clima == 'VientoSur' || clima == 'VientoNorte' || clima == 'VientoEste' || clima == 'VientoOeste') {
-        if(nuevoClima > 0.5) { return 'Calma'; }
-        else { return 'Tormenta'; }
-      }
-      else if(clima == 'Niebla') { return 'Calma'; }
-      else if(clima == 'Tormenta') {
-        if(nuevoClima > 0.5) { return viento; }
-        else { return 'Calma'; }
-      }
-    }
-  }
-  // Climas del bioma Norte: Calma, Viento, Niebla, Tormenta
-  // Cambia de climas con frecuencia 50 %
-  // Calma -> Viento 60%, Niebla 40%
-  // Viento -> Calma 40%, Tormenta 60%
-  // Niebla -> Calma 80%, Viento 20%
-  // Tormenta -> Viento 50%, Calma 30%, Niebla 20%
-  else if(bioma === 'Norte') {
-    if(cambioClima > 0.5) {
-      if(clima == 'Calma') {
-        if(nuevoClima > 0.6) { return viento; }
-        else { return 'Niebla'; }
-      }
-      else if(clima == 'VientoSur' || clima == 'VientoNorte' || clima == 'VientoEste' || clima == 'VientoOeste') {
-        if(nuevoClima > 0.4) { return 'Calma'; }
-        else { return 'Tormenta'; }
-      }
-      else if(clima == 'Niebla') {
-        if(nuevoClima > 0.8) { return 'Calma'; }
-        else { return viento; }
-      }
-      else if(clima == 'Tormenta') {
-        if(nuevoClima > 0.5) { return viento; }
-        else if(nuevoClima > 0.8) { return 'Calma'; }
-        else { return 'Niebla'; }
-      }
-    }
-
-  }
-  else if(bioma === 'Bermudas') {
-    return 'Tormenta'
-  }
-  else {
-    // El bioma no está definido
-    console.error('El bioma no está definido');
-    return undefined;
-  }
-}  

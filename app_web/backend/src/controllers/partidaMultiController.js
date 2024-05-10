@@ -9,7 +9,6 @@ const {actualizarEstadisticas, actualizarPuntosExperiencia} = require('./perfilC
 const PartidaController = require('./partidaController');
 const socketIo = require('socket.io');
 const { getIO, eventosSocket } = require('../socketManager');
-const { json } = require('stream/consumers');
 const tableroDim = Coordenada.i.max;  // Dimensiones del tablero
 /**
  * @module partidaMulti
@@ -153,7 +152,7 @@ exports.abandonarPartida = async (req, res) => {
   await PartidaController.abandonarPartida(req, res);
   const io = getIO();
   io.to('/partida' + codigo).emit(eventosSocket.abandono, codigo, nombreId);
-  console.log('Partida abandonada en backend:', codigo, nombreId);
+  console.log('Partida encontrada en backend:', sala.codigo);
 };
 
 /**
@@ -246,11 +245,10 @@ exports.mostrarTableros = async (req, res) => {
  * await realizarDisparo(peticion, respuesta)
  */
 exports.realizarDisparo = async (req, res) => {
-
   const respuesta = await PartidaController.realizarDisparo(req, res);
   const io = getIO();
-  io.to('/partida' + req.body.codigo).emit(eventosSocket.resultadoTurno, "disparo", req.body.nombreId, respuesta.disparoRealizado, respuesta.barcoCoordenadas, respuesta.finPartida, respuesta.clima);
-  console.log('Resultado turno tras disparo recibido en backend:', req.body.nombreId, respuesta.disparoRealizado, respuesta.barcoCoordenadas, respuesta.finPartida, respuesta.clima);
+  io.to('/partida' + req.body.codigo).emit(eventosSocket.resultadoTurno, "disparo", req.body.nombreId, respuesta.disparoRealizado, respuesta.barcoCoordenadas, respuesta.finPartida, respuesta.clima, respuesta.eventoOcurrido);
+  console.log('Resultado turno tras disparo recibido en backend:', req.body.nombreId, respuesta.disparoRealizado, respuesta.barcoCoordenadas, respuesta.finPartida, respuesta.clima, respuesta.eventoOcurrido);
 };
 
 /**
@@ -272,9 +270,10 @@ exports.realizarDisparo = async (req, res) => {
  * @param {TurnoIA[]} [res.turnosIA] - Los turnos de la IA, si la partida es contra la IA
  */
 exports.realizarDisparoMisilRafaga = async (req, res) => {
-  const repetirTurno = await PartidaController.realizarDisparoMisilRafaga(req, res);
+  const respuesta = await PartidaController.realizarDisparoMisilRafaga(req, res);
   const io = getIO();
-  io.to('/partida' + req.body.codigo).emit(eventosSocket.resultadoTurno, "misilRafaga", res.disparoRealizado, res.barcoCoordenadas, res.finPartida, res.clima);
+  io.to('/partida' + req.body.codigo).emit(eventosSocket.resultadoTurno, "Rafaga", req.body.nombreId, respuesta.disparoRealizado, respuesta.barcoCoordenadas, respuesta.finPartida, respuesta.clima);
+  console.log('Resultado turno tras misil rafaga recibido en backend:', req.body.nombreId, respuesta.disparoRealizado, respuesta.barcoCoordenadas, respuesta.finPartida, respuesta.clima);
 };
 
 /**
@@ -297,11 +296,84 @@ exports.realizarDisparoMisilRafaga = async (req, res) => {
  * @param {TurnoIA[]} [res.turnosIA] - Los turnos de la IA, si la partida es contra la IA
  */
 exports.realizarDisparoTorpedoRecargado = async (req, res) => {
-  const repetirTurno = await PartidaController.realizarDisparoTorpedoRecargado(req, res);
+  const respuesta = await PartidaController.realizarDisparoTorpedoRecargado(req, res);
   const io = getIO();
-  io.to('/partida' + req.body.codigo).emit(eventosSocket.resultadoTurno, "torpedoRecargado", res.disparoRealizado, res.algunoTocado, res.barcoCoordenadas, res.finPartida, res.clima);
-  console.log('Resultado turno tras disparo recibido en backend:', res.disparoRealizado, res.algunoTocado, res.barcoCoordenadas, res.finPartida, res.clima);
+  io.to('/partida' + req.body.codigo).emit(eventosSocket.resultadoTurno, "Recargado", req.body.nombreId, respuesta.disparoRealizado, respuesta.barcoCoordenadas, respuesta.finPartida, respuesta.clima);
+  console.log('Resultado turno tras torpedo recargado recibido en backend:', req.body.nombreId, respuesta.disparoRealizado, respuesta.barcoCoordenadas, respuesta.finPartida, respuesta.clima);
 };
+
+/**
+ * @function realizarDisparoMisilTeledirigido
+ * @description Realiza un disparo teledirigido en la coordenada (i, j) del enemigo y actualiza el estado de la partida
+ * @param {Object} req - El objeto de solicitud HTTP
+ * @param {String} req.body.codigo - El codigo de la partida
+ * @param {String} req.body.nombreId - El nombreId del jugador
+ * @param {Number} req.body.i - La coordenada i del disparo
+ * @param {Number} req.body.j - La coordenada j del disparo
+ * @param {Object} res - El objeto de respuesta HTTP
+ * @param {Object} res.disparoRealizado - El disparo realizado con sus coordenadas y estado
+ * @param {Coordenada[]} res.barcoCoordenadas - Las coordenadas de los barcos afectados por el disparo
+ * @param {String} res.eventoOcurrido - El evento ocurrido en la partida
+ * @param {Boolean} res.finPartida - Indica si la partida ha terminado
+ * @param {String} res.clima - El clima de la partida
+ * @param {Number} res.usosHab - Los usos restantes de la habilidad del jugador
+ * @param {TurnoIA[]} [res.turnosIA] - Los turnos de la IA, si la partida es contra la IA
+ */
+exports.realizarDisparoMisilTeledirigido = async (req, res) => {
+  const respuesta = await PartidaController.realizarDisparoMisilTeledirigido(req, res);
+  const io = getIO();
+  io.to('/partida' + req.body.codigo).emit(eventosSocket.resultadoTurno, "Teledirigido", req.body.nombreId, respuesta.disparoRealizado, respuesta.barcoCoordenadas, respuesta.finPartida, respuesta.clima);
+  console.log('Resultado turno tras teledirigido recibido en backend:', req.body.nombreId, respuesta.disparoRealizado, respuesta.barcoCoordenadas, respuesta.finPartida, respuesta.clima);
+}
+
+/**
+ * @function usarSonar
+ * @description Realiza un disparo de sonar en la coordenada (i, j) del enemigo y actualiza el estado de la partida
+ * @param {Object} req - El objeto de solicitud HTTP
+ * @param {String} req.body.codigo - El codigo de la partida
+ * @param {String} req.body.nombreId - El nombreId del jugador
+ * @param {Number} req.body.i - La coordenada i del disparo
+ * @param {Number} req.body.j - La coordenada j del disparo
+ * @param {Object} res - El objeto de respuesta HTTP
+ * @param {Object} res.disparoRealizado - El disparo realizado con sus coordenadas y estado
+ * @param {Coordenada[]} res.barcoCoordenadas - Las coordenadas de los barcos en la fila y columna del sonar
+ * @param {String} res.eventoOcurrido - El evento ocurrido en la partida
+ * @param {Boolean} res.finPartida - Indica si la partida ha terminado
+ * @param {String} res.clima - El clima de la partida
+ * @param {Number} res.usosHab - Los usos restantes de la habilidad del jugador
+ * @param {TurnoIA[]} [res.turnosIA] - Los turnos de la IA, si la partida es contra la IA
+ */
+exports.usarSonar = async (req, res) => {
+  const respuesta = await PartidaController.usarSonar(req, res);
+  const io = getIO();
+  io.to('/partida' + req.body.codigo).emit(eventosSocket.resultadoTurno, "Sonar", req.body.nombreId, respuesta.disparoRealizado, respuesta.barcoCoordenadas, respuesta.finPartida, respuesta.clima);
+  console.log('Resultado turno tras sonar recibido en backend:', req.body.nombreId, respuesta.disparoRealizado, respuesta.barcoCoordenadas, respuesta.finPartida, respuesta.clima);
+}
+
+/**
+ * @function realizarDisparoMina
+ * @description Realiza un disparo de mina en la coordenada (i, j) del enemigo y actualiza el estado de la partida
+ * @param {Object} req - El objeto de solicitud HTTP
+ * @param {String} req.body.codigo - El codigo de la partida
+ * @param {String} req.body.nombreId - El nombreId del jugador
+ * @param {Number} req.body.i - La coordenada i del disparo
+ * @param {Number} req.body.j - La coordenada j del disparo
+ * @param {Object} res - El objeto de respuesta HTTP
+ * @param {Object} res.disparoRealizado - El disparo realizado con sus coordenadas y estado
+ * @param {Coordenada[]} res.barcoCoordenadas - Las coordenadas de los barcos afectados por la mina
+ * @param {String} res.eventoOcurrido - El evento ocurrido en la partida
+ * @param {Boolean} res.finPartida - Indica si la partida ha terminado
+ * @param {String} res.clima - El clima de la partida
+ * @param {Number} res.usosHab - Los usos restantes de la habilidad del jugador
+ * @param {TurnoIA[]} [res.turnosIA] - Los turnos de la IA, si la partida es contra la IA
+ */
+exports.realizarDisparoMina = async (req, res) => {
+  const respuesta = await PartidaController.realizarDisparoMina(req, res);
+  const io = getIO();
+  io.to('/partida' + req.body.codigo).emit(eventosSocket.resultadoTurno, "Mina", req.body.nombreId, respuesta.disparoRealizado, respuesta.barcoCoordenadas, respuesta.finPartida, respuesta.clima);
+  console.log('Resultado turno tras mina recibido en backend:', req.body.nombreId, respuesta.disparoRealizado, respuesta.barcoCoordenadas, respuesta.finPartida, respuesta.clima);
+}
+
 
 // Funcion para obtener el chat de una partida
 /**
@@ -319,7 +391,6 @@ exports.realizarDisparoTorpedoRecargado = async (req, res) => {
  */
 exports.obtenerChat = async (req, res) => {
   await PartidaController.obtenerChat(req, res);
-  console.log('Chat obtenido');
 };
 
 // Funcion para enviar un mensaje al chat de una partida
@@ -339,7 +410,6 @@ exports.obtenerChat = async (req, res) => {
  */
 exports.enviarMensaje = async (req, res) => {
   await PartidaController.enviarMensaje(req, res);
-  io.to('/partida' + req.body.codigo).emit(eventosSocket.chat, req.body.codigo, req.body.nombreId, req.body.mensaje);
-  console.log('Mensaje enviado en backend');
+  io.to('/partida' + req.body.codigo).emit(eventosSocket.chat, req.body.codigo, req.body.mensaje);
 };
 

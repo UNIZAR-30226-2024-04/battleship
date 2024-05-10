@@ -13,7 +13,7 @@ const eventosSocket = {
     partidaEncontrada: 'partidaEncontrada', // Se emite cuando se encuentra una sala para jugar partida
                                             // Se escucha cuando se encuentra una sala para jugar partida
 
-    resultadoTurno: 'resultadoTurno',        // Se emite cuando un jugador realiza el disparo
+    resultadoTurno: 'resultadoTurno',        // Se emite cuando un jugador acierta el disparo
                                             // Se escucha despues de emitir turnoRecibido
 
     turnoRecibido: 'turnoRecibido',         // Se emite cuando se recibe el finTurnos
@@ -52,23 +52,18 @@ function initializeSocket(server) {
         });
 
         socket.on(eventosSocket.resultadoTurno, (habilidad, idJugador, coordenada, barcoHundido, finpartida, clima) => {
-            console.log('Resultado turno tras disparo recibido en backend:', habilidad, idJugador, coordenada, barcoHundido, finpartida, clima);
-            io.to(`/partida${codigo['codigo']}`).emit(eventosSocket.resultadoTurno, habilidad, idJugador, coordenada, barcoHundido, finpartida, clima);
+            console.log('Resultado turno tras disparo recibido en backend:', habilidad, idJugador, coordenada, barcoHundido, finpartida, clima, eventoOcurrido);
+            io.to(`/partida${codigo['codigo']}`).emit(eventosSocket.resultadoTurno, habilidad, idJugador, coordenada, barcoHundido, finpartida, clima, eventoOcurrido);
         });
-
+        
         socket.on(eventosSocket.turnoRecibido, (codigo) => {
             console.log('Turno recibido en backend:', codigo);
             io.to(`/partida${codigo}`).emit(eventosSocket.turnoRecibido, codigo);
         });
-        
+
         socket.on(eventosSocket.abandono, (codigo) => {
             console.log('Abandono recibido en backend:', codigo, idJugador);
             io.to(`/partida${codigo}`).emit(eventosSocket.abandono, codigo, idJugador);
-        });
-
-        socket.on(eventosSocket.chat, (codigo, idJugador, mensaje) => {
-            console.log('Mensaje recibido en backend:', codigo, idJugador, mensaje);
-            io.to(`/partida${codigo}`).emit(eventosSocket.chat, idJugador, mensaje);
         });
 
         socket.on('disconnect', () => {
