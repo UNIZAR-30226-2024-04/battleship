@@ -152,7 +152,6 @@ exports.abandonarPartida = async (req, res) => {
   await PartidaController.abandonarPartida(req, res);
   const io = getIO();
   io.to('/partida' + codigo).emit(eventosSocket.abandono, codigo, nombreId);
-  console.log('Partida encontrada en backend:', sala.codigo);
 };
 
 /**

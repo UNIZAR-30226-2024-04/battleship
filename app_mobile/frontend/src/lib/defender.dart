@@ -23,6 +23,10 @@ class _DefenderState extends State<Defender> {
   @override
   void initState() {
     super.initState();
+    
+    Juego().socket.on('disconnect', (_) {
+      print('Conexión cerrada');
+    });
 
     Juego().socket.on('abandono', (data) {
       if(data[1] != Juego().miPerfil.name) {

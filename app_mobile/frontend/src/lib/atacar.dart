@@ -25,6 +25,11 @@ class _AtacarState extends State<Atacar> {
   void initState() {
     super.initState();
     defender = false;
+
+    Juego().socket.on('disconnect', (_) {
+      print('Conexión cerrada');
+    });
+
     Juego().socket.on('abandono', (data) {
       if(data[1] != Juego().miPerfil.name) {
         print(data);

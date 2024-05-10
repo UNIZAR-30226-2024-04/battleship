@@ -105,6 +105,9 @@ class Juego {
     barcosHundidosPorMi = [];
     barcosHundidosPorRival = [];
     anfitrion = true;
+    // Dejar de escuchar eventos
+    socket.off('resultadoTurno');
+    socket.off('abandono');
   }
 
   void setSession(String name, String email, String password, String token) {

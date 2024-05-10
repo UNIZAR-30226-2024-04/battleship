@@ -8,6 +8,7 @@ class ServerRoute {
   String urlCrearSala = 'http://localhost:8080/partidaMulti/crearSala';
   String urlBuscarSala = 'http://localhost:8080/partidaMulti/buscarSala';
   String urlAbandonarPartida = 'http://localhost:8080/partida/abandonarPartida';
+  String urlAbandonarPartidaMulti = 'http://localhost:8080/partidaMulti/abandonarPartida';
   String urlDisparar = 'http://localhost:8080/partida/realizarDisparo';
   String urlDispararMulti = 'http://localhost:8080/partidaMulti/realizarDisparo';
   String urlInicioSesion = 'http://localhost:8080/perfil/iniciarSesion';
