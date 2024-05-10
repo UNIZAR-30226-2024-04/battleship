@@ -1,14 +1,10 @@
 import 'dart:async';
-import 'dart:math';
-
 import 'package:battleship/authProvider.dart';
 import 'package:battleship/barco.dart';
 import 'package:battleship/botones.dart';
-import 'package:battleship/destino.dart';
 import 'package:battleship/juego.dart';
 import 'package:flutter/material.dart';
 import 'comun.dart';
-import 'defender.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'serverRoute.dart';
@@ -22,149 +18,64 @@ class Atacar extends StatefulWidget {
 //
 class _AtacarState extends State<Atacar> {
   ServerRoute serverRoute = ServerRoute();
-  Completer completerAbandono = Completer();
+  bool defender = false;
+  Offset casillaNiebla = Offset(-1, -1);
 
   @override
   void initState() {
     super.initState();
+    defender = false;
     Juego().socket.on('abandono', (data) {
-      //print('Abandono: $data');
-      if (!completerAbandono.isCompleted) {
-        completerAbandono.complete();
+      if(data[1] != Juego().miPerfil.name) {
+        print(data);
+        Juego().reiniciarPartida();
+        showSuccessSnackBar(context, '¡Has ganado la partida por abandono de tu oponente!');
+        Navigator.pushNamed(context, '/Principal');
       }
     }); 
   }
 
   @override
   Widget build(BuildContext context) {
-    if (DestinoManager.getDestino() is Defender) {
-      return Container(
-        decoration: const BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage('images/fondo.jpg'),
-            fit: BoxFit.cover,
-          ),
+    return Container(
+      decoration: const BoxDecoration(
+        image: DecorationImage(
+          image: AssetImage('images/fondo.jpg'),
+          fit: BoxFit.cover,
         ),
-        child: Scaffold(
-          backgroundColor: Colors.transparent,
-          body: Column(
-            children: [
-              buildHeader(context, ponerPerfil: false),
-              const SizedBox(height: 20),
-              _construirBarcosRestantes(),
-              FutureBuilder<Widget>(
-                future: _construirTableroConBarcosAtacable(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const CircularProgressIndicator();
-                  }
-                  else if (snapshot.hasError) {
-                    return Text('Error: ${snapshot.error}');
-                  }
-                  else {
-                    return AnimatedOpacity(
-                      opacity: snapshot.data == null ? 0.0 : 1.0,
-                      duration: const Duration(milliseconds: 500),
-                      child: snapshot.data,
-                    );
-                  }
-                },
-              ),
-              _construirHabilidades(),  // Habilidades del jugador.
-              const Spacer(),
-              // Botón para abandonar la partida.
-              buildActionButton(context, () {
-                Juego().abandonarPartida(context);
-                Juego().reiniciarPartida();
-                Navigator.pushNamed(context, '/Principal');
-              }, "Abandonar partida"),
-              const Spacer(),
-            ],
-          ),
+      ),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        body: Column(
+          children: [
+            buildHeader(context, ponerPerfil: false),
+            const SizedBox(height: 20),
+            _construirBarcosRestantes(),
+            _construirTableroConBarcosAtacable(),
+            _construirHabilidades(),
+            const Spacer(),
+            buildActionButton(context, () {
+              Juego().abandonarPartida(context);
+              Juego().reiniciarPartida();
+              Navigator.pushNamed(context, '/Principal');
+            }, "Abandonar partida"),
+            const Spacer(),
+          ],
         ),
-      );
-    }
-    else {
-    return FutureBuilder(
-              future: Future.delayed(Duration(seconds: 1)),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Container(
-                    decoration: const BoxDecoration(
-                      image: DecorationImage(
-                        image: AssetImage('images/fondo.jpg'),
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                    child: Scaffold(
-                      backgroundColor: Colors.transparent,
-                      body: Center(
-                        child: Text('¡Tu turno!', style: TextStyle(color: Colors.white, fontSize: 28)),
-                      ),
-                    ),
-                  );
-                } else {
-                  return Container(
-                    decoration: const BoxDecoration(
-                      image: DecorationImage(
-                        image: AssetImage('images/fondo.jpg'),
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                    child: Scaffold(
-                      backgroundColor: Colors.transparent,
-                      body: Column(
-                        children: [
-                          buildHeader(context, ponerPerfil: false),
-                          const SizedBox(height: 20),
-                          _construirBarcosRestantes(),
-                          FutureBuilder<Widget>(
-                            future: _construirTableroConBarcosAtacable(),
-                            builder: (context, snapshot) {
-                              if (snapshot.connectionState == ConnectionState.waiting) {
-                                return const CircularProgressIndicator();
-                              }
-                              else if (snapshot.hasError) {
-                                return Text('Error: ${snapshot.error}');
-                              }
-                              else {
-                                return AnimatedOpacity(
-                                  opacity: snapshot.data == null ? 0.0 : 1.0,
-                                  duration: const Duration(milliseconds: 500),
-                                  child: snapshot.data,
-                                );
-                              }
-                            },
-                          ),
-                          _construirHabilidades(),  // Habilidades del jugador.
-                          const Spacer(),
-                          // Botón para abandonar la partida.
-                          buildActionButton(context, () {
-                            Juego().abandonarPartida(context);
-                            Juego().reiniciarPartida();
-                            Navigator.pushNamed(context, '/Principal');
-                          }, "Abandonar partida"),
-                          const Spacer(),
-                        ],
-                      ),
-                    ),
-                  );
-                }
-              },
-            );
-    }
+      ),
+    );
   }
 
   /*
    * Construir tablero con barcos atacables.
    */
-  Future<Widget> _construirTableroConBarcosAtacable() async {
+  Widget _construirTableroConBarcosAtacable() {
     return SizedBox(
       width: Juego().miTablero.boardSize + Juego().miTablero.casillaSize,
       height: Juego().miTablero.boardSize + Juego().miTablero.casillaSize,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: await buildTableroClicable(_handleTap),
+        children: buildTableroClicable(_handleTap),
       ),
     );
   }
@@ -286,9 +197,9 @@ class _AtacarState extends State<Atacar> {
   /*
    * Construir tablero con los barcos hundidos.
    */
-  Future<List<Widget>> buildTableroClicable(Function(int, int) onTap) async {
+  List<Widget> buildTableroClicable(Function(int, int) onTap) {
     List<Widget> filas = [];
-    filas.add(await buildTableroConBarcosHundidos(onTap));
+    filas.add(buildTableroConBarcosHundidos(onTap));
     return filas;
   }
 
@@ -322,7 +233,7 @@ class _AtacarState extends State<Atacar> {
   /*
    * Construir fila con las casillas del tablero.
    */
-  Future<Widget> buildFilaCasillas(int rowIndex, Function(int, int) onTap) async {
+  Widget buildFilaCasillas(int rowIndex, Function(int, int) onTap) {
     List<Widget> casillas = [];
     casillas.add(
       Container(
@@ -363,7 +274,7 @@ class _AtacarState extends State<Atacar> {
         // Si el disparo ha sido desviado hacia la derecha, coloco una flecha hacia la derecha.
         imagePath = 'images/derecha.png';
       }
-      else if (Juego().hayNiebla) {
+      else if (casillaNiebla == Offset(rowIndex.toDouble(), j.toDouble())){
         // Si hay niebla, coloco una interrogación en la casilla.
         imagePath = 'images/question.png';
         Juego().hayNiebla = false;
@@ -371,8 +282,15 @@ class _AtacarState extends State<Atacar> {
 
       casillas.add(
         GestureDetector(
-          onTap: () {
-            onTap(rowIndex, j);
+          onTap: () async {
+            await onTap(rowIndex, j);
+            print(defender);
+            if(defender) {
+              defender = false;
+              Future.delayed(const Duration(seconds: 1), () {
+                Navigator.pushNamed(context, '/Defender');
+              });
+            }
           },
           child: Container(
             width: Juego().miTablero.casillaSize,
@@ -381,7 +299,13 @@ class _AtacarState extends State<Atacar> {
               color: const Color.fromARGB(128, 116, 181, 213),
               border: Border.all(color: Colors.black, width: 1),
             ),
-            child: Image.asset(imagePath, fit: BoxFit.cover),    // Imagen de la casilla (cruz o explosión).
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  child: Image.asset(imagePath, fit: BoxFit.cover),
+                ),
+              ],
+            ),
           ),
         ),
       );
@@ -393,12 +317,12 @@ class _AtacarState extends State<Atacar> {
   /*
    * Construir tablero con los barcos del rival hundidos.
    */
-  Future<Widget> buildTableroConBarcosHundidos(Function(int, int) onTap) async {
+  Widget buildTableroConBarcosHundidos(Function(int, int) onTap) {
     return Stack(
       children: [
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: await buildTablero(onTap),
+          children: buildTablero(onTap),
         ),
         for (var barco in Juego().barcosHundidosPorMi)  
           Positioned(
@@ -419,42 +343,13 @@ class _AtacarState extends State<Atacar> {
   }
 
   /*
-   * Buscar barco hundido en las coordenadas del disparo.
-   */
-  Barco buscarBarcoHundidoDisparo(Map<String, dynamic> datosJuego) {
-    if (datosJuego.containsKey('barcoCoordenadas')) {
-      Map<String, dynamic> barcoCoordenadas = datosJuego['barcoCoordenadas'];
-      List<dynamic> coordenadas = barcoCoordenadas['coordenadas'];
-      String tipo = barcoCoordenadas['tipo'];
-
-      List<Offset> casillasBarco = [];
-      for (var coordenada in coordenadas) {
-        double i = coordenada['i'].toDouble();
-        double j = coordenada['j'].toDouble();
-        Offset offset = Offset(i, j);
-        casillasBarco.add(offset);
-      }
-
-      String nombre = tipo;
-      Offset barcoPos = casillasBarco[0];
-      int long = casillasBarco.length;
-      bool rotado = casillasBarco[0].dy == casillasBarco[1].dy ? true : false;
-      bool hundido = true;
-      Barco barcoHundido = Barco(nombre, barcoPos, long, rotado, hundido);
-      return barcoHundido;
-    }
-
-    return Barco('', const Offset(0, 0), 0, false, false);
-  }
-
-  /*
    * Construir tablero con las casillas clicables.
    */
-  Future<List<Widget>> buildTablero(Function(int, int) onTap) async {
+  List<Widget> buildTablero(Function(int, int) onTap) {
     List<Widget> filas = [];
     filas.add(buildFilaCoordenadas());
     for (int i = 1; i < Juego().miTablero.numFilas; i++) {
-      filas.add(await buildFilaCasillas(i, onTap));
+      filas.add(buildFilaCasillas(i, onTap));
     }
     return filas;
   }
@@ -549,20 +444,22 @@ class _AtacarState extends State<Atacar> {
         Navigator.pushNamed(context, '/Principal'); 
       }
     }
-
-    // Si aún no ha acabado la partida.
-    if (Juego().disparosPendientes == 0) {
+    else {
       setState(() {
-        Juego().disparosPendientes = 1;
-        Juego().misDisparosDesviadosArriba.clear();
+        defender = true;
       });
 
-      // Cambiar destino
-      DestinoManager.setDestino(const Defender());
-      Navigator.pushNamed(context, '/Defender');
+      if (Juego().disparosPendientes == 0) {
+        setState(() {
+          Juego().disparosPendientes = 1;
+          Juego().misDisparosDesviadosArriba.clear();
+          Juego().misDisparosDesviadosAbajo.clear();
+          Juego().misDisparosDesviadosIzquierda.clear();
+          Juego().misDisparosDesviadosDerecha.clear();
+        });
+      }
     }
   }
-
 
 /**************************************************************************************************************/
 /*                                                                                                            */
@@ -633,8 +530,11 @@ class _AtacarState extends State<Atacar> {
         // Actualizar barcos hundidos.
         setState(() {
           Juego().barcosRestantesRival--;
-          Barco barcoHundido = buscarBarcoHundidoDisparo(data);
-          Juego().barcosHundidosPorMi.add(barcoHundido);
+          if (data.containsKey('barcoCoordenadas')) {
+            Map<String, dynamic> barcoCoordenadas = data['barcoCoordenadas'];
+            Barco barcoHundido = Juego().buscarBarcoHundidoDisparo(barcoCoordenadas);
+            Juego().barcosHundidosPorMi.add(barcoHundido);
+          }
         });
       }
   
@@ -691,10 +591,12 @@ class _AtacarState extends State<Atacar> {
         }
 
         if (hundido) {
-          // Actualizar barcos hundidos del rival.
-          Barco barcoHundido = buscarBarcoHundidoDisparo(elemento);
-          Juego().barcosHundidosPorRival.add(barcoHundido);
           Juego().misBarcosRestantes--;
+          if (elemento.containsKey('barcoCoordenadas')) {
+            Map<String, dynamic> barcoCoordenadas = elemento['barcoCoordenadas'];
+            Barco barcoHundido = Juego().buscarBarcoHundidoDisparo(barcoCoordenadas);
+            Juego().barcosHundidosPorRival.add(barcoHundido);
+          }
         }
       }
       return Future.value([acertado, fin]);
@@ -805,9 +707,12 @@ class _AtacarState extends State<Atacar> {
       if (hundido) {
         // Actualizar barcos hundidos.
         setState(() {
-        Juego().barcosRestantesRival--;
-        Barco barcoHundido = buscarBarcoHundidoDisparo(data);
-        Juego().barcosHundidosPorMi.add(barcoHundido);
+          Juego().barcosRestantesRival--;
+          if (data.containsKey('barcoCoordenadas')) {
+            Map<String, dynamic> barcoCoordenadas = data['barcoCoordenadas'];
+            Barco barcoHundido = Juego().buscarBarcoHundidoDisparo(barcoCoordenadas);
+            Juego().barcosHundidosPorMi.add(barcoHundido);
+          }
         });
       }
   
@@ -864,10 +769,13 @@ class _AtacarState extends State<Atacar> {
         }
 
         if (hundido) {
-          // Actualizar barcos hundidos del rival.
-          Barco barcoHundido = buscarBarcoHundidoDisparo(elemento);
-          Juego().barcosHundidosPorRival.add(barcoHundido);
           Juego().misBarcosRestantes--;
+          // Actualizar barcos hundidos del rival.
+          if (elemento.containsKey('barcoCoordenadas')) {
+            Map<String, dynamic> barcoCoordenadas = elemento['barcoCoordenadas'];
+            Barco barcoHundido = Juego().buscarBarcoHundidoDisparo(barcoCoordenadas);
+            Juego().barcosHundidosPorRival.add(barcoHundido);
+          }
         }
       }
       return Future.value([acertado, fin]);
@@ -948,8 +856,11 @@ class _AtacarState extends State<Atacar> {
         // Actualizar barcos hundidos.
         setState(() {
           Juego().barcosRestantesRival--;
-          Barco barcoHundido = buscarBarcoHundidoDisparo(data);
-          Juego().barcosHundidosPorMi.add(barcoHundido);
+          if (data.containsKey('barcoCoordenadas')) {
+            Map<String, dynamic> barcoCoordenadas = data['barcoCoordenadas'];
+            Barco barcoHundido = Juego().buscarBarcoHundidoDisparo(barcoCoordenadas);
+            Juego().barcosHundidosPorMi.add(barcoHundido);
+          }
         });
       }
   
@@ -996,9 +907,12 @@ class _AtacarState extends State<Atacar> {
         if (hundido) {
           // Actualizar barcos hundidos del rival.
           setState(() {
-            Barco barcoHundido = buscarBarcoHundidoDisparo(elemento);
-            Juego().barcosHundidosPorRival.add(barcoHundido);
             Juego().misBarcosRestantes--;
+            if (elemento.containsKey('barcoCoordenadas')) {
+              Map<String, dynamic> barcoCoordenadas = elemento['barcoCoordenadas'];
+              Barco barcoHundido = Juego().buscarBarcoHundidoDisparo(barcoCoordenadas);
+              Juego().barcosHundidosPorRival.add(barcoHundido);
+            }
           });
         }
       }
@@ -1045,6 +959,7 @@ class _AtacarState extends State<Atacar> {
         print("El ultimo disparo no ha llegado a su destino por la niebla.");
         setState(() {
           Juego().hayNiebla = true;
+          casillaNiebla = Offset(i.toDouble(), j.toDouble());
         });
         acertado = false;
       }
@@ -1102,8 +1017,11 @@ class _AtacarState extends State<Atacar> {
           // Actualizar barcos hundidos.
           setState(() {
             Juego().barcosRestantesRival--;
-            Barco barcoHundido = buscarBarcoHundidoDisparo(data);
-            Juego().barcosHundidosPorMi.add(barcoHundido);
+            if (data.containsKey('barcoCoordenadas')) {
+              Map<String, dynamic> barcoCoordenadas = data['barcoCoordenadas'];
+              Barco barcoHundido = Juego().buscarBarcoHundidoDisparo(barcoCoordenadas);
+              Juego().barcosHundidosPorMi.add(barcoHundido);
+            }
           });
         }
       }

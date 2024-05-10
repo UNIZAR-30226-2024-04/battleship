@@ -3,8 +3,6 @@ import 'package:battleship/juego.dart';
 import 'package:flutter/material.dart';
 import 'comun.dart';
 import 'barco.dart';
-import 'atacar.dart';
-import 'destino.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'serverRoute.dart';
@@ -17,7 +15,6 @@ class Defender extends StatefulWidget {
 }
 
 class _DefenderState extends State<Defender> {
-  bool _isLoading = true;
   ServerRoute serverRoute = ServerRoute();
   Completer completerAbandono = Completer();
   Completer resultadoTurno = Completer();
@@ -28,47 +25,66 @@ class _DefenderState extends State<Defender> {
     super.initState();
 
     Juego().socket.on('abandono', (data) {
-      //print('Abandono: $data');
-      if (!completerAbandono.isCompleted) {
-        completerAbandono.complete();
+      if(data[1] != Juego().miPerfil.name) {
+        print(data);
+        Juego().reiniciarPartida();
+        showSuccessSnackBar(context, '¡Has ganado la partida por abandono de tu oponente!');
+        Navigator.pushNamed(context, '/Principal');
       }
     });
 
     Juego().socket.on('resultadoTurno', (data) {
+      print("EN DEFENDER: $data");
       Juego().hayNiebla = data[6] == 'Niebla';
+      bool fin = data[4];
+
+      if (fin) {
+        Juego().reiniciarPartida();
+        showErrorSnackBar(context, 'Has perdido la partida');
+        Navigator.pushNamed(context, '/Principal');
+      }
 
       print("Niebla: ${Juego().hayNiebla}");
 
       if(!Juego().hayNiebla) {
         print("Entro al if");
         atacar = data[2]['estado'] == 'Agua';
+
+        // Si no soy yo
+        if(data[1] != Juego().miPerfil.name) {
+          int i = data[2]['i'];
+          int j = data[2]['j'];
+
+          if(atacar) {
+            print('Resultado turno: $data');
+            setState(() {
+              Juego().disparosPendientes = 1;
+              Juego().disparosFalladosRival.add(Offset(i.toDouble(), j.toDouble()));
+            });
+            Future.delayed(const Duration(milliseconds: 1100), () {
+              Navigator.pushNamed(context, '/Atacar'); 
+            });  
+          }
+          else {
+            setState(() {
+              Juego().disparosAcertadosRival.add(Offset(i.toDouble(), j.toDouble()));
+              if (data[3] != null) {
+                Barco barcoHundido = Juego().buscarBarcoHundidoDisparo(data[3]);
+                Juego().barcosHundidosPorRival.add(barcoHundido);
+              }
+            });
+          }
+        }
       }
       else {
         print("No entro en el if porque ha habido un disparo con efecto niebla");
         atacar = true;
-      }
-
-      // Si el estado es agua y el usuario es el otro
-      if(atacar && data[1] != Juego().miPerfil.name) {
-        print('Resultado turno: $data');
-        setState(() {
-          Juego().disparosPendientes = 1;
-        });
-
-        DestinoManager.setDestino(const Atacar());
-        Navigator.pushNamed(context, '/Atacar');        
-      }
-      else if (!atacar) {
-        //print('El rival ha acertado y voy a refrescar: $data');
-
+        Future.delayed(const Duration(milliseconds: 1100), () {
+          Navigator.pushNamed(context, '/Atacar'); 
+        }); 
       }
     });     
 
-    Future.delayed(const Duration(seconds: 1), () {
-      setState(() {
-        _isLoading = false;
-      });
-    });
     if (Juego().modalidadPartida == 'INDIVIDUAL') {
       iniciarTransicionAutomatica();
     }
@@ -86,31 +102,15 @@ class _DefenderState extends State<Defender> {
       ),
       child: Scaffold(
         backgroundColor: Colors.transparent,
-        body: _isLoading
-            ? const Center(child: Text('¡Defiéndete!', style: TextStyle(color: Colors.white, fontSize: 28)))
-            : Column(
-                children: [
-                  buildHeader(context, ponerPerfil: false),
-                  const SizedBox(height: 20),
-                  _construirBarcosRestantes(),
-                  FutureBuilder<Widget>(
-                    future: _construirTableroConBarcosDefensa(),
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        // While waiting for the future to complete, you can show a loading indicator.
-                        return const CircularProgressIndicator();
-                      } else if (snapshot.hasError) {
-                        // If there's an error, you can show an error message.
-                        return Text('Error: ${snapshot.error}');
-                      } else {
-                        // Once the future completes, return the widget.
-                        return snapshot.data!;
-                      }
-                    },
-                  ),
-                  const Spacer(),
-                ],
-              ),
+        body: Column(
+          children: [
+            buildHeader(context, ponerPerfil: false),
+            const SizedBox(height: 20),
+            _construirBarcosRestantes(),
+            _construirTableroConBarcosDefensa(),
+            const Spacer(),
+          ],
+        ),
       ),
     );
   }
@@ -126,7 +126,7 @@ class _DefenderState extends State<Defender> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          buildTitle('Tus barcos restantes: ${Juego().misBarcosRestantes}', 16),
+          buildTitle('Tus barcos restantes: ${barcosRestantes.length}', 16),
           const SizedBox(height: 10),
           Wrap(
             alignment: WrapAlignment.center,
@@ -161,7 +161,7 @@ class _DefenderState extends State<Defender> {
     );
   }
 
-  Future<Widget> _construirTableroConBarcosDefensa() async {
+  Widget _construirTableroConBarcosDefensa() {
     List<Widget> children = [];
 
     children.add(
@@ -170,7 +170,7 @@ class _DefenderState extends State<Defender> {
         height: Juego().miTablero.boardSize + Juego().miTablero.casillaSize,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: await buildTableroDefensa(),
+          children: buildTableroDefensa(),
         ),
       ),
     );  
@@ -178,13 +178,13 @@ class _DefenderState extends State<Defender> {
     return Stack(children: children);
   }
 
-  Future<List<Widget>> buildTableroDefensa() async {
+  List<Widget> buildTableroDefensa() {
     List<Widget> filas = [];
-    filas.add(await buildFilaCasillasDefensa());
+    filas.add(buildFilaCasillasDefensa());
     return filas;
   }
 
-  Future<Widget> buildFilaCasillasDefensa() async {
+  Widget buildFilaCasillasDefensa() {
     List<Barco> barcosRestantes = Juego().obtenerMisBarcosRestantes();
     return Stack(
       children: [
@@ -311,7 +311,6 @@ class _DefenderState extends State<Defender> {
       setState(() {
         Juego().disparosPendientes = 1;
       });
-      DestinoManager.setDestino(const Atacar());
       Navigator.pushNamed(context, '/Atacar');
     });
   }

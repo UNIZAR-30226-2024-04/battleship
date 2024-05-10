@@ -105,10 +105,6 @@ class Juego {
     barcosHundidosPorMi = [];
     barcosHundidosPorRival = [];
     anfitrion = true;
-    if(modalidadPartida == 'COMPETITIVA' || modalidadPartida == 'AMISTOSA') {
-      socket.on('disconnect', (_) => print('disconnect'));
-      socket.on('fromServer', (_) => print(_));
-    }
   }
 
   void setSession(String name, String email, String password, String token) {
@@ -293,6 +289,27 @@ class Juego {
     bool hundido = true;
     Barco barcoHundido = Barco(nombre, barcoPos, long, rotado, hundido);
     return barcoHundido;
+  }
+
+  Barco buscarBarcoHundidoDisparo(Map<String, dynamic> barcoCoordenadas) {
+      List<dynamic> coordenadas = barcoCoordenadas['coordenadas'];
+      String tipo = barcoCoordenadas['tipo'];
+
+      List<Offset> casillasBarco = [];
+      for (var coordenada in coordenadas) {
+        double i = coordenada['i'].toDouble();
+        double j = coordenada['j'].toDouble();
+        Offset offset = Offset(i, j);
+        casillasBarco.add(offset);
+      }
+
+      String nombre = tipo;
+      Offset barcoPos = casillasBarco[0];
+      int long = casillasBarco.length;
+      bool rotado = casillasBarco[0].dy == casillasBarco[1].dy ? true : false;
+      bool hundido = true;
+      Barco barcoHundido = Barco(nombre, barcoPos, long, rotado, hundido);
+      return barcoHundido;
   }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////

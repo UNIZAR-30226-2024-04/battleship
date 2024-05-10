@@ -1,5 +1,8 @@
+import 'package:battleship/destino.dart';
 import 'package:flutter/material.dart';
+import 'atacar.dart';
 import 'comun.dart';
+import 'defender.dart';
 import 'juego.dart';
 
 class Sala extends StatefulWidget {
@@ -22,11 +25,13 @@ class _SalaState extends State<Sala> {
     if (await Juego().buscarSala()) {
       print("SALA ENCONTRADA");
       Juego().anfitrion = false;
+      DestinoManager.setDestino(const Defender());
       Navigator.pushNamed(context, '/Defender');
     } else {
       await Juego().crearSala();
       Juego().anfitrion = true;
       print("SALA CREADA");
+      DestinoManager.setDestino(const Atacar());
       Navigator.pushNamed(context, '/Atacar');
     }
   }
