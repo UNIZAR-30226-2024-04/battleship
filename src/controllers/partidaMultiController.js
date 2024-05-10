@@ -272,8 +272,8 @@ exports.realizarDisparo = async (req, res) => {
 exports.realizarDisparoMisilRafaga = async (req, res) => {
   const respuesta = await PartidaController.realizarDisparoMisilRafaga(req, res);
   const io = getIO();
-  io.to('/partida' + req.body.codigo).emit(eventosSocket.resultadoTurno, "Rafaga", req.body.nombreId, respuesta.disparoRealizado, respuesta.barcoCoordenadas, respuesta.finPartida, respuesta.clima);
-  console.log('Resultado turno tras misil rafaga recibido en backend:', req.body.nombreId, respuesta.disparoRealizado, respuesta.barcoCoordenadas, respuesta.finPartida, respuesta.clima);
+  io.to('/partida' + req.body.codigo).emit(eventosSocket.resultadoTurno, "Rafaga", req.body.nombreId, respuesta.disparoRealizado, respuesta.barcoCoordenadas, respuesta.finPartida, respuesta.clima, respuesta.eventoOcurrido);
+  console.log('Resultado turno tras misil rafaga recibido en backend:', req.body.nombreId, respuesta.disparoRealizado, respuesta.barcoCoordenadas, respuesta.finPartida, respuesta.clima, respuesta.eventoOcurrido);
 };
 
 /**
@@ -298,8 +298,8 @@ exports.realizarDisparoMisilRafaga = async (req, res) => {
 exports.realizarDisparoTorpedoRecargado = async (req, res) => {
   const respuesta = await PartidaController.realizarDisparoTorpedoRecargado(req, res);
   const io = getIO();
-  io.to('/partida' + req.body.codigo).emit(eventosSocket.resultadoTurno, "Recargado", req.body.nombreId, respuesta.disparoRealizado, respuesta.barcoCoordenadas, respuesta.finPartida, respuesta.clima);
-  console.log('Resultado turno tras torpedo recargado recibido en backend:', req.body.nombreId, respuesta.disparoRealizado, respuesta.barcoCoordenadas, respuesta.finPartida, respuesta.clima);
+  io.to('/partida' + req.body.codigo).emit(eventosSocket.resultadoTurno, "Recargado", req.body.nombreId, respuesta.disparoRealizado, respuesta.barcoCoordenadas, respuesta.finPartida, respuesta.clima, respuesta.eventoOcurrido);
+  console.log('Resultado turno tras torpedo recargado recibido en backend:', req.body.nombreId, respuesta.disparoRealizado, respuesta.barcoCoordenadas, respuesta.finPartida, respuesta.clima, respuesta.eventoOcurrido);
 };
 
 /**
@@ -322,8 +322,8 @@ exports.realizarDisparoTorpedoRecargado = async (req, res) => {
 exports.realizarDisparoMisilTeledirigido = async (req, res) => {
   const respuesta = await PartidaController.realizarDisparoMisilTeledirigido(req, res);
   const io = getIO();
-  io.to('/partida' + req.body.codigo).emit(eventosSocket.resultadoTurno, "Teledirigido", req.body.nombreId, respuesta.disparoRealizado, respuesta.barcoCoordenadas, respuesta.finPartida, respuesta.clima);
-  console.log('Resultado turno tras teledirigido recibido en backend:', req.body.nombreId, respuesta.disparoRealizado, respuesta.barcoCoordenadas, respuesta.finPartida, respuesta.clima);
+  io.to('/partida' + req.body.codigo).emit(eventosSocket.resultadoTurno, "Teledirigido", req.body.nombreId, respuesta.disparoRealizado, respuesta.barcoCoordenadas, respuesta.finPartida, respuesta.clima, respuesta.eventoOcurrido);
+  console.log('Resultado turno tras teledirigido recibido en backend:', req.body.nombreId, respuesta.disparoRealizado, respuesta.barcoCoordenadas, respuesta.finPartida, respuesta.clima, respuesta.eventoOcurrido);
 }
 
 /**
@@ -346,8 +346,8 @@ exports.realizarDisparoMisilTeledirigido = async (req, res) => {
 exports.usarSonar = async (req, res) => {
   const respuesta = await PartidaController.usarSonar(req, res);
   const io = getIO();
-  io.to('/partida' + req.body.codigo).emit(eventosSocket.resultadoTurno, "Sonar", req.body.nombreId, respuesta.disparoRealizado, respuesta.barcoCoordenadas, respuesta.finPartida, respuesta.clima);
-  console.log('Resultado turno tras sonar recibido en backend:', req.body.nombreId, respuesta.disparoRealizado, respuesta.barcoCoordenadas, respuesta.finPartida, respuesta.clima);
+  io.to('/partida' + req.body.codigo).emit(eventosSocket.resultadoTurno, "Sonar", req.body.nombreId, respuesta.disparoRealizado, respuesta.barcoCoordenadas, respuesta.finPartida, respuesta.clima, respuesta.eventoOcurrido);
+  console.log('Resultado turno tras sonar recibido en backend:', req.body.nombreId, respuesta.disparoRealizado, respuesta.barcoCoordenadas, respuesta.finPartida, respuesta.clima, respuesta.eventoOcurrido);
 }
 
 /**
@@ -370,8 +370,8 @@ exports.usarSonar = async (req, res) => {
 exports.realizarDisparoMina = async (req, res) => {
   const respuesta = await PartidaController.realizarDisparoMina(req, res);
   const io = getIO();
-  io.to('/partida' + req.body.codigo).emit(eventosSocket.resultadoTurno, "Mina", req.body.nombreId, respuesta.disparoRealizado, respuesta.barcoCoordenadas, respuesta.finPartida, respuesta.clima);
-  console.log('Resultado turno tras mina recibido en backend:', req.body.nombreId, respuesta.disparoRealizado, respuesta.barcoCoordenadas, respuesta.finPartida, respuesta.clima);
+  io.to('/partida' + req.body.codigo).emit(eventosSocket.resultadoTurno, "Mina", req.body.nombreId, respuesta.disparoRealizado, respuesta.barcoCoordenadas, respuesta.finPartida, respuesta.clima, respuesta.eventoOcurrido);
+  console.log('Resultado turno tras mina recibido en backend:', req.body.nombreId, respuesta.disparoRealizado, respuesta.barcoCoordenadas, respuesta.finPartida, respuesta.clima, respuesta.eventoOcurrido);
 }
 
 
@@ -410,6 +410,7 @@ exports.obtenerChat = async (req, res) => {
  */
 exports.enviarMensaje = async (req, res) => {
   await PartidaController.enviarMensaje(req, res);
-  io.to('/partida' + req.body.codigo).emit(eventosSocket.chat, req.body.codigo, req.body.mensaje);
+  io.to('/partida' + req.body.codigo).emit(eventosSocket.chat, req.body.codigo, req.body.nombreId, req.body.mensaje);
+  console.log('Mensaje enviado en backend');
 };
 
