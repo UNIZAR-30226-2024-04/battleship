@@ -630,4 +630,26 @@ class Juego {
       return false;
     }
   }  
+
+  Future<void> abandonarPartidaMulti(BuildContext context) async {
+    var response = await http.post(
+      Uri.parse(serverRoute.urlAbandonarPartidaMulti),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+        'Authorization': 'Bearer ${Juego().tokenSesion}',
+      },
+      body: jsonEncode(<String, dynamic>{
+        'codigo': codigo,
+        'nombreId': miPerfil.name,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      var data = jsonDecode(response.body);
+      showErrorSnackBar(context, 'Has abandonado la partida');
+
+    } else {
+      throw Exception('La solicitud ha fallado');
+    }
+  }
 }

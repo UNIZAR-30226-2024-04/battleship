@@ -55,9 +55,17 @@ class _AtacarState extends State<Atacar> {
             _construirHabilidades(),
             const Spacer(),
             buildActionButton(context, () {
-              Juego().abandonarPartida(context);
-              Juego().reiniciarPartida();
-              Navigator.pushNamed(context, '/Principal');
+              // Caso partida contra IA
+              if(Juego().modalidadPartida == "INDIVIDUAL") {
+                Juego().abandonarPartida(context);
+                Juego().reiniciarPartida();
+                Navigator.pushNamed(context, '/Principal');
+              }
+              else {
+                Juego().abandonarPartidaMulti(context);
+                Juego().reiniciarPartida();
+                Navigator.pushNamed(context, '/Principal');
+              }
             }, "Abandonar partida"),
             const Spacer(),
           ],
