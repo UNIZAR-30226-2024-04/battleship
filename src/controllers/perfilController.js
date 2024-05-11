@@ -1309,19 +1309,19 @@ exports.enviarSolicitudAmistad = async (req, res) => {
     }
     // Verificar si ya se ha enviado una solicitud de amistad
     if (amigo.listaSolicitudes.includes(nombreId)) {
-      res.status(404).send('Ya se ha enviado una solicitud de amistad a este usuario');
+      res.json({ exito: false, mensaje: "Ya se ha enviado una solicitud de amistad a este usuario"});
       console.error("Ya se ha enviado una solicitud de amistad a este usuario");
       return;
     }
     // Verificar si el otro usuario ya ha enviado una solicitud de amistad
     if (perfil.listaSolicitudes.includes(nombreIdAmigo)) {
-      res.status(404).send('Ya se ha recibido una solicitud de amistad de este usuario');
+      res.json({ exito: false, mensaje: "Ya se ha recibido una solicitud de amistad de este usuario"});
       console.error("Ya se ha recibido una solicitud de amistad de este usuario");
       return;
     }
     // Verificar si ya son amigos
     if (perfil.listaAmigos.includes(nombreIdAmigo) || amigo.listaAmigos.includes(nombreId)) {
-      res.status(404).send('El usuario ya está en la lista de amigos');
+      res.json({ exito: false, mensaje: "El usuario ya está en la lista de amigos"});
       console.error("El usuario ya está en la lista de amigos");
       return;
     }
@@ -1331,6 +1331,7 @@ exports.enviarSolicitudAmistad = async (req, res) => {
     const perfilModificado = await amigo.save();
     // Verificar si el perfil existe y enviar la respuesta al cliente
     if (perfilModificado) {
+      res.json({ exito: true, mensaje: "Solicitud de amistad enviada con éxito"});
       console.log("Solicitud de amistad enviada con éxito");
     } else {
       res.status(404).send('No se ha podido enviar la solicitud de amistad');
