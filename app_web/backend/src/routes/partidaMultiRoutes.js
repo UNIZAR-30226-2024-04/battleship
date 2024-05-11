@@ -37,6 +37,25 @@ router.post('/buscarSala', verificarToken, partidaMultiController.buscarSala);
 // Ruta para crear una sala
 router.post('/crearSala', verificarToken, partidaMultiController.crearSala);
 
+// -------------------------------------------- //
+// ---------------- HABILIDADES --------------- //
+// -------------------------------------------- //
+
+// Ruta para disparo de un misil de ráfaga
+router.post('/realizarDisparoMisilRafaga', verificarToken, partidaMultiController.realizarDisparoMisilRafaga);
+
+// Ruta para un turno de disparo de torpedo recargado
+router.post('/realizarDisparoTorpedoRecargado', verificarToken, partidaMultiController.realizarDisparoTorpedoRecargado);
+
+// Ruta para disparo de un misil teledirigido
+router.post('/realizarDisparoMisilTeledirigido', verificarToken, partidaMultiController.realizarDisparoMisilTeledirigido);
+
+// Ruta para colocar mina
+router.post('/colocarMina', verificarToken, partidaMultiController.colocarMina);
+
+// Ruta para usar sonar
+router.post('/usarSonar', verificarToken, partidaMultiController.usarSonar);
+
 // --------------------------------------------- //
 // -------------- CHAT DE PARTIDA -------------- //
 // --------------------------------------------- //

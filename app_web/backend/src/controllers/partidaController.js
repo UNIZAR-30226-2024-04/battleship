@@ -848,8 +848,8 @@ async function juegaIA(jugador1, jugador2, partidaActual, estadisticasJugadores,
       finPartida: finPartida,
       clima: partidaActual.clima,
       minaDisparada: minaDisparada,
-      disparosRespuestaMina: disparosRespuestaMina,
-      barcosHundidosRespuestaMina: barcosHundidosRespuestaMina
+      disparosRespuestaMina: (minaDisparada !== undefined) ? disparosRespuestaMina : [],
+      barcosHundidosRespuestaMina: (minaDisparada !== undefined) ? barcosHundidosRespuestaMina : [],
     };
     turnosIA.push(turnoIA);
     sigueIA = disparo.estado !== 'Agua' && !finPartida;
@@ -945,7 +945,7 @@ function seleccionarClima(bioma, clima) {
   // Viento -> Calma 70%, Niebla 30%
   // Niebla -> Calma 70%, Viento 30%
   if(bioma === 'Mediterraneo') {
-    if(cambioClima < 0.1) {
+    if(cambioClima < 0.0) { // Devolver a 0.1
       if(clima == 'Calma') {
         if(nuevoClima < 0.6) { return viento; }
         else { return 'Niebla'; }
@@ -1099,7 +1099,7 @@ exports.realizarDisparo = async (req, res) => {
       console.error("Sobran parámetros, se espera codigo, jugador, i, j");
       return;
     }
-    // Verificar si alguno de los parámetros está ausente
+    // Verificar si de los parámetros está ausente
     if (!codigo || !nombreId || !i || !j) {
       res.status(400).send('Falta alguno de los siguientes parámetros: codigo, nombreId, i, j');
       return;
@@ -1178,8 +1178,8 @@ exports.realizarDisparo = async (req, res) => {
           finPartida: finPartida,
           clima: partidaActual.clima,
           minaDisparada: minaDisparada,
-          disparosRespuestaMina: (minaDisparada !== undefined) ? disparosRespuestaMina : undefined,
-          barcosHundidosRespuestaMina: (minaDisparada !== undefined) ? barcosHundidosRespuestaMina : undefined,
+          disparosRespuestaMina: (minaDisparada !== undefined) ? disparosRespuestaMina : [],
+          barcosHundidosRespuestaMina: (minaDisparada !== undefined) ? barcosHundidosRespuestaMina : [],
           turnosIA: turnosIA
         };
 
@@ -1225,6 +1225,7 @@ exports.realizarDisparo = async (req, res) => {
  * @param {String} res.eventoOcurrido - El evento ocurrido en la partida
  * @param {Boolean} res.finPartida - Indica si la partida ha terminado
  * @param {String} res.clima - El clima de la partida
+ * @param {Boolean} res.ultimoMisilRafaga - Indica si es el último misil de la ráfaga
  * @param {Coordenada} [res.minaDisparada] - La mina disparada, si se ha hundido
  * @param {Coordenada[]} [res.disparosRespuestaMina] - Los disparos realizados por el enemigo en respuesta a una mina
  * @param {Barco[]} [res.barcosHundidosRespuestaMina] - Los barcos propios hundidos por respuesta a una mina
@@ -1322,10 +1323,11 @@ exports.realizarDisparoMisilRafaga = async (req, res) => {
           eventoOcurrido: undefined, // Evento ocurrido en la partida
           finPartida: finPartida,
           clima: partidaActual.clima,
+          ultimoMisilRafaga: ultimoMisilRafaga,
           usosHab: jugador === 1 ? partidaActual.usosHab1 : partidaActual.usosHab2,
           minaDisparada: minaDisparada,
-          disparosRespuestaMina: (minaDisparada !== undefined) ? disparosRespuestaMina : undefined,
-          barcosHundidosRespuestaMina: (minaDisparada !== undefined) ? barcosHundidosRespuestaMina : undefined,
+          disparosRespuestaMina: (minaDisparada !== undefined) ? disparosRespuestaMina : [],
+          barcosHundidosRespuestaMina: (minaDisparada !== undefined) ? barcosHundidosRespuestaMina : [],
           turnosIA: turnosIA
         };
 
@@ -1616,8 +1618,8 @@ exports.realizarDisparoMisilTeledirigido = async (req, res) => {
           clima: partidaActual.clima,
           usosHab: jugador === 1 ? partidaActual.usosHab1 : partidaActual.usosHab2,
           minaDisparada: minaDisparada,
-          disparosRespuestaMina: (minaDisparada !== undefined) ? disparosRespuestaMina : undefined,
-          barcosHundidosRespuestaMina: (minaDisparada !== undefined) ? barcosHundidosRespuestaMina : undefined,
+          disparosRespuestaMina: (minaDisparada !== undefined) ? disparosRespuestaMina : [],
+          barcosHundidosRespuestaMina: (minaDisparada !== undefined) ? barcosHundidosRespuestaMina : [],
           turnosIA: turnosIA
         };
 
