@@ -7,38 +7,23 @@ import TablonMenu from './socialMenu/TablonMenu';
 import SolicitudesMenu from './socialMenu/SolicitudesMenu';
 import ChatsMenu from './socialMenu/ChatsMenu';
 import AmigosMenu from './socialMenu/AmigosMenu';
-import Cookies from 'universal-cookie';
 
 
 export function Social() {  
     const [selectedMenu, setSelectedMenu] = useState('Tablon');
-    const [menuTitle, setMenuTitle] = useState('Tablon');
 
-    const cookies = new Cookies();
-    const tokenCookie = cookies.get('JWT');
-    const perfilCookie = cookies.get('perfil');
 
     const handleMenuClick = (menu) => {
-        setMenuTitle(menu);
         setSelectedMenu(menu);
     };
 
-    const updateTablon = () => {
-        const feed = document.querySelector('.profile-activity-content');
-        // peticion a "obtenerPublicaciones"
-    }
-    
-    const getPeticiones = () => {
-    
-    }
-    
+    // Función para determinar DINÁMICAMENTE si el botón ha sido seleccionado
+    const handleSelectedButton = (menu) => {
+        return selectedMenu === menu ?
+                'social-sidebar-button social-selected-botton-effect' : 'social-sidebar-button';
+    };
 
-    // Se ejecuta después de que el componente Social() se renderice
-    useEffect(() => {
-        getPeticiones();
-    }, []);
-
-
+    // Renderiza el menú correspondiente, por default es "Tablón"
     const renderMenu = () => {
         switch (selectedMenu) {
             case 'Tablon':
@@ -54,22 +39,25 @@ export function Social() {
         }
     };
 
-
     return (
-        <div className="settings-page-container">
+        <div className="social-page-container">
             <Navbar/>
-            <div className="settings-container">
-                <div className="settings-all-content">
-                    <div className="settings-banner-container">
+            <div className="social-container">
+                <div className="social-all-content">
+                    <div className="social-banner-container">
                         <img src={socialIcon} />
-                        <span>{menuTitle}</span>
+                        <span>Social</span>
                     </div>
-                    <div className="settings-main-content">
-                        <div className="settings-sidebar">
-                            <button onClick={() => handleMenuClick('Tablon')}>Tablon</button>
-                            <button onClick={() => handleMenuClick('Amigos')}>Amigos</button>
-                            <button onClick={() => handleMenuClick('Solicitudes')}>Solicitudes</button>
-                            <button onClick={() => handleMenuClick('Chats')}>Chats</button>
+                    <div className="social-main-content">
+                        <div className="social-sidebar">
+                            <button className={handleSelectedButton('Tablon')}
+                                    onClick={() => handleMenuClick('Tablon')}>Tablon</button>
+                            <button className={handleSelectedButton('Amigos')}
+                                    onClick={() => handleMenuClick('Amigos')}>Amigos</button>
+                            <button className={handleSelectedButton('Solicitudes')}
+                                    onClick={() => handleMenuClick('Solicitudes')}>Solicitudes</button>
+                            <button className={handleSelectedButton('Chats')}
+                                    onClick={() => handleMenuClick('Chats')}>Chats</button>
                         </div>
                         <div className="social-menus">
                             {renderMenu()}

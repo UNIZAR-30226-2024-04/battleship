@@ -8,9 +8,14 @@ const TablonMenu = () => {
         setSelectedCountry(event.target.value);
     };
 
+    const updateTablon = () => {
+        const feed = document.querySelector('.profile-activity-content');
+        // peticion a "obtenerPublicaciones"
+    }
+
     return (
         <>
-            <div className="profile-activity-container">
+            <div className="social-tablon-container">
                 <div className="profile-activity-header">
                     <span>ACTIVIDAD RECIENTE</span>
                 </div>

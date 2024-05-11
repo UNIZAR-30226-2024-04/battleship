@@ -117,24 +117,3 @@ export function Login() {
         </div>
     );
 }
-
-/*
-try {
-            fetch(iniciarSesionURI, request)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('La solicitud ha fallado');
-                }
-                return response.json();
-            })
-            .then(data => {
-                cookies.set('JWT', data['token'], {path: '/'});
-                console.log(cookies.get('JWT'));
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            });
-        } catch (error) {
-            console.error('Error:', error);
-        }
-*/

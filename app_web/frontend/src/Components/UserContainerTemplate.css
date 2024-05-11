@@ -1,0 +1,26 @@
+
+.user-template-container {
+    display: flex;
+    background-color: #3C6EB1;
+    align-items: center;
+    padding: 10px;
+    margin-top: 1em;
+}
+
+.user-template-image {
+    width: 50px;
+    background-color: purple;
+    margin-right: 1em;
+}
+
+.user-template-info {
+    flex: 1;
+}
+
+.user-template-name {
+    font-weight: bold;
+}
+
+.user-template-button {
+    margin-left: 2em;
+}

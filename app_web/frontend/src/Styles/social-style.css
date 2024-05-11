@@ -1,9 +1,113 @@
+
+.social-page-container {
+    display: flex;
+    color: white;
+}
+
+.social-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+}
+
+.social-all-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: left;
+    align-items: left;
+    padding-left: 10%;
+    padding-right: 10%;
+}
+
+.social-banner-container {
+    display: flex;
+    margin: 1.5em 0 2em 0;
+    align-items: center;
+}
+
+.social-banner-container img {
+    width: 3.25em;
+}
+
+.social-banner-container span {
+    font-weight: bold;
+    font-size: 2.5em;
+    text-align: left;
+    padding-left: 0.25em;
+}
+
+.social-main-content {
+    display: flex;
+    flex-direction: column;
+}
+
+.social-sidebar {
+    display: flex;
+    flex-direction: row;
+}
+
+.social-sidebar-button {
+    height: 5em;
+    width: 12em;
+    background-color: #3C6EB1;
+    
+    color: white;
+    text-align: center;
+
+    border: 1px solid white;
+    border-bottom: none;
+    border-radius: 1em 1em 0 0;
+
+    &:hover {
+        cursor: pointer;
+    }
+}
+
+/*
+    Cuando tenemos un "botón sidebar" con el efecto "selected"
+    ¡ No poner espacios entre las clases en .css !
+*/
+.social-sidebar-button.social-selected-botton-effect {
+    background-color: #1D3461;
+}
+
 .social-menus {
     display: flex;
     flex-direction: column;
-    margin-left: 3em;
+    background-color: #1D3461;
 }
 
-.relleno {
-    margin: 3em;
+
+/*------------------------------------------------------
+                        Tablon
+------------------------------------------------------*/
+
+
+/*------------------------------------------------------
+                        Amigos
+------------------------------------------------------*/
+
+
+/*------------------------------------------------------
+                        Solicitudes
+------------------------------------------------------*/
+
+.social-requests-sending-container span {
+    margin-right: 2em;
+}
+
+.social-requests-sending-container input[type="submit"] {
+    margin-left: 1em;
+}
+
+/*------------------------------------------------------
+                Recursos comunes
+------------------------------------------------------*/
+
+.social-section-spacing {
+    background-color: #1F487E;
+    margin: 1em;
+    padding: 1em;
 }
