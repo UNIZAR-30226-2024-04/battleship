@@ -254,7 +254,7 @@ Widget buildToggleButton({required bool isActive, required VoidCallback onPresse
       width: 70.0,
       height: 30.0,
       decoration: BoxDecoration(
-        color: isActive ? Colors.red : Colors.green,
+        color: isActive ? Colors.green : Colors.red,
         borderRadius: BorderRadius.circular(25.0),
       ),
       child: Row(
