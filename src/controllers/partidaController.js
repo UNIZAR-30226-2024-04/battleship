@@ -848,8 +848,8 @@ async function juegaIA(jugador1, jugador2, partidaActual, estadisticasJugadores,
       finPartida: finPartida,
       clima: partidaActual.clima,
       minaDisparada: minaDisparada,
-      disparosRespuestaMina: disparosRespuestaMina,
-      barcosHundidosRespuestaMina: barcosHundidosRespuestaMina
+      disparosRespuestaMina: (minaDisparada !== undefined) ? disparosRespuestaMina : [],
+      barcosHundidosRespuestaMina: (minaDisparada !== undefined) ? barcosHundidosRespuestaMina : [],
     };
     turnosIA.push(turnoIA);
     sigueIA = disparo.estado !== 'Agua' && !finPartida;
@@ -1178,8 +1178,8 @@ exports.realizarDisparo = async (req, res) => {
           finPartida: finPartida,
           clima: partidaActual.clima,
           minaDisparada: minaDisparada,
-          disparosRespuestaMina: (minaDisparada !== undefined) ? disparosRespuestaMina : undefined,
-          barcosHundidosRespuestaMina: (minaDisparada !== undefined) ? barcosHundidosRespuestaMina : undefined,
+          disparosRespuestaMina: (minaDisparada !== undefined) ? disparosRespuestaMina : [],
+          barcosHundidosRespuestaMina: (minaDisparada !== undefined) ? barcosHundidosRespuestaMina : [],
           turnosIA: turnosIA
         };
 
@@ -1322,10 +1322,11 @@ exports.realizarDisparoMisilRafaga = async (req, res) => {
           eventoOcurrido: undefined, // Evento ocurrido en la partida
           finPartida: finPartida,
           clima: partidaActual.clima,
+          ultimoMisilRafaga: ultimoMisilRafaga,
           usosHab: jugador === 1 ? partidaActual.usosHab1 : partidaActual.usosHab2,
           minaDisparada: minaDisparada,
-          disparosRespuestaMina: (minaDisparada !== undefined) ? disparosRespuestaMina : undefined,
-          barcosHundidosRespuestaMina: (minaDisparada !== undefined) ? barcosHundidosRespuestaMina : undefined,
+          disparosRespuestaMina: (minaDisparada !== undefined) ? disparosRespuestaMina : [],
+          barcosHundidosRespuestaMina: (minaDisparada !== undefined) ? barcosHundidosRespuestaMina : [],
           turnosIA: turnosIA
         };
 
@@ -1493,8 +1494,8 @@ exports.realizarDisparoTorpedoRecargado = async (req, res) => {
           clima: partidaActual.clima,
           usosHab: jugador === 1 ? partidaActual.usosHab1 : partidaActual.usosHab2,
           minasDisparadas: (minasDisparadas && minasDisparadas.length > 0) ? minasDisparadas : undefined,
-          disparosRespuestasMinas: (disparosRespuestasMinas && disparosRespuestasMinas.length > 0) ? disparosRespuestasMinas : undefined,
-          barcosHundidosRespuestasMinas: (barcosHundidosRespuestasMinas && barcosHundidosRespuestasMinas.length > 0) ? barcosHundidosRespuestasMinas : undefined,
+          disparosRespuestasMinas: (minaDisparada !== undefined) ? disparosRespuestasMinas : [],
+          barcosHundidosRespuestasMinas: (minaDisparada !== undefined) ? barcosHundidosRespuestasMinas : [],
           turnosIA: turnosIA
         };
         // Actualizar estadisticas de los jugadores
@@ -1616,8 +1617,8 @@ exports.realizarDisparoMisilTeledirigido = async (req, res) => {
           clima: partidaActual.clima,
           usosHab: jugador === 1 ? partidaActual.usosHab1 : partidaActual.usosHab2,
           minaDisparada: minaDisparada,
-          disparosRespuestaMina: (minaDisparada !== undefined) ? disparosRespuestaMina : undefined,
-          barcosHundidosRespuestaMina: (minaDisparada !== undefined) ? barcosHundidosRespuestaMina : undefined,
+          disparosRespuestaMina: (minaDisparada !== undefined) ? disparosRespuestaMina : [],
+          barcosHundidosRespuestaMina: (minaDisparada !== undefined) ? barcosHundidosRespuestaMina : [],
           turnosIA: turnosIA
         };
 
