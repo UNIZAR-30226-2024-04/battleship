@@ -7,6 +7,7 @@ import 'defender.dart';
 import 'mazo.dart';
 import 'juego.dart';
 import 'login.dart';
+import 'principal.dart';
 import 'recContrasena.dart';
 import 'registro.dart';
 import 'sala.dart';

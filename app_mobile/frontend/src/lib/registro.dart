@@ -32,7 +32,6 @@ class Registro extends StatelessWidget {
             const Spacer(),
             _buildSignUp(context, () => _handlePressed(context, _authProvider)),
             const Spacer(),
-            buildActions(context)
           ],
         ),
       ),
@@ -72,12 +71,7 @@ class Registro extends StatelessWidget {
     }
     else if(await _authProvider.signUp(_nameController.text, _passwordController.text, _emailController.text, context)) {
       showSuccessSnackBar(context, 'Usuario registrado correctamente');
-      if (Juego().modalidadPartida == "INDIVIDUAL") {
-        if (Juego().codigo == -1) {
-          await Juego().crearPartida();
-        }
-      }
-      Navigator.pushNamed(context, DestinoManager.getRutaDestino());
+      Navigator.pushNamed(context, '/Principal');
     }
   }
 }

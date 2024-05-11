@@ -100,6 +100,8 @@ class AuthProvider with ChangeNotifier {
 
     if (response.statusCode == 200) {
       var data = jsonDecode(response.body);
+      print("LOGIN DB");
+      print(data);
       if (data != null) {
         tokenSesion = data['token'];
         return true;
@@ -166,7 +168,7 @@ class AuthProvider with ChangeNotifier {
       if(response) {
         _isLoggedIn = true;
         Juego().setSession(name, "", password, tokenSesion);
-        await Juego().cargarPartida();
+        await Juego().cargarPartida(context);
         document.cookie = 'usuario=$name';
         document.cookie = 'tokenSesion=$tokenSesion';
         notifyListeners(); // Notifica a los listeners que la variable ha cambiado
@@ -206,7 +208,7 @@ class AuthProvider with ChangeNotifier {
     if(response) {
       _isLoggedIn = true;
       Juego().setSession(name, email, password, tokenSesion);
-      await Juego().cargarPartida();
+      await Juego().cargarPartida(context);
       document.cookie = 'usuario=$name';
       document.cookie = 'tokenSesion=$tokenSesion';
       mensajeErrorModel.cleanErrorMessage();

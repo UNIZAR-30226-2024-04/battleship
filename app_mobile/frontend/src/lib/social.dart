@@ -65,7 +65,7 @@ class Social extends StatelessWidget {
                 Column(
                   children: [
                     Text(
-                      'Publicaciones',
+                      'Publicaciones',  //Lista de mis publicaciones y las de mis amigos.
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 20,
@@ -78,13 +78,12 @@ class Social extends StatelessWidget {
                 Column(
                   children: [
                     Text(
-                      'Amigos',
+                      'Amigos', //Lista de mis amigos.
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 20,
                       ),
                     ),
-                    //Lista de mis publicaciones y las de mis amigos.
                   ],
                 ),
               ],

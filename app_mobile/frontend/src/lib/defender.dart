@@ -23,6 +23,8 @@ class _DefenderState extends State<Defender> {
   @override
   void initState() {
     super.initState();
+
+    Juego().socket.emit('entrarSala', Juego().codigo);
     
     Juego().socket.on('disconnect', (_) {
       print('Conexión cerrada');

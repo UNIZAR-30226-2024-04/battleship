@@ -3,7 +3,9 @@ class ServerRoute {
   String urlMoverBarcoInicial = 'http://localhost:8080/perfil/moverBarcoInicial';
   String urlCrearPartida = 'http://localhost:8080/partida/crearPartida';
   String urlMostrarMiTablero = 'http://localhost:8080/partida/mostrarMiTablero';
+  String urlMostrarMiTableroMulti = 'http://localhost:8080/partidaMulti/mostrarMiTablero';
   String urlMostrarTableroEnemigo = 'http://localhost:8080/partida/mostrarTableroEnemigo';
+  String urlMostrarTableroEnemigoMulti = 'http://localhost:8080/partidaMulti/mostrarTableroEnemigo';
   String urlCrearPartidaMulti = 'http://localhost:8080/partidaMulti/crearPartida';
   String urlCrearSala = 'http://localhost:8080/partidaMulti/crearSala';
   String urlBuscarSala = 'http://localhost:8080/partidaMulti/buscarSala';
@@ -18,6 +20,13 @@ class ServerRoute {
   String urlObtenerPerfil = 'http://localhost:8080/perfil/obtenerUsuario';
   String urlDispararRafaga = 'http://localhost:8080/partida/realizarDisparoMisilRafaga';
   String urlDispararTorpedo = 'http://localhost:8080/partida/realizarDisparoTorpedoRecargado';
-  String urlDispararMisil = 'http://localhost:8080/partida/realizarDisparoMisilTeledirigido';
+  String urlDispararTeledirigido = 'http://localhost:8080/partida/realizarDisparoMisilTeledirigido';
+  String urlColocarMina = 'http://localhost:8080/partida/colocarMina';
+  String urlUsarSonar = 'http://localhost:8080/partida/usarSonar';
+  String urlDispararRafagaMulti = 'http://localhost:8080/partidaMulti/realizarDisparoMisilRafaga';
+  String urlDispararTorpedoMulti = 'http://localhost:8080/partidaMulti/realizarDisparoTorpedoRecargado';
+  String urlDispararTeledirigidoMulti = 'http://localhost:8080/partidaMulti/realizarDisparoMisilTeledirigido';
+  String urlColocarMinaMulti = 'http://localhost:8080/partidaMulti/colocarMina';
+  String urlUsarSonarMulti = 'http://localhost:8080/partidaMulti/usarSonar';
   String urlModificarMazo = 'http://localhost:8080/perfil/modificarMazo';
 }

@@ -26,6 +26,8 @@ class _AtacarState extends State<Atacar> {
     super.initState();
     defender = false;
 
+    Juego().socket.emit('entrarSala', Juego().codigo);
+
     Juego().socket.on('disconnect', (_) {
       print('Conexión cerrada');
     });
@@ -390,13 +392,13 @@ class _AtacarState extends State<Atacar> {
           acertado = result[0];
           fin = result[1];
         }
-        else if (Juego().habilidades[Juego().indiceHabilidadSeleccionadaEnTurno].nombre == 'misil') {
+        else if (Juego().habilidades[Juego().indiceHabilidadSeleccionadaEnTurno].nombre == 'teledirigido') {
           Juego().habilidades[Juego().indiceHabilidadSeleccionadaEnTurno].ejecutar();
-          var result = await realizarDisparoMisil();
+          var result = await realizarDisparoTeledirigido();
           //acertado = result[0];
           //fin = result[1];
         }
-        else if (Juego().habilidades[Juego().indiceHabilidadSeleccionadaEnTurno].nombre == 'torpedo') {
+        else if (Juego().habilidades[Juego().indiceHabilidadSeleccionadaEnTurno].nombre == 'recargado') {
           Juego().habilidades[Juego().indiceHabilidadSeleccionadaEnTurno].ejecutar();
           var result = await realizarDisparoTorpedo(i, j, false);
           acertado = result[0];
@@ -474,9 +476,12 @@ class _AtacarState extends State<Atacar> {
     }
   }
 
+
+
+
 /**************************************************************************************************************/
 /*                                                                                                            */
-/*                                               HABILIDADES                                                  */
+/*                                  HABILIDADES SINGLE PLAYER                                                 */
 /*                                                                                                            */
 /**************************************************************************************************************/
 
@@ -506,6 +511,8 @@ class _AtacarState extends State<Atacar> {
       bool acertado = estado == 'Tocado' || estado == 'Hundido';
       bool fin = data['finPartida'];
       bool hundido = estado == 'Hundido';
+
+      Juego().disparosPendientes = data['misilesRafagaRestantes'];
 
       // Offset con las coordenadas del disparo.
       Offset disparoCoordenadas = Offset(i as double, j as double);
@@ -620,9 +627,9 @@ class _AtacarState extends State<Atacar> {
   }
 
 // Habilidad: MISIL
- Future<void> realizarDisparoMisil() async {
+ Future<void> realizarDisparoTeledirigido() async {
     var response = await http.post(
-      Uri.parse(serverRoute.urlDispararMisil),
+      Uri.parse(serverRoute.urlDispararTeledirigido),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
         'Authorization': 'Bearer ${Juego().tokenSesion}',
@@ -826,44 +833,79 @@ class _AtacarState extends State<Atacar> {
       var data = jsonDecode(response.body);
       //print(data);
       var turnosIA = data['turnosIA'].cast<Map<String, dynamic>>();
-      var disparo = data['disparoRealizado'];
-      var iReal = disparo['i'];
-      var jReal = disparo['j'];
-      Offset disparoCoordenadas = Offset(iReal as double, jReal as double);
-      print("CASILLA REAL DE DISPARO: " + disparoCoordenadas.toString());
-      var estado = disparo['estado'];
-      bool acertado = estado == 'Tocado' || estado == 'Hundido';
       bool fin = data['finPartida'];
-      bool hundido = estado == 'Hundido';
+      bool acertado = false;
+      String evento = data['eventoOcurrido'];
+      var estado;
+      bool hundido = false;
 
-      // Comprobar si el disparo ha sido desviado.
-      if (disparoCoordenadas != Offset(i.toDouble(), j.toDouble())) {
-        if (disparoCoordenadas.dx > i.toDouble()) {
-          Juego().misDisparosDesviadosAbajo.add(Offset(i.toDouble(), j.toDouble()));
-        }
-        else if (disparoCoordenadas.dx < i.toDouble()) {
-          Juego().misDisparosDesviadosArriba.add(Offset(i.toDouble(), j.toDouble()));
-        }
-        else if (disparoCoordenadas.dy > j.toDouble()) {
-          Juego().misDisparosDesviadosDerecha.add(Offset(i.toDouble(), j.toDouble()));
-        }
-        else if (disparoCoordenadas.dy < j.toDouble()) {
-          Juego().misDisparosDesviadosIzquierda.add(Offset(i.toDouble(), j.toDouble()));
-        }
-      }
-
-      if (acertado) {
-        // Actualizar disparos acertados.
+      // Comprobar si en el siguiente turno hay niebla.
+      if (evento == 'Niebla') {
+        print("El ultimo disparo no ha llegado a su destino por la niebla.");
         setState(() {
-          Juego().disparosAcertadosPorMi.add(disparoCoordenadas);
+          Juego().hayNiebla = true;
+          casillaNiebla = Offset(i.toDouble(), j.toDouble());
         });
+        acertado = false;
       }
+
       else {
-        // Actualizar disparos fallados.
-        setState(() {
-          Juego().disparosFalladosPorMi.add(disparoCoordenadas);
-        });
-      }
+        print("ENTRO EN NO HAY NIEBLA");
+        var disparo = data['disparoRealizado'];
+        var iReal = disparo['i'];
+        var jReal = disparo['j'];
+        Offset disparoCoordenadas = Offset(iReal as double, jReal as double);
+        print("CASILLA REAL DE DISPARO: " + disparoCoordenadas.toString());
+        estado = disparo['estado'];
+        acertado = estado == 'Tocado' || estado == 'Hundido';
+        fin = data['finPartida'];
+        hundido = estado == 'Hundido';
+        bool desviado = false;
+
+        // Comprobar si el disparo ha sido desviado.
+        if (disparoCoordenadas != Offset(i.toDouble(), j.toDouble())) {
+          desviado = true; 
+          if (disparoCoordenadas.dx > i.toDouble()) {
+            print("DISPARO DESVIADO HACIA ABAJO");
+            setState(() {
+              Juego().misDisparosDesviadosAbajo.add(Offset(i.toDouble(), j.toDouble()));
+            });
+          }
+          else if (disparoCoordenadas.dx < i.toDouble()) {
+            print("DISPARO DESVIADO HACIA ARRIBA");
+            setState(() {
+              Juego().misDisparosDesviadosArriba.add(Offset(i.toDouble(), j.toDouble()));
+            });
+          }
+          else if (disparoCoordenadas.dy > j.toDouble()) {
+            print("DISPARO DESVIADO HACIA LA DERECHA");
+            setState(() {
+              Juego().misDisparosDesviadosDerecha.add(Offset(i.toDouble(), j.toDouble()));
+            });
+          }
+          else if (disparoCoordenadas.dy < j.toDouble()) {
+            print("DISPARO DESVIADO HACIA LA IZQUIERDA");
+            setState(() {
+              Juego().misDisparosDesviadosIzquierda.add(Offset(i.toDouble(), j.toDouble()));
+            });
+          }
+        }
+
+        if((desviado && !Juego().disparosFalladosPorMi.contains(Offset(i.toDouble(), j.toDouble())) 
+          && !Juego().disparosAcertadosPorMi.contains(Offset(i.toDouble(), j.toDouble()))) || !desviado) {
+          if (acertado) {
+            // Actualizar disparos acertados.
+            setState(() {
+              Juego().disparosAcertadosPorMi.add(disparoCoordenadas);
+            });
+          }
+          else {
+            // Actualizar disparos fallados.
+            setState(() {
+              Juego().disparosFalladosPorMi.add(disparoCoordenadas);
+            });
+          }
+        }
 
       if (hundido) {
         // Actualizar barcos hundidos.
@@ -875,6 +917,7 @@ class _AtacarState extends State<Atacar> {
             Juego().barcosHundidosPorMi.add(barcoHundido);
           }
         });
+      }
       }
   
       // Procesar disparo de la IA.
@@ -965,7 +1008,7 @@ class _AtacarState extends State<Atacar> {
       bool fin = data['finPartida'];
       bool acertado = false;
       String evento = data['eventoOcurrido'];
-
+      bool desviado = false;
 
       // Comprobar si en el siguiente turno hay niebla.
       if (evento == 'Niebla') {
@@ -989,6 +1032,7 @@ class _AtacarState extends State<Atacar> {
 
         // Comprobar si el disparo ha sido desviado.
         if (disparoCoordenadas != Offset(i.toDouble(), j.toDouble())) {
+          desviado = true;  
           if (disparoCoordenadas.dx > i.toDouble()) {
             setState(() {
               Juego().misDisparosDesviadosAbajo.add(Offset(i.toDouble(), j.toDouble()));
@@ -1010,20 +1054,21 @@ class _AtacarState extends State<Atacar> {
             });
           }
         }
-
-        if (acertado) {
-          // Actualizar disparos acertados.
-          setState(() {
-            print("DISPARO ACERTADO");
-            Juego().disparosAcertadosPorMi.add(disparoCoordenadas);
-          });
-        }
-        else {
-          // Actualizar disparos fallados.
-          setState(() {
-            print("DISPARO FALLADO");
-            Juego().disparosFalladosPorMi.add(disparoCoordenadas);
-          });
+        
+        if((desviado && !Juego().disparosFalladosPorMi.contains(Offset(i.toDouble(), j.toDouble())) 
+          && !Juego().disparosAcertadosPorMi.contains(Offset(i.toDouble(), j.toDouble()))) || !desviado) {
+          if (acertado) {
+            // Actualizar disparos acertados.
+            setState(() {
+              Juego().disparosAcertadosPorMi.add(disparoCoordenadas);
+            });
+          }
+          else {
+            // Actualizar disparos fallados.
+            setState(() {
+              Juego().disparosFalladosPorMi.add(disparoCoordenadas);
+            });
+          }
         }
 
         if (hundido) {
@@ -1045,3 +1090,9 @@ class _AtacarState extends State<Atacar> {
     }
   }
 }
+/**************************************************************************************************************/
+/*                                                                                                            */
+/*                                  HABILIDADES MULTIPLAYER                                                   */
+/*                                                                                                            */
+/**************************************************************************************************************/
+

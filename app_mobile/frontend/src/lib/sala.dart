@@ -18,17 +18,23 @@ class _SalaState extends State<Sala> {
   @override
   void initState() {
     super.initState();
-    salaEncontrada = buscarOCrearSala();
+    if(Juego().codigo == -1) {
+      bool amistosa = false;
+      if (Juego().modalidadPartida == "AMISTOSA") {
+        amistosa = true;
+      }
+      salaEncontrada = buscarOCrearSala(amistosa);
+    }
   }
 
-  Future<void> buscarOCrearSala() async {
+  Future<void> buscarOCrearSala(bool amistosa) async {
     if (await Juego().buscarSala()) {
       print("SALA ENCONTRADA");
       Juego().anfitrion = false;
       DestinoManager.setDestino(const Defender());
       Navigator.pushNamed(context, '/Defender');
     } else {
-      await Juego().crearSala();
+      await Juego().crearSala(amistosa);
       Juego().anfitrion = true;
       print("SALA CREADA");
       DestinoManager.setDestino(const Atacar());

@@ -1,4 +1,7 @@
+import 'package:battleship/atacar.dart';
 import 'package:battleship/authProvider.dart';
+import 'package:battleship/defender.dart';
+import 'package:battleship/destino.dart';
 import 'package:battleship/tablero.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -334,6 +337,8 @@ class Juego {
 
     if (response.statusCode == 200) {
       var data = jsonDecode(response.body);
+      print("RECIBO EN ACTUALIZAR ESTADO JUGADOR");
+      print(data);
 
       if (data.containsKey('misDisparos')) {
         var misDisparos = data['misDisparos'] as List;
@@ -376,6 +381,8 @@ class Juego {
 
     if (response.statusCode == 200) {
       var data = jsonDecode(response.body);
+      print("RECIBO EN ACTUALIZAR ESTADO OPONENTE");
+      print(data);
 
       if (data.containsKey('disparosEnemigos')) {
         var disparosEnemigos = data['disparosEnemigos'] as List;
@@ -403,11 +410,19 @@ class Juego {
     }
   }
 
-  Future<void> cargarPartida() async {
+  Future<void> cargarPartida(BuildContext context) async {
     miTablero.barcos = await obtenerBarcos(AuthProvider().name);
     if (codigo != -1) {
-      await actualizarEstadoJugador();
-      await actualizarEstadoOponente();
+      if(modalidadPartida == 'INDIVIDUAL') {
+        await actualizarEstadoJugador();
+        await actualizarEstadoOponente();
+      }
+      else {
+        await actualizarEstadoJugadorMulti();
+        await actualizarEstadoOponenteMulti();
+      }
+
+      Navigator.pushNamed(context, DestinoManager.getRutaDestino()); 
     }
   }
 
@@ -549,17 +564,18 @@ class Juego {
 /////////////////////////////////////////////// PARTIDA MULTIPLAYER ////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  Future<void> crearPartidaMulti(String nombreJugador1, String nombreJugador2) async {
+  Future<void> crearPartidaMulti(String nombreJugador1, String nombreJugador2, bool amistosa) async {
     var response = await http.post(
       Uri.parse(serverRoute.urlCrearPartidaMulti),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
         'Authorization': 'Bearer $tokenSesion',
       },
-      body: jsonEncode(<String, String>{
+      body: jsonEncode(<String, dynamic>{
         'nombreId1': nombreJugador1,
         'nombreId2': nombreJugador2,
         'bioma': 'Mediterraneo' ,
+        'amistosa': amistosa,
       }),
       
     );
@@ -574,7 +590,7 @@ class Juego {
     }
   }
 
-  Future<void> crearSala() async {
+  Future<void> crearSala(bool amistosa) async {
     var response = await http.post(
       Uri.parse(serverRoute.urlCrearSala),
       headers: <String, String>{
@@ -584,6 +600,7 @@ class Juego {
       body: jsonEncode(<String, dynamic>{
         'nombreId': Juego().miPerfil.name,
         'bioma': 'Mediterraneo' ,
+        'amistosa': amistosa,
       }),
     );
 
@@ -655,4 +672,122 @@ class Juego {
       throw Exception('La solicitud ha fallado');
     }
   }
+
+  Future<void> actualizarEstadoJugadorMulti() async {
+    var response = await http.post(
+      Uri.parse(serverRoute.urlMostrarTableroEnemigoMulti),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+        'Authorization': 'Bearer ${Juego().tokenSesion}',
+      },
+      body: jsonEncode(<String, dynamic>{
+        'codigo': Juego().codigo,
+        'nombreId': Juego().miPerfil.name,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      var data = jsonDecode(response.body);
+      print("RECIBO EN ACTUALIZAR ESTADO JUGADOR");
+      print(data);
+
+      int contadorTurno = data['contadorTurno'];
+      var nombreId1 = data['nombreId1'];
+      modalidadPartida = data['tipoPartida'];
+
+      print("ME LLEGA MODALIDAD: " + modalidadPartida);
+
+      // Soy el anfitrión
+      if (nombreId1 == Juego().miPerfil.name) {
+        if (contadorTurno % 2 == 1) {
+          DestinoManager.setDestino(Atacar());
+          print("MI TURNO ES ATAQUE");
+        }
+        else {
+          DestinoManager.setDestino(Defender());
+          print("MI TURNO ES DEFENSA");
+        }
+      } else {
+        if (contadorTurno % 2 == 1) {
+          DestinoManager.setDestino(Defender());
+          print("MI TURNO ES DEFENDER");
+        }
+        else {
+          DestinoManager.setDestino(Atacar());
+          print("MI TURNO ES ATACAR");
+        }
+      }
+
+      if (data.containsKey('misDisparos')) {
+        var misDisparos = data['misDisparos'] as List;
+        for (var disparo in misDisparos) {
+          double i = disparo['i'].toDouble();
+          double j = disparo['j'].toDouble();
+          if (disparo['estado'] == 'Agua') {
+            disparosFalladosPorMi.add(Offset(i, j));
+          } else {
+            disparosAcertadosPorMi.add(Offset(i, j));
+          }
+        }
+      }
+
+      if (data.containsKey('barcosHundidos')) {
+        var barcosHundidosPorMi = data['barcosHundidos'] as List;
+        for (var barco in barcosHundidosPorMi) {
+          barcosRestantesRival--;
+          Barco barcoHundido = buscarBarcoHundido(barco);
+          barcosHundidosPorMi.add(barcoHundido);
+        }
+      }
+    } else {
+      throw Exception('La solicitud ha fallado');
+    }
+  }
+
+  Future<void> actualizarEstadoOponenteMulti() async {
+    var response = await http.post(
+      Uri.parse(serverRoute.urlMostrarMiTableroMulti),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+        'Authorization': 'Bearer ${Juego().tokenSesion}',
+      },
+      body: jsonEncode(<String, dynamic>{
+        'codigo': Juego().codigo,
+        'nombreId': Juego().miPerfil.name,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      var data = jsonDecode(response.body);
+      print("RECIBO EN ACTUALIZAR ESTADO OPONENTE");
+      print(data);
+
+      if (data.containsKey('disparosEnemigos')) {
+        var disparosEnemigos = data['disparosEnemigos'] as List;
+        for (var disparo in disparosEnemigos) {
+          double i = disparo['i'].toDouble();
+          double j = disparo['j'].toDouble();
+          if (disparo['estado'] == 'Agua') {
+            disparosFalladosRival.add(Offset(i, j));
+          } else {
+            disparosAcertadosRival.add(Offset(i, j));
+          }
+        }
+      }
+
+      if (data.containsKey('barcosHundidos')) {
+        var barcosHundidosPorMi = data['barcosHundidos'] as List;
+        for (var barco in barcosHundidosPorMi) {
+          misBarcosRestantes--;
+          Barco barcoHundido = buscarBarcoHundido(barco);
+          barcosHundidosPorRival.add(barcoHundido);
+        }
+      }
+    } else {
+      throw Exception('La solicitud ha fallado');
+    }
+  }
+}
+
+mixin modalidad {
 }

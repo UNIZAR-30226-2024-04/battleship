@@ -1,9 +1,12 @@
 import 'package:battleship/destino.dart';
+import 'package:battleship/principal.dart';
 import 'package:flutter/material.dart';
+import 'atacar.dart';
 import 'juego.dart';
 import 'botones.dart';
 import 'authProvider.dart';
 import 'comun.dart';
+import 'sala.dart';
 
 class InicioSesion extends StatefulWidget {
   const InicioSesion({super.key});
@@ -50,7 +53,6 @@ class _InicioSesionState extends State<InicioSesion> {
             const Spacer(),
             _buildLogin(context, () async => await _handlePressed(context, _authProvider)),
             const Spacer(),
-            buildActions(context),
           ],
         ),
       ),
@@ -106,13 +108,16 @@ class _InicioSesionState extends State<InicioSesion> {
 
   Future<void> _handlePressed(BuildContext context, AuthProvider authProvider) async {
     if(await _authProvider.login(_nombreController.text, _passwordController.text, context)) {
-      if (Juego().modalidadPartida == "INDIVIDUAL") {
-        if (Juego().codigo == -1) {
-          await Juego().crearPartida();
-        }
+      if(Juego().codigo != -1) {
+        print("CODIGO DE LA PARTIDA EN LOGIN: " + Juego().codigo.toString());
+        await Juego().cargarPartida(context);
+      }
+      else {
+        print("CODIGO DE LA PARTIDA EN LOGIN ES -1: ");
+        DestinoManager.setDestino(Principal());
       }
       Navigator.pushNamed(context, DestinoManager.getRutaDestino());
-  }
+    }
     else {
       showErrorSnackBar(context, "Credenciales incorrectas");
     }
