@@ -527,11 +527,6 @@ export function Game() {
     // MOSTRAR RESULTADO DE DISPARO EN TABLERO
     function mostrarDisparo(fila, columna, estado) {
 
-
-        // -------------------------------
-        // TO DO: Añadir lógica para mostrar minas
-        // -------------------------------
-
         const locationCasilla = (fila-1)*10 + columna - 1;
         const casilla = document.querySelector(`#rivalTablero .casilla[location="${locationCasilla}"]`);
 
@@ -830,7 +825,9 @@ export function Game() {
         })
     }
 
-
+    // ------------------------------- //
+    //   Fin Funciones de habilidades  //
+    // ------------------------------- //
 
 
 
