@@ -872,7 +872,7 @@ describe("Colocar mina", () => {
     try {
       await colocarMina(req, res);
     } catch (error) {}    
-    expect(res.statusCode).toBe(404);
+    expect(res._json.minaColocada).toBe(false);
   });
   it("Debería fallar al colocar una mina en una casilla ocupada por otra mina", async () => {
     const partidaActual = await Partida.findOne({codigo: _codigo});
@@ -884,7 +884,7 @@ describe("Colocar mina", () => {
     try {
       await colocarMina(req, res);
     } catch (error) {}    
-    expect(res.statusCode).toBe(404);
+    expect(res._json.minaColocada).toBe(false);
   });
 });
 

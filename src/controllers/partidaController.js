@@ -5,7 +5,7 @@ const Tablero = require('../data/tablero');
 const {barcosDisponibles} = require('../data/barco');
 const biomasDisponibles = require('../data/biomas');
 const climasDisponibles = require('../data/climas');
-const {actualizarEstadisticas} = require('./perfilController');
+const {actualizarEstadisticas, actualizarPuntosExperiencia} = require('./perfilController');
 const tableroDim = Coordenada.i.max;  // Dimensiones del tablero
 /**
  * @module partida
@@ -898,16 +898,18 @@ async function actualizarEstadisticasTurno(nuevosTrofeos, partidaActual, estadis
   let tempRes1 = { json: () => {}, status: function(s) { 
     this.statusCode = s; return this;} };
   // Actualizar ptos de experiencia y ELO si la partida no es amistosa
+  console.log('Chivato0');
   if (!partidaActual.amistosa) {
     estadisticasJugadores[0].nuevosTrofeos = 
       (estadisticasJugadores[0].victoria === 1) ? 20 : 0; // Place holder === TODO ELO
     let experienciaJ1 = 1*estadisticasJugadores[0].nuevosDisparosAcertados 
     + 0.25*estadisticasJugadores[0].nuevosDisparosFallados 
     + 5*estadisticasJugadores[0].nuevosBarcosHundidos
-    + 10*estadisticasJugadores[0].victoria;
+    + (estadisticasJugadores[0].victoria === 1) ? 10 : 0;
     nuevosTrofeos = calcularActualizacionELO(jugador1.trofeos, jugador2.trofeos,
       estadisticasJugadores[0].victoria);
     estadisticasJugadores[0].nuevosTrofeos = nuevosTrofeos[0];
+    console.log('Chivato0.5');
     await actualizarPuntosExperiencia({ body: { nombreId: estadisticasJugadores[0].nombreId, 
       nuevosPuntosExperiencia: experienciaJ1 } }, tempRes1);
     if (tempRes1.statusCode !== undefined && tempRes1.statusCode !== 200) {
@@ -915,12 +917,13 @@ async function actualizarEstadisticasTurno(nuevosTrofeos, partidaActual, estadis
       return {mensajeError};
     }
   }
+  console.log('Chivato1');
   await actualizarEstadisticas({ body: estadisticasJugadores[0] }, tempRes1);
   if (tempRes1.statusCode !== undefined && tempRes1.statusCode !== 200) {
     mensajeError = 'Error al actualizar las estadísticas del jugador 1';
     return {mensajeError};
   }
-
+  console.log('Chivato2');
   if (!partidaContraIA) {
     let tempRes2 = { json: () => {}, status: function(s) {
       this.statusCode = s; return this;} };
@@ -930,7 +933,7 @@ async function actualizarEstadisticasTurno(nuevosTrofeos, partidaActual, estadis
       let experienciaJ2 = 1*estadisticasJugadores[1].nuevosDisparosAcertados
       + 0.25*estadisticasJugadores[1].nuevosDisparosFallados
       + 5*estadisticasJugadores[1].nuevosBarcosHundidos
-      + 10*estadisticasJugadores[1].victoria;
+      + (estadisticasJugadores[1].victoria === 1) ? 10 : 0;
       estadisticasJugadores[1].nuevosTrofeos = nuevosTrofeos[1];
       await actualizarPuntosExperiencia({ body: { nombreId: estadisticasJugadores[1].nombreId,
         nuevosPuntosExperiencia: experienciaJ2 } }, tempRes2);
@@ -939,6 +942,7 @@ async function actualizarEstadisticasTurno(nuevosTrofeos, partidaActual, estadis
         return {mensajeError};
       }
     }
+    console.log('Chivato3');
     await actualizarEstadisticas({ body: estadisticasJugadores[1] }, tempRes2);
     if (tempRes2.statusCode !== undefined && tempRes2.statusCode !== 200) {
       mensajeError = 'Error al actualizar las estadísticas del jugador 2';
@@ -1162,6 +1166,7 @@ exports.realizarDisparo = async (req, res) => {
       const partidaContraIA = !partidaActual.nombreId2;
       // Aplicar efecto de clima y actualizar el clima
       const {i: iClima, j: jClima, eventoOcurrido} = efectoClima(partidaActual.clima, i, j);
+      console.log('Bioma: ', partidaActual.bioma, ' Clima: ', partidaActual.clima);
       const nuevoClima = seleccionarClima(partidaActual.bioma, partidaActual.clima);
       partidaActual.clima = nuevoClima;
 
@@ -1218,7 +1223,9 @@ exports.realizarDisparo = async (req, res) => {
 
         // Actualizar estadisticas de los jugadores
         let nuevosTrofeos = [0, 0];
+        console.log('Partida contra IA: ', partidaContraIA);
         const {mensajeError} = await actualizarEstadisticasTurno(nuevosTrofeos, partidaActual, estadisticasJugadores, jugador1, jugador2, partidaContraIA);
+        console.log('Mensaje de error: ', mensajeError);
         if (mensajeError) {
           res.status(500).send(mensajeError);
           console.error(mensajeError);

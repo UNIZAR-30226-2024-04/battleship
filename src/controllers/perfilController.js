@@ -981,6 +981,7 @@ exports.actualizarEstadisticas = async (req, res) => {
 //  */
 exports.actualizarPuntosExperiencia = async (req, res) => {
   try {
+    console.log("Entrando en actualizarPuntosExperiencia");
     // Extracción de parámetros del cuerpo de la solicitud
     const { nombreId, nuevosPuntosExperiencia, ...extraParam } = req.body;
     // Verificar si hay algún parámetro extra
@@ -995,12 +996,14 @@ exports.actualizarPuntosExperiencia = async (req, res) => {
       console.error("Falta el nombreId en la solicitud");
       return;
     }
+    console.log("nombreId: ", nombreId, "nuevosPuntosExperiencia: ", nuevosPuntosExperiencia);
     // Verificar que la experiencia es numérica
     if (!esNumero(nuevosPuntosExperiencia)) {
         res.status(400).send('Los puntos de experiencia deben ser numéricos');
         console.error("Los puntos de experiencia deben ser numéricos");
         return;
     }
+    console.log("nombreId: ", nombreId, "nuevosPuntosExperiencia: ", nuevosPuntosExperiencia);
     // Buscar y actualizar el perfil en la base de datos
     const filtro = { nombreId: nombreId };
     const perfilModificado = await Perfil.findOneAndUpdate(
