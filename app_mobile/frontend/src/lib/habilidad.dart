@@ -37,9 +37,9 @@ class Mina extends Habilidad {
   }
 }
 
-class TeleDirigido extends Habilidad {
-  TeleDirigido() {
-    nombre = 'misil';
+class Teledirigido extends Habilidad {
+  Teledirigido() {
+    nombre = 'teledirigido';
   }
 
   @override
@@ -87,7 +87,7 @@ class Torpedo extends Habilidad {
 
   @override
   void ejecutar() {
-    if(estado == 'recargando') {
+    if(estado == 'disponible') {
       Juego().indiceHabilidadSeleccionadaEnTurno = -1;
     }
     cambiarEstado();

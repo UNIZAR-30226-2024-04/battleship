@@ -31,7 +31,7 @@ class Mazo extends StatefulWidget {
             habilidades.add(Mina());
             break;
           case 'teledirigido':
-            habilidades.add(TeleDirigido());
+            habilidades.add(Teledirigido());
             break;
         }
       }

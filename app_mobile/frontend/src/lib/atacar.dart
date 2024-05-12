@@ -149,7 +149,7 @@ class _AtacarState extends State<Atacar> {
   /*
    * Construir widget con las habilidades disponibles del jugador.
    */
-  Widget _construirHabilidades() {
+Widget _construirHabilidades() {
     return Container(
       padding: const EdgeInsets.all(10),
       child: Column(
@@ -171,8 +171,17 @@ class _AtacarState extends State<Atacar> {
                             return;
                           }
                           
-                          Juego().indiceHabilidadSeleccionadaEnTurno = i;
-                          //print("HABILIDAD SELECCIONADA: ${Juego().habilidades[i].nombre}");
+                          if(Juego().numHabilidadesUtilizadas > 2) {  // 0, 1, 2
+                            showErrorSnackBar(context, 'Ya has utilizado todas tus habilidades para la partida');
+                            return;
+                          }
+                          else {
+                            Juego().numHabilidadesUtilizadas ++;
+                          }
+
+                          setState(() {
+                            Juego().indiceHabilidadSeleccionadaEnTurno = i;
+                          });
 
                           if(Juego().habilidades[i].nombre == 'teledirigido') {
                             _handleTap(0, 0);
@@ -180,6 +189,7 @@ class _AtacarState extends State<Atacar> {
 
                           if(Juego().habilidades[i].nombre == 'torpedo') {
                             _handleTap(0, 0);
+                            Navigator.pushNamed(context, '/Defender');
                           }
 
                           if(Juego().habilidades[i].nombre == 'mina') {
@@ -204,7 +214,7 @@ class _AtacarState extends State<Atacar> {
                               width: 50,
                               height: 50,
                               fit: BoxFit.fill,
-                              color: Juego().indiceHabilidadSeleccionadaEnTurno == i ? Colors.black.withOpacity(0.5) : null,
+                              color: Juego().indiceHabilidadSeleccionadaEnTurno == i ? Colors.black.withOpacity(0.7) : null,
                               colorBlendMode: Juego().indiceHabilidadSeleccionadaEnTurno == i ? BlendMode.darken : null,
                             ),
                           ],
@@ -317,7 +327,13 @@ class _AtacarState extends State<Atacar> {
       casillas.add(
         GestureDetector(
           onTap: () async {
-            await onTap(rowIndex, j);
+            if(Juego().indiceHabilidadSeleccionadaEnTurno != -1 &&
+             Juego().habilidades[Juego().indiceHabilidadSeleccionadaEnTurno].nombre == 'torpedo') {
+              onTap(rowIndex, j);
+            }
+            else {
+              await onTap(rowIndex, j);
+            }
             print(defender);
             if(defender) {
               defender = false;
@@ -392,6 +408,7 @@ class _AtacarState extends State<Atacar> {
    * Manejar el disparo sobre una casilla del tablero.
    */
   Future<void> _handleTap(int i, int j) async {
+    print("INDICE HABILIDAD SELECCIONADA: " + Juego().indiceHabilidadSeleccionadaEnTurno.toString());
     // Comprobar si ya se ha disparado en esa casilla.
     if (Juego().disparosAcertadosPorMi.contains(Offset(i.toDouble(), j.toDouble())) || 
           Juego().disparosFalladosPorMi.contains(Offset(i.toDouble(), j.toDouble()))) {
@@ -419,9 +436,10 @@ class _AtacarState extends State<Atacar> {
           acertado = result[0];
           fin = result[1];
         }
-        else if (Juego().habilidades[Juego().indiceHabilidadSeleccionadaEnTurno].nombre == 'recargado') {
+        else if (Juego().habilidades[Juego().indiceHabilidadSeleccionadaEnTurno].nombre == 'torpedo') {
           // Si el estado de la habilidad es "recargando", no dispara.
           if (Juego().habilidades[Juego().indiceHabilidadSeleccionadaEnTurno].estado == 'recargando') {
+            Juego().habilidades[Juego().indiceHabilidadSeleccionadaEnTurno].ejecutar();
             var result = await realizarDisparoTorpedo(0, 0, true);
             acertado = result[0];
             fin = result[1];
@@ -503,21 +521,19 @@ class _AtacarState extends State<Atacar> {
       setState(() {
         Juego().disparosPendientes --;
       });
+    }
 
-      if (Juego().disparosPendientes == 0) {
-        setState(() {
-          defender = true;
-          Juego().disparosPendientes = 1;
-          Juego().misDisparosDesviadosArriba.clear();
-          Juego().misDisparosDesviadosAbajo.clear();
-          Juego().misDisparosDesviadosIzquierda.clear();
-          Juego().misDisparosDesviadosDerecha.clear();
-          Juego().indiceHabilidadSeleccionadaEnTurno = -1;
-        });
-      }
+    if (Juego().disparosPendientes <= 0) {
+      setState(() {
+        defender = true;
+        Juego().disparosPendientes = 1;
+        Juego().misDisparosDesviadosArriba.clear();
+        Juego().misDisparosDesviadosAbajo.clear();
+        Juego().misDisparosDesviadosIzquierda.clear();
+        Juego().misDisparosDesviadosDerecha.clear();
+      });
     }
   }
-
 
 /**************************************************************************************************************/
 /*                                                                                                            */
@@ -580,6 +596,7 @@ class _AtacarState extends State<Atacar> {
 
     if (response.statusCode == 200) {
       var data = jsonDecode(response.body);
+      print(data);
       var disparo = data['disparoRealizado'];
       var barcoCoordenadas = data['barcoCoordenadas'];
       bool fin = data['finPartida'];
@@ -599,20 +616,20 @@ class _AtacarState extends State<Atacar> {
 // Habilidad: TORPEDO
   Future<List<bool>> realizarDisparoTorpedo(int i, int j, bool turnoRecarga) async {
     var response;
-    if (turnoRecarga) {
-      response = await http.post(
-        Uri.parse(serverRoute.urlDispararTorpedo),
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
-          'Authorization': 'Bearer ${Juego().tokenSesion}',
-        },
-        body: jsonEncode(<String, dynamic>{
-          'codigo': Juego().codigo,
-          'nombreId': AuthProvider().name,
-          'turnoRecarga': turnoRecarga,
-        }),
-      );
-    }
+    response = await http.post(
+      Uri.parse(serverRoute.urlDispararTorpedo),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+        'Authorization': 'Bearer ${Juego().tokenSesion}',
+      },
+      body: jsonEncode(<String, dynamic>{
+        'codigo': Juego().codigo,
+        'nombreId': AuthProvider().name,
+        'i': i,
+        'j': j,
+        'turnoRecarga': turnoRecarga,
+      }),
+    );
 
     if (response.statusCode == 200) {
       if (turnoRecarga) {
@@ -620,7 +637,9 @@ class _AtacarState extends State<Atacar> {
         return Future.value([false, false]);
       }
       var data = jsonDecode(response.body);
-      //print(data);
+      print("TORPEDO ME LLEGA");
+      print(data);
+      print("END TORPEDO ME LLEGA");
       var turnosIA = data['turnosIA'].cast<Map<String, dynamic>>();
       var disparos = data['disparosRealizados'];
       var barcoCoordenadas = data['barcoCoordenadas'];
@@ -628,6 +647,7 @@ class _AtacarState extends State<Atacar> {
       bool acertado = false;
       for (var disparo in disparos) {
         acertado = acertado || procesarDisparo(disparo, barcoCoordenadas);
+        await Future.delayed(const Duration(milliseconds: 500));
       }
  
       // Procesar disparo de la IA.
@@ -792,16 +812,24 @@ Future<List<bool>> colocarMina(int i, int j) async {
     // Comprobar si el disparo ha sido desviado.
     if (disparoCoordenadas != Offset(iReal.toDouble(), jReal.toDouble())) {
       if (disparoCoordenadas.dx > iReal.toDouble()) {
-        Juego().misDisparosDesviadosAbajo.add(Offset(iReal.toDouble(), jReal.toDouble()));
+        setState(() {
+          Juego().misDisparosDesviadosAbajo.add(Offset(iReal.toDouble(), jReal.toDouble()));
+        });
       }
       else if (disparoCoordenadas.dx < iReal.toDouble()) {
-        Juego().misDisparosDesviadosArriba.add(Offset(iReal.toDouble(), jReal.toDouble()));
+        setState(() {
+          Juego().misDisparosDesviadosArriba.add(Offset(iReal.toDouble(), jReal.toDouble()));
+        });
       }
       else if (disparoCoordenadas.dy > jReal.toDouble()) {
-        Juego().misDisparosDesviadosDerecha.add(Offset(iReal.toDouble(), jReal.toDouble()));
+        setState(() {
+          Juego().misDisparosDesviadosDerecha.add(Offset(iReal.toDouble(), jReal.toDouble()));
+        });
       }
       else if (disparoCoordenadas.dy < jReal.toDouble()) {
-        Juego().misDisparosDesviadosIzquierda.add(Offset(iReal.toDouble(), jReal.toDouble()));
+        setState(() {
+          Juego().misDisparosDesviadosIzquierda.add(Offset(iReal.toDouble(), jReal.toDouble()));
+        });
       }
     }
 

@@ -65,6 +65,10 @@ class _DefenderState extends State<Defender> {
             print('Resultado turno: $data');
             setState(() {
               Juego().disparosPendientes = 1;
+              if (Juego().indiceHabilidadSeleccionadaEnTurno != -1 && 
+              Juego().habilidades[Juego().indiceHabilidadSeleccionadaEnTurno].nombre != 'torpedo') {
+                Juego().indiceHabilidadSeleccionadaEnTurno = -1;
+              }
               Juego().disparosFalladosRival.add(Offset(i.toDouble(), j.toDouble()));
             });
             Future.delayed(const Duration(milliseconds: 1100), () {
@@ -85,6 +89,10 @@ class _DefenderState extends State<Defender> {
       else {
         print("No entro en el if porque ha habido un disparo con efecto niebla");
         atacar = true;
+        if (Juego().indiceHabilidadSeleccionadaEnTurno != -1 && 
+        Juego().habilidades[Juego().indiceHabilidadSeleccionadaEnTurno].nombre != 'torpedo') {
+          Juego().indiceHabilidadSeleccionadaEnTurno = -1;
+        }
         Future.delayed(const Duration(milliseconds: 1100), () {
           Navigator.pushNamed(context, '/Atacar'); 
         }); 
@@ -317,6 +325,10 @@ class _DefenderState extends State<Defender> {
       Timer(const Duration(seconds: 4), () {
         setState(() {
           Juego().disparosPendientes = 1;
+          if (Juego().indiceHabilidadSeleccionadaEnTurno != -1 &&
+          Juego().habilidades[Juego().indiceHabilidadSeleccionadaEnTurno].nombre != 'torpedo') {
+            Juego().indiceHabilidadSeleccionadaEnTurno = -1;
+          }
         });
         Navigator.pushNamed(context, '/Atacar');
       });

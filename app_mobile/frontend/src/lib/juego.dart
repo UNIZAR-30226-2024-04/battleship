@@ -43,7 +43,7 @@ class Juego {
   bool minaSeleccionada = false;
   String modalidadPartida = '';
   bool hayNiebla = false;
-  List<bool> habilidadesDisponibles = [];
+  int numHabilidadesUtilizadas = 0; // Número de habilidades utilizadas en toda la partida
   ServerRoute serverRoute = ServerRoute();
   final socket = IO.io('http://localhost:8080', <String, dynamic>{
     'transports': ['websocket'],
@@ -154,8 +154,6 @@ class Juego {
           break;
       }
     }
-
-    habilidadesDisponibles = [true, true, true];
 
     var response = await http.post(
       Uri.parse(serverRoute.urlModificarMazo),
@@ -473,7 +471,7 @@ class Juego {
             habilidades.add(Mina());
             break;
           case 'Teledirigido':
-            habilidades.add(TeleDirigido());
+            habilidades.add(Teledirigido());
             break;
         }
       }
