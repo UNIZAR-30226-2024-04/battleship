@@ -2,11 +2,10 @@ import 'juego.dart';
 
 abstract class Habilidad {
   String nombre = '';
-  bool disponible = true;
+  String estado = '';
 
   Habilidad() {
     nombre = '';
-    disponible = true;
   }
 
   void ejecutar();
@@ -23,13 +22,7 @@ class Sonar extends Habilidad {
 
   @override
   void ejecutar() {
-    if(disponible == true) {
-      disponible = false;
-      Juego().indiceHabilidadSeleccionadaEnTurno = -1;
-    }
-    else {
-      disponible = true;
-    }
+    Juego().indiceHabilidadSeleccionadaEnTurno = -1;
   }
 }
 
@@ -40,30 +33,18 @@ class Mina extends Habilidad {
 
   @override
   void ejecutar() {
-    if(disponible == true) {
-      disponible = false;
       Juego().indiceHabilidadSeleccionadaEnTurno = -1;
-    }
-    else {
-      disponible = true;
-    }
   }
 }
 
-class Misil extends Habilidad {
-  Misil() {
+class TeleDirigido extends Habilidad {
+  TeleDirigido() {
     nombre = 'misil';
   }
 
   @override
   void ejecutar() {
-    if(disponible == true) {
-      disponible = false;
-      Juego().indiceHabilidadSeleccionadaEnTurno = -1;
-    }
-    else {
-      disponible = true;
-    }
+    Juego().indiceHabilidadSeleccionadaEnTurno = -1;
   }
 }
 
@@ -79,22 +60,19 @@ class Rafaga extends Habilidad {
     if(disparosRealizados == 0) {
       Juego().disparosPendientes = 3;
       disparosRealizados ++;
-      disponible = true;
     }
     else if(Juego().disparosPendientes > 0) {
       disparosRealizados ++;
-      disponible = true;
     }
     else if(Juego().disparosPendientes == 0) {
       disparosRealizados = 0;
-      disponible = false;
       Juego().indiceHabilidadSeleccionadaEnTurno = -1;
     }
   }
 }
 
 class Torpedo extends Habilidad {
-  String estado = 'disponible';
+  String estado = 'recargando';
   int turnosPerdidosRestantes = 1;
 
   Torpedo() {
@@ -107,12 +85,9 @@ class Torpedo extends Habilidad {
 
   @override
   void ejecutar() {
-    if(disponible == true) {
-      disponible = false;
+    if(estado == 'recargando') {
       Juego().indiceHabilidadSeleccionadaEnTurno = -1;
     }
-    else {
-      disponible = true;
-    }
+    cambiarEstado();
   }
 }

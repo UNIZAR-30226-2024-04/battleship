@@ -42,6 +42,7 @@ class Juego {
   List<Offset> barcosDesveladosSonar = [];
   String modalidadPartida = '';
   bool hayNiebla = false;
+  List<bool> habilidadesDisponibles = [];
   ServerRoute serverRoute = ServerRoute();
   final socket = IO.io('http://localhost:8080', <String, dynamic>{
     'transports': ['websocket'],
@@ -151,6 +152,8 @@ class Juego {
           break;
       }
     }
+
+    habilidadesDisponibles = [true, true, true];
 
     var response = await http.post(
       Uri.parse(serverRoute.urlModificarMazo),
@@ -468,7 +471,7 @@ class Juego {
             habilidades.add(Mina());
             break;
           case 'Teledirigido':
-            habilidades.add(Misil());
+            habilidades.add(TeleDirigido());
             break;
         }
       }

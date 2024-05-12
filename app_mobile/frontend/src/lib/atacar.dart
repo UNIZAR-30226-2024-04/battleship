@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:html';
 import 'package:battleship/authProvider.dart';
 import 'package:battleship/barco.dart';
 import 'package:battleship/botones.dart';
@@ -175,8 +174,12 @@ class _AtacarState extends State<Atacar> {
                           Juego().indiceHabilidadSeleccionadaEnTurno = i;
                           //print("HABILIDAD SELECCIONADA: ${Juego().habilidades[i].nombre}");
 
-                          if(Juego().habilidades[i].nombre == 'misil') {
-                            _handleTap(1, 1);
+                          if(Juego().habilidades[i].nombre == 'teledirigido') {
+                            _handleTap(0, 0);
+                          }
+
+                          if(Juego().habilidades[i].nombre == 'torpedo') {
+                            _handleTap(0, 0); // TODO
                           }
                         },
 
@@ -406,10 +409,20 @@ class _AtacarState extends State<Atacar> {
         else if (Juego().habilidades[Juego().indiceHabilidadSeleccionadaEnTurno].nombre == 'teledirigido') {
           Juego().habilidades[Juego().indiceHabilidadSeleccionadaEnTurno].ejecutar();
           var result = await realizarDisparoTeledirigido();
-          //acertado = result[0];
-          //fin = result[1];
+          acertado = result[0];
+          fin = result[1];
         }
         else if (Juego().habilidades[Juego().indiceHabilidadSeleccionadaEnTurno].nombre == 'recargado') {
+          // Si el estado de la habilidad es "recargando", no se puede usar.
+          if (Juego().habilidades[Juego().indiceHabilidadSeleccionadaEnTurno].estado == 'recargando') {
+            showErrorSnackBar(context, 'Habilidad recargando, no se puede usar');
+          }
+          else {
+            Juego().habilidades[Juego().indiceHabilidadSeleccionadaEnTurno].ejecutar();
+            var result = await realizarDisparoTorpedo(i, j, true);
+            acertado = result[0];
+            fin = result[1];
+          }
           Juego().habilidades[Juego().indiceHabilidadSeleccionadaEnTurno].ejecutar();
           var result = await realizarDisparoTorpedo(i, j, false);
           acertado = result[0];
@@ -488,8 +501,6 @@ class _AtacarState extends State<Atacar> {
   }
 
 
-
-
 /**************************************************************************************************************/
 /*                                                                                                            */
 /*                                  HABILIDADES SINGLE PLAYER                                                 */
@@ -526,6 +537,7 @@ class _AtacarState extends State<Atacar> {
       for (var elemento in turnosIA) {
         acertado = procesarTurnoIA(elemento);
       }
+
       return Future.value([acertado, fin]);
     }
     else {
@@ -534,7 +546,7 @@ class _AtacarState extends State<Atacar> {
   }
 
 // Habilidad: MISIL TeleDirigido
- Future<void> realizarDisparoTeledirigido() async {
+  Future<List<bool>> realizarDisparoTeledirigido() async {
     var response = await http.post(
       Uri.parse(serverRoute.urlDispararTeledirigido),
       headers: <String, String>{
@@ -546,6 +558,7 @@ class _AtacarState extends State<Atacar> {
         'nombreId': AuthProvider().name,
       }),
     );
+
 
     if (response.statusCode == 200) {
       var data = jsonDecode(response.body);
@@ -559,7 +572,7 @@ class _AtacarState extends State<Atacar> {
       for (var elemento in turnosIA) {
         acertado = procesarTurnoIA(elemento);
       }
-    return Future.value([acertado, fin]);
+      return Future.value([acertado, fin]);
     } else {
       throw Exception('Failed to load data');
     }

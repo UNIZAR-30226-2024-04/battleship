@@ -30,8 +30,8 @@ class Mazo extends StatefulWidget {
           case 'mina':
             habilidades.add(Mina());
             break;
-          case 'misil':
-            habilidades.add(Misil());
+          case 'teledirigido':
+            habilidades.add(TeleDirigido());
             break;
         }
       }
@@ -45,7 +45,7 @@ class Mazo extends StatefulWidget {
     Juego().selectedAbilities['torpedo'] = false;
     Juego().selectedAbilities['sonar'] = false;
     Juego().selectedAbilities['mina'] = false;
-    Juego().selectedAbilities['misil'] = false;
+    Juego().selectedAbilities['teledirigido'] = false;
 
     for (var habilidad in habilidades) {
       switch (habilidad.nombre) {
@@ -61,8 +61,8 @@ class Mazo extends StatefulWidget {
         case 'mina':
           Juego().selectedAbilities['mina'] = true;
           break;
-        case 'misil':
-          Juego().selectedAbilities['misil'] = true;
+        case 'teledirigido':
+          Juego().selectedAbilities['teledirigido'] = true;
           break;
       }
     }
@@ -170,15 +170,15 @@ class _MazoState extends State<Mazo> {
                     Juego().actualizarMazo();
                   });
                 }),
-                buildCircledButton('images/misil.png', 'Misil', Juego().selectedAbilities['misil']!, () {
-                  if (Juego().selectedAbilities.values.where((element) => element).length >= 3 && !Juego().selectedAbilities['misil']!) {
+                buildCircledButton('images/misil.png', 'Teledirigido', Juego().selectedAbilities['teledirigido']!, () {
+                  if (Juego().selectedAbilities.values.where((element) => element).length >= 3 && !Juego().selectedAbilities['teledirigido']!) {
                     widget.mensajeErrorModel.setMensaje('No puedes seleccionar más de 3 habilidades en tu mazo');
                     showErrorSnackBar(context, widget.mensajeErrorModel.mensaje);
                     widget.mensajeErrorModel.cleanErrorMessage();
                     return;
                   }
                   setState(() {
-                    Juego().selectedAbilities['misil'] = !Juego().selectedAbilities['misil']!;
+                    Juego().selectedAbilities['teledirigido'] = !Juego().selectedAbilities['teledirigido']!;
                     Juego().actualizarMazo();
                   });
                 }),
