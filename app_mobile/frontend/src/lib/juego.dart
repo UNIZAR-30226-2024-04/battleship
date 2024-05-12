@@ -40,6 +40,7 @@ class Juego {
   List<Offset> minasColocadasPorMi = [];
   List<Offset> minasColocadasPorRival = [];
   List<Offset> barcosDesveladosSonar = [];
+  bool minaSeleccionada = false;
   String modalidadPartida = '';
   bool hayNiebla = false;
   List<bool> habilidadesDisponibles = [];
@@ -114,6 +115,7 @@ class Juego {
     minasColocadasPorMi = [];
     minasColocadasPorRival = [];
     barcosDesveladosSonar = [];
+    minaSeleccionada = false;
     anfitrion = true;
     // Dejar de escuchar eventos
     socket.off('resultadoTurno');

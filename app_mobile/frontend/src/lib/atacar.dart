@@ -179,7 +179,14 @@ class _AtacarState extends State<Atacar> {
                           }
 
                           if(Juego().habilidades[i].nombre == 'torpedo') {
-                            _handleTap(0, 0); // TODO
+                            _handleTap(0, 0);
+                          }
+
+                          if(Juego().habilidades[i].nombre == 'mina') {
+                            Juego().minaSeleccionada = true;
+                            Future.delayed(const Duration(seconds: 1), () {
+                              Navigator.pushNamed(context, '/Defender');
+                            });
                           }
                         },
 
@@ -413,18 +420,28 @@ class _AtacarState extends State<Atacar> {
           fin = result[1];
         }
         else if (Juego().habilidades[Juego().indiceHabilidadSeleccionadaEnTurno].nombre == 'recargado') {
-          // Si el estado de la habilidad es "recargando", no se puede usar.
+          // Si el estado de la habilidad es "recargando", no dispara.
           if (Juego().habilidades[Juego().indiceHabilidadSeleccionadaEnTurno].estado == 'recargando') {
-            showErrorSnackBar(context, 'Habilidad recargando, no se puede usar');
-          }
-          else {
-            Juego().habilidades[Juego().indiceHabilidadSeleccionadaEnTurno].ejecutar();
-            var result = await realizarDisparoTorpedo(i, j, true);
+            var result = await realizarDisparoTorpedo(0, 0, true);
             acertado = result[0];
             fin = result[1];
           }
+          else {
+            Juego().habilidades[Juego().indiceHabilidadSeleccionadaEnTurno].ejecutar();
+            var result = await realizarDisparoTorpedo(i, j, false);
+            acertado = result[0];
+            fin = result[1];
+          }
+        }
+        else if (Juego().habilidades[Juego().indiceHabilidadSeleccionadaEnTurno].nombre == 'sonar') {
           Juego().habilidades[Juego().indiceHabilidadSeleccionadaEnTurno].ejecutar();
-          var result = await realizarDisparoTorpedo(i, j, false);
+          var result = await usarSonar();
+          acertado = result[0];
+          fin = result[1];
+        }
+        else if (Juego().habilidades[Juego().indiceHabilidadSeleccionadaEnTurno].nombre == 'mina') {
+          Juego().habilidades[Juego().indiceHabilidadSeleccionadaEnTurno].ejecutar();
+          var result = await colocarMina(i, j);
           acertado = result[0];
           fin = result[1];
         }
@@ -495,6 +512,7 @@ class _AtacarState extends State<Atacar> {
           Juego().misDisparosDesviadosAbajo.clear();
           Juego().misDisparosDesviadosIzquierda.clear();
           Juego().misDisparosDesviadosDerecha.clear();
+          Juego().indiceHabilidadSeleccionadaEnTurno = -1;
         });
       }
     }

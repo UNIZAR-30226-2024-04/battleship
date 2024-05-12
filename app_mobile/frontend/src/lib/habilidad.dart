@@ -72,7 +72,9 @@ class Rafaga extends Habilidad {
 }
 
 class Torpedo extends Habilidad {
-  String estado = 'recargando';
+  
+  @override String estado = 'recargando';
+
   int turnosPerdidosRestantes = 1;
 
   Torpedo() {
