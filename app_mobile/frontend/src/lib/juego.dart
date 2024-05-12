@@ -37,6 +37,9 @@ class Juego {
   List<Offset> misDisparosDesviadosAbajo = [];
   List<Barco> barcosHundidosPorMi = [];
   List<Barco> barcosHundidosPorRival = [];
+  List<Offset> minasColocadasPorMi = [];
+  List<Offset> minasColocadasPorRival = [];
+  List<Offset> barcosDesveladosSonar = [];
   String modalidadPartida = '';
   bool hayNiebla = false;
   ServerRoute serverRoute = ServerRoute();
@@ -107,6 +110,9 @@ class Juego {
     disparosFalladosRival = [];
     barcosHundidosPorMi = [];
     barcosHundidosPorRival = [];
+    minasColocadasPorMi = [];
+    minasColocadasPorRival = [];
+    barcosDesveladosSonar = [];
     anfitrion = true;
     // Dejar de escuchar eventos
     socket.off('resultadoTurno');

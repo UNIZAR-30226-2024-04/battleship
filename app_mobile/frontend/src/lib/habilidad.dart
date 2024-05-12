@@ -77,17 +77,15 @@ class Rafaga extends Habilidad {
   @override
   void ejecutar() {
     if(disparosRealizados == 0) {
-      Juego().disparosPendientes = 2;
-      disparosRealizados = 1;
-      disponible = true;
-    }
-    else if(disparosRealizados < 3) {
-      Juego().disparosPendientes --;
+      Juego().disparosPendientes = 3;
       disparosRealizados ++;
       disponible = true;
     }
-    else if(disparosRealizados == 3) {
-      Juego().disparosPendientes = 0;
+    else if(Juego().disparosPendientes > 0) {
+      disparosRealizados ++;
+      disponible = true;
+    }
+    else if(Juego().disparosPendientes == 0) {
       disparosRealizados = 0;
       disponible = false;
       Juego().indiceHabilidadSeleccionadaEnTurno = -1;
