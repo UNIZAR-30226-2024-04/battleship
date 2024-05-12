@@ -159,7 +159,7 @@ function calcularEstadisticasPartida(partida, jugador) {
  */
 exports.crearPartida = async (req, res) => {
   try {
-    const { codigo, nombreId1, nombreId2, bioma = 'Mediterraneo', amistosa = false, ...extraParam } = req.body;
+    const { codigo, nombreId1, nombreId2, bioma = 'Mediterraneo', amistosa = false, torneo = false, ...extraParam } = req.body;
     let codigoFinal = codigo;
     // Verificar si hay algún parámetro extra
     if (Object.keys(extraParam).length > 0) {
@@ -214,6 +214,12 @@ exports.crearPartida = async (req, res) => {
       console.error("El jugador 1 ya está en una partida");
       return;
     }
+    // Comprobar que no es partida amisotosa torneo al mismo tiempo
+    if (amistosa && torneo) {
+      res.status(400).send('No se puede crear una partida amistosa y de torneo al mismo tiempo');
+      console.error('No se puede crear una partida amistosa y de torneo al mismo tiempo');
+      return;
+    }
     // Obtenemos los tableros de barcos de los jugadores y generamos un código único
     const tableroBarcos1 = jugador1.tableroInicial;
     let tableroBarcos2;
@@ -238,6 +244,12 @@ exports.crearPartida = async (req, res) => {
         { new: true } // Para devolver el documento actualizado
       );
     } else {
+      // Si el jugador 2 es IA, no puede ser partida de torneo
+      if(torneo) {
+        res.status(400).send('No se puede crear una partida de torneo con un jugador IA');
+        console.error('No se puede crear una partida de torneo con un jugador IA');
+        return;
+      }
       console.log('Jugador 2 es IA');
     }
     const nuevaPartida = new Partida({ 
@@ -249,6 +261,7 @@ exports.crearPartida = async (req, res) => {
       bioma,
       clima: bioma == 'Bermudas' ? 'Tormenta' : 'Calma',
       amistosa: (jugador2 === undefined) ? true : amistosa,
+      torneo: torneo
     });
 
     const partidaGuardada = await nuevaPartida.save(); // ESTA LINEA DA FALLO COJONES
@@ -331,7 +344,7 @@ exports.abandonarPartida = async (req, res) => {
  * @param {Object} res - El tablero de barcos y los disparos realizados del jugador
  * @param {Tablero} res.tableroBarcos - El tablero de barcos del jugador y su estado actual
  * @param {Coordenada[]} res.minas - Las minas colocadas por el jugador
- * @param {Coordenada[]} res.disparosEnemigos - Los disparos realizados por el jugador enemigo´
+ * @param {Coordenada[]} res.disparosEnemigos - Los disparos realizados por el jugador enemigo
  * @param {Number} res.contadorTurno - El contador de turnos de la partida
  * @example
  * peticion = { body: { codigo: '1234567890', nombreId: 'jugador1' } }
@@ -425,6 +438,7 @@ exports.mostrarMiTablero = async (req, res) => {
  * @param {Coordenada[]} res.barcosHundidos - Los barcos del enemigo hundidos por mi
  * @param {Coordenada[]} res.minasExplotadas - Las minas explotadas por mi
  * @param {Number} res.contadorTurno - El contador de turnos de la partida
+ * @param {String} res.tipoPartida - El tipo de partida
  * @example
  * peticion = { body: { codigo: '1234567890', nombreId: 'jugador1' } }
  * respuesta = { json: () => {} }
@@ -500,14 +514,12 @@ exports.mostrarTableroEnemigo = async (req, res) => {
         else { tipoPartida = 'COMPETITIVA'; }
       }
 
-
       const disparosBarcos = {
         misDisparos: misDisparos,
         minasExplotadas: minasExplotadas,
         barcosHundidos: listaBarcosHundidos,
         contadorTurno: contadorTurno,
-        nombreId1: jugador1.nombreId,           // NECESARIO PARA RECONEXIONES
-        tipoPartida: tipoPartida // NECESARIO PARA RECONEXIONES
+        tipoPartida: tipoPartida
       };
       res.json(disparosBarcos);
       console.log('Tablero enemigo obtenido con éxito');
@@ -869,8 +881,8 @@ async function juegaIA(jugador1, jugador2, partidaActual, estadisticasJugadores,
       finPartida: finPartida,
       clima: partidaActual.clima,
       minaDisparada: minaDisparada,
-      disparosRespuestaMina: disparosRespuestaMina,
-      barcosHundidosRespuestaMina: barcosHundidosRespuestaMina
+      disparosRespuestaMina: (minaDisparada !== undefined) ? disparosRespuestaMina : [],
+      barcosHundidosRespuestaMina: (minaDisparada !== undefined) ? barcosHundidosRespuestaMina : [],
     };
     turnosIA.push(turnoIA);
     sigueIA = disparo.estado !== 'Agua' && !finPartida;
@@ -966,9 +978,9 @@ function seleccionarClima(bioma, clima) {
   // Viento -> Calma 70%, Niebla 30%
   // Niebla -> Calma 70%, Viento 30%
   if(bioma === 'Mediterraneo') {
-    if(cambioClima < 0.9) {
+    if(cambioClima < 0.1) {
       if(clima == 'Calma') {
-        if(nuevoClima < 0.9) { return viento; }
+        if(nuevoClima < 0.6) { return viento; }
         else { return 'Niebla'; }
       }
       else if(clima == 'VientoSur' || clima == 'VientoNorte' || clima == 'VientoEste' || clima == 'VientoOeste') {
@@ -1199,8 +1211,8 @@ exports.realizarDisparo = async (req, res) => {
           finPartida: finPartida,
           clima: partidaActual.clima,
           minaDisparada: minaDisparada,
-          disparosRespuestaMina: (minaDisparada !== undefined) ? disparosRespuestaMina : undefined,
-          barcosHundidosRespuestaMina: (minaDisparada !== undefined) ? barcosHundidosRespuestaMina : undefined,
+          disparosRespuestaMina: (minaDisparada !== undefined) ? disparosRespuestaMina : [],
+          barcosHundidosRespuestaMina: (minaDisparada !== undefined) ? barcosHundidosRespuestaMina : [],
           turnosIA: turnosIA
         };
 
@@ -1343,10 +1355,11 @@ exports.realizarDisparoMisilRafaga = async (req, res) => {
           eventoOcurrido: undefined, // Evento ocurrido en la partida
           finPartida: finPartida,
           clima: partidaActual.clima,
+          ultimoMisilRafaga: ultimoMisilRafaga,
           usosHab: jugador === 1 ? partidaActual.usosHab1 : partidaActual.usosHab2,
           minaDisparada: minaDisparada,
-          disparosRespuestaMina: (minaDisparada !== undefined) ? disparosRespuestaMina : undefined,
-          barcosHundidosRespuestaMina: (minaDisparada !== undefined) ? barcosHundidosRespuestaMina : undefined,
+          disparosRespuestaMina: (minaDisparada !== undefined) ? disparosRespuestaMina : [],
+          barcosHundidosRespuestaMina: (minaDisparada !== undefined) ? barcosHundidosRespuestaMina : [],
           turnosIA: turnosIA
         };
 
@@ -1514,8 +1527,8 @@ exports.realizarDisparoTorpedoRecargado = async (req, res) => {
           clima: partidaActual.clima,
           usosHab: jugador === 1 ? partidaActual.usosHab1 : partidaActual.usosHab2,
           minasDisparadas: (minasDisparadas && minasDisparadas.length > 0) ? minasDisparadas : undefined,
-          disparosRespuestasMinas: (disparosRespuestasMinas && disparosRespuestasMinas.length > 0) ? disparosRespuestasMinas : undefined,
-          barcosHundidosRespuestasMinas: (barcosHundidosRespuestasMinas && barcosHundidosRespuestasMinas.length > 0) ? barcosHundidosRespuestasMinas : undefined,
+          disparosRespuestasMinas: (minaDisparada !== undefined) ? disparosRespuestasMinas : [],
+          barcosHundidosRespuestasMinas: (minaDisparada !== undefined) ? barcosHundidosRespuestasMinas : [],
           turnosIA: turnosIA
         };
         // Actualizar estadisticas de los jugadores
@@ -1637,8 +1650,8 @@ exports.realizarDisparoMisilTeledirigido = async (req, res) => {
           clima: partidaActual.clima,
           usosHab: jugador === 1 ? partidaActual.usosHab1 : partidaActual.usosHab2,
           minaDisparada: minaDisparada,
-          disparosRespuestaMina: (minaDisparada !== undefined) ? disparosRespuestaMina : undefined,
-          barcosHundidosRespuestaMina: (minaDisparada !== undefined) ? barcosHundidosRespuestaMina : undefined,
+          disparosRespuestaMina: (minaDisparada !== undefined) ? disparosRespuestaMina : [],
+          barcosHundidosRespuestaMina: (minaDisparada !== undefined) ? barcosHundidosRespuestaMina : [],
           turnosIA: turnosIA
         };
 
@@ -1720,15 +1733,31 @@ exports.colocarMina = async (req, res) => {
       const miTablero = jugador === 1 ? partidaActual.tableroBarcos1 : partidaActual.tableroBarcos2;
       const ocupadaPorBarco = miTablero.some(barco => barco.coordenadas.some(coordenada => coordenada.i === i && coordenada.j === j && coordenada.estado === 'Agua'));
       if (ocupadaPorBarco) {
-        res.status(404).send('La casilla está ocupada por un barco');
+        let respuestaDisparo = {
+          minaColocada: false,
+          eventoOcurrido: undefined, // Evento ocurrido en la partida
+          finPartida: undefined,
+          clima: undefined,
+          usosHab: jugador === 1 ? partidaActual.usosHab1 : partidaActual.usosHab2,
+          turnosIA: undefined
+        };
+        res.json(respuestaDisparo);
         console.error("La casilla está ocupada por un barco");
         return;
       }
       const misMinas = jugador === 1 ? partidaActual.minas1 : partidaActual.minas2;
       const ocupadaPorMina = misMinas.some(mina => mina.i === i && mina.j === j && mina.estado === 'Agua');
       if (ocupadaPorMina) {
-        res.status(404).send('La casilla está ocupada por una mina');
-        console.error("La casilla está ocupada por una mina");
+        let respuestaDisparo = {
+          minaColocada: false,
+          eventoOcurrido: undefined, // Evento ocurrido en la partida
+          finPartida: undefined,
+          clima: undefined,
+          usosHab: jugador === 1 ? partidaActual.usosHab1 : partidaActual.usosHab2,
+          turnosIA: undefined
+        };
+        res.json(respuestaDisparo);
+        console.error("La casilla está ocupada por un barco");
         return;
       }
 

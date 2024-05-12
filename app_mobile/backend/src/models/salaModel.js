@@ -38,7 +38,11 @@ const salaSchema = new Schema({
   amistosa: {  // Indica si la partida es amistosa o no
     type: Boolean,
     default: false
-  }
+  },
+  torneo: { // Indica si la partida es parte de un torneo
+    type: Boolean,
+    default: false
+  },
 }, { timestamps: true }); // timestamps añade automáticamente campos para 'createdAt' y 'updatedAt'
 
 const Sala = mongoose.model('Sala', salaSchema, 'Salas');

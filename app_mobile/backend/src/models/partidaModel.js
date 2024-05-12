@@ -97,6 +97,10 @@ const partidaSchema = new Schema({
     type: Boolean,
     default: false
   },
+  torneo: { // Indica si la partida es parte de un torneo y el código del torneo
+    type: String,
+    default: '-1'    // -1: No es parte de un torneo, cualquier otro valor: Código del torneo
+  },
   ganador: {  // NombreId del jugador ganador
     type: 'String',
     default: ''
