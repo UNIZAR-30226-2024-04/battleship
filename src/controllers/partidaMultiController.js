@@ -67,7 +67,7 @@ exports.crearPartida = async (req, res) => {
  */
 exports.crearSala = async (req, res) => {
   try {
-    const { nombreId, bioma = 'Mediterraneo', amistosa = true, ...extraParam } = req.body;
+    const { nombreId, bioma = 'Mediterraneo', amistosa = false, torneo = false, ...extraParam } = req.body;
     // llamar a la funcion de partidaController para generar el codigo
     const codigo = await PartidaController.generarCodigo();
     // Crear la sala en la base de datos
@@ -77,6 +77,7 @@ exports.crearSala = async (req, res) => {
       nombreId2: undefined,
       bioma,
       amistosa: amistosa,
+      torneo: torneo
     });
     const salaGuardada = await sala.save();
     // Verificar si los sockets están disponibles
@@ -123,7 +124,7 @@ exports.buscarSala = async (req, res) => {
       sala.nombreId2 = nombreId;
       await sala.save();
       // Se llama a crear partida con los datos de la sala
-      await PartidaController.crearPartida({ body: { codigo: sala.codigo, nombreId1: sala.nombreId1, nombreId2: sala.nombreId2, bioma: sala.bioma, amistosa: sala.amistosa } }, res);
+      await PartidaController.crearPartida({ body: { codigo: sala.codigo, nombreId1: sala.nombreId1, nombreId2: sala.nombreId2, bioma: sala.bioma, amistosa: sala.amistosa, torneo:sala.torneo } }, res);
       const io = getIO();
       io.to('/partida' + sala.codigo).emit(eventosSocket.partidaEncontrada, sala.codigo);
       console.log('Partida encontrada en backend:', sala.codigo);

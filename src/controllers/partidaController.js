@@ -159,7 +159,7 @@ function calcularEstadisticasPartida(partida, jugador) {
  */
 exports.crearPartida = async (req, res) => {
   try {
-    const { codigo, nombreId1, nombreId2, bioma = 'Mediterraneo', amistosa = true, ...extraParam } = req.body;
+    const { codigo, nombreId1, nombreId2, bioma = 'Mediterraneo', amistosa = false, torneo = false, ...extraParam } = req.body;
     let codigoFinal = codigo;
     // Verificar si hay algún parámetro extra
     if (Object.keys(extraParam).length > 0) {
@@ -214,6 +214,12 @@ exports.crearPartida = async (req, res) => {
       console.error("El jugador 1 ya está en una partida");
       return;
     }
+    // Comprobar que no es partida amisotosa torneo al mismo tiempo
+    if (amistosa && torneo) {
+      res.status(400).send('No se puede crear una partida amistosa y de torneo al mismo tiempo');
+      console.error('No se puede crear una partida amistosa y de torneo al mismo tiempo');
+      return;
+    }
     // Obtenemos los tableros de barcos de los jugadores y generamos un código único
     const tableroBarcos1 = jugador1.tableroInicial;
     let tableroBarcos2;
@@ -238,6 +244,12 @@ exports.crearPartida = async (req, res) => {
         { new: true } // Para devolver el documento actualizado
       );
     } else {
+      // Si el jugador 2 es IA, no puede ser partida de torneo
+      if(torneo) {
+        res.status(400).send('No se puede crear una partida de torneo con un jugador IA');
+        console.error('No se puede crear una partida de torneo con un jugador IA');
+        return;
+      }
       console.log('Jugador 2 es IA');
     }
     const nuevaPartida = new Partida({ 
@@ -249,6 +261,7 @@ exports.crearPartida = async (req, res) => {
       bioma,
       clima: bioma == 'Bermudas' ? 'Tormenta' : 'Calma',
       amistosa: (jugador2 === undefined) ? true : amistosa,
+      torneo: torneo
     });
 
     const partidaGuardada = await nuevaPartida.save(); // ESTA LINEA DA FALLO COJONES
@@ -332,6 +345,7 @@ exports.abandonarPartida = async (req, res) => {
  * @param {Tablero} res.tableroBarcos - El tablero de barcos del jugador y su estado actual
  * @param {Coordenada[]} res.minas - Las minas colocadas por el jugador
  * @param {Coordenada[]} res.disparosEnemigos - Los disparos realizados por el jugador enemigo
+ * @param {Number} res.contadorTurno - El contador de turnos de la partida
  * @example
  * peticion = { body: { codigo: '1234567890', nombreId: 'jugador1' } }
  * respuesta = { json: () => {} }
@@ -391,10 +405,13 @@ exports.mostrarMiTablero = async (req, res) => {
         mina._id = undefined;
       }
 
+      let contadorTurno = partidaActual.contadorTurno;
+
       const tableroDisparos = {
         tableroBarcos: tableroBarcos,
         minas: minas,
-        disparosEnemigos: disparosEnemigos
+        disparosEnemigos: disparosEnemigos,
+        contadorTurno: contadorTurno
       };
       res.json(tableroDisparos);
       console.log('Mi tablero obtenido con éxito');
@@ -420,6 +437,8 @@ exports.mostrarMiTablero = async (req, res) => {
  * @param {Coordenada[]} res.misDisparos - Los disparos realizados por mi
  * @param {Coordenada[]} res.barcosHundidos - Los barcos del enemigo hundidos por mi
  * @param {Coordenada[]} res.minasExplotadas - Las minas explotadas por mi
+ * @param {Number} res.contadorTurno - El contador de turnos de la partida
+ * @param {String} res.tipoPartida - El tipo de partida
  * @example
  * peticion = { body: { codigo: '1234567890', nombreId: 'jugador1' } }
  * respuesta = { json: () => {} }
@@ -483,10 +502,24 @@ exports.mostrarTableroEnemigo = async (req, res) => {
           minasExplotadas.push(mina);
         }
       }
+
+      // COSAS PARA FRONTEND MOBILE
+      let contadorTurno = partidaActual.contadorTurno;
+      let tipoPartida;
+      if(jugador2.nombreId === "IA"){
+        tipoPartida = 'INDIVIDUAL';
+      } else if (jugador2.nombreId !== "IA"){
+        if(partidaActual.amistosa) tipoPartida = 'AMISTOSA';
+        else if(partidaActual.torneo) tipoPartida = 'TORNEO';
+        else { tipoPartida = 'COMPETITIVA'; }
+      }
+
       const disparosBarcos = {
         misDisparos: misDisparos,
         minasExplotadas: minasExplotadas,
-        barcosHundidos: listaBarcosHundidos
+        barcosHundidos: listaBarcosHundidos,
+        contadorTurno: contadorTurno,
+        tipoPartida: tipoPartida
       };
       res.json(disparosBarcos);
       console.log('Tablero enemigo obtenido con éxito');
