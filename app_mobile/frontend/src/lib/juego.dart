@@ -40,7 +40,6 @@ class Juego {
   List<Offset> minasColocadasPorMi = [];
   List<Offset> minasColocadasPorRival = [];
   List<Offset> barcosDesveladosSonar = [];
-  bool minaSeleccionada = false;
   String modalidadPartida = '';
   bool hayNiebla = false;
   int numHabilidadesUtilizadas = 0; // Número de habilidades utilizadas en toda la partida
@@ -115,8 +114,9 @@ class Juego {
     minasColocadasPorMi = [];
     minasColocadasPorRival = [];
     barcosDesveladosSonar = [];
-    minaSeleccionada = false;
     anfitrion = true;
+    numHabilidadesUtilizadas = 0;
+    indiceHabilidadSeleccionadaEnTurno = -1;
     // Dejar de escuchar eventos
     socket.off('resultadoTurno');
     socket.off('abandono');
@@ -307,7 +307,8 @@ class Juego {
   }
 
   Barco buscarBarcoHundidoDisparo(Map<String, dynamic> barcoCoordenadas) {
-      List<dynamic> coordenadas = barcoCoordenadas['coordenadas'];
+    if (barcoCoordenadas.containsKey('coordenadas')) {
+      var coordenadas = barcoCoordenadas['coordenadas'];
       String tipo = barcoCoordenadas['tipo'];
 
       List<Offset> casillasBarco = [];
@@ -325,6 +326,9 @@ class Juego {
       bool hundido = true;
       Barco barcoHundido = Barco(nombre, barcoPos, long, rotado, hundido);
       return barcoHundido;
+    }
+
+    return Barco('', Offset(0, 0), 0, false, false);
   }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -346,8 +350,6 @@ class Juego {
 
     if (response.statusCode == 200) {
       var data = jsonDecode(response.body);
-      print("RECIBO EN ACTUALIZAR ESTADO JUGADOR");
-      print(data);
 
       if (data.containsKey('misDisparos')) {
         var misDisparos = data['misDisparos'] as List;
@@ -390,9 +392,6 @@ class Juego {
 
     if (response.statusCode == 200) {
       var data = jsonDecode(response.body);
-      print("RECIBO EN ACTUALIZAR ESTADO OPONENTE");
-      print(data);
-
       if (data.containsKey('disparosEnemigos')) {
         var disparosEnemigos = data['disparosEnemigos'] as List;
         for (var disparo in disparosEnemigos) {
@@ -449,11 +448,7 @@ class Juego {
 
     if (response.statusCode == 200) {
       var data = jsonDecode(response.body);
-      print("BARCOS");
-      print(data);
-
       var userMap = jsonDecode(response.body);
-
       var mazoHabilidades = userMap['mazoHabilidades'];
       habilidades = [];
       for (var habilidad in mazoHabilidades) {
@@ -697,33 +692,24 @@ class Juego {
 
     if (response.statusCode == 200) {
       var data = jsonDecode(response.body);
-      print("RECIBO EN ACTUALIZAR ESTADO JUGADOR");
-      print(data);
-
       int contadorTurno = data['contadorTurno'];
       var nombreId1 = data['nombreId1'];
       modalidadPartida = data['tipoPartida'];
-
-      print("ME LLEGA MODALIDAD: " + modalidadPartida);
 
       // Soy el anfitrión
       if (nombreId1 == Juego().miPerfil.name) {
         if (contadorTurno % 2 == 1) {
           DestinoManager.setDestino(Atacar());
-          print("MI TURNO ES ATAQUE");
         }
         else {
           DestinoManager.setDestino(Defender());
-          print("MI TURNO ES DEFENSA");
         }
       } else {
         if (contadorTurno % 2 == 1) {
           DestinoManager.setDestino(Defender());
-          print("MI TURNO ES DEFENDER");
         }
         else {
           DestinoManager.setDestino(Atacar());
-          print("MI TURNO ES ATACAR");
         }
       }
 
@@ -768,9 +754,6 @@ class Juego {
 
     if (response.statusCode == 200) {
       var data = jsonDecode(response.body);
-      print("RECIBO EN ACTUALIZAR ESTADO OPONENTE");
-      print(data);
-
       if (data.containsKey('disparosEnemigos')) {
         var disparosEnemigos = data['disparosEnemigos'] as List;
         for (var disparo in disparosEnemigos) {

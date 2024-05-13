@@ -94,7 +94,6 @@ Widget buildActions(BuildContext context) {
           // Botón para pantalla "Social", donde encontramos los mensajes con nuestros amigos y las diferentes publicaciones.
           _buildActionItem('Social', 'images/social.png', () {
             if (ModalRoute.of(context)?.settings.name == '/Social') {
-              print("RUTA: /Social");
               return;
             }
 
@@ -109,7 +108,6 @@ Widget buildActions(BuildContext context) {
           // Botón para pantalla "Ajustes", donde podemos cambiar la configuración de la aplicación.
           _buildActionItem('Ajustes', 'images/ajustes.png', () {
             if (ModalRoute.of(context)?.settings.name == '/Ajustes') {
-              print("RUTA: /Ajustes");
               return;
             }
             
@@ -195,6 +193,19 @@ void showSuccessSnackBar(BuildContext context, String message) {
       content: Text(
         message,
         style: const TextStyle(color: Colors.green),
+      ),
+      behavior: SnackBarBehavior.floating,
+    );
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  }
+}
+
+void showInfoSnackBar(BuildContext context, String message) {
+  if (ScaffoldMessenger.of(context).mounted) {
+    final snackBar = SnackBar(
+      content: Text(
+        message,
+        style: const TextStyle(color: Colors.blue),
       ),
       behavior: SnackBarBehavior.floating,
     );

@@ -7,6 +7,7 @@ import 'defender.dart';
 import 'mazo.dart';
 import 'juego.dart';
 import 'login.dart';
+import 'mina.dart';
 import 'principal.dart';
 import 'recContrasena.dart';
 import 'registro.dart';
@@ -49,6 +50,8 @@ class DestinoManager {
       return '/Defender';
     } else if (_destino is Sala) {
       return '/Sala';
+    } else if (_destino is Mina) {
+      return '/Mina';
     }
     else {
       throw Exception('Widget no definido');

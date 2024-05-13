@@ -32,7 +32,6 @@ class _DefenderState extends State<Defender> {
 
     Juego().socket.on('abandono', (data) {
       if(data[1] != Juego().miPerfil.name) {
-        print(data);
         Juego().reiniciarPartida();
         showSuccessSnackBar(context, '¡Has ganado la partida por abandono de tu oponente!');
         Navigator.pushNamed(context, '/Principal');
@@ -40,9 +39,30 @@ class _DefenderState extends State<Defender> {
     });
 
     Juego().socket.on('resultadoTurno', (data) {
-      print("EN DEFENDER: $data");
-      Juego().hayNiebla = data[6] == 'Niebla';
-      bool fin = data[4];
+      String tipo = data[0];
+      bool fin = false;
+      var booleanoExtra;
+      var disparosRespuestaMina;
+      var barcosHundidosRespuestaMina;
+      var eventoOcurrido;
+      var disparo;
+      var barcosCoordenadas;
+
+      if (!(tipo == 'Sonar' || tipo == 'Mina')) {
+        fin = data[4];
+        booleanoExtra = data[11];
+        disparosRespuestaMina = data[9];
+        barcosHundidosRespuestaMina = data[10];
+        eventoOcurrido = data[6];
+        disparo = data[2];
+        barcosCoordenadas = data[3];
+      }
+      // Procesar disparos de respuesta a minas.
+      if (disparosRespuestaMina != null && disparosRespuestaMina.isNotEmpty) {
+        for (var disp in disparosRespuestaMina) {
+          procesarDisparo(disp, [barcosHundidosRespuestaMina]);
+        }
+      }
 
       if (fin) {
         Juego().reiniciarPartida();
@@ -50,39 +70,75 @@ class _DefenderState extends State<Defender> {
         Navigator.pushNamed(context, '/Principal');
       }
 
-      print("Niebla: ${Juego().hayNiebla}");
 
-      if(!Juego().hayNiebla) {
-        print("Entro al if");
-        atacar = data[2]['estado'] == 'Agua';
-
+      if(eventoOcurrido != 'Niebla') {
         // Si no soy yo
         if(data[1] != Juego().miPerfil.name) {
-          int i = data[2]['i'];
-          int j = data[2]['j'];
+          switch (tipo) {
 
-          if(atacar) {
-            print('Resultado turno: $data');
-            setState(() {
-              Juego().disparosPendientes = 1;
-              if (Juego().indiceHabilidadSeleccionadaEnTurno != -1 && 
-              Juego().habilidades[Juego().indiceHabilidadSeleccionadaEnTurno].nombre != 'torpedo') {
-                Juego().indiceHabilidadSeleccionadaEnTurno = -1;
+            case 'Rafaga': // CASO RAFAGA
+              procesarTurnoRival(tipo, disparo, [barcosCoordenadas], ultimaRafaga:booleanoExtra);
+              break;
+
+            case 'Recargado': // CASO TORPEDO RECARGADO
+              bool turnoRecarga = booleanoExtra;
+              if (turnoRecarga) { // No ataca, vamos a atacar nosotros
+                setState(() {
+                  Juego().disparosPendientes = 1; // Los disparos que tendré yo en mi turno
+                  if (Juego().indiceHabilidadSeleccionadaEnTurno != -1 && 
+                  Juego().habilidades[Juego().indiceHabilidadSeleccionadaEnTurno].nombre != 'torpedo') {
+                    Juego().indiceHabilidadSeleccionadaEnTurno = -1;
+                  }
+                });
+                Future.delayed(const Duration(milliseconds: 1100), () {
+                  Navigator.pushNamed(context, '/Atacar'); 
+                }); 
+              } else { // Torpedo ataca
+                int numFallados = 0;
+                bool todosFallados = false;
+                for (var disp in disparo) {
+                  if (disp['estado'] == 'Agua') {
+                    numFallados++;
+                  }
+                  if (numFallados == disparo.length) {
+                    todosFallados = true;
+                  }
+                  procesarTurnoRival(tipo, disp, [barcosCoordenadas], todosFallados:todosFallados);
+                }
+
               }
-              Juego().disparosFalladosRival.add(Offset(i.toDouble(), j.toDouble()));
-            });
-            Future.delayed(const Duration(milliseconds: 1100), () {
-              Navigator.pushNamed(context, '/Atacar'); 
-            });  
-          }
-          else {
-            setState(() {
-              Juego().disparosAcertadosRival.add(Offset(i.toDouble(), j.toDouble()));
-              if (data[3] != null) {
-                Barco barcoHundido = Juego().buscarBarcoHundidoDisparo(data[3]);
-                Juego().barcosHundidosPorRival.add(barcoHundido);
-              }
-            });
+              break;
+            
+            case 'Mina': // CASO MINA
+              showInfoSnackBar(context, 'El rival ha usado la mina');
+              setState(() {
+                Juego().disparosPendientes = 1; // Los disparos que tendré yo en mi turno
+                if (Juego().indiceHabilidadSeleccionadaEnTurno != -1 && 
+                Juego().habilidades[Juego().indiceHabilidadSeleccionadaEnTurno].nombre != 'torpedo') {
+                  Juego().indiceHabilidadSeleccionadaEnTurno = -1;
+                }
+              });
+              Future.delayed(const Duration(milliseconds: 1100), () {
+                Navigator.pushNamed(context, '/Atacar'); 
+              }); 
+              break;
+            case 'Sonar': // CASO SONAR
+              showInfoSnackBar(context, 'El rival ha usado el sonar');                
+              setState(() {
+                Juego().disparosPendientes = 1; // Los disparos que tendré yo en mi turno
+                if (Juego().indiceHabilidadSeleccionadaEnTurno != -1 && 
+                Juego().habilidades[Juego().indiceHabilidadSeleccionadaEnTurno].nombre != 'torpedo') {
+                  Juego().indiceHabilidadSeleccionadaEnTurno = -1;
+                }
+              });
+              Future.delayed(const Duration(milliseconds: 1100), () {
+                Navigator.pushNamed(context, '/Atacar'); 
+              }); 
+              break;
+
+            default: // CASO disparo normal o teledirigido
+              procesarTurnoRival(tipo, disparo, [barcosCoordenadas]);
+              break;
           }
         }
       }
@@ -229,6 +285,19 @@ class _DefenderState extends State<Defender> {
               ],
             ),
           ),
+        for(var mina in Juego().minasColocadasPorMi)
+          Positioned(
+            top: mina.dx * Juego().miTablero.casillaSize,
+            left: mina.dy * Juego().miTablero.casillaSize,
+            child: GestureDetector(
+              child: Image.asset(
+                'images/mineSymbol.png',
+                width: Juego().miTablero.casillaSize,
+                height: Juego().miTablero.casillaSize,
+                fit: BoxFit.fill,
+              ),
+            ),
+          ),
       ],
     );
   }
@@ -321,18 +390,16 @@ class _DefenderState extends State<Defender> {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   void iniciarTransicionAutomatica() {
-    if (Juego().minaSeleccionada == false){
-      Timer(const Duration(seconds: 4), () {
-        setState(() {
-          Juego().disparosPendientes = 1;
-          if (Juego().indiceHabilidadSeleccionadaEnTurno != -1 &&
-          Juego().habilidades[Juego().indiceHabilidadSeleccionadaEnTurno].nombre != 'torpedo') {
-            Juego().indiceHabilidadSeleccionadaEnTurno = -1;
-          }
-        });
-        Navigator.pushNamed(context, '/Atacar');
+    Timer(const Duration(seconds: 2), () {
+      setState(() {
+        Juego().disparosPendientes = 1;
+        if (Juego().indiceHabilidadSeleccionadaEnTurno != -1 &&
+        Juego().habilidades[Juego().indiceHabilidadSeleccionadaEnTurno].nombre != 'torpedo') {
+          Juego().indiceHabilidadSeleccionadaEnTurno = -1;
+        }
       });
-    }
+      Navigator.pushNamed(context, '/Atacar');
+    });
   }
 
 
@@ -368,12 +435,10 @@ class _DefenderState extends State<Defender> {
 
       // Mostar disparos enemigos agua
       for (var disparo in disparosAgua) {
-        //print('Disparo enemigo agua: ${disparo.dx}, ${disparo.dy}');
       }
 
       // Mostar disparos enemigos acertados
       for (var disparo in disparosAcertados) {
-        //print('Disparo enemigo acertado: ${disparo.dx}, ${disparo.dy}');
       }
 
 
@@ -425,14 +490,6 @@ class _DefenderState extends State<Defender> {
   }
 
 
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////// PARA COLOCAR MINAS /////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////// PARTIDA COMPETITIVA ////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -440,7 +497,104 @@ class _DefenderState extends State<Defender> {
   Future<void> esperarTurno() async {
     await Future.wait([completerAbandono.future, resultadoTurno.future]);
     if (completerAbandono.isCompleted) {
-      //print('Abandono');
     }
   }
+
+  // Funcion que procesa el turno del rival
+  void procesarTurnoRival(tipo, disparo, barcosCoordenadas, {ultimaRafaga = true, todosFallados = true}) async {
+    int i = disparo['i'];
+    int j = disparo['j'];
+    bool atacar = disparo['estado'] == 'Agua';
+    atacar = atacar && ultimaRafaga && todosFallados;
+    if(atacar) {
+      setState(() {
+        Juego().disparosPendientes = 1; // Los disparos que tendré yo en mi turno
+        if (Juego().indiceHabilidadSeleccionadaEnTurno != -1 && 
+        Juego().habilidades[Juego().indiceHabilidadSeleccionadaEnTurno].nombre != 'torpedo') {
+          Juego().indiceHabilidadSeleccionadaEnTurno = -1;
+        }
+        Juego().disparosFalladosRival.add(Offset(i.toDouble(), j.toDouble()));
+      });
+      Future.delayed(const Duration(milliseconds: 2200), () {
+        Navigator.pushNamed(context, '/Atacar'); 
+      });  
+    }
+    else {
+      setState(() {
+        Juego().disparosAcertadosRival.add(Offset(i.toDouble(), j.toDouble()));
+        // Barco coordenadas no null
+        if (barcosCoordenadas != null && barcosCoordenadas.isNotEmpty) {
+          for (var barco in barcosCoordenadas) {
+            if (barco != null) {
+              Barco barcoHundido = Juego().buscarBarcoHundidoDisparo(barco);
+              Juego().barcosHundidosPorRival.add(barcoHundido);
+            }
+          }
+        }
+      });
+    }
+    
+  }
+
+  bool procesarDisparo(disparo, barcosCoordenadas) {
+    print("DISPARO: ");
+    var iReal = disparo['i'];
+    var jReal = disparo['j'];
+    Offset disparoCoordenadas = Offset(iReal as double, jReal as double);
+    var estado = disparo['estado'];
+    bool acertado = estado == 'Tocado' || estado == 'Hundido';
+    bool hundido = estado == 'Hundido';
+
+    // Comprobar si el disparo ha sido desviado.
+    if (disparoCoordenadas != Offset(iReal.toDouble(), jReal.toDouble())) {
+      if (disparoCoordenadas.dx > iReal.toDouble()) {
+        setState(() {
+          Juego().misDisparosDesviadosAbajo.add(Offset(iReal.toDouble(), jReal.toDouble()));
+        });
+      }
+      else if (disparoCoordenadas.dx < iReal.toDouble()) {
+        setState(() {
+          Juego().misDisparosDesviadosArriba.add(Offset(iReal.toDouble(), jReal.toDouble()));
+        });
+      }
+      else if (disparoCoordenadas.dy > jReal.toDouble()) {
+        setState(() {
+          Juego().misDisparosDesviadosDerecha.add(Offset(iReal.toDouble(), jReal.toDouble()));
+        });
+      }
+      else if (disparoCoordenadas.dy < jReal.toDouble()) {
+        setState(() {
+          Juego().misDisparosDesviadosIzquierda.add(Offset(iReal.toDouble(), jReal.toDouble()));
+        });
+      }
+    }
+
+    if (acertado) {
+      // Actualizar disparos acertados.
+      setState(() {
+        Juego().disparosAcertadosPorMi.add(disparoCoordenadas);
+      });
+    }
+    else {
+      // Actualizar disparos fallados.
+      setState(() {
+        Juego().disparosFalladosPorMi.add(disparoCoordenadas);
+      });
+    }
+
+    if (hundido) {
+      // Actualizar barcos hundidos.
+      setState(() {
+        Juego().barcosRestantesRival--;
+        if (barcosCoordenadas != null && barcosCoordenadas.isNotEmpty) {
+          // Tomar todos los barcos hundidos
+          for (var barcoCoordenadas in barcosCoordenadas) {
+            Barco barcoHundido = Juego().buscarBarcoHundidoDisparo(barcoCoordenadas);
+            Juego().barcosHundidosPorMi.add(barcoHundido);
+          }
+        }
+      });
+    }
+    return acertado;
+ }
 }

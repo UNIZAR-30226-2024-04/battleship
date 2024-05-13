@@ -109,11 +109,9 @@ class _InicioSesionState extends State<InicioSesion> {
   Future<void> _handlePressed(BuildContext context, AuthProvider authProvider) async {
     if(await _authProvider.login(_nombreController.text, _passwordController.text, context)) {
       if(Juego().codigo != -1) {
-        print("CODIGO DE LA PARTIDA EN LOGIN: " + Juego().codigo.toString());
         await Juego().cargarPartida(context);
       }
       else {
-        print("CODIGO DE LA PARTIDA EN LOGIN ES -1: ");
         DestinoManager.setDestino(Principal());
       }
       Navigator.pushNamed(context, DestinoManager.getRutaDestino());

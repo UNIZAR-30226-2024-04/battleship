@@ -8,6 +8,7 @@ import 'mazo.dart';
 import 'juego.dart';
 import 'login.dart';
 import 'destino.dart';
+import 'mina.dart';
 import 'principal.dart';
 import 'recContrasena.dart';
 import 'sala.dart';
@@ -70,6 +71,9 @@ class _MyAppState extends State<MyApp> {
             break;
           case '/Sala':
             builder = (BuildContext _) => const Sala();
+            break;
+          case '/Mina':
+            builder = (BuildContext _) => const Mina();
             break;
           default:
             throw Exception('Ruta no definida');

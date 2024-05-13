@@ -100,8 +100,6 @@ class AuthProvider with ChangeNotifier {
 
     if (response.statusCode == 200) {
       var data = jsonDecode(response.body);
-      print("LOGIN DB");
-      print(data);
       if (data != null) {
         tokenSesion = data['token'];
         return true;
