@@ -5,7 +5,7 @@ const Tablero = require('../data/tablero');
 const {barcosDisponibles} = require('../data/barco');
 const biomasDisponibles = require('../data/biomas');
 const climasDisponibles = require('../data/climas');
-const {actualizarEstadisticas} = require('./perfilController');
+const {actualizarEstadisticas, actualizarPuntosExperiencia} = require('./perfilController');
 const tableroDim = Coordenada.i.max;  // Dimensiones del tablero
 /**
  * @module partida
@@ -159,7 +159,7 @@ function calcularEstadisticasPartida(partida, jugador) {
  */
 exports.crearPartida = async (req, res) => {
   try {
-    const { codigo, nombreId1, nombreId2, bioma = 'Mediterraneo', amistosa = true, ...extraParam } = req.body;
+    const { codigo, nombreId1, nombreId2, bioma = 'Mediterraneo', amistosa = false, torneo = false, ...extraParam } = req.body;
     let codigoFinal = codigo;
     // Verificar si hay algún parámetro extra
     if (Object.keys(extraParam).length > 0) {
@@ -214,6 +214,12 @@ exports.crearPartida = async (req, res) => {
       console.error("El jugador 1 ya está en una partida");
       return;
     }
+    // Comprobar que no es partida amisotosa torneo al mismo tiempo
+    if (amistosa && torneo) {
+      res.status(400).send('No se puede crear una partida amistosa y de torneo al mismo tiempo');
+      console.error('No se puede crear una partida amistosa y de torneo al mismo tiempo');
+      return;
+    }
     // Obtenemos los tableros de barcos de los jugadores y generamos un código único
     const tableroBarcos1 = jugador1.tableroInicial;
     let tableroBarcos2;
@@ -238,6 +244,12 @@ exports.crearPartida = async (req, res) => {
         { new: true } // Para devolver el documento actualizado
       );
     } else {
+      // Si el jugador 2 es IA, no puede ser partida de torneo
+      if(torneo) {
+        res.status(400).send('No se puede crear una partida de torneo con un jugador IA');
+        console.error('No se puede crear una partida de torneo con un jugador IA');
+        return;
+      }
       console.log('Jugador 2 es IA');
     }
     const nuevaPartida = new Partida({ 
@@ -249,6 +261,7 @@ exports.crearPartida = async (req, res) => {
       bioma,
       clima: bioma == 'Bermudas' ? 'Tormenta' : 'Calma',
       amistosa: (jugador2 === undefined) ? true : amistosa,
+      torneo: torneo
     });
 
     const partidaGuardada = await nuevaPartida.save(); // ESTA LINEA DA FALLO COJONES
@@ -332,6 +345,7 @@ exports.abandonarPartida = async (req, res) => {
  * @param {Tablero} res.tableroBarcos - El tablero de barcos del jugador y su estado actual
  * @param {Coordenada[]} res.minas - Las minas colocadas por el jugador
  * @param {Coordenada[]} res.disparosEnemigos - Los disparos realizados por el jugador enemigo
+ * @param {Number} res.contadorTurno - El contador de turnos de la partida
  * @example
  * peticion = { body: { codigo: '1234567890', nombreId: 'jugador1' } }
  * respuesta = { json: () => {} }
@@ -391,10 +405,13 @@ exports.mostrarMiTablero = async (req, res) => {
         mina._id = undefined;
       }
 
+      let contadorTurno = partidaActual.contadorTurno;
+
       const tableroDisparos = {
         tableroBarcos: tableroBarcos,
         minas: minas,
-        disparosEnemigos: disparosEnemigos
+        disparosEnemigos: disparosEnemigos,
+        contadorTurno: contadorTurno
       };
       res.json(tableroDisparos);
       console.log('Mi tablero obtenido con éxito');
@@ -420,6 +437,8 @@ exports.mostrarMiTablero = async (req, res) => {
  * @param {Coordenada[]} res.misDisparos - Los disparos realizados por mi
  * @param {Coordenada[]} res.barcosHundidos - Los barcos del enemigo hundidos por mi
  * @param {Coordenada[]} res.minasExplotadas - Las minas explotadas por mi
+ * @param {Number} res.contadorTurno - El contador de turnos de la partida
+ * @param {String} res.tipoPartida - El tipo de partida
  * @example
  * peticion = { body: { codigo: '1234567890', nombreId: 'jugador1' } }
  * respuesta = { json: () => {} }
@@ -483,10 +502,24 @@ exports.mostrarTableroEnemigo = async (req, res) => {
           minasExplotadas.push(mina);
         }
       }
+
+      // COSAS PARA FRONTEND MOBILE
+      let contadorTurno = partidaActual.contadorTurno;
+      let tipoPartida;
+      if(jugador2.nombreId === "IA"){
+        tipoPartida = 'INDIVIDUAL';
+      } else if (jugador2.nombreId !== "IA"){
+        if(partidaActual.amistosa) tipoPartida = 'AMISTOSA';
+        else if(partidaActual.torneo) tipoPartida = 'TORNEO';
+        else { tipoPartida = 'COMPETITIVA'; }
+      }
+
       const disparosBarcos = {
         misDisparos: misDisparos,
         minasExplotadas: minasExplotadas,
-        barcosHundidos: listaBarcosHundidos
+        barcosHundidos: listaBarcosHundidos,
+        contadorTurno: contadorTurno,
+        tipoPartida: tipoPartida
       };
       res.json(disparosBarcos);
       console.log('Tablero enemigo obtenido con éxito');
@@ -865,16 +898,18 @@ async function actualizarEstadisticasTurno(nuevosTrofeos, partidaActual, estadis
   let tempRes1 = { json: () => {}, status: function(s) { 
     this.statusCode = s; return this;} };
   // Actualizar ptos de experiencia y ELO si la partida no es amistosa
+  console.log('Chivato0');
   if (!partidaActual.amistosa) {
     estadisticasJugadores[0].nuevosTrofeos = 
       (estadisticasJugadores[0].victoria === 1) ? 20 : 0; // Place holder === TODO ELO
     let experienciaJ1 = 1*estadisticasJugadores[0].nuevosDisparosAcertados 
     + 0.25*estadisticasJugadores[0].nuevosDisparosFallados 
     + 5*estadisticasJugadores[0].nuevosBarcosHundidos
-    + 10*estadisticasJugadores[0].victoria;
+    + (estadisticasJugadores[0].victoria === 1) ? 10 : 0;
     nuevosTrofeos = calcularActualizacionELO(jugador1.trofeos, jugador2.trofeos,
       estadisticasJugadores[0].victoria);
     estadisticasJugadores[0].nuevosTrofeos = nuevosTrofeos[0];
+    console.log('Chivato0.5');
     await actualizarPuntosExperiencia({ body: { nombreId: estadisticasJugadores[0].nombreId, 
       nuevosPuntosExperiencia: experienciaJ1 } }, tempRes1);
     if (tempRes1.statusCode !== undefined && tempRes1.statusCode !== 200) {
@@ -882,12 +917,13 @@ async function actualizarEstadisticasTurno(nuevosTrofeos, partidaActual, estadis
       return {mensajeError};
     }
   }
+  console.log('Chivato1');
   await actualizarEstadisticas({ body: estadisticasJugadores[0] }, tempRes1);
   if (tempRes1.statusCode !== undefined && tempRes1.statusCode !== 200) {
     mensajeError = 'Error al actualizar las estadísticas del jugador 1';
     return {mensajeError};
   }
-
+  console.log('Chivato2');
   if (!partidaContraIA) {
     let tempRes2 = { json: () => {}, status: function(s) {
       this.statusCode = s; return this;} };
@@ -897,7 +933,7 @@ async function actualizarEstadisticasTurno(nuevosTrofeos, partidaActual, estadis
       let experienciaJ2 = 1*estadisticasJugadores[1].nuevosDisparosAcertados
       + 0.25*estadisticasJugadores[1].nuevosDisparosFallados
       + 5*estadisticasJugadores[1].nuevosBarcosHundidos
-      + 10*estadisticasJugadores[1].victoria;
+      + (estadisticasJugadores[1].victoria === 1) ? 10 : 0;
       estadisticasJugadores[1].nuevosTrofeos = nuevosTrofeos[1];
       await actualizarPuntosExperiencia({ body: { nombreId: estadisticasJugadores[1].nombreId,
         nuevosPuntosExperiencia: experienciaJ2 } }, tempRes2);
@@ -906,6 +942,7 @@ async function actualizarEstadisticasTurno(nuevosTrofeos, partidaActual, estadis
         return {mensajeError};
       }
     }
+    console.log('Chivato3');
     await actualizarEstadisticas({ body: estadisticasJugadores[1] }, tempRes2);
     if (tempRes2.statusCode !== undefined && tempRes2.statusCode !== 200) {
       mensajeError = 'Error al actualizar las estadísticas del jugador 2';
@@ -945,7 +982,7 @@ function seleccionarClima(bioma, clima) {
   // Viento -> Calma 70%, Niebla 30%
   // Niebla -> Calma 70%, Viento 30%
   if(bioma === 'Mediterraneo') {
-    if(cambioClima < 0.0) { // Devolver a 0.1
+    if(cambioClima < 0.1) {
       if(clima == 'Calma') {
         if(nuevoClima < 0.6) { return viento; }
         else { return 'Niebla'; }
@@ -1099,7 +1136,7 @@ exports.realizarDisparo = async (req, res) => {
       console.error("Sobran parámetros, se espera codigo, jugador, i, j");
       return;
     }
-    // Verificar si de los parámetros está ausente
+    // Verificar si alguno de los parámetros está ausente
     if (!codigo || !nombreId || !i || !j) {
       res.status(400).send('Falta alguno de los siguientes parámetros: codigo, nombreId, i, j');
       return;
@@ -1129,6 +1166,7 @@ exports.realizarDisparo = async (req, res) => {
       const partidaContraIA = !partidaActual.nombreId2;
       // Aplicar efecto de clima y actualizar el clima
       const {i: iClima, j: jClima, eventoOcurrido} = efectoClima(partidaActual.clima, i, j);
+      console.log('Bioma: ', partidaActual.bioma, ' Clima: ', partidaActual.clima);
       const nuevoClima = seleccionarClima(partidaActual.bioma, partidaActual.clima);
       partidaActual.clima = nuevoClima;
 
@@ -1185,7 +1223,9 @@ exports.realizarDisparo = async (req, res) => {
 
         // Actualizar estadisticas de los jugadores
         let nuevosTrofeos = [0, 0];
+        console.log('Partida contra IA: ', partidaContraIA);
         const {mensajeError} = await actualizarEstadisticasTurno(nuevosTrofeos, partidaActual, estadisticasJugadores, jugador1, jugador2, partidaContraIA);
+        console.log('Mensaje de error: ', mensajeError);
         if (mensajeError) {
           res.status(500).send(mensajeError);
           console.error(mensajeError);
@@ -1225,7 +1265,6 @@ exports.realizarDisparo = async (req, res) => {
  * @param {String} res.eventoOcurrido - El evento ocurrido en la partida
  * @param {Boolean} res.finPartida - Indica si la partida ha terminado
  * @param {String} res.clima - El clima de la partida
- * @param {Boolean} res.ultimoMisilRafaga - Indica si es el último misil de la ráfaga
  * @param {Coordenada} [res.minaDisparada] - La mina disparada, si se ha hundido
  * @param {Coordenada[]} [res.disparosRespuestaMina] - Los disparos realizados por el enemigo en respuesta a una mina
  * @param {Barco[]} [res.barcosHundidosRespuestaMina] - Los barcos propios hundidos por respuesta a una mina
@@ -1368,7 +1407,7 @@ exports.realizarDisparoMisilRafaga = async (req, res) => {
  * @param {Number} [req.body.j] - La coordenada j del disparo, necesaria si turnoRecarga es false
  * @param {Boolean} [req.body.turnoRecarga = false] - Indica si es el turno de recarga
  * @param {Object} res - El objeto de respuesta HTTP
- * @param {Coordenada[]} res.disparosRealizados - Los 9 disparos realizados con sus coordenadas y estado
+ * @param {Coordenada} res.disparosRealizados - Los 9 disparos realizados con sus coordenadas y estado
  * @param {Boolean} [res.algunoTocado] - Indica si algun disparo del torpedo ha tocado (o hundido) un barco
  * @param {Barco[]} [res.barcoCoordenadas] - Las coordenadas de los barcos hundidos, si los hay
  * @param {String} res.eventoOcurrido - El evento ocurrido en la partida
@@ -1495,8 +1534,8 @@ exports.realizarDisparoTorpedoRecargado = async (req, res) => {
           clima: partidaActual.clima,
           usosHab: jugador === 1 ? partidaActual.usosHab1 : partidaActual.usosHab2,
           minasDisparadas: (minasDisparadas && minasDisparadas.length > 0) ? minasDisparadas : undefined,
-          disparosRespuestasMinas: (disparosRespuestasMinas && disparosRespuestasMinas.length > 0) ? disparosRespuestasMinas : undefined,
-          barcosHundidosRespuestasMinas: (barcosHundidosRespuestasMinas && barcosHundidosRespuestasMinas.length > 0) ? barcosHundidosRespuestasMinas : undefined,
+          disparosRespuestasMinas: (minaDisparada !== undefined) ? disparosRespuestasMinas : [],
+          barcosHundidosRespuestasMinas: (minaDisparada !== undefined) ? barcosHundidosRespuestasMinas : [],
           turnosIA: turnosIA
         };
         // Actualizar estadisticas de los jugadores

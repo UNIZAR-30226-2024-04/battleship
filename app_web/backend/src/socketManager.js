@@ -1,7 +1,7 @@
 const { Server } = require("socket.io");
 const { isModuleNamespaceObject } = require("util/types");
 let io = null;
-const hostSocket = 'http://localhost:8080';
+const {hostSocket} = require('./uri');
 
 // Define los eventos de socket que se pueden emitir y escuchar
 // Los enviamos junto con el codigo de la partida
@@ -51,7 +51,7 @@ function initializeSocket(server) {
             io.to(`/partida${codigo}`).emit(eventosSocket.partidaEncontrada, codigo);
         });
 
-        socket.on(eventosSocket.resultadoTurno, (habilidad, idJugador, coordenada, barcoHundido, finpartida, clima) => {
+        socket.on(eventosSocket.resultadoTurno, (habilidad, idJugador, coordenada, barcoHundido, finpartida, clima, eventoOcurrido) => {
             console.log('Resultado turno tras disparo recibido en backend:', habilidad, idJugador, coordenada, barcoHundido, finpartida, clima, eventoOcurrido);
             io.to(`/partida${codigo['codigo']}`).emit(eventosSocket.resultadoTurno, habilidad, idJugador, coordenada, barcoHundido, finpartida, clima, eventoOcurrido);
         });
@@ -64,6 +64,11 @@ function initializeSocket(server) {
         socket.on(eventosSocket.abandono, (codigo) => {
             console.log('Abandono recibido en backend:', codigo, idJugador);
             io.to(`/partida${codigo}`).emit(eventosSocket.abandono, codigo, idJugador);
+        });
+
+        socket.on(eventosSocket.chat, (codigo, idJugador, mensaje) => {
+            console.log('Mensaje recibido en backend:', codigo, idJugador, mensaje);
+            io.to(`/partida${codigo}`).emit(eventosSocket.chat, idJugador, mensaje);
         });
 
         socket.on('disconnect', () => {
