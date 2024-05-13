@@ -37,7 +37,8 @@ app.use('/partida', partidaRoutes);
 app.use('/partidaMulti', partidaMultiRoutes);
 
 app.get('/', (req, res) => {
-    res.json({ message: 'API de Battleship' });
+    //res.json({ message: 'API de Battleship' });
+    res.send("Server is running !");
 });
 
 module.exports = app;
