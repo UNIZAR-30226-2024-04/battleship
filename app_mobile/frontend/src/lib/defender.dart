@@ -50,12 +50,14 @@ class _DefenderState extends State<Defender> {
 
       if (!(tipo == 'Sonar' || tipo == 'Mina')) {
         fin = data[4];
-        booleanoExtra = data[11];
         disparosRespuestaMina = data[9];
         barcosHundidosRespuestaMina = data[10];
         eventoOcurrido = data[6];
         disparo = data[2];
         barcosCoordenadas = data[3];
+      }
+      if (tipo == 'Recargado' || tipo == 'Rafaga') {
+        booleanoExtra = data[11];
       }
       // Procesar disparos de respuesta a minas.
       if (disparosRespuestaMina != null && disparosRespuestaMina.isNotEmpty) {

@@ -473,6 +473,17 @@ Widget _construirHabilidades() {
         showErrorSnackBar(context, 'Habilidad no válida');
       }
     }
+    else {
+      if(Juego().modalidadPartida == "INDIVIDUAL") {
+        var result = await realizarDisparoIndividual(i, j);
+        acertado = result[0];
+        fin = result[1];
+      } else {
+        var result = await realizarDisparoMulti(i, j);
+        acertado = result[0];
+        fin = result[1];
+      }
+    }
 
     // Si la casilla señalada tiene un barco (acierta el disparo).
     if(acertado || Juego().disparosPendientes > 1) { // Si acertamos o quedan rafagas
@@ -863,13 +874,12 @@ Future<List<bool>> usarSonar(int i, int j) async {
         var disparo = data['disparoRealizado'];
         var barcoCoordenadas = data['barcoCoordenadas'];
         acertado = procesarDisparo(disparo, [barcoCoordenadas]);
-    
-        print("Disparo IA: ");
-        // Procesar disparo de la IA.
-        var turnosIA = data['turnosIA'].cast<Map<String, dynamic>>();
-        for (var elemento in turnosIA) {  
-            acertado = procesarTurnoIA(elemento);
-        }
+      }        
+      print("Disparo IA: ");
+      // Procesar disparo de la IA.
+      var turnosIA = data['turnosIA'].cast<Map<String, dynamic>>();
+      for (var elemento in turnosIA) {  
+          acertado = procesarTurnoIA(elemento);
       }
 
       return Future.value([acertado, fin]);
@@ -924,9 +934,46 @@ Future<List<bool>> usarSonar(int i, int j) async {
         acertado = procesarDisparo(disparo, [barcoCoordenadas]);
       }
 
+      // Procesar disparos generados por la mina enemiga
+      var disparosRespuestaMina = data['disparosRespuestaMina'];
+      var barcosHundidosRespuestaMina = data['barcosHundidosRespuestaMina'];
+
+      if (disparosRespuestaMina != null && disparosRespuestaMina.isNotEmpty) {
+        print("DISPAROS RESPUESTA AL EXPLOTAR MINA: " + disparosRespuestaMina.toString());
+        for (var disparoMina in disparosRespuestaMina) {
+          procesarTurnoRival(disparoMina, [barcosHundidosRespuestaMina]);
+        }
+      }
+
       return Future.value([acertado, fin]);
     } else {
       throw Exception('Failed to load data');
+    }
+  }
+
+    // Funcion que procesa el turno del rival
+  void procesarTurnoRival(disparo, barcosCoordenadas) async {
+    int i = disparo['i'];
+    int j = disparo['j'];
+    bool atacar = disparo['estado'] == 'Agua';
+    if(atacar) {
+      setState(() {
+        Juego().disparosFalladosRival.add(Offset(i.toDouble(), j.toDouble()));
+      });
+    }
+    else {
+      setState(() {
+        Juego().disparosAcertadosRival.add(Offset(i.toDouble(), j.toDouble()));
+        // Barco coordenadas no null
+        if (barcosCoordenadas != null && barcosCoordenadas.isNotEmpty) {
+          for (var barco in barcosCoordenadas) {
+            if (barco != null) {
+              Barco barcoHundido = Juego().buscarBarcoHundidoDisparo(barco);
+              Juego().barcosHundidosPorRival.add(barcoHundido);
+            }
+          }
+        }
+      });
     }
   }
   

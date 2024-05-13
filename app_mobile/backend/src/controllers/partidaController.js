@@ -1186,6 +1186,7 @@ exports.realizarDisparo = async (req, res) => {
           finPartida = await comprobarFinDePartida(jugadorEnemigo, jugador1, jugador2, partidaActual, estadisticasJugadores, partidaContraIA);
         }
       } else {  // Se ha fallado el disparo por niebla
+        console.log('Disparo fallado por niebla en backend pasa el turno');
         partidaActual.contadorTurno++;
       }
 
