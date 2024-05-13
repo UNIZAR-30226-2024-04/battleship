@@ -1,4 +1,5 @@
 class ServerRoute {
+  // Juego - Partida
   String urlObtenerTablero = 'http://localhost:8080/perfil/obtenerDatosPersonales';
   String urlMoverBarcoInicial = 'http://localhost:8080/perfil/moverBarcoInicial';
   String urlCrearPartida = 'http://localhost:8080/partida/crearPartida';
@@ -13,11 +14,15 @@ class ServerRoute {
   String urlAbandonarPartidaMulti = 'http://localhost:8080/partidaMulti/abandonarPartida';
   String urlDisparar = 'http://localhost:8080/partida/realizarDisparo';
   String urlDispararMulti = 'http://localhost:8080/partidaMulti/realizarDisparo';
+
+  // Perfil - Usuario
   String urlInicioSesion = 'http://localhost:8080/perfil/iniciarSesion';
   String urlRegistro = 'http://localhost:8080/perfil/registrarUsuario';
   String urlModificarDatosPersonales = 'http://localhost:8080/perfil/modificarDatosPersonales';
   String urlEliminarUsuario = 'http://localhost:8080/perfil/eliminarUsuario';
   String urlObtenerPerfil = 'http://localhost:8080/perfil/obtenerUsuario';
+
+  // Mazo y Barcos 
   String urlDispararRafaga = 'http://localhost:8080/partida/realizarDisparoMisilRafaga';
   String urlDispararTorpedo = 'http://localhost:8080/partida/realizarDisparoTorpedoRecargado';
   String urlDispararTeledirigido = 'http://localhost:8080/partida/realizarDisparoMisilTeledirigido';

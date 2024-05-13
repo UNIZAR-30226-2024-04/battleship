@@ -90,6 +90,7 @@ class _SocialState extends State<Social> {
     );
   }
 
+
   // Pestaña de publicaciones
   Widget construirPublicaciones() {
     return Expanded(
@@ -103,29 +104,7 @@ class _SocialState extends State<Social> {
     );
   }
 
-  /*Future<List<bool>> obtenerPublicacion() async {
-    var response = await http.post(
-      Uri.parse(serverRoute.urlObtenerPublicacion),
-      headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-        'Authorization': 'Bearer ${Juego().tokenSesion}',
-      },
-      body: jsonEncode(<String>{
-        'nombreId': Juego().miPerfil.name,
-      }),
-    );
-
-    if (response.statusCode == 200) {
-      var data = jsonDecode(response.body);
-      
-
-
-      return listaBarcosHundidos;
-    } else {
-      throw Exception('La solicitud ha fallado');
-    }
-  }*/
-
+  // Pestaña de amigos
   Widget construirAmigos() {
     return Scaffold(
       body: Container(
@@ -146,6 +125,7 @@ class _SocialState extends State<Social> {
     );
   }
 
+  // Función para obtener los amigos
   Future<List<String>> obtenerAmigos() async {
     var response = await http.post(
       Uri.parse(serverRoute.urlObtenerAmigos),
@@ -173,6 +153,35 @@ class _SocialState extends State<Social> {
     }
   }
 
+  // Función para eliminar un amigo
+  Future<List<String>> eliminarAmigo(String nombreAmigo) async {
+    var response = await http.post(
+      Uri.parse(serverRoute.urlObtenerAmigos),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+        'Authorization': 'Bearer ${Juego().tokenSesion}',
+      },
+      body: jsonEncode(<String,String>{
+        'nombreId': Juego().miPerfil.name,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      // Si obtiene datos
+      var data = jsonDecode(response.body);
+      print('Respuesta del servidor obtenerAmigos: $data');
+      
+      setState(() {
+        amigos = List<String>.from(data);
+      });
+      return amigos;
+    } else {
+      // Si hay algún error
+      throw Exception('Obtener amigos ha fallado');
+    }
+  }
+
+  // Pestaña de solicitudes de amistad
   Widget construirSolicitudes() {
     return Expanded(
       child: Container(
@@ -195,19 +204,16 @@ class _SocialState extends State<Social> {
       },
       body: jsonEncode(<String,String>{
         'nombreId': Juego().miPerfil.name,
-        // 'nombreIdAmigo': Juego().nombreAmigo
       }),
     );
 
+    print('STATUS CODE: ' + response.statusCode.toString());
     if (response.statusCode == 200) {
       var data = jsonDecode(response.body);
       print(data);
-      //SACO LOS AMIGOS
-      List<String> amigos = [];
-      for (var amigo in data) {
-        amigos.add(amigo);
-      }
-      return amigos;
+      
+
+      return solicitudes;;
     }
     else {
       throw Exception('La solicitud ha fallado');
@@ -225,4 +231,6 @@ class _SocialState extends State<Social> {
       ),
     );
   }
+
+  
 }
