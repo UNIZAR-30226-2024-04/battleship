@@ -15,15 +15,17 @@ class Social extends StatefulWidget {
 
 class _SocialState extends State<Social> {
   ServerRoute serverRoute = ServerRoute();
+  Juego juego = Juego();
+
+  List<String> amigos = [];
+  List<String> solicitudes = [];
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       home: DefaultTabController(
         length: 4,    // Número de pestañas en la TabBar
         child: Scaffold(
-          //appBar: AppBar(
-            //title: const Text('Social'),
-          //),
           body: Container(
             decoration: const BoxDecoration(
               image: DecorationImage(
@@ -74,62 +76,13 @@ class _SocialState extends State<Social> {
             // Editar el contenido de cada pestaña
             Expanded(
               child: TabBarView(
-              children: [
-                // Pestaña de publicaciones
-                Column(
-                  children: [
-                    Text(
-                      'Publicaciones',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 20,
-                      ),
-                    ),
-                    construirPublicaciones(), 
-                  ]
-                ),
-
-                // Pestaña de amigos
-                Column(
-                  children: [
-                    Text(
-                      'Amigos',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 20,
-                      ),
-                    ),
-                    construirAmigos(),  //Lista de amigos
-                  ],
-                ),
-                // Pestaña de solicitudes de amistad
-                Column(
-                  children: [
-                    Text(
-                      'Solicitudes de amistad',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 20,
-                      ),
-                    ),
-                    construirSolicitudes(),   //Lista de solicitudes
-                  ],
-                ),
-                // Pestaña de mensajes
-                Column(
-                  children: [
-                    Text(
-                      'Mensajes',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 20,
-                      ),
-                    ),
-                    construirMensajes(),    //Lista de mensajes
-                  ],
-                ),
-              ],
-            ),
+                children: [
+                  construirPublicaciones(),  // Pestaña de publicaciones
+                  construirAmigos(),         // Pestaña de amigos
+                  construirSolicitudes(),    // Pestaña de solicitudes de amistad
+                  construirMensajes(),       // Pestaña de mensajes
+                ],
+              ),
             ),
           ],
         ),
@@ -174,12 +127,20 @@ class _SocialState extends State<Social> {
   }*/
 
   Widget construirAmigos() {
-    return Expanded(
-      child: Container(
+    return Scaffold(
+      body: Container(
         margin: const EdgeInsets.all(10),
         decoration: BoxDecoration(
           color: Colors.white.withOpacity(0.5),
           borderRadius: BorderRadius.circular(15),
+        ),
+        child: ListView.builder(
+          itemCount: amigos.length,
+          itemBuilder: (context, index) {
+              return ListTile(
+                title: Text(amigos[index]),
+              );
+            },
         ),
       ),
     );
@@ -192,17 +153,23 @@ class _SocialState extends State<Social> {
         'Content-Type': 'application/json; charset=UTF-8',
         'Authorization': 'Bearer ${Juego().tokenSesion}',
       },
-      body: jsonEncode(<String>{
+      body: jsonEncode(<String,String>{
         'nombreId': Juego().miPerfil.name,
       }),
     );
 
     if (response.statusCode == 200) {
+      // Si obtiene datos
       var data = jsonDecode(response.body);
-      print(data);
-      //return algo;
+      print('Respuesta del servidor obtenerAmigos: $data');
+      
+      setState(() {
+        amigos = List<String>.from(data);
+      });
+      return amigos;
     } else {
-      throw Exception('La solicitud ha fallado');
+      // Si hay algún error
+      throw Exception('Obtener amigos ha fallado');
     }
   }
 
@@ -216,6 +183,35 @@ class _SocialState extends State<Social> {
         ),
       ),
     );
+  }
+
+  //CAMBIAR
+  Future<List<String>> obtenerSolicitudes() async {
+    var response = await http.post(
+      Uri.parse(serverRoute.urlObtenerSolicitudAmistad),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+        'Authorization': 'Bearer ${Juego().tokenSesion}',
+      },
+      body: jsonEncode(<String,String>{
+        'nombreId': Juego().miPerfil.name,
+        // 'nombreIdAmigo': Juego().nombreAmigo
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      var data = jsonDecode(response.body);
+      print(data);
+      //SACO LOS AMIGOS
+      List<String> amigos = [];
+      for (var amigo in data) {
+        amigos.add(amigo);
+      }
+      return amigos;
+    }
+    else {
+      throw Exception('La solicitud ha fallado');
+    }
   }
 
   Widget construirMensajes() {
