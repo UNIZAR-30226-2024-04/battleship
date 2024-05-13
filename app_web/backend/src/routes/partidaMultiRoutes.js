@@ -28,16 +28,6 @@ router.post('/abandonarPartida', verificarToken, partidaMultiController.abandona
 
 
 // -------------------------------------------- //
-// ------------------ SALAS ------------------- //
-// -------------------------------------------- //
-
-// Ruta para buscar sala
-router.post('/buscarSala', verificarToken, partidaMultiController.buscarSala);
-
-// Ruta para crear una sala
-router.post('/crearSala', verificarToken, partidaMultiController.crearSala);
-
-// -------------------------------------------- //
 // ---------------- HABILIDADES --------------- //
 // -------------------------------------------- //
 
@@ -55,6 +45,17 @@ router.post('/colocarMina', verificarToken, partidaMultiController.colocarMina);
 
 // Ruta para usar sonar
 router.post('/usarSonar', verificarToken, partidaMultiController.usarSonar);
+
+
+// -------------------------------------------- //
+// ------------------ SALAS ------------------- //
+// -------------------------------------------- //
+
+// Ruta para buscar sala
+router.post('/buscarSala', verificarToken, partidaMultiController.buscarSala);
+
+// Ruta para crear una sala
+router.post('/crearSala', verificarToken, partidaMultiController.crearSala);
 
 // --------------------------------------------- //
 // -------------- CHAT DE PARTIDA -------------- //

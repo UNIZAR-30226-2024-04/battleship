@@ -67,7 +67,7 @@ exports.crearPartida = async (req, res) => {
  */
 exports.crearSala = async (req, res) => {
   try {
-    const { nombreId, bioma = 'Mediterraneo', amistosa = true, ...extraParam } = req.body;
+    const { nombreId, bioma = 'Mediterraneo', amistosa = false, torneo = false, ...extraParam } = req.body;
     // llamar a la funcion de partidaController para generar el codigo
     const codigo = await PartidaController.generarCodigo();
     // Crear la sala en la base de datos
@@ -77,6 +77,7 @@ exports.crearSala = async (req, res) => {
       nombreId2: undefined,
       bioma,
       amistosa: amistosa,
+      torneo: torneo
     });
     const salaGuardada = await sala.save();
     // Verificar si los sockets están disponibles
@@ -123,7 +124,7 @@ exports.buscarSala = async (req, res) => {
       sala.nombreId2 = nombreId;
       await sala.save();
       // Se llama a crear partida con los datos de la sala
-      await PartidaController.crearPartida({ body: { codigo: sala.codigo, nombreId1: sala.nombreId1, nombreId2: sala.nombreId2, bioma: sala.bioma, amistosa: sala.amistosa } }, res);
+      await PartidaController.crearPartida({ body: { codigo: sala.codigo, nombreId1: sala.nombreId1, nombreId2: sala.nombreId2, bioma: sala.bioma, amistosa: sala.amistosa, torneo:sala.torneo } }, res);
       const io = getIO();
       io.to('/partida' + sala.codigo).emit(eventosSocket.partidaEncontrada, sala.codigo);
       console.log('Partida encontrada en backend:', sala.codigo);
@@ -233,14 +234,11 @@ exports.mostrarTableros = async (req, res) => {
  * @param {Number} req.body.i - La coordenada i del disparo
  * @param {Number} req.body.j - La coordenada j del disparo
  * @param {Object} res - El objeto de respuesta HTTP
- * @param {Coordenada} res.disparoRealizado - El disparo realizado con sus coordenadas y estado
- * @param {Barco} [res.barcoCoordenadas] - Las coordenadas del barco disparado, si se ha hundido
- * @param {String} res.eventoOcurrido - true si ha ocurrido el evento del clima
+ * @param {Object} res.disparoRealizado - El disparo realizado con sus coordenadas y estado
+ * @param {Object} [res.barcoCoordenadas] - Las coordenadas del barco disparado, si se ha hundido
+ * @param {String} res.eventoOcurrido - El evento ocurrido en la partida
  * @param {Boolean} res.finPartida - Indica si la partida ha terminado
  * @param {String} res.clima - El clima de la partida
- * @param {Coordenada} [res.minaDisparada] - La mina disparada, si se ha hundido
- * @param {Coordenada[]} [res.disparosRespuestaMina] - Los disparos realizados por el enemigo en respuesta a una mina
- * @param {Barco[]} [res.barcosHundidosRespuestaMina] - Los barcos propios hundidos por respuesta a una mina
  * @param {TurnoIA[]} [res.turnosIA] - Los turnos de la IA, si la partida es contra la IA
  * @example
  * peticion = { body: { codigo: '1234567890', nombreId: 'jugador1', i: 1, j: 1 } }
@@ -257,6 +255,7 @@ exports.realizarDisparo = async (req, res) => {
 };
 
 /**
+ * @function realizarDisparoMisilRafaga
  * @description Realiza un disparo de la habilidad de ráfaga de misiles en la coordenada (i, j) del enemigo y actualiza el estado de la partida
  * @param {Object} req - El objeto de solicitud HTTP
  * @param {String} req.body.codigo - El codigo de la partida
@@ -265,15 +264,12 @@ exports.realizarDisparo = async (req, res) => {
  * @param {Number} req.body.j - La coordenada j del disparo
  * @param {Number} req.body.misilesRafagaRestantes - Los misiles de rafaga restantes (3, 2 o 1)
  * @param {Object} res - El objeto de respuesta HTTP
- * @param {Coordenada} res.disparoRealizado - El disparo realizado con sus coordenadas y estado
- * @param {Barco} [res.barcoCoordenadas] - Las coordenadas del barco disparado, si se ha hundido
+ * @param {Object} res.disparoRealizado - El disparo realizado con sus coordenadas y estado
+ * @param {Object} [res.barcoCoordenadas] - Las coordenadas del barco disparado, si se ha hundido
  * @param {String} res.eventoOcurrido - El evento ocurrido en la partida
  * @param {Boolean} res.finPartida - Indica si la partida ha terminado
  * @param {String} res.clima - El clima de la partida
  * @param {Boolean} res.ultimoMisilRafaga - Indica si es el último misil de la ráfaga
- * @param {Coordenada} [res.minaDisparada] - La mina disparada, si se ha hundido
- * @param {Coordenada[]} [res.disparosRespuestaMina] - Los disparos realizados por el enemigo en respuesta a una mina
- * @param {Barco[]} [res.barcosHundidosRespuestaMina] - Los barcos propios hundidos por respuesta a una mina
  * @param {Number} res.usosHab - Los usos restantes de la habilidad del jugador
  * @param {TurnoIA[]} [res.turnosIA] - Los turnos de la IA, si la partida es contra la IA
  */
@@ -281,7 +277,7 @@ exports.realizarDisparoMisilRafaga = async (req, res) => {
   const respuesta = await PartidaController.realizarDisparoMisilRafaga(req, res);
   const io = getIO();
   io.to('/partida' + req.body.codigo).emit(eventosSocket.resultadoTurno, "Rafaga", req.body.nombreId, respuesta.disparoRealizado, respuesta.barcoCoordenadas, respuesta.finPartida, respuesta.clima, respuesta.eventoOcurrido, 
-    respuesta.usosHab, respuesta.minaDisparada, respuesta.disparosRespuestaMina, respuesta.barcosHundidosRespuestaMina, respuesta.ultimoMisilRafaga,);
+    respuesta.usosHab, respuesta.minaDisparada, respuesta.disparosRespuestaMina, respuesta.barcosHundidosRespuestaMina, respuesta.ultimoMisilRafaga);
   console.log('Resultado turno tras misil rafaga recibido en backend:', req.body.nombreId, respuesta.disparoRealizado, respuesta.barcoCoordenadas, respuesta.finPartida, respuesta.clima, respuesta.eventoOcurrido,
     respuesta.usosHab, respuesta.minaDisparada, respuesta.disparosRespuestaMina, respuesta.barcosHundidosRespuestaMina, respuesta.ultimoMisilRafaga);
 };
@@ -296,16 +292,13 @@ exports.realizarDisparoMisilRafaga = async (req, res) => {
  * @param {Number} [req.body.j] - La coordenada j del disparo, necesaria si turnoRecarga es false
  * @param {Boolean} [req.body.turnoRecarga = false] - Indica si es el turno de recarga
  * @param {Object} res - El objeto de respuesta HTTP
- * @param {Coordenada[]} res.disparosRealizados - Los 9 disparos realizados con sus coordenadas y estado
+ * @param {Object} res.disparosRealizados - Los 9 disparos realizados con sus coordenadas y estado
  * @param {Boolean} [res.algunoTocado] - Indica si algun disparo del torpedo ha tocado (o hundido) un barco
- * @param {Barco[]} [res.barcoCoordenadas] - Las coordenadas de los barcos hundidos, si los hay
+ * @param {Object} [res.barcoCoordenadas] - Las coordenadas de los barcos hundidos, si los hay
  * @param {String} res.eventoOcurrido - El evento ocurrido en la partida
  * @param {Boolean} res.finPartida - Indica si la partida ha terminado
  * @param {String} res.clima - El clima de la partida
  * @param {Number} res.usosHab - Los usos restantes de la habilidad del jugador
- * @param {Coordenada[]} res.minasDisparadas - Las minas disparadas por el jugador
- * @param {Coordenada[]} res.disparosRespuestasMinas - Los disparos realizados por el enemigo en respuesta a las minas
- * @param {Barco[]} res.barcosHundidosRespuestasMinas - Los barcos propios hundidos por respuesta a las minas
  * @param {TurnoIA[]} [res.turnosIA] - Los turnos de la IA, si la partida es contra la IA
  */
 exports.realizarDisparoTorpedoRecargado = async (req, res) => {
@@ -319,20 +312,19 @@ exports.realizarDisparoTorpedoRecargado = async (req, res) => {
 
 /**
  * @function realizarDisparoMisilTeledirigido
- * @description Realiza un disparo teledirigido a una casilla al azar ocupada por un barco enemigo y actualiza el estado de la partida
+ * @description Realiza un disparo teledirigido en la coordenada (i, j) del enemigo y actualiza el estado de la partida
  * @param {Object} req - El objeto de solicitud HTTP
  * @param {String} req.body.codigo - El codigo de la partida
  * @param {String} req.body.nombreId - El nombreId del jugador
+ * @param {Number} req.body.i - La coordenada i del disparo
+ * @param {Number} req.body.j - La coordenada j del disparo
  * @param {Object} res - El objeto de respuesta HTTP
- * @param {Coordenada} res.disparoRealizado - El disparo realizado con sus coordenadas y estado
- * @param {Barco} [res.barcoCoordenadas] - Las coordenadas del barco disparado, si se ha hundido
+ * @param {Object} res.disparoRealizado - El disparo realizado con sus coordenadas y estado
+ * @param {Coordenada[]} res.barcoCoordenadas - Las coordenadas de los barcos afectados por el disparo
  * @param {String} res.eventoOcurrido - El evento ocurrido en la partida
  * @param {Boolean} res.finPartida - Indica si la partida ha terminado
  * @param {String} res.clima - El clima de la partida
  * @param {Number} res.usosHab - Los usos restantes de la habilidad del jugador
- * @param {Coordenada} [res.minaDisparada] - La mina disparada, si se ha hundido
- * @param {Coordenada[]} [res.disparosRespuestaMina] - Los disparos realizados por el enemigo en respuesta a una mina
- * @param {Barco[]} [res.barcosHundidosRespuestaMina] - Los barcos propios hundidos por respuesta a una mina
  * @param {TurnoIA[]} [res.turnosIA] - Los turnos de la IA, si la partida es contra la IA
  */
 exports.realizarDisparoMisilTeledirigido = async (req, res) => {
@@ -426,6 +418,7 @@ exports.obtenerChat = async (req, res) => {
  */
 exports.enviarMensaje = async (req, res) => {
   await PartidaController.enviarMensaje(req, res);
-  io.to('/partida' + req.body.codigo).emit(eventosSocket.chat, req.body.codigo, req.body.mensaje);
+  io.to('/partida' + req.body.codigo).emit(eventosSocket.chat, req.body.codigo, req.body.nombreId, req.body.mensaje);
+  console.log('Mensaje enviado en backend');
 };
 

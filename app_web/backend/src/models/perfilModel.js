@@ -105,6 +105,14 @@ const perfilSchema = new Schema({
   codigoPartidaActual: {      // Código de la partida actual
     type: Number,
     default: -1
+  },
+  torneosParticipados: {      // Lista de torneos en los que ha participado
+    type: [String],           // Almacenamos el código de los torneos
+    default: []
+  },
+  tornesGanados: {            // Lista de torneos ganados
+    type: [String],
+    default: []
   }
 });
 

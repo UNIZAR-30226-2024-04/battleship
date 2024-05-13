@@ -1,9 +1,9 @@
 const mongoose = require('mongoose');
 const { modificarDatosPersonales } = require('../../controllers/perfilController');
 const paisesDisponibles = require('../../data/paises');
-
+const {mongoURI} = require('../../uri');
 // Conexión a la base de datos
-mongoose.connect('mongodb://localhost/BattleshipDB')
+mongoose.connect(mongoURI)
   .then(async () => {
     console.log('Conectado a MongoDB...');
     try {
