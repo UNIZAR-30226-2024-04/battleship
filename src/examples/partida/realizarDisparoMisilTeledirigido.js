@@ -1,8 +1,8 @@
 const mongoose = require('mongoose');
 const { realizarDisparoMisilTeledirigido } = require('../../controllers/partidaController');
-
+const {mongoURI} = require('../../uri');
 // Conexión a la base de datos
-mongoose.connect('mongodb://localhost/BattleshipDB', { useNewUrlParser: true, useUnifiedTopology: true })
+mongoose.connect(mongoURI)
   .then(async () => {
     console.log('Conectado a MongoDB...');
     try {

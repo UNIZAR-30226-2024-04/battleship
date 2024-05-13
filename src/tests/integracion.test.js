@@ -5,7 +5,7 @@ const paisesDisponibles = require('../data/paises');
 const habilidadesDisponibles = require('../data/habilidades');
 
 // definir las URI a testear
-const baseURI = 'http://localhost:8080';
+const { baseURI } = require('../uri');
 const basePerfilURI = baseURI + '/perfil';
 const registrarUsuarioURI = basePerfilURI + '/registrarUsuario';
 const iniciarSesionURI = basePerfilURI + '/iniciarSesion';
@@ -24,7 +24,7 @@ const credenciales = {
 };
 
 // Conexión a la base de datos para borrarla
-const mongoURI = 'mongodb://localhost/BattleshipDB';
+const { mongoURI } = require('../uri');
 mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true, 
   useCreateIndex: true, useFindAndModify: false});
 

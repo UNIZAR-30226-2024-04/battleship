@@ -1,7 +1,7 @@
 const { Server } = require("socket.io");
 const { isModuleNamespaceObject } = require("util/types");
 let io = null;
-const hostSocket = 'http://localhost:8080';
+const {hostSocket} = require('./uri');
 
 // Define los eventos de socket que se pueden emitir y escuchar
 // Los enviamos junto con el codigo de la partida

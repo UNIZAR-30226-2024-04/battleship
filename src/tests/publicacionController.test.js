@@ -6,7 +6,7 @@ const {crearPublicacion, obtenerPublicaciones,
     reaccionarPublicacion, eliminarPublicacion} = require('../controllers/publicacionController');
 const e = require('express');
 
-const mongoURI = 'mongodb://localhost/BattleshipDB';
+const { mongoURI } = require('../uri');
 mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true, 
   useCreateIndex: true, useFindAndModify: false});
 

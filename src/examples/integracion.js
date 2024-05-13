@@ -1,9 +1,10 @@
 const got = require('got');
 // definir las URI a testear
-const registrarUsuarioURI = 'http://localhost:8080/perfil/registrarUsuario';
-const iniciarSesionURI = 'http://localhost:8080/perfil/iniciarSesion';
-const obtenerUsuarioURI = 'http://localhost:8080/perfil/obtenerUsuario';
-const obtenerDatosPersonalesURI = 'http://localhost:8080/perfil/obtenerDatosPersonales';
+const {baseURI, mongoURI} = require('../uri');
+const registrarUsuarioURI = baseURI + '/perfil/registrarUsuario';
+const iniciarSesionURI = baseURI + '/perfil/iniciarSesion';
+const obtenerUsuarioURI = baseURI + '/perfil/obtenerUsuario';
+const obtenerDatosPersonalesURI = baseURI + '/perfil/obtenerDatosPersonales';
 
 // definir las credenciales de prueba
 const credenciales = {
@@ -15,7 +16,7 @@ const credenciales = {
 const mongoose = require('mongoose');
 
 // Limpiamos la base de datos
-mongoose.connect('mongodb://localhost/BattleshipDB');
+mongoose.connect(mongoURI);
 mongoose.connection.dropDatabase();
 mongoose.disconnect();
 

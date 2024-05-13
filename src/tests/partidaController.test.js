@@ -6,7 +6,7 @@ const {crearPartida, mostrarMiTablero, mostrarTableroEnemigo,
 const {registrarUsuario} = require('../controllers/perfilController');
 const Partida = require('../models/partidaModel');
 
-const mongoURI = 'mongodb://localhost/BattleshipDB';
+const { mongoURI } = require('../uri');
 mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true, 
   useCreateIndex: true, useFindAndModify: false});
 const Coordenada = require('../data/coordenada');

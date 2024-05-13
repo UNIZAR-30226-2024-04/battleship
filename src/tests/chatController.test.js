@@ -3,7 +3,7 @@ const {registrarUsuario} = require('../controllers/perfilController');
 const Chat = require('../models/chatModel');
 const {enviarMensaje, obtenerChat} = require('../controllers/chatController');
 
-const mongoURI = 'mongodb://localhost/BattleshipDB';
+const { mongoURI } = require('../uri');
 mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true, 
   useCreateIndex: true, useFindAndModify: false});
 

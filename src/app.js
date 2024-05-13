@@ -6,7 +6,7 @@ const partidaRoutes = require('./routes/partidaRoutes');
 const partidaMultiRoutes = require('./routes/partidaMultiRoutes');
 app = express();
 
-const mongoURI = 'mongodb://localhost/BattleshipDB';
+const { mongoURI } = require('./uri');
 
 app.connectDatabase = async () => {
     try {
