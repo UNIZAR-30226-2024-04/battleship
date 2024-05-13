@@ -170,7 +170,7 @@ class _MazoState extends State<Mazo> {
                     Juego().actualizarMazo();
                   });
                 }),
-                buildCircledButton('images/misil.png', 'Teledirigido', Juego().selectedAbilities['teledirigido']!, () {
+                buildCircledButton('images/teledirigido.png', 'Teledirigido', Juego().selectedAbilities['teledirigido']!, () {
                   if (Juego().selectedAbilities.values.where((element) => element).length >= 3 && !Juego().selectedAbilities['teledirigido']!) {
                     widget.mensajeErrorModel.setMensaje('No puedes seleccionar más de 3 habilidades en tu mazo');
                     showErrorSnackBar(context, widget.mensajeErrorModel.mensaje);

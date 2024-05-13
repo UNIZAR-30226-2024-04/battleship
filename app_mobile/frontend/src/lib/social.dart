@@ -1,9 +1,20 @@
+import 'dart:convert';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'comun.dart';
+import 'package:http/http.dart' as http;
+import 'serverRoute.dart';   
+import 'juego.dart';
 
-class Social extends StatelessWidget {
+class Social extends StatefulWidget {
   const Social({super.key});
 
+  @override
+  _SocialState createState() => _SocialState();
+}
+
+class _SocialState extends State<Social> {
+  ServerRoute serverRoute = ServerRoute();
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -126,7 +137,8 @@ class Social extends StatelessWidget {
     );
   }
 
-    Widget construirPublicaciones() {
+  // Pestaña de publicaciones
+  Widget construirPublicaciones() {
     return Expanded(
       child: Container(
         margin: const EdgeInsets.all(10),
@@ -138,6 +150,28 @@ class Social extends StatelessWidget {
     );
   }
 
+  /*Future<List<bool>> obtenerPublicacion() async {
+    var response = await http.post(
+      Uri.parse(serverRoute.urlObtenerPublicacion),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+        'Authorization': 'Bearer ${Juego().tokenSesion}',
+      },
+      body: jsonEncode(<String>{
+        'nombreId': Juego().miPerfil.name,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      var data = jsonDecode(response.body);
+      
+
+
+      return listaBarcosHundidos;
+    } else {
+      throw Exception('La solicitud ha fallado');
+    }
+  }*/
 
   Widget construirAmigos() {
     return Expanded(
@@ -149,6 +183,27 @@ class Social extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Future<List<String>> obtenerAmigos() async {
+    var response = await http.post(
+      Uri.parse(serverRoute.urlObtenerAmigos),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+        'Authorization': 'Bearer ${Juego().tokenSesion}',
+      },
+      body: jsonEncode(<String>{
+        'nombreId': Juego().miPerfil.name,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      var data = jsonDecode(response.body);
+      print(data);
+      //return algo;
+    } else {
+      throw Exception('La solicitud ha fallado');
+    }
   }
 
   Widget construirSolicitudes() {

@@ -29,4 +29,18 @@ class ServerRoute {
   String urlColocarMinaMulti = 'http://localhost:8080/partidaMulti/colocarMina';
   String urlUsarSonarMulti = 'http://localhost:8080/partidaMulti/usarSonar';
   String urlModificarMazo = 'http://localhost:8080/perfil/modificarMazo';
+
+  // Social - Amigos / Solicitudes de amistad
+  String urlObtenerAmigos = 'http://localhost:8080/perfil/obtenerAmigos';
+  String urlAgnadirAmigo = 'http://localhost:8080/perfil/agnadirAmigo';
+  String urlEliminarAmigo = 'http://localhost:8080/perfil/eliminarAmigo';
+  String urlObtenerSolicitudAmistad = 'http://localhost:8080/perfil/obtenerSolicitudAmistad';
+  String urlEnviarSolicitudAmistad = 'http://localhost:8080/perfil/enviarSolicitudAmistad';
+  String urlEliminarSolicitudAmistad = 'http://localhost:8080/perfil/eliminarSolicitudAmistad';
+
+  // Social - Publicaciones
+  String urlCrearPublicacion = 'http://localhost:8080/publicacion/crearPublicacion';
+  String urlObtenerPublicacion = 'http://localhost:8080/publicacion/obtenerPublicacion';
+  String urlReaccionarPublicacion = 'http://localhost:8080/publicacion/reaccionarPublicacion';
+  String urlEliminarPublicacion = 'http://localhost:8080/publicacion/eliminarPublicacion';
 }

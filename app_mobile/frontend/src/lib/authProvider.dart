@@ -171,6 +171,7 @@ class AuthProvider with ChangeNotifier {
         await Juego().cargarPartida(context);
         document.cookie = 'usuario=$name';
         document.cookie = 'tokenSesion=$tokenSesion';
+        print(tokenSesion);
         notifyListeners(); // Notifica a los listeners que la variable ha cambiado
         return true;
       }
