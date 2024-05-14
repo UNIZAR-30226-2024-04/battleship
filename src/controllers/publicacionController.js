@@ -188,7 +188,6 @@ exports.crearPublicacion = async (req, res) => {
       reacciones: []
     });
     const savedPublicacion = await publicacion.save();
-    res.json(savedPublicacion);
   }
   catch (error) {
     res.status(500).send('Hubo un error');

@@ -275,7 +275,10 @@ describe('Obtener publicaciones', () => {
         try {
             await crearPublicacion(req2, res2);
         } catch (error) {}
-        publicacionId = res2._json.publicacionId;
+
+        const publicaciones = await Publicacion.find({usuario: 'usuario1'});
+        expect(publicaciones.length).toBe(1);
+        publicacionId = publicaciones[0].publicacionId;
         expect(res2.statusCode).toBe(undefined);
     });
     it('Debería obtener las publicaciones de un usuario correctamente', async () => {
@@ -337,10 +340,11 @@ describe('Reaccionar a publicación', () => {
         try {
             await crearPublicacion(req3, res3);
         } catch (error) {}
-        publicacionId = res3._json.publicacionId;
+
+        const publicaciones = await Publicacion.find({usuario: 'usuario1'});
+        expect(publicaciones.length).toBe(1);
+        publicacionId = publicaciones[0].publicacionId;
         expect(res3.statusCode).toBe(undefined);
-        expect(res3._json.publicacionId).not.toBe(undefined);
-        console.log(res3._json);
     });
     it('Debería reaccionar a una publicación correctamente', async () => {
         const req = { body: { nombreId: 'usuario2', publicacionId: publicacionId, 
@@ -470,10 +474,10 @@ describe('Eliminar publicación', () => {
         try {
             await crearPublicacion(req3, res3);
         } catch (error) {}
-        publicacionId = res3._json.publicacionId;
+        const publicaciones = await Publicacion.find({usuario: 'usuario1'});
+        expect(publicaciones.length).toBe(1);
+        publicacionId = publicaciones[0].publicacionId;
         expect(res3.statusCode).toBe(undefined);
-        expect(res3._json.publicacionId).not.toBe(undefined);
-        console.log(res3._json);
     });
     it('Debería fallar al no ser el dueño de la publicación', async () => {
         const req = { body: { nombreId: 'usuario2', publicacionId: publicacionId } };

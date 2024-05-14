@@ -100,16 +100,20 @@ function generarDisparoAleatorio(disparosRealizados) {
 
 function calcularActualizacionELO(elo1, elo2, resultado) {
   const k = 64;
-  const esperado1 = 1 / (1 + Math.pow(10, (elo2 - elo1) / 400));
-  const esperado2 = 1 / (1 + Math.pow(10, (elo1 - elo2) / 400));
+  var esperado1 = 1 / (1 + Math.pow(10, (elo2 - elo1) / 400));
+  var esperado2 = 1 / (1 + Math.pow(10, (elo1 - elo2) / 400));
+  if (elo1 < 100) esperado1 *= 0.5;
+  else if (elo1 < 200) esperado1 *= 0.75;
+  else if (elo1 < 300) esperado1 *= 0.9;
+  if (elo2 < 100) esperado2 *= 0.5;
+  else if (elo2 < 200) esperado2 *= 0.75;
+  else if (elo2 < 300) esperado2 *= 0.9;
   let nuevosTrofeos1 = k * (resultado - esperado1);
   let nuevosTrofeos2 = k * (1 - resultado - esperado2);
-  if (elo1 < 100 && nuevosTrofeos1 < 0) nuevosTrofeos1 -= nuevosTrofeos1 * 0.5;
-  if (elo2 < 100 && nuevosTrofeos2 < 0) nuevosTrofeos2 -= nuevosTrofeos2 * 0.5;
   if (nuevosTrofeos1 < 0) nuevosTrofeos1 = 0;
   if (nuevosTrofeos2 < 0) nuevosTrofeos2 = 0;
 
-  if (nuevosTrofeos1 !== NaN) return [nuevosTrofeos1|0, nuevosTrofeos2|0];
+  if (resultado !== undefined) return [nuevosTrofeos1|0, nuevosTrofeos2|0];
   return [elo1, elo2];
 }
 
@@ -1167,7 +1171,6 @@ exports.realizarDisparo = async (req, res) => {
       const partidaContraIA = !partidaActual.nombreId2;
       // Aplicar efecto de clima y actualizar el clima
       const {i: iClima, j: jClima, eventoOcurrido} = efectoClima(partidaActual.clima, i, j);
-      console.log('Bioma: ', partidaActual.bioma, ' Clima: ', partidaActual.clima);
       const nuevoClima = seleccionarClima(partidaActual.bioma, partidaActual.clima);
       partidaActual.clima = nuevoClima;
 
@@ -1175,9 +1178,7 @@ exports.realizarDisparo = async (req, res) => {
       var finPartida = false;
       if (iClima !== undefined && jClima !== undefined) {
         // Realizar disparo
-        console.log('Hay clima raro, : ', nuevoClima);
         let gestionDisparo = gestionarDisparo(jugador, partidaActual, estadisticasJugadores, iClima, jClima);
-        console.log('Resultado gestion disparo: ', gestionDisparo);
         disparo = gestionDisparo.disparo;
         barcoDisparado = gestionDisparo.barcoDisparado;
         minaDisparada = gestionDisparo.minaDisparada;
@@ -1224,9 +1225,7 @@ exports.realizarDisparo = async (req, res) => {
 
         // Actualizar estadisticas de los jugadores
         let nuevosTrofeos = [0, 0];
-        console.log('Partida contra IA: ', partidaContraIA);
         const {mensajeError} = await actualizarEstadisticasTurno(nuevosTrofeos, partidaActual, estadisticasJugadores, jugador1, jugador2, partidaContraIA);
-        console.log('Mensaje de error: ', mensajeError);
         if (mensajeError) {
           res.status(500).send(mensajeError);
           console.error(mensajeError);
@@ -1536,8 +1535,8 @@ exports.realizarDisparoTorpedoRecargado = async (req, res) => {
           clima: partidaActual.clima,
           usosHab: jugador === 1 ? partidaActual.usosHab1 : partidaActual.usosHab2,
           minasDisparadas: (minasDisparadas && minasDisparadas.length > 0) ? minasDisparadas : undefined,
-          disparosRespuestasMinas: (minaDisparada !== undefined) ? disparosRespuestasMinas : [],
-          barcosHundidosRespuestasMinas: (minaDisparada !== undefined) ? barcosHundidosRespuestasMinas : [],
+          disparosRespuestasMinas: (minasDisparadas !== undefined) ? disparosRespuestasMinas : [],
+          barcosHundidosRespuestasMinas: (minasDisparadas !== undefined) ? barcosHundidosRespuestasMinas : [],
           turnosIA: turnosIA
         };
         // Actualizar estadisticas de los jugadores

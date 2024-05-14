@@ -5,6 +5,7 @@ const {crearPartida, mostrarMiTablero, mostrarTableroEnemigo,
     realizarDisparoMisilTeledirigido, colocarMina, usarSonar} = require('../controllers/partidaController');
 const {registrarUsuario} = require('../controllers/perfilController');
 const Partida = require('../models/partidaModel');
+const Publicacion = require('../models/publicacionModel');
 
 const { mongoURI } = require('../uri');
 mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true, 
@@ -599,11 +600,14 @@ describe("Realizar disparo contra la IA", () => {
             }
 
             // Comprobamos que no se ha acabado la partida
-            if (coord_y > tableroDim) {
+            if (!fin && coord_y > tableroDim) {
               expect(true).toBe(false);
             }
       }
     }
+
+    const publicaciones = await Publicacion.find({usuario: 'usuario1'});
+    expect(publicaciones.length).toBeGreaterThan(0);
   }, 10000);
 });
 
