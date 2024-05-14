@@ -228,8 +228,6 @@ exports.crearPartida = async (req, res) => {
       console.error('No se puede crear una partida amistosa y de torneo al mismo tiempo');
       return;
     }
-    // Comprobar que ambos jugadores pueden jugar en el torneo
-
 
     // Obtenemos los tableros de barcos de los jugadores y generamos un código único
     const tableroBarcos1 = jugador1.tableroInicial;
@@ -865,6 +863,12 @@ async function comprobarFinDePartida(jugador, jugador1, jugador2, partidaActual,
         { new: true } // Para devolver el documento actualizado
       );
     }
+
+    // Comprobar si la partida es torneo
+    if (partidaActual.torneo != '-1') {
+      await actualizarEstadisticasTorneo(jugador1, jugador2, partidaActual);
+    }
+
   }
   return finPartida;
 }
@@ -902,6 +906,29 @@ async function juegaIA(jugador1, jugador2, partidaActual, estadisticasJugadores,
   }
 
   return finPartida;
+}
+
+// Funcion que actualiza las estadisticas de un torneo tras finalizar una partida
+async function actualizarEstadisticasTorneo(jugador1, jugador2, partidaActual) {
+  // Seleccionar el torneo
+  let torneo = await Torneo.findOne({ codigo: partidaActual.codigoTorneo });
+
+  // Añadir la victoria y la derrota al jugador correspondiente
+  if (partidaActual.ganador === jugador1.nombreId) {
+    torneo.jugadores.find(jugador => jugador.nombreId === jugador2.nombreId).derrotas++;
+    torneo.jugadores.find(jugador => jugador.nombreId === jugador1.nombreId).victorias++;
+  }
+  else {
+    torneo.jugadores.find(jugador => jugador.nombreId === jugador2.nombreId).victorias++;
+    torneo.jugadores.find(jugador => jugador.nombreId === jugador1.nombreId).derrotas++;
+  }
+
+  // Comprobar si con la victoria ha ganado el torneo
+  let jugadorGanador = torneo.jugadores.find(jugador => jugador.nombreId === partidaActual.ganador);
+  if (jugadorGanador.victorias === torneo.victoriasNecesarias) {
+    // Añadir a la lista de ganadores
+    torneo.ganadores.push(jugadorGanador);
+  }
 }
 
 // Función que actualiza las estadísticas de los jugadores en la base de datos tras finalizar un turno
