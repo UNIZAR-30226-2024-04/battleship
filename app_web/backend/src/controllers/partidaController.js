@@ -1462,6 +1462,13 @@ exports.realizarDisparoTorpedoRecargado = async (req, res) => {
           nombreId: jugador2.nombreId }
       ]
       var partidaContraIA = !partidaActual.nombreId2;
+      var disparosTorpedo = [];
+      var numBarcosTocados = 0;
+      var barcosHundidos = [];
+      var minasDisparadas = [];
+      var disparosRespuestasMinas = [];
+      var barcosHundidosRespuestasMinas = [];
+      var finPartida = false;
       // Distinguir turno de recarga de turno de disparo
       if (turnoRecarga) {
         partidaActual.contadorTurno++;
@@ -1470,12 +1477,6 @@ exports.realizarDisparoTorpedoRecargado = async (req, res) => {
         if (jugador === 1) partidaActual.usosHab1--;
         else partidaActual.usosHab2--;
         // Realizar disparos
-        var disparosTorpedo = [];
-        var numBarcosTocados = 0;
-        var barcosHundidos = [];
-        var minasDisparadas = [];
-        var disparosRespuestasMinas = [];
-        var barcosHundidosRespuestasMinas = [];
         const vecinidad = [-1, 0, 1];
         for (let iVecino of vecinidad) {
           for (let jVecino of vecinidad) {
@@ -1504,7 +1505,6 @@ exports.realizarDisparoTorpedoRecargado = async (req, res) => {
         }
 
         // Comprobar si la partida ha terminado
-        var finPartida = false;
         if (barcosHundidos.length > 0) { // He podido ganar si he hundido el último barco
           finPartida = await comprobarFinDePartida(jugador, jugador1, jugador2, partidaActual, estadisticasJugadores, partidaContraIA);
         } else if (minasDisparadas.length > 0) { // He podido perder
@@ -1533,9 +1533,9 @@ exports.realizarDisparoTorpedoRecargado = async (req, res) => {
           finPartida: finPartida,
           clima: partidaActual.clima,
           usosHab: jugador === 1 ? partidaActual.usosHab1 : partidaActual.usosHab2,
-          minasDisparadas: (minasDisparadas && minasDisparadas.length > 0) ? minasDisparadas : undefined,
-          disparosRespuestasMinas: (minaDisparada !== undefined) ? disparosRespuestasMinas : [],
-          barcosHundidosRespuestasMinas: (minaDisparada !== undefined) ? barcosHundidosRespuestasMinas : [],
+          minasDisparadas: (minasDisparadas && minasDisparadas.length > 0) ? minasDisparadas : [],
+          disparosRespuestasMinas: (disparosRespuestasMinas && disparosRespuestasMinas.length > 0) ? disparosRespuestasMinas : [],
+          barcosHundidosRespuestasMinas: (barcosHundidosRespuestasMinas && barcosHundidosRespuestasMinas.length > 0) ? barcosHundidosRespuestasMinas : [],
           turnosIA: turnosIA
         };
         // Actualizar estadisticas de los jugadores
