@@ -7,7 +7,6 @@ const partidaMultiRoutes = require('./routes/partidaMultiRoutes');
 app = express();
 
 const { mongoURI } = require('./uri');
-//const mongoURI = process.env.MONGODB_URI;
 
 app.connectDatabase = async () => {
     try {
@@ -38,8 +37,7 @@ app.use('/partida', partidaRoutes);
 app.use('/partidaMulti', partidaMultiRoutes);
 
 app.get('/', (req, res) => {
-    //res.json({ message: 'API de Battleship' });
-    res.send("Server is running!")
+    res.json({ message: 'API de Battleship' });
 });
 
 module.exports = app;

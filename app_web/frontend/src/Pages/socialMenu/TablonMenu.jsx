@@ -1,17 +1,45 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import Cookies from 'universal-cookie';
+import UserContainerTemplate from '../../Components/UserContainerTemplate';
 
+import info from '../../Resources/info';
+const urlServer = info['serverAddress'];
+const urlObtenerPublicaciones = urlServer + 'publicacion/obtenerPublicaciones';
 
 const TablonMenu = () => {
-    const [selectedCountry, setSelectedCountry] = useState('');
+    const [publicaciones, setPublicaciones] = useState([]);
+    const cookies = new Cookies();
+    const tokenCookie = cookies.get('JWT');
+    const perfilCookie = cookies.get('perfil');
 
-    const handleChange = (event) => {
-        setSelectedCountry(event.target.value);
-    };
+    useEffect(() => {
+        const obtenerPublicaciones = async () => {
+            fetch(urlObtenerPublicaciones, {
+                method: 'POST',
+                headers: {
+                'Content-Type': 'application/json',
+                'authorization': tokenCookie
+                },
+                body: JSON.stringify({ nombreId: perfilCookie['nombreId'] })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    console.log('Respuesta del servidor obtenerSolicitudes:', response);
+                    throw new Error('Obtener solicitudes ha fallado');
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Respuesta del servidor obtenerPublicaciones:', data);
+                setPublicaciones(data.publicaciones); // TO DO, ver que devuelve la lista devuelta por backend
+            })
+            .catch(error => {
+                console.error('Error al obtener las publicaciones:', error);
+            });
+        };
 
-    const updateTablon = () => {
-        const feed = document.querySelector('.profile-activity-content');
-        // peticion a "obtenerPublicaciones"
-    }
+        obtenerPublicaciones();
+    }, []); // El array vacío asegura que este efecto solo se ejecute una vez después del primer montaje
 
     return (
         <>
@@ -20,26 +48,16 @@ const TablonMenu = () => {
                     <span>ACTIVIDAD RECIENTE</span>
                 </div>
                 <div className="profile-activity-content">
-                    <div className="profile-activity-info">
-                        <span>Has vencido a Snatilla ganando 120 puntos.</span>
-                        <span>21:00  16 May 2024</span>
-                    </div>
-                    <div className="profile-activity-info">
-                        <span>Has vencido a Carlitos ganando 120 puntos.</span>
-                        <span>21:00  16 May 2024</span>
-                    </div>
-                    <div className="profile-activity-info">
-                        <span>Has vencido a Dlad ganando 120 puntos.</span>
-                        <span>21:00  16 May 2024</span>
-                    </div>
-                    <div className="profile-activity-info">
-                        <span>Has vencido a MT ganando 120 puntos.</span>
-                        <span>21:00  16 May 2024</span>
-                    </div>
+                    {publicaciones.map((publicacion, index) => (
+                        <div key={index} className="profile-activity-info">
+                            <span>{publicacion.mensaje}</span>
+                            <span>{publicacion.hora}</span>
+                        </div>
+                    ))}
                 </div>
             </div>
         </>
-    )
+    );
 }
 
 export default TablonMenu;

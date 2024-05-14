@@ -91,6 +91,20 @@ function esBarcoHorizontal(barco) {
     return barco.coordenadas[0].i === barco.coordenadas[1].i;
 }
 
+function bloqueaBotonesHabilidades() {
+    const habilidades = document.querySelectorAll(".skill-button");
+    habilidades.forEach(habilidad => {
+        habilidad.style.pointerEvents = "none";
+    });
+}
+
+function desbloqueaBotonesHabilidades() {
+    const habilidades = document.querySelectorAll(".skill-button");
+    habilidades.forEach(habilidad => {
+        habilidad.style.pointerEvents = "auto";
+    });
+}
+
 export function Game() {
     const navigate = useNavigate();
     const { socket } = useSocket();
@@ -521,6 +535,17 @@ export function Game() {
                 mostrarBarcosHundidos2(turnosIA[i].barcoCoordenadas);
                 triggerFinPartida(turnosIA[i].finPartida, false);       // comprobamos fin partida
             }
+            if(turnosIA[i].minaDisparada) {
+                const disparosMinas = turnosIA[i].disparosRespuestaMina;
+                const barcosHundidosMinas = turnosIA[i].barcosHundidosRespuestaMina;
+                for (let i = 0; i < disparosMinas.length; i++) {
+                    mostrarDisparo(disparosMinas[i].i, disparosMinas[i].j, disparosMinas[i].estado);
+                }
+                for (let i = 0; i < barcosHundidosMinas.length; i++) {
+                    mostrarBarcosHundidos2(barcosHundidosMinas[i]);
+                    triggerFinPartida(turnosIA[i].finPartida, false);    // fin de partida si se da el caso
+                }
+            }
         }
     }
 
@@ -591,12 +616,14 @@ export function Game() {
         })
         .then(data => {
             const disp = data['disparoRealizado'];
-            mostrarDisparo(disp.i, disp.j, disp.estado, data['barcoCoordenadas'], data['finPartida']);            
+            mostrarDisparo(disp.i, disp.j, disp.estado);            
             if(data['barcoCoordenadas']) {
                 mostrarContadorBarcosHundidos([data['barcoCoordenadas']]);
                 mostrarBarcosHundidos([data['barcoCoordenadas']], opponentBoard);
                 triggerFinPartida(data['finPartida'], true);    // fin de partida si se da el caso
             }
+            // Por seguridad en caso de F5
+            desbloqueaBotonesHabilidades();
             // Representar las jugadas de la IA
             funcionTurnosIA(data['turnosIA']);
         })
@@ -617,6 +644,7 @@ export function Game() {
             console.log('Misiles de Rafaga agotados');
             setSkill(null);
             setMisilesRafagaRestantes(3);
+            desbloqueaBotonesHabilidades();
         }
     }, [misilesRafagaRestantes]);
 
@@ -685,6 +713,7 @@ export function Game() {
                     triggerFinPartida(data['finPartida'], true);    // fin de partida si se da el caso
                 }
                 setSkill(null);
+                desbloqueaBotonesHabilidades();
             }
             // Representar las jugadas de la IA
             funcionTurnosIA(data['turnosIA']);
@@ -1123,7 +1152,10 @@ export function Game() {
                             </div>
                             <br></br>
                             <div className={`skill-button ${isSkillEnqueued("Rafaga") ? 'skill-button-selected' : ''}`}>
-                                <img onClick={() => setSkill("Rafaga") } src={burstImg} alt="Burst" />
+                                <img onClick={() => {
+                                    setSkill("Rafaga");
+                                    bloqueaBotonesHabilidades();
+                                }} src={burstImg} alt="Burst" />
                             </div>
                             <br></br>
                             <div className={`skill-button ${isSkillEnqueued("Sonar") ? 'skill-button-selected' : ''}`}>
@@ -1134,6 +1166,7 @@ export function Game() {
                                 <img onClick={() => {
                                     setSkill("Recargado");
                                     disparoTorpedo(0, 0, true);
+                                    bloqueaBotonesHabilidades();
                                 }} src={torpedoImg} alt="Torpedo" />
                             </div>
                         </div>

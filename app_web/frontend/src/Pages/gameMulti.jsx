@@ -158,7 +158,7 @@ export function GameMulti() {
         }, 2000);
     }
 
-    function triggerMina() {
+    function triggerMinaColocada() {
         const endgameContainer = document.querySelector("#endgame-container");
         endgameContainer.style.display = "block"
         const endgameMsg = document.querySelector("#endgame-container span");
@@ -219,6 +219,7 @@ export function GameMulti() {
     }
 
     function escuchaTurno(partidaSocket) {
+        bloqueaBotonesHabilidades();
         console.log('Escuchando turno');
         partidaSocket.on(info['resultadoTurno'], (tipo, idJugador, disparoRival, barcoCoordenadas, finPartida, clima, eventoOcurrido, usosHab, 
             minaDisparada, disparosRespuestaMina, barcosHundidosRespuestaMina, booleanoExtra) => {
@@ -273,7 +274,7 @@ export function GameMulti() {
                         break;
                     case "Mina":
                         // Mostrar por pantalla un mensaje indicando que se ha usado la mina
-                        triggerMina();
+                        triggerMinaColocada();
                         desbloqueaTableroRival();
                         desbloqueaBotonesHabilidades();
                         break;
@@ -685,12 +686,15 @@ export function GameMulti() {
                     imgX.style.opacity = '0.7';
                     casilla.appendChild(imgX);
                 }
+                // minaExplotada es true cuando son disparos procedentes de una mina
                 if (!minaExplotada && torpedoFallo && (tipo != 'Rafaga' || ultimoMisilRafaga)) {
                     bloqueaTableroRival();
-                    bloqueaBotonesHabilidades();
+                    // bloqueaBotonesHabilidades();
                     // Esperamos a escuchar la respuesta del socket
                     escuchaTurno(partidaSocket);
                 }
+                console.log('Bloqueo habs');
+                bloqueaBotonesHabilidades();
 
                 break;
             default:
@@ -735,6 +739,8 @@ export function GameMulti() {
                     triggerFinPartida(data['finPartida'], false);    // fin de partida si se da el caso
                 }
             }
+            // Por seguridad en caso de F5
+            // desbloqueaBotonesHabilidades();
         })
         .catch(error => {
             console.error('Error:', error);
@@ -849,6 +855,7 @@ export function GameMulti() {
                     }
                 }
                 setSkill(null);
+                desbloqueaBotonesHabilidades();
             }
             else {
                 bloqueaTableroRival();
@@ -933,24 +940,30 @@ export function GameMulti() {
                     imgX.style.marginTop = '25%';
                     imgX.style.objectFit = 'cover';
 
+                    let mostrarImg = false;
+
                     switch (matriz[i][j]) {
                         case "Barco":
                             casilla.classList.add("sonarBarco");
                             imgX.src = sonarBarcoImg;
                             imgX.style.opacity = '0.3';
+                            mostrarImg = true;
                             break;
                         case "Mina":
                             imgX.src = sonarMinaImg;
                             imgX.style.opacity = '0.3';
+                            mostrarImg = true;
                             break;
                         case "Agua":
-                            imgX.style.opacity = '0.7';
-                            imgX.src = crossImg; //crossImg;
+                            // imgX.style.opacity = '0.7';
+                            // imgX.src = crossImg; //crossImg;
                             break;
                         default:
                             console.log("Error: sonar mal hecho -1 para backend");
                     }
-                    casilla.appendChild(imgX);
+                    if (mostrarImg) {
+                        casilla.appendChild(imgX);
+                    }
                 }
             }
             setSkill(null);
@@ -1039,6 +1052,34 @@ export function GameMulti() {
                     disparos1 = data.misDisparos;
                     tablero2 = data.barcosHundidos;
                     disparos2 = data.disparosEnemigos;
+                    let contadorTurno = data.contadorTurno;
+                    const jugador = cookies.get('jugador')
+                    
+                    // if (jugador === 1) {
+                    //     if (contadorTurno % 2 === 1) {
+                    //         console.log('Es mi turno');
+                    //         desbloqueaTableroRival();
+                    //         desbloqueaBotonesHabilidades();
+                    //     } else {
+                    //         console.log('Es turno de el Rival');
+                    //         bloqueaTableroRival();
+                    //         bloqueaBotonesHabilidades();
+                    //         escuchaTurno(partidaSocket);
+                    //     }
+                    // } else {
+                    //     if (contadorTurno % 2 === 0) {
+                    //         console.log('Es mi turno');
+                    //         desbloqueaTableroRival();
+                    //         desbloqueaBotonesHabilidades();
+                    //     } else {
+                    //         console.log('Es turno de el Rival');
+                    //         bloqueaTableroRival();
+                    //         bloqueaBotonesHabilidades();
+                    //         escuchaTurno(partidaSocket);
+                    //     }
+                    // }
+
+                    escuchaRendicion(partidaSocket);
 
                     borrarWidgetsTablero(myBoard);
                     mostrarWidgetsTablero(tablero1, myBoard);
@@ -1090,6 +1131,34 @@ export function GameMulti() {
                     disparos1 = data.misDisparos;
                     tablero2 = data.barcosHundidos;
                     disparos2 = data.disparosEnemigos;
+                    let contadorTurno = data.contadorTurno;
+                    const jugador = cookies.get('jugador')
+                    
+                    // if (jugador === 1) {
+                    //     if (contadorTurno % 2 === 1) {
+                    //         console.log('Es mi turno');
+                    //         desbloqueaTableroRival();
+                    //         desbloqueaBotonesHabilidades();
+                    //     } else {
+                    //         console.log('Es turno de el Rival');
+                    //         bloqueaTableroRival();
+                    //         bloqueaBotonesHabilidades();
+                    //         escuchaTurno(partidaSocket);
+                    //     }
+                    // } else {
+                    //     if (contadorTurno % 2 === 0) {
+                    //         console.log('Es mi turno');
+                    //         desbloqueaTableroRival();
+                    //         desbloqueaBotonesHabilidades();
+                    //     } else {
+                    //         console.log('Es turno de el Rival');
+                    //         bloqueaTableroRival();
+                    //         bloqueaBotonesHabilidades();
+                    //         escuchaTurno(partidaSocket);
+                    //     }
+                    // }
+
+                    escuchaRendicion(partidaSocket);
 
                     // iterar en la lista disparos1
                     for (let i = 0; i < disparos1.length; i++) {
@@ -1339,7 +1408,10 @@ export function GameMulti() {
                             </div>
                             <br></br>
                             <div className={`skill-button ${isSkillEnqueued("Rafaga") ? 'skill-button-selected' : ''}`}>
-                                <img onClick={() => setSkill("Rafaga") } src={burstImg} alt="Burst" />
+                                <img onClick={() => {
+                                    setSkill("Rafaga");
+                                    bloqueaBotonesHabilidades();
+                                }} src={burstImg} alt="Burst" />
                             </div>
                             <br></br>
                             <div className={`skill-button ${isSkillEnqueued("Sonar") ? 'skill-button-selected' : ''}`}>
@@ -1350,6 +1422,7 @@ export function GameMulti() {
                                 <img onClick={() => {
                                     setSkill("Recargado");
                                     disparoTorpedo(0, 0, true);
+                                    bloqueaBotonesHabilidades();
                                 }} src={torpedoImg} alt="Torpedo" />
                             </div>
                         </div>

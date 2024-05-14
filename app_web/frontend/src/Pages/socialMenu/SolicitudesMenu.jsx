@@ -2,7 +2,11 @@ import React, { useState, useEffect } from 'react';
 import Cookies from 'universal-cookie';
 import UserContainerTemplate from '../../Components/UserContainerTemplate';
 
-const urlRoot = 'http://localhost:8080/perfil/';
+import info from '../../Resources/info';
+
+const urlServer = info['serverAddress'];
+
+const urlRoot = urlServer + '/perfil/';
 const urlObtenerSolicitudes = urlRoot + 'obtenerSolicitudesAmistad';
 const urlEnviarSolicitud = urlRoot + 'enviarSolicitudAmistad';
 const urlEliminarSolicitud = urlRoot + 'eliminarSolicitudAmistad';
@@ -113,7 +117,9 @@ const SolicitudesMenu = () => {
         })
         .then(data => {
             console.log('Respuesta del servidor agnadirAmigo:', data);
-            removeRequestComponent(data);
+            const nombreEmisor = data['nombreId'];
+            removeRequestComponent(nombreEmisor);
+            getRequests();            
         })
         .catch(error => {
             console.error('Error:', error);
