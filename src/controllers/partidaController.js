@@ -106,7 +106,11 @@ function calcularActualizacionELO(elo1, elo2, resultado) {
   let nuevosTrofeos2 = k * (1 - resultado - esperado2);
   if (elo1 < 100 && nuevosTrofeos1 < 0) nuevosTrofeos1 -= nuevosTrofeos1 * 0.5;
   if (elo2 < 100 && nuevosTrofeos2 < 0) nuevosTrofeos2 -= nuevosTrofeos2 * 0.5;
-  return [nuevosTrofeos1|0, nuevosTrofeos2|0];
+  if (nuevosTrofeos1 < 0) nuevosTrofeos1 = 0;
+  if (nuevosTrofeos2 < 0) nuevosTrofeos2 = 0;
+
+  if (nuevosTrofeos1 !== NaN) return [nuevosTrofeos1|0, nuevosTrofeos2|0];
+  return [elo1, elo2];
 }
 
 function calcularEstadisticasPartida(partida, jugador) {
@@ -548,6 +552,7 @@ exports.mostrarTableroEnemigo = async (req, res) => {
  * @param {Coordenada[]} res.misDisparos - Los disparos realizados por mi
  * @param {Coordenada[]} res.barcosHundidos - Los barcos del enemigo hundidos por mi
  * @param {Coordenada[]} res.minasEnemigas - Las minas del enemigo que he hundido
+ * @param {Number} res.contadorTurno - El contador de turnos de la partida
  * @example
  * peticion = { body: { codigo: '1234567890', nombreId: 'jugador1' } }
  * respuesta = { json: () => {} }
@@ -636,7 +641,8 @@ exports.mostrarTableros = async (req, res) => {
         misMinas: misMinas,
         misDisparos: misDisparos,
         barcosHundidos: listaBarcosHundidos,
-        minasEnemigas: minasEnemigas
+        minasEnemigas: minasEnemigas,
+        contadorTurno: partidaActual.contadorTurno
       };
       res.json(tableros);
       console.log('Tableros obtenidos con éxito');
@@ -898,7 +904,6 @@ async function actualizarEstadisticasTurno(nuevosTrofeos, partidaActual, estadis
   let tempRes1 = { json: () => {}, status: function(s) { 
     this.statusCode = s; return this;} };
   // Actualizar ptos de experiencia y ELO si la partida no es amistosa
-  console.log('Chivato0');
   if (!partidaActual.amistosa) {
     estadisticasJugadores[0].nuevosTrofeos = 
       (estadisticasJugadores[0].victoria === 1) ? 20 : 0; // Place holder === TODO ELO
@@ -909,7 +914,6 @@ async function actualizarEstadisticasTurno(nuevosTrofeos, partidaActual, estadis
     nuevosTrofeos = calcularActualizacionELO(jugador1.trofeos, jugador2.trofeos,
       estadisticasJugadores[0].victoria);
     estadisticasJugadores[0].nuevosTrofeos = nuevosTrofeos[0];
-    console.log('Chivato0.5');
     await actualizarPuntosExperiencia({ body: { nombreId: estadisticasJugadores[0].nombreId, 
       nuevosPuntosExperiencia: experienciaJ1 } }, tempRes1);
     if (tempRes1.statusCode !== undefined && tempRes1.statusCode !== 200) {
@@ -917,13 +921,11 @@ async function actualizarEstadisticasTurno(nuevosTrofeos, partidaActual, estadis
       return {mensajeError};
     }
   }
-  console.log('Chivato1');
   await actualizarEstadisticas({ body: estadisticasJugadores[0] }, tempRes1);
   if (tempRes1.statusCode !== undefined && tempRes1.statusCode !== 200) {
     mensajeError = 'Error al actualizar las estadísticas del jugador 1';
     return {mensajeError};
   }
-  console.log('Chivato2');
   if (!partidaContraIA) {
     let tempRes2 = { json: () => {}, status: function(s) {
       this.statusCode = s; return this;} };
@@ -942,7 +944,6 @@ async function actualizarEstadisticasTurno(nuevosTrofeos, partidaActual, estadis
         return {mensajeError};
       }
     }
-    console.log('Chivato3');
     await actualizarEstadisticas({ body: estadisticasJugadores[1] }, tempRes2);
     if (tempRes2.statusCode !== undefined && tempRes2.statusCode !== 200) {
       mensajeError = 'Error al actualizar las estadísticas del jugador 2';
@@ -1324,9 +1325,10 @@ exports.realizarDisparoMisilRafaga = async (req, res) => {
       ]
 
       const partidaContraIA = !partidaActual.nombreId2;
+      let primerMisilRafaga = misilesRafagaRestantes === 3;
       let ultimoMisilRafaga = misilesRafagaRestantes === 1;
-      // Consumir habilidad si es el último misil de la ráfaga
-      if (ultimoMisilRafaga) { // Si es el último de la ráfaga, consumir habilidad
+      // Consumir habilidad si es el primer misil de la ráfaga
+      if (primerMisilRafaga) { // Si es el primer misil de la ráfaga
         if (jugador === 1) partidaActual.usosHab1--;
         else partidaActual.usosHab2--;
       }
