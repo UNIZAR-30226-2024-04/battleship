@@ -228,6 +228,9 @@ exports.crearPartida = async (req, res) => {
       console.error('No se puede crear una partida amistosa y de torneo al mismo tiempo');
       return;
     }
+    // Comprobar que ambos jugadores pueden jugar en el torneo
+
+
     // Obtenemos los tableros de barcos de los jugadores y generamos un código único
     const tableroBarcos1 = jugador1.tableroInicial;
     let tableroBarcos2;

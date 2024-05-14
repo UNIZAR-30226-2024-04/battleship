@@ -102,7 +102,7 @@ const partidaSchema = new Schema({
     default: '-1'    // -1: No es parte de un torneo, cualquier otro valor: Código del torneo
   },
   ganador: {  // NombreId del jugador ganador
-    type: 'String',
+    type: String,
     default: ''
   }
 }, { timestamps: true }); // timestamps añade automáticamente campos para 'createdAt' y 'updatedAt'
