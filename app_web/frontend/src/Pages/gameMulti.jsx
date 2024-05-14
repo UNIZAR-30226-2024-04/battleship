@@ -1055,29 +1055,29 @@ export function GameMulti() {
                     let contadorTurno = data.contadorTurno;
                     const jugador = cookies.get('jugador')
                     
-                    // if (jugador === 1) {
-                    //     if (contadorTurno % 2 === 1) {
-                    //         console.log('Es mi turno');
-                    //         desbloqueaTableroRival();
-                    //         desbloqueaBotonesHabilidades();
-                    //     } else {
-                    //         console.log('Es turno de el Rival');
-                    //         bloqueaTableroRival();
-                    //         bloqueaBotonesHabilidades();
-                    //         escuchaTurno(partidaSocket);
-                    //     }
-                    // } else {
-                    //     if (contadorTurno % 2 === 0) {
-                    //         console.log('Es mi turno');
-                    //         desbloqueaTableroRival();
-                    //         desbloqueaBotonesHabilidades();
-                    //     } else {
-                    //         console.log('Es turno de el Rival');
-                    //         bloqueaTableroRival();
-                    //         bloqueaBotonesHabilidades();
-                    //         escuchaTurno(partidaSocket);
-                    //     }
-                    // }
+                    if (jugador === 1) {
+                        if (contadorTurno % 2 === 1) {
+                            console.log('Es mi turno');
+                            desbloqueaTableroRival();
+                            desbloqueaBotonesHabilidades();
+                        } else {
+                            console.log('Es turno de el Rival');
+                            bloqueaTableroRival();
+                            bloqueaBotonesHabilidades();
+                            escuchaTurno(partidaSocket);
+                        }
+                    } else {
+                        if (contadorTurno % 2 === 0) {
+                            console.log('Es mi turno');
+                            desbloqueaTableroRival();
+                            desbloqueaBotonesHabilidades();
+                        } else {
+                            console.log('Es turno de el Rival');
+                            bloqueaTableroRival();
+                            bloqueaBotonesHabilidades();
+                            escuchaTurno(partidaSocket);
+                        }
+                    }
 
                     escuchaRendicion(partidaSocket);
 
@@ -1134,29 +1134,29 @@ export function GameMulti() {
                     let contadorTurno = data.contadorTurno;
                     const jugador = cookies.get('jugador')
                     
-                    // if (jugador === 1) {
-                    //     if (contadorTurno % 2 === 1) {
-                    //         console.log('Es mi turno');
-                    //         desbloqueaTableroRival();
-                    //         desbloqueaBotonesHabilidades();
-                    //     } else {
-                    //         console.log('Es turno de el Rival');
-                    //         bloqueaTableroRival();
-                    //         bloqueaBotonesHabilidades();
-                    //         escuchaTurno(partidaSocket);
-                    //     }
-                    // } else {
-                    //     if (contadorTurno % 2 === 0) {
-                    //         console.log('Es mi turno');
-                    //         desbloqueaTableroRival();
-                    //         desbloqueaBotonesHabilidades();
-                    //     } else {
-                    //         console.log('Es turno de el Rival');
-                    //         bloqueaTableroRival();
-                    //         bloqueaBotonesHabilidades();
-                    //         escuchaTurno(partidaSocket);
-                    //     }
-                    // }
+                    if (jugador === 1) {
+                        if (contadorTurno % 2 === 1) {
+                            console.log('Es mi turno');
+                            desbloqueaTableroRival();
+                            desbloqueaBotonesHabilidades();
+                        } else {
+                            console.log('Es turno de el Rival');
+                            bloqueaTableroRival();
+                            bloqueaBotonesHabilidades();
+                            escuchaTurno(partidaSocket);
+                        }
+                    } else {
+                        if (contadorTurno % 2 === 0) {
+                            console.log('Es mi turno');
+                            desbloqueaTableroRival();
+                            desbloqueaBotonesHabilidades();
+                        } else {
+                            console.log('Es turno de el Rival');
+                            bloqueaTableroRival();
+                            bloqueaBotonesHabilidades();
+                            escuchaTurno(partidaSocket);
+                        }
+                    }
 
                     escuchaRendicion(partidaSocket);
 
