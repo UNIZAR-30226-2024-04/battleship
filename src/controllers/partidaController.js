@@ -863,6 +863,7 @@ async function comprobarFinDePartida(jugador, jugador1, jugador2, partidaActual,
         { new: true } // Para devolver el documento actualizado
       );
     }
+    
 
     // Comprobar si la partida es torneo
     if (partidaActual.torneo != '-1') {
