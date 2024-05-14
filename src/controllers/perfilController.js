@@ -657,26 +657,42 @@ exports.modificarMazo = async (req, res) => {
       console.error("No puede haber habilidades repetidas en el mazo");
       return;
     }
-    // Buscar y actualizar el perfil en la base de datos
+    // Verificar si el jugador no está en partida
     const filtro = { nombreId: nombreId };
-    const perfilModificado = await Perfil.findOneAndUpdate(
-      filtro, // Filtro para encontrar el perfil a modificar
-      {
-        $set: {
-          mazoHabilidades: mazoHabilidades
-        }
-      },
-      { new: true } // Para devolver el documento actualizado
-    );
+    const perfil = await Perfil.findOne(filtro);
+    if (perfil) {
+      if (perfil.codigoPartidaActual === -1) {
+        // Buscar y actualizar el perfil en la base de datos
+        const perfilModificado = await Perfil.findOneAndUpdate(
+          filtro, // Filtro para encontrar el perfil a modificar
+          {
+            $set: {
+              mazoHabilidades: mazoHabilidades
+            }
+          },
+          { new: true } // Para devolver el documento actualizado
+        );
 
-    // Verificar si el perfil existe y enviar la respuesta al cliente
-    if (perfilModificado) {
-      let mazoDevuelto = perfilModificado.mazoHabilidades;
-      mazoDevuelto.forEach(habilidad => {
-        habilidad._id = undefined;
-      });
-      res.json(mazoDevuelto);
-      console.log("Mazo modificado con éxito");
+        // Verificar si el perfil existe y enviar la respuesta al cliente
+        if (perfilModificado) {
+          let mazoDevuelto = perfilModificado.mazoHabilidades;
+          mazoDevuelto.forEach(habilidad => {
+            habilidad._id = undefined;
+          });
+          res.json(mazoDevuelto);
+          console.log("Mazo modificado con éxito");
+        } else {
+          res.status(404).send('No se ha encontrado el perfil a modificar');
+          console.error("No se ha encontrado el perfil a modificar");
+        }
+      } else {
+        let mazoDevuelto = perfil.mazoHabilidades;
+        mazoDevuelto.forEach(habilidad => {
+          habilidad._id = undefined;
+        });
+        res.json(mazoDevuelto);
+        console.log("Mazo no modificado porque el jugador está en partida");
+      }
     } else {
       res.status(404).send('No se ha encontrado el perfil a modificar');
       console.error("No se ha encontrado el perfil a modificar");

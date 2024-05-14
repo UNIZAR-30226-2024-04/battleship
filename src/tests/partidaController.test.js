@@ -860,7 +860,7 @@ describe("Colocar mina", () => {
     expect(res.statusCode).toBe(undefined);
     partidaActual = await Partida.findOne({codigo: _codigo});
     misMinas = partidaActual.minas1;
-    ocupadaPorMina = misMinas.some(mina => mina.i === i && mina.j === j && mina.estado === 'Agua');
+    ocupadaPorMina = misMinas.some(mina => mina.i === i && mina.j === j);
     expect(ocupadaPorMina).toBe(true);
     expect(res._json.finPartida).toBe(false);
     expect(res._json.usosHab).toBe(2);

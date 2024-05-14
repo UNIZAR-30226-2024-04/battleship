@@ -7,6 +7,7 @@ const {registrarUsuario, autenticarUsuario, eliminarUsuario, iniciarSesion,
 const e = require('express');
 const Perfil = require('../models/perfilModel');
 const { mongoURI } = require('../uri');
+
 mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true, 
   useCreateIndex: true, useFindAndModify: false});
 
@@ -810,6 +811,21 @@ describe('Modificar mazo', () => {
       } catch (error) {}
       expect(res.statusCode).toBe(400);
   });
+  it('Debería fallar al modificar el mazo de un usuario en partida', async () => {
+    const req = { body: { nombreId: 'usuario1', mazoHabilidades: ['Teledirigido', 'Mina', 'Recargado'] } };
+    const res = { json: function(_json) {this._json = _json; return this;}, status: function(s) {
+      this.statusCode = s; return this; }, send: () => {} };
+    await Perfil.findOneAndUpdate({nombreId: 'usuario1'}, {codigoPartidaActual: '1234567890'}, {new: true});
+      try {
+      await modificarMazo(req, res);
+    } catch (error) {}
+    expect(res.statusCode).toBe(undefined);
+    const perfil = await Perfil.findOne({nombreId: 'usuario1'});
+    expect(perfil.mazoHabilidades.length).toBe(3);
+    expect(perfil.mazoHabilidades[0]).toBe('Rafaga');
+    expect(perfil.mazoHabilidades[1]).toBe('Mina');
+    expect(perfil.mazoHabilidades[2]).toBe('Sonar');
+});
 });
 
 // Test for moverBarcoInicial

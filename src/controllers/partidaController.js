@@ -1739,7 +1739,7 @@ exports.colocarMina = async (req, res) => {
     } else {
       // Comprobar si la casilla está ocupada por un barco propio u otra mina
       const miTablero = jugador === 1 ? partidaActual.tableroBarcos1 : partidaActual.tableroBarcos2;
-      const ocupadaPorBarco = miTablero.some(barco => barco.coordenadas.some(coordenada => coordenada.i === i && coordenada.j === j && coordenada.estado === 'Agua'));
+      const ocupadaPorBarco = miTablero.some(barco => barco.coordenadas.some(coordenada => coordenada.i === i && coordenada.j === j));
       if (ocupadaPorBarco) {
         let respuestaDisparo = {
           minaColocada: false,
@@ -1754,7 +1754,7 @@ exports.colocarMina = async (req, res) => {
         return;
       }
       const misMinas = jugador === 1 ? partidaActual.minas1 : partidaActual.minas2;
-      const ocupadaPorMina = misMinas.some(mina => mina.i === i && mina.j === j && mina.estado === 'Agua');
+      const ocupadaPorMina = misMinas.some(mina => mina.i === i && mina.j === j);
       if (ocupadaPorMina) {
         let respuestaDisparo = {
           minaColocada: false,
