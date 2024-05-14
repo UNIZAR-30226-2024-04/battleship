@@ -867,9 +867,9 @@ async function comprobarFinDePartida(jugador, jugador1, jugador2, partidaActual,
 
 
     // Comprobar si la partida es torneo
-    if (partidaActual.torneo != '-1') {
-      await actualizarEstadisticasTorneo(jugador1, jugador2, partidaActual);
-    }
+    // if (partidaActual.torneo != '-1') {
+    //   await actualizarEstadisticasTorneo(jugador1, jugador2, partidaActual);
+    // }
 
   }
   return finPartida;
@@ -926,11 +926,11 @@ async function actualizarEstadisticasTorneo(jugador1, jugador2, partidaActual) {
   }
 
   // Comprobar si con la victoria ha ganado el torneo
-  // let jugadorGanador = torneo.jugadores.find(jugador => jugador.nombreId === partidaActual.ganador);
-  // if (jugadorGanador.victorias === torneo.victoriasNecesarias) {
-  //   // Añadir a la lista de ganadores
-  //   torneo.ganadores.push(jugadorGanador);
-  // }
+  let jugadorGanador = torneo.jugadores.find(jugador => jugador.nombreId === partidaActual.ganador);
+  if (jugadorGanador.victorias === torneo.victoriasNecesarias) {
+    // Añadir a la lista de ganadores
+    torneo.ganadores.push(jugadorGanador);
+  }
 }
 
 // Función que actualiza las estadísticas de los jugadores en la base de datos tras finalizar un turno
