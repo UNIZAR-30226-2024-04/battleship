@@ -932,19 +932,18 @@ Future<List<bool>> usarSonar(int i, int j) async {
         var disparo = data['disparoRealizado'];
         var barcoCoordenadas = data['barcoCoordenadas'];
         acertado = procesarDisparo(disparo, [barcoCoordenadas]);
-      }
+        
+        // Procesar disparos generados por la mina enemiga
+        var disparosRespuestaMina = data['disparosRespuestaMina'];
+        var barcosHundidosRespuestaMina = data['barcosHundidosRespuestaMina'];
 
-      // Procesar disparos generados por la mina enemiga
-      var disparosRespuestaMina = data['disparosRespuestaMina'];
-      var barcosHundidosRespuestaMina = data['barcosHundidosRespuestaMina'];
-
-      if (disparosRespuestaMina != null && disparosRespuestaMina.isNotEmpty) {
-        print("DISPAROS RESPUESTA AL EXPLOTAR MINA: " + disparosRespuestaMina.toString());
-        for (var disparoMina in disparosRespuestaMina) {
-          procesarTurnoRival(disparoMina, [barcosHundidosRespuestaMina]);
+        if (disparosRespuestaMina != null && disparosRespuestaMina.isNotEmpty) {
+          print("DISPAROS RESPUESTA AL EXPLOTAR MINA: " + disparosRespuestaMina.toString());
+          for (var disparoMina in disparosRespuestaMina) {
+            procesarTurnoRival(disparoMina, barcosHundidosRespuestaMina, esDisparoMina:true);
+          }
         }
       }
-
       return Future.value([acertado, fin]);
     } else {
       throw Exception('Failed to load data');
@@ -952,13 +951,13 @@ Future<List<bool>> usarSonar(int i, int j) async {
   }
 
     // Funcion que procesa el turno del rival
-  void procesarTurnoRival(disparo, barcosCoordenadas) async {
+  void procesarTurnoRival(disparo, barcosCoordenadas, {esDisparoMina = false}) async {
     int i = disparo['i'];
     int j = disparo['j'];
-    bool atacar = disparo['estado'] == 'Agua';
+    bool atacar = disparo['estado'] == 'Agua'; // Paso a atacar porque rival ha fallado
     if(atacar) {
       setState(() {
-        Juego().disparosFalladosRival.add(Offset(i.toDouble(), j.toDouble()));
+          Juego().disparosFalladosRival.add(Offset(i.toDouble(), j.toDouble()));
       });
     }
     else {

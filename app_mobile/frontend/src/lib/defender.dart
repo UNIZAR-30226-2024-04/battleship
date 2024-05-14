@@ -62,7 +62,7 @@ class _DefenderState extends State<Defender> {
       // Procesar disparos de respuesta a minas.
       if (disparosRespuestaMina != null && disparosRespuestaMina.isNotEmpty) {
         for (var disp in disparosRespuestaMina) {
-          procesarDisparo(disp, [barcosHundidosRespuestaMina]);
+          procesarDisparo(disp, barcosHundidosRespuestaMina);
         }
       }
 
@@ -73,18 +73,50 @@ class _DefenderState extends State<Defender> {
       }
 
 
-      if(eventoOcurrido != 'Niebla') {
-        // Si no soy yo
-        if(data[1] != Juego().miPerfil.name) {
-          switch (tipo) {
+      if(data[1] != Juego().miPerfil.name) {
+        if(eventoOcurrido != 'Niebla') {
+          // Si no soy yo
+            switch (tipo) {
 
-            case 'Rafaga': // CASO RAFAGA
-              procesarTurnoRival(tipo, disparo, [barcosCoordenadas], ultimaRafaga:booleanoExtra);
-              break;
+              case 'Rafaga': // CASO RAFAGA
+                procesarTurnoRival(tipo, disparo, [barcosCoordenadas], ultimaRafaga:booleanoExtra);
+                break;
 
-            case 'Recargado': // CASO TORPEDO RECARGADO
-              bool turnoRecarga = booleanoExtra;
-              if (turnoRecarga) { // No ataca, vamos a atacar nosotros
+              case 'Recargado': // CASO TORPEDO RECARGADO
+                bool turnoRecarga = booleanoExtra;
+                if (turnoRecarga) { // No ataca, vamos a atacar nosotros
+                  setState(() {
+                    Juego().disparosPendientes = 1; // Los disparos que tendré yo en mi turno
+                    if (Juego().indiceHabilidadSeleccionadaEnTurno != -1 && 
+                    Juego().habilidades[Juego().indiceHabilidadSeleccionadaEnTurno].nombre != 'torpedo') {
+                      Juego().indiceHabilidadSeleccionadaEnTurno = -1;
+                    }
+                  });
+                  Future.delayed(const Duration(milliseconds: 1100), () {
+                    Navigator.pushNamed(context, '/Atacar'); 
+                  }); 
+                } else { // Torpedo ataca
+                  int numFallados = 0;
+                  bool todosFallados = false;
+                  for (var disp in disparo) {
+                    if (disp['estado'] == 'Agua') {
+                      numFallados++;
+                    }
+                    if (numFallados == disparo.length) {
+                      todosFallados = true;
+                    }
+                    if (barcosCoordenadas != null) {
+                      procesarTurnoRival(tipo, disp, barcosCoordenadas, todosFallados:todosFallados);
+                    } else {
+                      procesarTurnoRival(tipo, disp, [barcosCoordenadas], todosFallados:todosFallados);
+                    }
+                  }
+
+                }
+                break;
+              
+              case 'Mina': // CASO MINA
+                showInfoSnackBar(context, 'El rival ha usado la mina');
                 setState(() {
                   Juego().disparosPendientes = 1; // Los disparos que tendré yo en mi turno
                   if (Juego().indiceHabilidadSeleccionadaEnTurno != -1 && 
@@ -95,67 +127,39 @@ class _DefenderState extends State<Defender> {
                 Future.delayed(const Duration(milliseconds: 1100), () {
                   Navigator.pushNamed(context, '/Atacar'); 
                 }); 
-              } else { // Torpedo ataca
-                int numFallados = 0;
-                bool todosFallados = false;
-                for (var disp in disparo) {
-                  if (disp['estado'] == 'Agua') {
-                    numFallados++;
+                break;
+              case 'Sonar': // CASO SONAR
+                showInfoSnackBar(context, 'El rival ha usado el sonar');                
+                setState(() {
+                  Juego().disparosPendientes = 1; // Los disparos que tendré yo en mi turno
+                  if (Juego().indiceHabilidadSeleccionadaEnTurno != -1 && 
+                  Juego().habilidades[Juego().indiceHabilidadSeleccionadaEnTurno].nombre != 'torpedo') {
+                    Juego().indiceHabilidadSeleccionadaEnTurno = -1;
                   }
-                  if (numFallados == disparo.length) {
-                    todosFallados = true;
-                  }
-                  procesarTurnoRival(tipo, disp, [barcosCoordenadas], todosFallados:todosFallados);
-                }
+                });
+                Future.delayed(const Duration(milliseconds: 1100), () {
+                  Navigator.pushNamed(context, '/Atacar'); 
+                }); 
+                break;
 
-              }
-              break;
-            
-            case 'Mina': // CASO MINA
-              showInfoSnackBar(context, 'El rival ha usado la mina');
-              setState(() {
-                Juego().disparosPendientes = 1; // Los disparos que tendré yo en mi turno
-                if (Juego().indiceHabilidadSeleccionadaEnTurno != -1 && 
-                Juego().habilidades[Juego().indiceHabilidadSeleccionadaEnTurno].nombre != 'torpedo') {
-                  Juego().indiceHabilidadSeleccionadaEnTurno = -1;
-                }
-              });
-              Future.delayed(const Duration(milliseconds: 1100), () {
-                Navigator.pushNamed(context, '/Atacar'); 
-              }); 
-              break;
-            case 'Sonar': // CASO SONAR
-              showInfoSnackBar(context, 'El rival ha usado el sonar');                
-              setState(() {
-                Juego().disparosPendientes = 1; // Los disparos que tendré yo en mi turno
-                if (Juego().indiceHabilidadSeleccionadaEnTurno != -1 && 
-                Juego().habilidades[Juego().indiceHabilidadSeleccionadaEnTurno].nombre != 'torpedo') {
-                  Juego().indiceHabilidadSeleccionadaEnTurno = -1;
-                }
-              });
-              Future.delayed(const Duration(milliseconds: 1100), () {
-                Navigator.pushNamed(context, '/Atacar'); 
-              }); 
-              break;
-
-            default: // CASO disparo normal o teledirigido
-              procesarTurnoRival(tipo, disparo, [barcosCoordenadas]);
-              break;
+              default: // CASO disparo normal o teledirigido
+                procesarTurnoRival(tipo, disparo, [barcosCoordenadas]);
+                break;
+            }
+        }
+        else {
+          print("No entro en el if porque ha habido un disparo con efecto niebla");
+          atacar = true;
+          if (Juego().indiceHabilidadSeleccionadaEnTurno != -1 && 
+          Juego().habilidades[Juego().indiceHabilidadSeleccionadaEnTurno].nombre != 'torpedo') {
+            Juego().indiceHabilidadSeleccionadaEnTurno = -1;
           }
+          Future.delayed(const Duration(milliseconds: 1100), () {
+            Navigator.pushNamed(context, '/Atacar'); 
+          }); 
         }
-      }
-      else {
-        print("No entro en el if porque ha habido un disparo con efecto niebla");
-        atacar = true;
-        if (Juego().indiceHabilidadSeleccionadaEnTurno != -1 && 
-        Juego().habilidades[Juego().indiceHabilidadSeleccionadaEnTurno].nombre != 'torpedo') {
-          Juego().indiceHabilidadSeleccionadaEnTurno = -1;
-        }
-        Future.delayed(const Duration(milliseconds: 1100), () {
-          Navigator.pushNamed(context, '/Atacar'); 
-        }); 
-      }
-    });     
+      }    
+    }); 
 
     if (Juego().modalidadPartida == 'INDIVIDUAL') {
       iniciarTransicionAutomatica();
@@ -507,19 +511,22 @@ class _DefenderState extends State<Defender> {
     int i = disparo['i'];
     int j = disparo['j'];
     bool atacar = disparo['estado'] == 'Agua';
-    atacar = atacar && ultimaRafaga && todosFallados;
     if(atacar) {
       setState(() {
-        Juego().disparosPendientes = 1; // Los disparos que tendré yo en mi turno
-        if (Juego().indiceHabilidadSeleccionadaEnTurno != -1 && 
-        Juego().habilidades[Juego().indiceHabilidadSeleccionadaEnTurno].nombre != 'torpedo') {
-          Juego().indiceHabilidadSeleccionadaEnTurno = -1;
-        }
         Juego().disparosFalladosRival.add(Offset(i.toDouble(), j.toDouble()));
       });
-      Future.delayed(const Duration(milliseconds: 2200), () {
-        Navigator.pushNamed(context, '/Atacar'); 
-      });  
+      if (ultimaRafaga && todosFallados) {
+        setState(() {
+          Juego().disparosPendientes = 1; // Los disparos que tendré yo en mi turno
+          if (Juego().indiceHabilidadSeleccionadaEnTurno != -1 && 
+          Juego().habilidades[Juego().indiceHabilidadSeleccionadaEnTurno].nombre != 'torpedo') {
+            Juego().indiceHabilidadSeleccionadaEnTurno = -1;
+          }
+        });
+        Future.delayed(const Duration(milliseconds: 2200), () {
+          Navigator.pushNamed(context, '/Atacar'); 
+        });  
+      }
     }
     else {
       setState(() {

@@ -1528,8 +1528,8 @@ exports.realizarDisparoTorpedoRecargado = async (req, res) => {
           clima: partidaActual.clima,
           usosHab: jugador === 1 ? partidaActual.usosHab1 : partidaActual.usosHab2,
           minasDisparadas: (minasDisparadas && minasDisparadas.length > 0) ? minasDisparadas : [],
-          disparosRespuestasMinas: (minaDisparada !== undefined) ? disparosRespuestasMinas : [],
-          barcosHundidosRespuestasMinas: (minaDisparada !== undefined) ? barcosHundidosRespuestasMinas : [],
+          disparosRespuestasMinas: (minasDisparadas !== undefined) ? disparosRespuestasMinas : [],
+          barcosHundidosRespuestasMinas: (minasDisparadas !== undefined) ? barcosHundidosRespuestasMinas : [],
           turnosIA: turnosIA
         };
         // Actualizar estadisticas de los jugadores
