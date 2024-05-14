@@ -33,6 +33,10 @@ const publicacionSchema = new Schema({
   reacciones: {             // Lista de reacciones a la publicacion
     type: [Reaccion],
     default: []
+  },
+  fecha: {                 // Fecha de la publicación
+    type: Date,
+    default: Date.now
   }
 });
 

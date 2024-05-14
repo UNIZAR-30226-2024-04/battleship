@@ -139,7 +139,7 @@ function calcularEstadisticasPartida(partida, jugador) {
 
   // Calcular puntos de experiencia
   let puntosExperiencia = 0;
-  puntosExperiencia += estadisticas.nuevosBarcosHundidos * 10;
+  puntosExperiencia += estadisticas.nuevosBarcosHundidos * 5;
   puntosExperiencia += estadisticas.nuevosDisparosAcertados * 1;
   puntosExperiencia += estadisticas.nuevosDisparosFallados * 0.25;
   estadisticas.nuevosPuntosExperiencia = puntosExperiencia;
@@ -158,6 +158,8 @@ function calcularEstadisticasPartida(partida, jugador) {
  * @param {String} req.body.nombreId1 - El nombreId del jugador 1
  * @param {String} req.body.nombreId2 - El nombreId del jugador 2
  * @param {BiomasDisponibles} req.body.bioma - El bioma de la partida
+ * @param {Boolean} [req.body.amistosa = false] - Indica si la partida es amistosa, por defecto es false
+ * @param {String} [req.body.torneo = "-1"] - El código del torneo al que pertenece la partida
  * @param {Boolean} [req.body.amistosa = true] - Indica si la partida es amistosa, por defecto es false
  * @param {Object} res - El objeto despuesta HTTP con el codigo de la partida creada TODO: CAMBIAR ESTO EN BACKEND
  * @param {Number} res.codigo - El código de la partida
@@ -168,7 +170,7 @@ function calcularEstadisticasPartida(partida, jugador) {
  */
 exports.crearPartida = async (req, res) => {
   try {
-    const { codigo, nombreId1, nombreId2, bioma = 'Mediterraneo', amistosa = false, torneo = false, ...extraParam } = req.body;
+    const { codigo, nombreId1, nombreId2, bioma = 'Mediterraneo', amistosa = false, torneo = "-1", ...extraParam } = req.body;
     let codigoFinal = codigo;
     // Verificar si hay algún parámetro extra
     if (Object.keys(extraParam).length > 0) {
@@ -224,7 +226,7 @@ exports.crearPartida = async (req, res) => {
       return;
     }
     // Comprobar que no es partida amisotosa torneo al mismo tiempo
-    if (amistosa && torneo) {
+    if (amistosa && torneo !== "-1") {
       res.status(400).send('No se puede crear una partida amistosa y de torneo al mismo tiempo');
       console.error('No se puede crear una partida amistosa y de torneo al mismo tiempo');
       return;
@@ -255,7 +257,7 @@ exports.crearPartida = async (req, res) => {
       );
     } else {
       // Si el jugador 2 es IA, no puede ser partida de torneo
-      if(torneo) {
+      if(torneo !== "-1") {
         res.status(400).send('No se puede crear una partida de torneo con un jugador IA');
         console.error('No se puede crear una partida de torneo con un jugador IA');
         return;
@@ -520,7 +522,7 @@ exports.mostrarTableroEnemigo = async (req, res) => {
         tipoPartida = 'INDIVIDUAL';
       } else if (jugador2.nombreId !== "IA"){
         if(partidaActual.amistosa) tipoPartida = 'AMISTOSA';
-        else if(partidaActual.torneo) tipoPartida = 'TORNEO';
+        else if(partidaActual.torneo && partidaActual.torneo !== '-1') tipoPartida = 'TORNEO';
         else { tipoPartida = 'COMPETITIVA'; }
       }
 
@@ -867,10 +869,11 @@ async function comprobarFinDePartida(jugador, jugador1, jugador2, partidaActual,
 
 
     // Comprobar si la partida es torneo
-    // if (partidaActual.torneo != '-1') {
-    //   await actualizarEstadisticasTorneo(jugador1, jugador2, partidaActual);
-    // }
-
+    console.log('Partida finalizada:', partidaActual);
+    if (partidaActual.torneo && partidaActual.torneo !== '-1') {
+      await actualizarEstadisticasTorneo(jugador1, jugador2, partidaActual);
+      console.log('Estadísticas del torneo actualizadas'); 
+    }
   }
   return finPartida;
 }
@@ -912,25 +915,46 @@ async function juegaIA(jugador1, jugador2, partidaActual, estadisticasJugadores,
 
 // Funcion que actualiza las estadisticas de un torneo tras finalizar una partida
 async function actualizarEstadisticasTorneo(jugador1, jugador2, partidaActual) {
-  // Seleccionar el torneo
-  let torneo = await Torneo.findOne({ codigo: partidaActual.codigoTorneo });
-
-  // Añadir la victoria y la derrota al jugador correspondiente
-  if (partidaActual.ganador === jugador1.nombreId) {
-    torneo.jugadores.find(jugador => jugador.nombreId === jugador2.nombreId).derrotas++;
-    torneo.jugadores.find(jugador => jugador.nombreId === jugador1.nombreId).victorias++;
+  let incrementoDerrotas1 = partidaActual.ganador === jugador1.nombreId ? 0 : 1;
+  let incrementoDerrotas2 = partidaActual.ganador === jugador2.nombreId ? 0 : 1;
+  let incrementoVictorias1 = partidaActual.ganador === jugador1.nombreId ? 1 : 0;
+  let incrementoVictorias2 = partidaActual.ganador === jugador2.nombreId ? 1 : 0;
+  // Actualizar las estadísticas de los jugadores
+  let torneo = await Torneo.findOneAndUpdate(
+    { codigo: partidaActual.codigoTorneo }, // Filtrar
+    { $inc: { 'participantes.$[elem1].victorias': incrementoVictorias1, 
+      'participantes.$[elem2].victorias': incrementoVictorias2,
+      'participantes.$[elem1].derrotas': incrementoDerrotas1, 
+      'participantes.$[elem2].derrotas': incrementoDerrotas2 } }, // Actualizar
+    { arrayFilters: [{ 'elem1.nombreId': jugador1.nombreId }, 
+      { 'elem2.nombreId': jugador2.nombreId }] } // Filtros de array
+  );
+  // Acceder a los datos actualizados elem1 y elem2
+  let nombreIdGanador = partidaActual.ganador;
+  let i = 0;
+  if (torneo === null) {
+    torneo = {
+      codigo: "-1",
+      participantes: [],
+      ganadores: [],
+      numeroVictorias: -1,
+      numeroMaxDerrotas: -1
+    }
   }
-  else {
-    torneo.jugadores.find(jugador => jugador.nombreId === jugador2.nombreId).victorias++;
-    torneo.jugadores.find(jugador => jugador.nombreId === jugador1.nombreId).derrotas++;
+  while (i < torneo.participantes.length) {
+    if (torneo.participantes[i].nombreId === nombreIdGanador) {
+      if (torneo.participantes[i].victorias === torneo.numeroVictorias) {
+        torneo.ganadores.push(nombreIdGanador);
+        break;
+      }
+    }
   }
-
   // Comprobar si con la victoria ha ganado el torneo
-  let jugadorGanador = torneo.jugadores.find(jugador => jugador.nombreId === partidaActual.ganador);
-  if (jugadorGanador.victorias === torneo.victoriasNecesarias) {
-    // Añadir a la lista de ganadores
-    torneo.ganadores.push(jugadorGanador);
-  }
+  await Torneo.findOneAndUpdate(
+    { codigo: partidaActual.codigoTorneo}, // Filtrar
+    torneo, // Actualizar
+    { new: true } // Para devolver el documento actualizado
+  );
 }
 
 // Función que actualiza las estadísticas de los jugadores en la base de datos tras finalizar un turno

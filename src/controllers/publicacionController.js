@@ -3,6 +3,7 @@ const Perfil = require('../models/perfilModel');
 const publicacionesPredeterminadas = require('../data/publicaciones');
 const { calcularNivel } = require('../data/niveles');
 const {reaccionesDisponibles} = require('../data/reacciones');
+const exp = require('constants');
 
 /**
  * @module publicacion
@@ -235,6 +236,61 @@ exports.obtenerPublicaciones  = async (req, res) => {
     console.error("Error al obtener las publicaciones del usuario");
   }
 };
+
+/**
+ * @memberof module:publicacion
+ * @function obtenerPublicacionesAmigos
+ * @description Devuelve todas las publicaciones de los amigos del perfil del usuario ordenadas por fecha.
+ * @param {Request} req - El objeto de solicitud HTTP.
+ * @param {String} req.body.nombreId - El perfil debe existir en la base de datos.
+ * @param {Publicacion[]} res - Lista de publicaciones de los amigos del perfil.
+ * @example
+ * perfil = { nombreId: 'usuario1' };
+ * const req = { body: perfil };
+ * const res = { json: (perfil) => { return perfil; } };
+ * await obtenerPublicacionesAmigos(req, res);
+ */
+exports.obtenerPublicacionesAmigos = async (req, res) => {
+  try {
+    const { nombreId, ...extraParam } = req.body;
+    if (Object.keys(extraParam).length > 0) {
+      res.status(400).send({message: "Sobran parámetros, se espera nombreId"});
+      console.error("Sobran parámetros, se espera nombreId");
+      return;
+    }
+    if (!nombreId) {
+      res.status(400).send({message: "Falta parámetro nombreId"});
+      console.error("Falta parámetro nombreId");
+      return;
+    }
+    const perfil = await Perfil.findOne({nombreId: nombreId});
+    // Si el usuario no existe, devolvemos un error
+    if (!perfil) {
+      res.status(404).send({message: "Usuario no encontrado"});
+      console.error("Usuario no encontrado");
+      return;
+    }
+    const listaAmigos = perfil.listaAmigos;
+    var publicaciones = await Publicacion.find({usuario: nombreId});
+    for (let i = 0; i < publicaciones.length; i++) {
+      publicaciones[i]._id = undefined;
+    }
+    for (let i = 0; i < listaAmigos.length; i++) {
+      let publicacionesAmigo = await Publicacion.find({usuario: listaAmigos[i]});
+      for (let j = 0; j < publicacionesAmigo.length; j++) {
+        publicacionesAmigo[j]._id = undefined;
+      }
+      publicaciones = publicaciones.concat(publicacionesAmigo);
+    }
+    // Ordenamos las publicaciones por fecha
+    publicaciones.sort((a, b) => b.fecha - a.fecha);
+    res.json(publicaciones);
+    console.log("Publicaciones de amigos obtenidas correctamente");
+  } catch (error) {
+    res.status(500).send('Hubo un error');
+    console.error("Error al obtener las publicaciones de los amigos del usuario");
+  }
+}
 
 /**
  * @memberof module:publicacion

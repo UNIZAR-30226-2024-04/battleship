@@ -29,6 +29,7 @@ const Coordenada = require('../data/coordenada');
  * @property {Coordenada[]} minas2 - Lista con las minas colocadas por J2
  * @property {String} bioma - Bioma en el que se va a jugar la partida y que se caracteriza por una mayor probabilidad de clima
  * @property {Boolean} amistosa - Indica si la partida es amistosa o no
+ * @property {String} torneo - Indica si la partida es parte de un torneo y el código del torneo
  * @property {String} ganador - NombreId del jugador ganador
  */
 
