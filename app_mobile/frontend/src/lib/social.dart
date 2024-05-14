@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:async';
+import 'package:battleship/botones.dart';
 import 'package:flutter/material.dart';
 import 'comun.dart';
 import 'package:http/http.dart' as http;
@@ -7,7 +8,8 @@ import 'serverRoute.dart';
 import 'juego.dart';
 
 class Social extends StatefulWidget {
-  const Social({super.key});
+  Social({super.key});
+  final TextEditingController _friendController = TextEditingController();
 
   @override
   _SocialState createState() => _SocialState();
@@ -37,15 +39,17 @@ class _SocialState extends State<Social> {
             child: Column(
               children: [
                 buildHeader(context),
-                Expanded(
+                /*Expanded(
                   child: Column(
                     children: [
+                      //buildText(),*/
+                      buildEntryButton('Amigo', 'Introduzca el nombre de usuario', Icons.email, widget._friendController),
                       buildTabs(),
                       const Spacer(),
                       buildActions(context),
-                    ],
+                  /*  ],
                   ),
-                ),
+                ),*/
               ],
             ),
           ),
@@ -54,39 +58,45 @@ class _SocialState extends State<Social> {
     );
   }
 
+  Widget buildText() {
+    return Row(
+      children: [
+        buildEntryButton('Amigo', 'Introduzca el nombre de usuario', Icons.email, widget._friendController),
+      ],
+    );
+  }
+
   Widget buildTabs() {
-    return Expanded(
-      child: Container(
-        margin: const EdgeInsets.all(10),
-        decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.5),
-          borderRadius: BorderRadius.circular(15),
-        ),
-        child: Column(
-          children: [
-            const TabBar(
-              indicatorSize: TabBarIndicatorSize.tab,
-              tabs: [
-                //Iconos para cada pestaña
-                Tab(icon: Icon(Icons.web_stories_rounded)),
-                Tab(icon: Icon(Icons.people)),
-                Tab(icon: Icon(Icons.question_mark)),
-                Tab(icon: Icon(Icons.message)),
+    return Container(
+      margin: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.5),
+        borderRadius: BorderRadius.circular(15),
+      ),
+      child: Column(
+        children: [
+          const TabBar(
+            indicatorSize: TabBarIndicatorSize.tab,
+            tabs: [
+              //Iconos para cada pestaña
+              Tab(icon: Icon(Icons.web_stories_rounded)),
+              Tab(icon: Icon(Icons.people)),
+              Tab(icon: Icon(Icons.question_mark)),
+              Tab(icon: Icon(Icons.message)),
+            ],
+          ),
+          // Editar el contenido de cada pestaña
+          Expanded(
+            child: TabBarView(
+              children: [
+                buildPosts(),       // Pestaña de publicaciones
+                buildFriends(),     // Pestaña de amigos
+                buildRequests(),    // Pestaña de solicitudes de amistad
+                buildChats(),       // Pestaña de mensajes
               ],
             ),
-            // Editar el contenido de cada pestaña
-            Expanded(
-              child: TabBarView(
-                children: [
-                  buildPosts(),       // Pestaña de publicaciones
-                  buildFriends(),     // Pestaña de amigos
-                  buildRequests(),    // Pestaña de solicitudes de amistad
-                  buildChats(),       // Pestaña de mensajes
-                ],
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
