@@ -1,12 +1,10 @@
 import 'package:battleship/destino.dart';
 import 'package:battleship/principal.dart';
 import 'package:flutter/material.dart';
-import 'atacar.dart';
 import 'juego.dart';
 import 'botones.dart';
 import 'authProvider.dart';
 import 'comun.dart';
-import 'sala.dart';
 
 class InicioSesion extends StatefulWidget {
   const InicioSesion({super.key});
@@ -112,7 +110,7 @@ class _InicioSesionState extends State<InicioSesion> {
         await Juego().cargarPartida(context);
       }
       else {
-        DestinoManager.setDestino(Principal());
+        DestinoManager.setDestino(const Principal());
       }
       Navigator.pushNamed(context, DestinoManager.getRutaDestino());
     }

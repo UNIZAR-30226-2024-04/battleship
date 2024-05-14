@@ -30,12 +30,10 @@ class _SalaState extends State<Sala> {
   Future<void> buscarOCrearSala(bool amistosa) async {
     if (await Juego().buscarSala()) {
       print("SALA ENCONTRADA");
-      Juego().anfitrion = false;
       DestinoManager.setDestino(const Defender());
       Navigator.pushNamed(context, '/Defender');
     } else {
       await Juego().crearSala(amistosa);
-      Juego().anfitrion = true;
       print("SALA CREADA");
       DestinoManager.setDestino(const Atacar());
       Navigator.pushNamed(context, '/Atacar');
@@ -48,7 +46,31 @@ class _SalaState extends State<Sala> {
       future: salaEncontrada,
       builder: (BuildContext context, AsyncSnapshot<void> snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
+          return Container(
+            decoration: const BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('images/fondo.jpg'),
+                fit: BoxFit.cover,
+              ),
+            ),
+            child: const Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Text(
+                'Buscando rival ...',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 28.0,
+                  decoration: TextDecoration.none,
+                ),
+              ),
+                SizedBox(height: 20.0),
+                CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                ),
+              ],
+            ),
+          );
         } else {
           return Container(
             decoration: const BoxDecoration(

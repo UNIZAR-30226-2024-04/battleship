@@ -19,7 +19,7 @@ class Atacar extends StatefulWidget {
 class _AtacarState extends State<Atacar> {
   ServerRoute serverRoute = ServerRoute();
   bool defender = false;
-  Offset casillaNiebla = Offset(-1, -1);
+  Offset casillaNiebla = const Offset(-1, -1);
 
   @override
   void initState() {
@@ -56,6 +56,7 @@ class _AtacarState extends State<Atacar> {
           children: [
             buildHeader(context, ponerPerfil: false),
             const SizedBox(height: 20),
+            _construirInfoRival('Pepe'),
             _construirBarcosRestantes(),
             _construirTableroConBarcosAtacable(),
             _construirHabilidades(),
@@ -74,6 +75,33 @@ class _AtacarState extends State<Atacar> {
               }
             }, "Abandonar partida"),
             const Spacer(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _construirInfoRival(String nombreRival) {
+    return Padding(
+      padding: const EdgeInsets.all(10),
+      child: Container(
+        width: 300,
+        height: 50,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20.0),
+          color: Colors.white.withOpacity(0.5),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const SizedBox(width: 10),
+            Text(
+              nombreRival,
+              style: const TextStyle(
+                fontSize: 18,
+                color: Colors.black,
+              ),
+            ),
           ],
         ),
       ),
@@ -100,7 +128,7 @@ class _AtacarState extends State<Atacar> {
   Widget _construirBarcosRestantes() {
     List<Barco> barcosRestantes = Juego().obtenerBarcosRestantesRival();
     return Container(
-      padding: const EdgeInsets.all(10),
+      padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
         color: Colors.blue.shade900.withOpacity(0.6),
         borderRadius: BorderRadius.circular(10),
@@ -109,7 +137,7 @@ class _AtacarState extends State<Atacar> {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           buildTitle('Barcos restantes del rival: ${Juego().barcosRestantesRival}', 16),
-          const SizedBox(height: 10),
+          const SizedBox(height: 5),
           Wrap(
             alignment: WrapAlignment.center,
             children: [
@@ -118,7 +146,7 @@ class _AtacarState extends State<Atacar> {
                   children: [
                     // Imagen de los barcos restantes.
                     Padding(
-                      padding: const EdgeInsets.all(5),
+                      padding: const EdgeInsets.all(4),
                       child: Image.asset(
                         'images/${barcosRestantes[i].nombre}.png', 
                         width: 50, 
@@ -127,7 +155,7 @@ class _AtacarState extends State<Atacar> {
                     ),
                     // Longitud de los barcos restantes.
                     Padding(
-                      padding: const EdgeInsets.all(5), 
+                      padding: const EdgeInsets.all(3), 
                       child: Text(
                         barcosRestantes[i].longitud.toString(),
                         style: const TextStyle(
@@ -150,7 +178,7 @@ class _AtacarState extends State<Atacar> {
    */
 Widget _construirHabilidades() {
     return Container(
-      padding: const EdgeInsets.all(10),
+      padding: const EdgeInsets.all(5),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
@@ -398,7 +426,7 @@ Widget _construirHabilidades() {
     Juego().misDisparosDesviadosAbajo.clear();
     Juego().misDisparosDesviadosIzquierda.clear();
     Juego().misDisparosDesviadosDerecha.clear();
-    print("INDICE HABILIDAD SELECCIONADA: " + Juego().indiceHabilidadSeleccionadaEnTurno.toString());
+    print("INDICE HABILIDAD SELECCIONADA: ${Juego().indiceHabilidadSeleccionadaEnTurno}");
     // Comprobar si ya se ha disparado en esa casilla.
     if (Juego().disparosAcertadosPorMi.contains(Offset(i.toDouble(), j.toDouble())) || 
           Juego().disparosFalladosPorMi.contains(Offset(i.toDouble(), j.toDouble()))) {
@@ -413,7 +441,7 @@ Widget _construirHabilidades() {
     if (Juego().indiceHabilidadSeleccionadaEnTurno != -1) {
       if (Juego().habilidades[Juego().indiceHabilidadSeleccionadaEnTurno].nombre == 'rafaga') {
         Juego().habilidades[Juego().indiceHabilidadSeleccionadaEnTurno].ejecutar();
-        var result;
+        List<bool> result;
         if(Juego().modalidadPartida == "INDIVIDUAL") {
           result = await realizarDisparoRafaga(i, j, Juego().disparosPendientes);
         } else {
@@ -424,7 +452,7 @@ Widget _construirHabilidades() {
       }
       else if (Juego().habilidades[Juego().indiceHabilidadSeleccionadaEnTurno].nombre == 'teledirigido') {
         Juego().habilidades[Juego().indiceHabilidadSeleccionadaEnTurno].ejecutar();
-        var result;
+        List<bool> result;
         if(Juego().modalidadPartida == "INDIVIDUAL") {
           result = await realizarDisparoTeledirigido();
         } else {
@@ -437,7 +465,7 @@ Widget _construirHabilidades() {
         // Si el estado de la habilidad es "recargando", no dispara.
         if (Juego().habilidades[Juego().indiceHabilidadSeleccionadaEnTurno].estado == 'recargando') {
           Juego().habilidades[Juego().indiceHabilidadSeleccionadaEnTurno].ejecutar();
-          var result;
+          List<bool> result;
           if(Juego().modalidadPartida == "INDIVIDUAL") {
             result = await realizarDisparoTorpedo(0, 0, true);
           } else {
@@ -448,7 +476,7 @@ Widget _construirHabilidades() {
         }
         else {
           Juego().habilidades[Juego().indiceHabilidadSeleccionadaEnTurno].ejecutar();
-          var result;
+          List<bool> result;
           if(Juego().modalidadPartida == "INDIVIDUAL") {
             result = await realizarDisparoTorpedo(i, j, false);
           } else {
@@ -460,7 +488,7 @@ Widget _construirHabilidades() {
       }
       else if (Juego().habilidades[Juego().indiceHabilidadSeleccionadaEnTurno].nombre == 'sonar') {
         Juego().habilidades[Juego().indiceHabilidadSeleccionadaEnTurno].ejecutar();
-        var result;
+        List<bool> result;
         if(Juego().modalidadPartida == "INDIVIDUAL") {
           result = await usarSonar(i, j);
         } else {
@@ -505,20 +533,19 @@ Widget _construirHabilidades() {
         Juego().disparosPendientes --;
       });
     }
-
     if (Juego().disparosPendientes <= 0) {
       setState(() {
         defender = true;
         Juego().disparosPendientes = 1;
       });
-      }
     }
+  }
 
 /**************************************************************************************************************/
 /*                                                                                                            */
 /*                                  HABILIDADES SINGLE PLAYER                                                 */
 /*                                                                                                            */
-/**************************************************************************************************************/
+/// ***********************************************************************************************************
 
 // Habilidad: RÁFAGA
  Future<List<bool>> realizarDisparoRafaga(int i, int j, int restantes) async {
@@ -543,7 +570,7 @@ Widget _construirHabilidades() {
       bool fin = data['finPartida'];
       bool acertado = false;
       var barcoCoordenadas = data['barcoCoordenadas'];
-      acertado = procesarDisparo(disparo, [barcoCoordenadas]);
+      acertado = procesarDisparo(disparo, [barcoCoordenadas], i, j);
   
       // Procesar disparo de la IA.
       var turnosIA = data['turnosIA'].cast<Map<String, dynamic>>();
@@ -579,7 +606,7 @@ Widget _construirHabilidades() {
       bool fin = data['finPartida'];
       bool acertado = false;
       var barcoCoordenadas = data['barcoCoordenadas'];
-      acertado = procesarDisparo(disparo, [barcoCoordenadas]);
+      acertado = procesarDisparo(disparo, [barcoCoordenadas], -1, -1);
 
       // Procesar disparo de la IA.
       var turnosIA = data['turnosIA'].cast<Map<String, dynamic>>();
@@ -594,7 +621,7 @@ Widget _construirHabilidades() {
 
 // Habilidad: TORPEDO
   Future<List<bool>> realizarDisparoTorpedo(int i, int j, bool turnoRecarga) async {
-    var response;
+    http.Response response;
     response = await http.post(
       Uri.parse(serverRoute.urlDispararTorpedo),
       headers: <String, String>{
@@ -624,7 +651,7 @@ Widget _construirHabilidades() {
       int numAcertados = 0;
 
       for (var disparo in disparos) {
-        if (procesarDisparo(disparo, barcoCoordenadas)) {
+        if (procesarDisparo(disparo, barcoCoordenadas, i, j)) {
           numAcertados++;
         }
         await Future.delayed(const Duration(milliseconds: 500));
@@ -694,7 +721,7 @@ Future<List<bool>> usarSonar(int i, int j) async {
 /*                                                                                                            */
 /*                                                 TURNO IA                                                   */
 /*                                                                                                            */
-/**************************************************************************************************************/
+/// ***********************************************************************************************************
 // Funcion que procesa el turno de la IA
   bool procesarTurnoIA(turnoIA) {
     var elemento = turnoIA;
@@ -702,7 +729,7 @@ Future<List<bool>> usarSonar(int i, int j) async {
     var iReal = disparo['i'];
     var jReal = disparo['j'];
     Offset disparoCoordenadas = Offset(iReal as double, jReal as double);
-    print("CASILLA REAL DE DISPARO: " + disparoCoordenadas.toString());
+    print("CASILLA REAL DE DISPARO: $disparoCoordenadas");
     bool finPartida = elemento['finPartida'];
     var estado = disparo['estado'];
     bool acertado = estado == 'Tocado' || estado == 'Hundido';
@@ -752,9 +779,9 @@ Future<List<bool>> usarSonar(int i, int j) async {
     // Procesar disparos de respuesta a minas.
     if (disparosRespuestaMina != null && disparosRespuestaMina.isNotEmpty) {
       print("LA IA HA REALIZADO DISPAROS EN MINA: ");
-      print("DISPAROS RESPUESTA AL EXPLOTAR MINA: " + disparosRespuestaMina.toString());
+      print("DISPAROS RESPUESTA AL EXPLOTAR MINA: $disparosRespuestaMina");
       for (var disparoMina in disparosRespuestaMina) {
-        procesarDisparo(disparoMina, [barcosHundidosRespuestaMina]);
+        procesarDisparo(disparoMina, [barcosHundidosRespuestaMina], -1, -1);
       }
     }
 
@@ -766,9 +793,9 @@ Future<List<bool>> usarSonar(int i, int j) async {
 /*                                                                                                            */
 /*                                              MOSTRAR MI DISPARO                                            */
 /*                                                                                                            */
-/**************************************************************************************************************/
+/// ***********************************************************************************************************
 // Funcion que procesa mi disparo
- bool procesarDisparo(disparo, barcosCoordenadas) {
+ bool procesarDisparo(disparo, barcosCoordenadas, i, j) {
     print("DISPARO: ");
     var iReal = disparo['i'];
     var jReal = disparo['j'];
@@ -777,26 +804,32 @@ Future<List<bool>> usarSonar(int i, int j) async {
     bool acertado = estado == 'Tocado' || estado == 'Hundido';
     bool hundido = estado == 'Hundido';
 
+    // Si no se ha pasado la coordenada del disparo, se toma la coordenada real.
+    if(i == -1 && j == -1) {
+      i = iReal;
+      j = jReal;
+    }
+
     // Comprobar si el disparo ha sido desviado.
-    if (disparoCoordenadas != Offset(iReal.toDouble(), jReal.toDouble())) {
-      if (disparoCoordenadas.dx > iReal.toDouble()) {
+    if (disparoCoordenadas != Offset(i.toDouble(), j.toDouble())) {
+      if (i > iReal.toDouble()) {
         setState(() {
-          Juego().misDisparosDesviadosAbajo.add(Offset(iReal.toDouble(), jReal.toDouble()));
+          Juego().misDisparosDesviadosArriba.add(Offset(i.toDouble(), j.toDouble()));
         });
       }
-      else if (disparoCoordenadas.dx < iReal.toDouble()) {
+      else if (i < iReal.toDouble()) {
         setState(() {
-          Juego().misDisparosDesviadosArriba.add(Offset(iReal.toDouble(), jReal.toDouble()));
+          Juego().misDisparosDesviadosAbajo.add(Offset(i.toDouble(), j.toDouble()));
         });
       }
-      else if (disparoCoordenadas.dy > jReal.toDouble()) {
+      else if (j > jReal.toDouble()) {
         setState(() {
-          Juego().misDisparosDesviadosDerecha.add(Offset(iReal.toDouble(), jReal.toDouble()));
+          Juego().misDisparosDesviadosIzquierda.add(Offset(i.toDouble(), j.toDouble()));
         });
       }
-      else if (disparoCoordenadas.dy < jReal.toDouble()) {
+      else if (j < jReal.toDouble()) {
         setState(() {
-          Juego().misDisparosDesviadosIzquierda.add(Offset(iReal.toDouble(), jReal.toDouble()));
+          Juego().misDisparosDesviadosDerecha.add(Offset(i.toDouble(), j.toDouble()));
         });
       }
     }
@@ -809,7 +842,7 @@ Future<List<bool>> usarSonar(int i, int j) async {
     }
     else {
       // Actualizar disparos fallados.
-      print("DISPARO FALLADO: " + disparoCoordenadas.toString());
+      print("DISPARO FALLADO: $disparoCoordenadas");
       setState(() {
         Juego().disparosFalladosPorMi.add(disparoCoordenadas);
       });
@@ -835,7 +868,7 @@ Future<List<bool>> usarSonar(int i, int j) async {
 /*                                                                                                            */
 /*                                              PARTIDA VS IA                                                 */
 /*                                                                                                            */
-/**************************************************************************************************************/
+/// ***********************************************************************************************************
 
 /*
  * Realizar disparo contra la IA.
@@ -855,7 +888,7 @@ Future<List<bool>> usarSonar(int i, int j) async {
       }),
     );
 
-    print("Respuesta de mi disparo: " + response.body);
+    print("Respuesta de mi disparo: ${response.body}");
 
     if (response.statusCode == 200) {
       var data = jsonDecode(response.body);
@@ -873,7 +906,7 @@ Future<List<bool>> usarSonar(int i, int j) async {
       else {
         var disparo = data['disparoRealizado'];
         var barcoCoordenadas = data['barcoCoordenadas'];
-        acertado = procesarDisparo(disparo, [barcoCoordenadas]);
+        acertado = procesarDisparo(disparo, [barcoCoordenadas], i, j);
       }        
       print("Disparo IA: ");
       // Procesar disparo de la IA.
@@ -893,7 +926,7 @@ Future<List<bool>> usarSonar(int i, int j) async {
 /*                                                                                                            */
 /*                                              PARTIDA MULTI                                                 */
 /*                                                                                                            */
-/**************************************************************************************************************/
+/// ***********************************************************************************************************
 
 // Realizar disparo en una partida multijugador.
   Future<List<bool>> realizarDisparoMulti(int i, int j) async {
@@ -931,14 +964,14 @@ Future<List<bool>> usarSonar(int i, int j) async {
         print("ENTRO EN NO HAY NIEBLA");
         var disparo = data['disparoRealizado'];
         var barcoCoordenadas = data['barcoCoordenadas'];
-        acertado = procesarDisparo(disparo, [barcoCoordenadas]);
+        acertado = procesarDisparo(disparo, [barcoCoordenadas], i, j);
         
         // Procesar disparos generados por la mina enemiga
         var disparosRespuestaMina = data['disparosRespuestaMina'];
         var barcosHundidosRespuestaMina = data['barcosHundidosRespuestaMina'];
 
         if (disparosRespuestaMina != null && disparosRespuestaMina.isNotEmpty) {
-          print("DISPAROS RESPUESTA AL EXPLOTAR MINA: " + disparosRespuestaMina.toString());
+          print("DISPAROS RESPUESTA AL EXPLOTAR MINA: $disparosRespuestaMina");
           for (var disparoMina in disparosRespuestaMina) {
             procesarTurnoRival(disparoMina, barcosHundidosRespuestaMina, esDisparoMina:true);
           }
@@ -980,7 +1013,7 @@ Future<List<bool>> usarSonar(int i, int j) async {
 /*                                                                                                            */
 /*                                  HABILIDADES MULTIPLAYER                                                   */
 /*                                                                                                            */
-/**************************************************************************************************************/
+/// ***********************************************************************************************************
 
   // Rafaga Multi
   Future<List<bool>> realizarDisparoRafagaMulti(int i, int j, int restantes) async {
@@ -1005,7 +1038,7 @@ Future<List<bool>> usarSonar(int i, int j) async {
       bool fin = data['finPartida'];
       bool acertado = false;
       var barcoCoordenadas = data['barcoCoordenadas'];
-      acertado = procesarDisparo(disparo, [barcoCoordenadas]);
+      acertado = procesarDisparo(disparo, [barcoCoordenadas], i, j);
       return Future.value([acertado, fin]);
     }
     else {
@@ -1033,7 +1066,7 @@ Future<List<bool>> usarSonar(int i, int j) async {
       bool fin = data['finPartida'];
       bool acertado = false;
       var barcoCoordenadas = data['barcoCoordenadas'];
-      acertado = procesarDisparo(disparo, [barcoCoordenadas]);
+      acertado = procesarDisparo(disparo, [barcoCoordenadas], -1, -1);
       return Future.value([acertado, fin]);
     } else {
       throw Exception('Failed to load data');
@@ -1042,7 +1075,7 @@ Future<List<bool>> usarSonar(int i, int j) async {
 
   // Torpedo Multi
   Future<List<bool>> realizarDisparoTorpedoMulti(int i, int j, bool turnoRecarga) async {
-    var response;
+    http.Response response;
     response = await http.post(
       Uri.parse(serverRoute.urlDispararTorpedoMulti),
       headers: <String, String>{
@@ -1071,7 +1104,7 @@ Future<List<bool>> usarSonar(int i, int j) async {
       int numAcertados = 0;
 
       for (var disparo in disparos) {
-        if (procesarDisparo(disparo, barcoCoordenadas)) {
+        if (procesarDisparo(disparo, barcoCoordenadas, i, j)) {
           numAcertados++;
         }
         await Future.delayed(const Duration(milliseconds: 500));

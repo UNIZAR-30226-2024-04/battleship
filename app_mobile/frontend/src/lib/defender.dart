@@ -182,6 +182,7 @@ class _DefenderState extends State<Defender> {
           children: [
             buildHeader(context, ponerPerfil: false),
             const SizedBox(height: 20),
+            _construirInfoRival('Pepe'),
             _construirBarcosRestantes(),
             _construirTableroConBarcosDefensa(),
             const Spacer(),
@@ -233,6 +234,33 @@ class _DefenderState extends State<Defender> {
             ],
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _construirInfoRival(String nombreRival) {
+    return Padding(
+      padding: const EdgeInsets.all(10),
+      child: Container(
+        width: 300,
+        height: 50,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20.0),
+          color: Colors.white.withOpacity(0.5),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const SizedBox(width: 10),
+            Text(
+              nombreRival,
+              style: const TextStyle(
+                fontSize: 18,
+                color: Colors.black,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

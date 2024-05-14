@@ -266,10 +266,11 @@ class _MinaState extends State<Mina> {
       Juego().minasColocadasPorMi.add(Offset(i.toDouble(), j.toDouble()));
     });
 
-    if(Juego().modalidadPartida == "INDIVIDUAL")
+    if(Juego().modalidadPartida == "INDIVIDUAL") {
       await colocarMina(i, j);
-    else
+    } else {
       await colocarMinaMulti(i, j);
+    }
   }
 
 
@@ -278,7 +279,7 @@ class _MinaState extends State<Mina> {
 /*                                                                                                            */
 /*                                              PARTIDA VS IA                                                 */
 /*                                                                                                            */
-/**************************************************************************************************************/
+/// ***********************************************************************************************************
 
   // Habilidad MINA
   Future<List<bool>> colocarMina(int i, int j) async {
@@ -322,7 +323,7 @@ class _MinaState extends State<Mina> {
     var iReal = disparo['i'];
     var jReal = disparo['j'];
     Offset disparoCoordenadas = Offset(iReal as double, jReal as double);
-    print("CASILLA REAL DE DISPARO: " + disparoCoordenadas.toString());
+    print("CASILLA REAL DE DISPARO: $disparoCoordenadas");
     bool finPartida = elemento['finPartida'];
     var estado = disparo['estado'];
     bool acertado = estado == 'Tocado' || estado == 'Hundido';
@@ -372,7 +373,7 @@ class _MinaState extends State<Mina> {
 /*                                                                                                            */
 /*                                              PARTIDA MULTI                                                 */
 /*                                                                                                            */
-/**************************************************************************************************************/
+/// ***********************************************************************************************************
 
   // Colocar mina multi
   Future<void> colocarMinaMulti(int i, int j) async {

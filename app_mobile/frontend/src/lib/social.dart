@@ -63,7 +63,7 @@ class _SocialState extends State<Social> {
         ),
         child: Column(
           children: [
-            TabBar(
+            const TabBar(
               indicatorSize: TabBarIndicatorSize.tab,
               tabs: [
                 //Iconos para cada pestaña
@@ -77,10 +77,10 @@ class _SocialState extends State<Social> {
             Expanded(
               child: TabBarView(
                 children: [
-                  construirPublicaciones(),  // Pestaña de publicaciones
-                  construirAmigos(),         // Pestaña de amigos
-                  construirSolicitudes(),    // Pestaña de solicitudes de amistad
-                  construirMensajes(),       // Pestaña de mensajes
+                  construirPublicaciones(),
+                  construirAmigos(),
+                  construirSolicitudes(),
+                  construirMensajes(),
                 ],
               ),
             ),
@@ -181,6 +181,35 @@ class _SocialState extends State<Social> {
     }
   }
 
+
+  Future<List<String>> agnadirAmigos(String nombreAmigo) async {
+    var response = await http.post(
+      Uri.parse(serverRoute.urlAgnadirAmigo),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+        'Authorization': 'Bearer ${Juego().tokenSesion}',
+      },
+      body: jsonEncode(<String,String>{
+        'nombreId': Juego().miPerfil.name,
+        'nombreIdAmigo': nombreAmigo,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      // Si obtiene datos
+      var data = jsonDecode(response.body);
+      print('Respuesta del servidor obtenerAmigos: $data');
+      
+      setState(() {
+        amigos = List<String>.from(data);
+      });
+      return amigos;
+    } else {
+      // Si hay algún error
+      throw Exception('Obtener amigos ha fallado');
+    }
+  } 
+
   // Pestaña de solicitudes de amistad
   Widget construirSolicitudes() {
     return Expanded(
@@ -207,13 +236,13 @@ class _SocialState extends State<Social> {
       }),
     );
 
-    print('STATUS CODE: ' + response.statusCode.toString());
+    print('STATUS CODE: ${response.statusCode}');
     if (response.statusCode == 200) {
       var data = jsonDecode(response.body);
       print(data);
       
 
-      return solicitudes;;
+      return solicitudes;
     }
     else {
       throw Exception('La solicitud ha fallado');

@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'authProvider.dart';
 import 'comun.dart';
 import 'botones.dart';
-import 'destino.dart';
-import 'juego.dart';
 
 
 class Registro extends StatelessWidget {

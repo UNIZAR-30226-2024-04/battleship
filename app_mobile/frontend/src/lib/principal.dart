@@ -1,4 +1,3 @@
-import 'package:battleship/defender.dart';
 import 'package:flutter/material.dart';
 import 'atacar.dart';
 import 'juego.dart';
@@ -8,7 +7,7 @@ import 'destino.dart';
 import 'sala.dart';
 
 class Principal extends StatelessWidget {
-  Principal({super.key});
+  const Principal({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -48,7 +47,7 @@ class Principal extends StatelessWidget {
 
   void _handleCompetitivaPressed(BuildContext context) async {
     Juego().modalidadPartida = "COMPETITIVA";
-    print("CODIGO: " + Juego().codigo.toString());
+    print("CODIGO: ${Juego().codigo}");
     if (Juego().codigo != -1) {
       await Juego().cargarPartida(context);
     }

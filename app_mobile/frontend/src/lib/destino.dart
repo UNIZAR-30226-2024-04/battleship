@@ -1,4 +1,3 @@
-import 'package:battleship/main.dart';
 import 'package:flutter/material.dart';
 import 'ajustes.dart';
 import 'atacar.dart';
@@ -15,7 +14,7 @@ import 'sala.dart';
 import 'social.dart';
 
 class DestinoManager {
-  static Widget _destino = Principal();
+  static Widget _destino = const Principal();
 
   static setDestino(Widget destino) {
     _destino = destino;

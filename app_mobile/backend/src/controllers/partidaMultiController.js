@@ -248,6 +248,8 @@ exports.mostrarTableros = async (req, res) => {
 exports.realizarDisparo = async (req, res) => {
   const respuesta = await PartidaController.realizarDisparo(req, res);
   const io = getIO();
+  console.log('Resultado turno previo disparo recibido en backend:', req.body.nombreId, respuesta.disparoRealizado, respuesta.barcoCoordenadas, respuesta.finPartida,
+  respuesta.clima, respuesta.eventoOcurrido, respuesta.minaDisparada, respuesta.disparosRespuestaMina, respuesta.barcosHundidosRespuestaMina);
   io.to('/partida' + req.body.codigo).emit(eventosSocket.resultadoTurno, "disparo", req.body.nombreId, respuesta.disparoRealizado, respuesta.barcoCoordenadas, respuesta.finPartida, respuesta.clima,
    respuesta.eventoOcurrido, 0, respuesta.minaDisparada, respuesta.disparosRespuestaMina, respuesta.barcosHundidosRespuestaMina);
   console.log('Resultado turno tras disparo recibido en backend:', req.body.nombreId, respuesta.disparoRealizado, respuesta.barcoCoordenadas, respuesta.finPartida,

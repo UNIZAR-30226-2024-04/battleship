@@ -47,7 +47,6 @@ class Juego {
   final socket = IO.io('http://localhost:8080', <String, dynamic>{
     'transports': ['websocket'],
   });
-  bool anfitrion = true;
   List<Habilidad> habilidades = [];
   int indiceHabilidadSeleccionadaEnTurno = -1;
   Map<String, bool> selectedAbilities = {
@@ -114,7 +113,6 @@ class Juego {
     minasColocadasPorMi = [];
     minasColocadasPorRival = [];
     barcosDesveladosSonar = [];
-    anfitrion = true;
     numHabilidadesUtilizadas = 0;
     indiceHabilidadSeleccionadaEnTurno = -1;
     // Dejar de escuchar eventos
@@ -328,7 +326,7 @@ class Juego {
       return barcoHundido;
     }
 
-    return Barco('', Offset(0, 0), 0, false, false);
+    return Barco('', const Offset(0, 0), 0, false, false);
   }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -692,6 +690,8 @@ class Juego {
 
     if (response.statusCode == 200) {
       var data = jsonDecode(response.body);
+      print("ACTUALIZANDO ESTADO JUGADOR MULTI");
+      print(data);
       int contadorTurno = data['contadorTurno'];
       var nombreId1 = data['nombreId1'];
       modalidadPartida = data['tipoPartida'];
@@ -699,17 +699,17 @@ class Juego {
       // Soy el anfitrión
       if (nombreId1 == Juego().miPerfil.name) {
         if (contadorTurno % 2 == 1) {
-          DestinoManager.setDestino(Atacar());
+          DestinoManager.setDestino(const Atacar());
         }
         else {
-          DestinoManager.setDestino(Defender());
+          DestinoManager.setDestino(const Defender());
         }
       } else {
         if (contadorTurno % 2 == 1) {
-          DestinoManager.setDestino(Defender());
+          DestinoManager.setDestino(const Defender());
         }
         else {
-          DestinoManager.setDestino(Atacar());
+          DestinoManager.setDestino(const Atacar());
         }
       }
 

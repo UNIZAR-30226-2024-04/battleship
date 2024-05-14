@@ -29,7 +29,7 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: InicioSesion(),
+      home: const InicioSesion(),
       onGenerateRoute: (RouteSettings settings) {
         WidgetBuilder builder;
         switch (settings.name) {
@@ -40,7 +40,7 @@ class _MyAppState extends State<MyApp> {
             builder = (BuildContext _) => Juego().miPerfil;
             break;
           case '/Principal':
-            builder = (BuildContext _) => Principal();
+            builder = (BuildContext _) => const Principal();
             break;
           case '/Flota':
             builder = (BuildContext _) => const Flota();
