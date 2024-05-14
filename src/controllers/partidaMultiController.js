@@ -121,9 +121,18 @@ exports.buscarSala = async (req, res) => {
       res.status(400).send('Faltan parametros');
       return;
     }
-    // Busca sala cualquiera en la base de datos que no tenga el nombreId2
-    const sala = await Sala.findOne({ nombreId2: undefined, amistosa: amistosa, torneo: torneo, bioma: bioma});
-    if (sala) {
+    // Buscar todas las salas que cumplan con los parametros
+    const salas = await Sala.find({ nombreId2: undefined, amistosa: amistosa, torneo: torneo, bioma: bioma });
+
+    if (salas.length > 0) {
+      // Ordenar las salas por similitud de trofeos de los jugadores
+      salas.sort((a, b) => {
+        const perfilA = Perfil.findOne({ nombreId: a.nombreId1 });
+        const perfilB = Perfil.findOne({ nombreId: b.nombreId1 });
+        return abs(perfilA.trofeos - perfilB.trofeos);
+      });
+      // Seleccionar la primera sala
+      const sala = salas[0];
       // Si se encuentra la sala, se actualiza el nombreId2
       sala.nombreId2 = nombreId;
       await sala.save();
@@ -133,6 +142,7 @@ exports.buscarSala = async (req, res) => {
       io.to('/partida' + sala.codigo).emit(eventosSocket.partidaEncontrada, sala.codigo);
       console.log('Partida encontrada en backend:', sala.codigo);
     } else {
+      console.log('No se encontraron salas');
       res.json({ codigo: -1 });
     }
   }
