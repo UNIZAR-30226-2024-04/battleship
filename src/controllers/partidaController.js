@@ -1,5 +1,6 @@
 const Partida = require('../models/partidaModel');
 const Perfil = require('../models/perfilModel');
+const Torneo = require('../models/torneoModel');
 const Coordenada = require('../data/coordenada');
 const Tablero = require('../data/tablero');
 const {barcosDisponibles} = require('../data/barco');
@@ -863,7 +864,7 @@ async function comprobarFinDePartida(jugador, jugador1, jugador2, partidaActual,
         { new: true } // Para devolver el documento actualizado
       );
     }
-    
+
 
     // Comprobar si la partida es torneo
     if (partidaActual.torneo != '-1') {
