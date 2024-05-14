@@ -19,6 +19,7 @@ class _SocialState extends State<Social> {
 
   List<String> amigos = [];
   List<String> solicitudes = [];
+  List<String> publicaciones = [];
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +40,7 @@ class _SocialState extends State<Social> {
                 Expanded(
                   child: Column(
                     children: [
-                      construirPestanas(),
+                      buildTabs(),
                       const Spacer(),
                       buildActions(context),
                     ],
@@ -53,7 +54,7 @@ class _SocialState extends State<Social> {
     );
   }
 
-  Widget construirPestanas() {
+  Widget buildTabs() {
     return Expanded(
       child: Container(
         margin: const EdgeInsets.all(10),
@@ -77,10 +78,10 @@ class _SocialState extends State<Social> {
             Expanded(
               child: TabBarView(
                 children: [
-                  construirPublicaciones(),
-                  construirAmigos(),
-                  construirSolicitudes(),
-                  construirMensajes(),
+                  buildPosts(),       // Pestaña de publicaciones
+                  buildFriends(),     // Pestaña de amigos
+                  buildRequests(),    // Pestaña de solicitudes de amistad
+                  buildChats(),       // Pestaña de mensajes
                 ],
               ),
             ),
@@ -92,20 +93,70 @@ class _SocialState extends State<Social> {
 
 
   // Pestaña de publicaciones
-  Widget construirPublicaciones() {
-    return Expanded(
-      child: Container(
+  Widget buildPosts() {
+    return Scaffold(
+      body: Container(
         margin: const EdgeInsets.all(10),
         decoration: BoxDecoration(
           color: Colors.white.withOpacity(0.5),
           borderRadius: BorderRadius.circular(15),
         ),
+        child: ListView.builder(
+          itemCount: publicaciones.length,
+          itemBuilder: (context, index) {
+              return ListTile(
+                title: Text(publicaciones[index]),
+                leading: CircleAvatar(
+                  //backgroundImage: const AssetImage('images/avatar.png'),
+                  child: Text(publicaciones[index][0]),
+                ),
+                onTap: () {
+                  //Al pulsar una publicacion
+                  print('Pulsado ${publicaciones[index]}');
+                }
+              );
+            },
+        ),
       ),
     );
   }
 
+  //Función para obtener las publicaciones
+  Future<List<String>> obtenerPublicaciones(int tipoPost, int nivel, int trofeos, int pGanadas, int pJugadas, int torneos) async {
+    var response = await http.post(
+      Uri.parse(serverRoute.urlObtenerPublicacion),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+        'Authorization': 'Bearer ${Juego().tokenSesion}',
+      },
+      body: jsonEncode(<String,String>{
+        'nombreId': Juego().miPerfil.name,
+        'tipoPublicacion': tipoPost.toString(),
+        'nivel': nivel.toString(),
+        'trofeos': trofeos.toString(),
+        'partidasGanadas': pGanadas.toString(),
+        'partidasJugadas': pJugadas.toString(),
+        'torneos': torneos.toString(),
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      // Si obtiene datos
+      var data = jsonDecode(response.body);
+      print('Respuesta del servidor obtenerPublicaciones: $data');
+      
+      setState(() {
+        publicaciones = List<String>.from(data);
+      });
+      return publicaciones;
+    } else {
+      // Si hay algún error
+      throw Exception('Obtener publicaciones ha fallado');
+    }
+  }
+
   // Pestaña de amigos
-  Widget construirAmigos() {
+  Widget buildFriends() {
     return Scaffold(
       body: Container(
         margin: const EdgeInsets.all(10),
@@ -118,6 +169,14 @@ class _SocialState extends State<Social> {
           itemBuilder: (context, index) {
               return ListTile(
                 title: Text(amigos[index]),
+                leading: CircleAvatar(
+                  //backgroundImage: const AssetImage('images/avatar.png'),
+                  child: Text(amigos[index][0]),
+                ),
+                onTap: () {
+                  //Al pulsar un amigo
+                  print('Pulsado ${amigos[index]}');
+                }
               );
             },
         ),
@@ -163,6 +222,7 @@ class _SocialState extends State<Social> {
       },
       body: jsonEncode(<String,String>{
         'nombreId': Juego().miPerfil.name,
+        'nombreIdAmigo': nombreAmigo,
       }),
     );
 
@@ -170,10 +230,9 @@ class _SocialState extends State<Social> {
       // Si obtiene datos
       var data = jsonDecode(response.body);
       print('Respuesta del servidor obtenerAmigos: $data');
-      
-      setState(() {
-        amigos = List<String>.from(data);
-      });
+
+      //eliminar amigo
+      amigos.remove(nombreAmigo);
       return amigos;
     } else {
       // Si hay algún error
@@ -182,7 +241,7 @@ class _SocialState extends State<Social> {
   }
 
 
-  Future<List<String>> agnadirAmigos(String nombreAmigo) async {
+  Future<List<String>> agnadirAmigo(String nombreAmigo) async {
     var response = await http.post(
       Uri.parse(serverRoute.urlAgnadirAmigo),
       headers: <String, String>{
@@ -199,10 +258,9 @@ class _SocialState extends State<Social> {
       // Si obtiene datos
       var data = jsonDecode(response.body);
       print('Respuesta del servidor obtenerAmigos: $data');
-      
-      setState(() {
-        amigos = List<String>.from(data);
-      });
+
+      //añadir amigo
+      amigos.add(nombreAmigo);
       return amigos;
     } else {
       // Si hay algún error
@@ -211,7 +269,7 @@ class _SocialState extends State<Social> {
   } 
 
   // Pestaña de solicitudes de amistad
-  Widget construirSolicitudes() {
+  Widget buildRequests() {
     return Expanded(
       child: Container(
         margin: const EdgeInsets.all(10),
@@ -240,8 +298,10 @@ class _SocialState extends State<Social> {
     if (response.statusCode == 200) {
       var data = jsonDecode(response.body);
       print(data);
-      
-
+    
+      setState(() {
+        solicitudes = List<String>.from(data);
+      });
       return solicitudes;
     }
     else {
@@ -249,7 +309,7 @@ class _SocialState extends State<Social> {
     }
   }
 
-  Widget construirMensajes() {
+  Widget buildChats() {
     return Expanded(
       child: Container(
         margin: const EdgeInsets.all(10),
