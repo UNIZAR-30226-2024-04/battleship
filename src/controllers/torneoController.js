@@ -37,7 +37,7 @@ async function puedeUnirseTorneo(torneo, nombreId) {
  */
 exports.crearSalaTorneo = async (req, res) => {
     try {
-        const { nombreId, bioma = 'Mediterraneo', torneo = false, ...extraParam } = req.body;
+        const { nombreId, bioma = 'Mediterraneo', torneo, ...extraParam } = req.body;
         // Comprobar si el usuario puede jugar en el torneo
         if(await puedeUnirseTorneo(torneo, nombreId)){
             PartidaMultiController.crearSala({ body : {nombreId, bioma, torneo}}, res);
