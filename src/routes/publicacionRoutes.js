@@ -17,3 +17,5 @@ router.post('/reaccionarPublicacion', verificarToken, publicacionController.reac
 
 // Ruta para eliminar una publicacion
 router.post('/eliminarPublicacion', verificarToken, publicacionController.eliminarPublicacion);
+
+module.exports = router;

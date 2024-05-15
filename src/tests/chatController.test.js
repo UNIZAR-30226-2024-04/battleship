@@ -110,14 +110,18 @@ describe('Obtener chat', () => {
         expect(res2.statusCode).toBe(undefined);
     });
     it('Obtiene un chat entre dos jugadores', async () => {
-        const req = { body: { nombreId1: 'usuario1', nombreId2: 'usuario2' } };
+        const req = { body: { nombreId1: 'usuario1', nombreId2: 'usuario2',
+          useSocket: false
+        } };
         const res = { json: () => {}, status: function(s) { 
         this.statusCode = s; return this; }, send: () => {} };
         await obtenerChat(req, res);
         expect(res.statusCode).toBe(undefined);
     });
     it('Obtiene un chat entre dos jugadores (al revés)', async () => {
-        const req = { body: { nombreId1: 'usuario2', nombreId2: 'usuario1' } };
+        const req = { body: { nombreId1: 'usuario2', nombreId2: 'usuario1',
+          useSocket: false
+        } };
         const res = { json: () => {}, status: function(s) { 
         this.statusCode = s; return this; }, send: () => {} };
         await obtenerChat(req, res);
