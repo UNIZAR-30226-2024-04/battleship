@@ -11,6 +11,10 @@ import { useState } from 'react'; // Importa useState para manejar el estado de 
 const crearSalaURI = info['serverAddress'] + 'partidaMulti/crearSala';
 const buscarSalaURI = info['serverAddress'] + 'partidaMulti/buscarSala';
 
+const crearSalaTorneoURI = info['serverAddress'] + 'partidaMulti/crearSalaTorneo';
+const buscarSalaTorneoURI = info['serverAddress'] + 'partidaMulti/buscarSalaTorneo';
+const comprobarTorneoURI = info['serverAddress'] + 'partidaMulti/comprobarTorneo';
+
 const io = socketIO(info['serverAddress']); // Puerto del backend en local
 
 
@@ -68,6 +72,97 @@ export function Home() {
             console.error('Error en el al buscar Sala', error);
         }
     };
+
+    const handleTorneo = async () => {
+        try {
+            const id = document.querySelector('input').value;
+            let response = await fetch(comprobarTorneoURI, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'authorization': tokenCookie
+                },
+                body: JSON.stringify({nombreId: nombreIdCookie, torneo: id}),
+            });
+    
+            if (!response.ok) {
+                console.error("Respuesta backend:", response);
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            response = await fetch(buscarSalaTorneoURI, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'authorization': tokenCookie
+                },
+                body: JSON.stringify({nombreId: nombreIdCookie, torneo: id}),
+            });
+
+            if (!response.ok) {
+                console.error("Respuesta backend:", response);
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }  
+    
+            const responseData = await response.json();
+            console.log('Respuesta del servidor:', responseData);
+
+            if (responseData['codigo'] == -1) {
+                // No existe sala, crear una
+                CrearSalaTorneo();
+                cookies.remove('jugador', { path: '/' });
+                cookies.set('jugador', 1, { path: '/' });
+            } else if (responseData['codigo']) { // Nos devuelve el código de la sala    
+                // Conectar al socket de la sala
+                const salaSocket = io.connect(`/partida${responseData['codigo']}`);
+                console.log('partidaEncontrada en sala:', responseData['codigo']);
+                salaSocket.emit(info['entrarSala'], responseData['codigo']);
+                // esperar unos milisegundos para que el servidor pueda procesar el evento
+                cookies.remove('jugador', { path: '/' });
+                cookies.set('jugador', 2, { path: '/' });
+                navigate('/gameMulti');
+            }
+        }
+        catch (error) {
+            console.error('Error en el al buscar Sala', error);
+        }
+    };
+
+    const CrearSalaTorneo = async () => {
+        try {
+            const id = document.querySelector('input').value;
+            const response = await fetch(crearSalaTorneoURI, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'authorization': tokenCookie
+                },
+                body: JSON.stringify({nombreId: nombreIdCookie, torneo: id}),
+            });
+    
+            if (!response.ok) {
+                console.error("Respuesta backend:", response);
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+    
+            const responseData = await response.json();
+            console.log('Respuesta del servidor:', responseData);
+    
+            // Conectar al socket de la sala
+            const salaSocket = io.connect(`/partida${responseData['codigo']}`);
+            salaSocket.emit(info['entrarSala'], responseData['codigo']);
+            console.log('sala creada en:', responseData['codigo']);
+            // Escuchar evento de partida encontrada
+            salaSocket.on(info['partidaEncontrada'], (codigo) => {
+                console.log('Partida encontrada en:', codigo);
+                navigate('/gameMulti');
+            });
+        }
+        catch (error) {
+            console.error('Error en el al crear Sala', error);
+        }
+    };
+
     
     const CrearSala = async () => {
         try {
@@ -136,6 +231,8 @@ export function Home() {
                         <button className="tor-button" onClick={() => {
                             // Mostrar el texto introducido en la consola
                             console.log('Texto introducido:', document.querySelector('input').value);
+
+                            handleTorneo(document.querySelector('input').value);
 
                         }}>
                             <span>Buscar torneo</span>

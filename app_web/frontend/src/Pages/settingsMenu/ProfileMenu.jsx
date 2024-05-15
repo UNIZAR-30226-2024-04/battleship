@@ -4,13 +4,15 @@ import Flag from 'react-world-flags';
 import Cookies from 'universal-cookie';
 import info from '../../Resources/info.json';
 import '../../Styles/home-style.css';
+import { useNavigate } from 'react-router-dom';
 
 
-const urlEliminarUsuario = info['serverAddress'] + '/perfil/eliminarUsuario';
+const urlEliminarUsuario = info['serverAddress'] + 'perfil/eliminarUsuario';
 const ModificarDatosPersonalesURI = info["serverAddress"] + 'perfil/modificarDatosPersonales';
 
 const ProfileMenu = () => {
     const cookies = new Cookies();
+    const navigate = useNavigate();
 
     const [selectedCountry, setSelectedCountry] = useState('');
     const [username, setUsername] = useState('');
@@ -55,6 +57,9 @@ const ProfileMenu = () => {
         setEmail(event.target.value);
     };
 
+    const handleAux = (event) => {
+    };
+
 
     const handleDeleteUser = async () => {
         const confirmDelete = window.confirm('¿Estás seguro de que deseas eliminar tu cuenta? Esta acción no se puede deshacer.');
@@ -72,6 +77,11 @@ const ProfileMenu = () => {
 
                 if (!response.ok) {
                     throw new Error('Hubo un problema al eliminar el usuario');
+                } else {
+                    cookies.remove('perfil');
+                    cookies.remove('JWT');
+                    // nos redirige a la página de login
+                    navigate('/login');
                 }
 
                 alert('Usuario eliminado correctamente');
@@ -90,7 +100,7 @@ const ProfileMenu = () => {
         <>
             <div className="settings-profile-header">
             </div>
-            <form className="settings-profile-body settings-menu-body" name="userdata" onSubmit={handleChanges}>
+            <form className="settings-profile-body settings-menu-body" name="userdata" onSubmit={handleAux}>
                 <div className="settings-profile-email-header">
                     <span>Cambiar email</span>
                 </div>

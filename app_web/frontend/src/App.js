@@ -1,7 +1,6 @@
 import './App.css';
 import { HashRouter as Router, Routes, Route } from 'react-router-dom';
 import { Home }  from './Pages/home';
-import { Home2 } from './Pages/home2';
 import { Fleet } from './Pages/fleet';
 import  Profile from './Pages/profile';
 import { Settings } from './Pages/settings';
@@ -31,7 +30,6 @@ function App() {
             <Route path="/social" element={<Social/>}/>
             <Route path="/register" element={<Register/>}/>
             <Route path="/home" element={<Home/>}/>
-            <Route path="/home2" element={<Home2/>}/>
           </Routes>
         </SocketProvider>
       </Router>
