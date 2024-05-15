@@ -85,7 +85,9 @@ class AuthProvider with ChangeNotifier {
    * Método que permite iniciar sesión en la base de datos.
    */
   Future<bool> loginDB(String nombre, String password) async {
+    print(serverRoute.urlInicioSesion);
     var uri = Uri.parse(serverRoute.urlInicioSesion);
+    print(uri);
     var response = await http.post(
       uri,
       headers: <String, String>{
@@ -168,7 +170,6 @@ class AuthProvider with ChangeNotifier {
         await Juego().cargarPartida(context);
         //document.cookie = 'usuario=$name';
         //document.cookie = 'tokenSesion=$tokenSesion';
-        print(tokenSesion);
         notifyListeners(); // Notifica a los listeners que la variable ha cambiado
         return true;
       }

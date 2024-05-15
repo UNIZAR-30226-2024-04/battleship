@@ -44,11 +44,8 @@ class _AtacarState extends State<Atacar> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
-        image: DecorationImage(
-          image: AssetImage('images/fondo.jpg'),
-          fit: BoxFit.cover,
-        ),
+      decoration: BoxDecoration(
+        color: Juego().colorFondo,
       ),
       child: Scaffold(
         backgroundColor: Colors.transparent,
@@ -56,7 +53,6 @@ class _AtacarState extends State<Atacar> {
           children: [
             buildHeader(context, ponerPerfil: false),
             const SizedBox(height: 20),
-            _construirInfoRival('Pepe'),
             _construirBarcosRestantes(),
             _construirTableroConBarcosAtacable(),
             _construirHabilidades(),
@@ -74,7 +70,15 @@ class _AtacarState extends State<Atacar> {
                 Navigator.pushNamed(context, '/Principal');
               }
             }, "Abandonar partida"),
-            const Spacer(),
+            const SizedBox(height: 10), // Espacio entre el botón y el texto
+            Text(
+              'Clima es: ${Juego().clima}',
+              style: const TextStyle(
+                fontSize: 16,
+                color: Colors.white,
+              ),
+            ),
+            const SizedBox(height: 20), // Ajusta el espacio debajo del texto
           ],
         ),
       ),
@@ -130,7 +134,7 @@ class _AtacarState extends State<Atacar> {
     return Container(
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: Colors.blue.shade900.withOpacity(0.6),
+        color: Color.fromARGB(255, 17, 177, 105).withOpacity(0.6),
         borderRadius: BorderRadius.circular(10),
       ),
       child: Column(
@@ -426,7 +430,6 @@ Widget _construirHabilidades() {
     Juego().misDisparosDesviadosAbajo.clear();
     Juego().misDisparosDesviadosIzquierda.clear();
     Juego().misDisparosDesviadosDerecha.clear();
-    print("INDICE HABILIDAD SELECCIONADA: ${Juego().indiceHabilidadSeleccionadaEnTurno}");
     // Comprobar si ya se ha disparado en esa casilla.
     if (Juego().disparosAcertadosPorMi.contains(Offset(i.toDouble(), j.toDouble())) || 
           Juego().disparosFalladosPorMi.contains(Offset(i.toDouble(), j.toDouble()))) {
@@ -729,7 +732,6 @@ Future<List<bool>> usarSonar(int i, int j) async {
     var iReal = disparo['i'];
     var jReal = disparo['j'];
     Offset disparoCoordenadas = Offset(iReal as double, jReal as double);
-    print("CASILLA REAL DE DISPARO: $disparoCoordenadas");
     bool finPartida = elemento['finPartida'];
     var estado = disparo['estado'];
     bool acertado = estado == 'Tocado' || estado == 'Hundido';
@@ -778,8 +780,6 @@ Future<List<bool>> usarSonar(int i, int j) async {
 
     // Procesar disparos de respuesta a minas.
     if (disparosRespuestaMina != null && disparosRespuestaMina.isNotEmpty) {
-      print("LA IA HA REALIZADO DISPAROS EN MINA: ");
-      print("DISPAROS RESPUESTA AL EXPLOTAR MINA: $disparosRespuestaMina");
       for (var disparoMina in disparosRespuestaMina) {
         procesarDisparo(disparoMina, [barcosHundidosRespuestaMina], -1, -1);
       }
@@ -796,7 +796,6 @@ Future<List<bool>> usarSonar(int i, int j) async {
 /// ***********************************************************************************************************
 // Funcion que procesa mi disparo
  bool procesarDisparo(disparo, barcosCoordenadas, i, j) {
-    print("DISPARO: ");
     var iReal = disparo['i'];
     var jReal = disparo['j'];
     Offset disparoCoordenadas = Offset(iReal as double, jReal as double);
@@ -842,7 +841,6 @@ Future<List<bool>> usarSonar(int i, int j) async {
     }
     else {
       // Actualizar disparos fallados.
-      print("DISPARO FALLADO: $disparoCoordenadas");
       setState(() {
         Juego().disparosFalladosPorMi.add(disparoCoordenadas);
       });
@@ -888,15 +886,12 @@ Future<List<bool>> usarSonar(int i, int j) async {
       }),
     );
 
-    print("Respuesta de mi disparo: ${response.body}");
-
     if (response.statusCode == 200) {
       var data = jsonDecode(response.body);
       var evento = data['eventoOcurrido'];
       bool fin = data['finPartida'];
       bool acertado = false;
       if (evento == 'Niebla') {
-        print("El ultimo disparo no ha llegado a su destino por la niebla.");
         setState(() {
           Juego().hayNiebla = true;
           casillaNiebla = Offset(i.toDouble(), j.toDouble());
@@ -908,7 +903,6 @@ Future<List<bool>> usarSonar(int i, int j) async {
         var barcoCoordenadas = data['barcoCoordenadas'];
         acertado = procesarDisparo(disparo, [barcoCoordenadas], i, j);
       }        
-      print("Disparo IA: ");
       // Procesar disparo de la IA.
       var turnosIA = data['turnosIA'].cast<Map<String, dynamic>>();
       for (var elemento in turnosIA) {  
@@ -950,9 +944,13 @@ Future<List<bool>> usarSonar(int i, int j) async {
       bool acertado = false;
       String evento = data['eventoOcurrido'];
 
+      // Si data contiene el clima, actualizar el clima.
+      if (data.containsKey('clima')) {
+        Juego().clima = data['clima'];
+      }
+
       // Comprobar si en el siguiente turno hay niebla.
       if (evento == 'Niebla') {
-        print("El ultimo disparo no ha llegado a su destino por la niebla.");
         setState(() {
           Juego().hayNiebla = true;
           casillaNiebla = Offset(i.toDouble(), j.toDouble());
@@ -961,7 +959,6 @@ Future<List<bool>> usarSonar(int i, int j) async {
         fin = false;
       }
       else {
-        print("ENTRO EN NO HAY NIEBLA");
         var disparo = data['disparoRealizado'];
         var barcoCoordenadas = data['barcoCoordenadas'];
         acertado = procesarDisparo(disparo, [barcoCoordenadas], i, j);
@@ -971,7 +968,6 @@ Future<List<bool>> usarSonar(int i, int j) async {
         var barcosHundidosRespuestaMina = data['barcosHundidosRespuestaMina'];
 
         if (disparosRespuestaMina != null && disparosRespuestaMina.isNotEmpty) {
-          print("DISPAROS RESPUESTA AL EXPLOTAR MINA: $disparosRespuestaMina");
           for (var disparoMina in disparosRespuestaMina) {
             procesarTurnoRival(disparoMina, barcosHundidosRespuestaMina, esDisparoMina:true);
           }

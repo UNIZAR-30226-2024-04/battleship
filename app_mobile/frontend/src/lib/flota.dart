@@ -34,11 +34,8 @@ class _FlotaState extends State<Flota> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
-        image: DecorationImage(
-          image: AssetImage('images/fondo.jpg'),
-          fit: BoxFit.cover,
-        ),
+      decoration: BoxDecoration(
+        color: Juego().colorFondo,
       ),
       child: Scaffold(
         backgroundColor: Colors.transparent,

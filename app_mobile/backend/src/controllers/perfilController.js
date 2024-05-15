@@ -899,7 +899,7 @@ async function crearPublicacionPartidasJugadas(nombreId, partidasJugadas) {
 }
 
 async function crearPublicacionTrofeos(nombreId, trofeos) {
-  const req = { body: { nombreId: nombreId, tipoPublicacion: 0, trofeos: trofeos } };
+  const req = { body: { nombreId: nombreId, tipoPublicacion: 1, trofeos: trofeos } };
   const res = { json: () => {}, status: () => ({ send: () => {} }) }; // No hace nada
   await crearPublicacion(req, res);
 }
@@ -991,15 +991,18 @@ exports.actualizarEstadisticas = async (req, res) => {
         }
       );
       if ((victoria !== undefined) && perfilModificado.trofeos + 10 > maxTrofeos) {
+        console.log("Trofeos: ", perfilModificado.trofeos);
         await crearPublicacionTrofeos(nombreId, perfilModificado.trofeos);
       }
     }
     if ((victoria === 1) && (perfilModificado.partidasGanadas % 10 === 0 ||
-      perfilModificado.partidasGanadas === 1)) {
+      (perfilModificado.partidasGanadas === 1 ))) {
+        console.log("Partidas ganadas: ", perfilModificado.partidasGanadas);
       await crearPublicacionPartidasGanadas(nombreId, perfilModificado.partidasGanadas);
     }
-    if ((victoria !== undefined) && perfilModificado.partidasJugadas % 10 === 0
-      || perfilModificado.partidasJugadas === 1) {
+    if ((victoria !== undefined) && (perfilModificado.partidasJugadas % 10 === 0
+      || perfilModificado.partidasJugadas === 1 )) {
+        console.log("Partidas jugadas: ", perfilModificado.partidasJugadas);
       await crearPublicacionPartidasJugadas(nombreId, perfilModificado.partidasJugadas);
     }
 

@@ -1,6 +1,6 @@
 class ServerRoute {
-  //String urlBase = 'http://13.81.81.208/api/';
-  String urlBase = 'http://localhost:8080/';
+  String urlBase = 'http://13.81.81.208/';
+  //String urlBase = 'http://localhost:8080/';
   String urlObtenerTablero = '';
   String urlMoverBarcoInicial = '';
   String urlCrearPartida = '';
@@ -50,6 +50,11 @@ class ServerRoute {
   String urlObtenerPublicacionesAmigos = '';
   String urlReaccionarPublicacion = '';
   String urlEliminarPublicacion = '';
+
+  // Torneo
+  String urlComprobarTorneo = '';
+  String urlCrearSalaTorneo = '';
+  String urlBuscarSalaTorneo = '';
     
   ServerRoute() {
     // Juego - Partida
@@ -102,5 +107,10 @@ class ServerRoute {
     urlObtenerPublicacionesAmigos = '${urlBase}publicacion/obtenerPublicacionesAmigos';
     urlReaccionarPublicacion = '${urlBase}publicacion/reaccionarPublicacion';
     urlEliminarPublicacion = '${urlBase}publicacion/eliminarPublicacion';
+
+    // Torneo
+    urlComprobarTorneo = '${urlBase}partidaMulti/comprobarTorneo';
+    urlCrearSalaTorneo = '${urlBase}partidaMulti/crearSalaTorneo';
+    urlBuscarSalaTorneo = '${urlBase}partidaMulti/buscarSalaTorneo';
   }
 }

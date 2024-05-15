@@ -38,10 +38,7 @@ class _AjustesState extends State<Ajustes> {
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage('images/fondo.jpg'),
-            fit: BoxFit.cover,
-          ),
+          color: Color(0xFF1f487),
         ),
         child: Column(
           children: [
@@ -50,8 +47,8 @@ class _AjustesState extends State<Ajustes> {
               child: SingleChildScrollView(
                 child: Column(
                   children: [
-                    buildTitle('Ajustes', 28),  // Título de la pantalla de ajustes.
-                    _buildAjustes(context), // Construcción de la pantalla de ajustes.
+                    buildTitle('Ajustes', 28),
+                    _buildAjustes(context),
                   ],
                 ),
               ),
@@ -62,7 +59,6 @@ class _AjustesState extends State<Ajustes> {
       ),
     );
   }
-
 
   // Construcción de la pantalla de ajustes.
   Widget _buildAjustes(BuildContext context) {

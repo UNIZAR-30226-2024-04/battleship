@@ -6,6 +6,7 @@ import 'comun.dart';
 import 'package:http/http.dart' as http;
 import 'serverRoute.dart';   
 import 'juego.dart';
+import 'perfilOtro.dart';
 
 class Social extends StatefulWidget {
   const Social({super.key});
@@ -18,9 +19,9 @@ class _SocialState extends State<Social> {
   ServerRoute serverRoute = ServerRoute();
   Juego juego = Juego();
   final TextEditingController _nameController = TextEditingController();
+
   List<String> amigos = [];
   List<String> solicitudes = [];
-  List<String> idPublicaciones = [];
   List<String> textoPublicaciones = [];
   List<String> usuarioPublicaciones = [];
   
@@ -28,100 +29,113 @@ class _SocialState extends State<Social> {
   @override
   void initState() {
     super.initState();
-    List<String> solicitudes = [];
-    print("OBTENER SOLICITUDES INICIAL: $solicitudes");
-    _initAsync(); // Llamada a método auxiliar async
+    _initAsync();
   }
 
   Future<void> _initAsync() async {
     try {
       await obtenerPublicaciones();
-      construirPublicaciones();
       await obtenerAmigos();
-      construirAmigos();
       await obtenerSolicitudes();
-      print("Solicitudes tras obtener: $solicitudes");
-      construirSolicitudes();
-      construirMensajes();
     } catch (e) {
-      // Manejar errores si es necesario
       print("Error al obtener solicitudes: $e");
     }
   }
 
   @override
   Widget build(BuildContext context) {
-      return MaterialApp(
-        home: DefaultTabController(
-          length: 4,
-          child: Scaffold(
-            body: Container(
-              decoration: const BoxDecoration(
-                image: DecorationImage(
-                  image: AssetImage('images/fondo.jpg'),
-                  fit: BoxFit.cover,
-                ),
-              ),
-              child: Column(
-                children: [
-                  buildHeader(context),
-                  construirPestanas(),
-                  const Spacer(),
-                  buildActions(context),
-                ],
-              ),
+    return MaterialApp(
+      home: DefaultTabController(
+        length: 3,
+        child: Scaffold(
+          body: Container(
+            decoration: BoxDecoration(
+              color: Juego().colorFondo,
             ),
-          ),
-        ),
-      );
-    }
-
-  Widget construirPestanas() {
-    return Expanded(
-      child: Container(
-        margin: const EdgeInsets.all(10),
-        decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.5),
-          borderRadius: BorderRadius.circular(15),
-        ),
-        child: Column(
-          children: [
-            const TabBar(
-              indicatorSize: TabBarIndicatorSize.tab,
-              tabs: [
-                //Iconos para cada pestaña
-                Tab(icon: Icon(Icons.web_stories_rounded)),
-                Tab(icon: Icon(Icons.people)),
-                Tab(icon: Icon(Icons.question_mark)),
-                Tab(icon: Icon(Icons.message)),
+            child: Column(
+              children: [
+                buildHeader(context),
+                Expanded(
+                  child: construirPestanas(),
+                ),
+                buildActions(context),
               ],
             ),
-            // Editar el contenido de cada pestaña
-            Expanded(
-              child: TabBarView(
-                children: [
-                  construirPublicaciones(),
-                  construirAmigos(),
-                  construirSolicitudes(),
-                  construirMensajes(),
-                ],
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
   }
 
+  Widget construirPestanas() {
+    return Container(
+      margin: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.5),
+        borderRadius: BorderRadius.circular(15),
+      ),
+      child: Column(
+        children: [
+          const TabBar(
+            indicatorSize: TabBarIndicatorSize.tab,
+            tabs: [
+              Tab(icon: Icon(Icons.web_stories_rounded)),
+              Tab(icon: Icon(Icons.people)),
+              Tab(icon: Icon(Icons.person_add_alt_1)),
+            ],
+          ),
+          Expanded(
+            child: TabBarView(
+              children: [
+                construirPublicaciones(),
+                construirAmigos(),
+                construirSolicitudes(),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
-  // Pestaña de publicaciones
   Widget construirPublicaciones() {
-    return Expanded(
-      child: Container(
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      body: Container(
         margin: const EdgeInsets.all(10),
-        decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.5),
-          borderRadius: BorderRadius.circular(15),
+        child: ListView.builder(
+          itemCount: usuarioPublicaciones.length,
+          itemBuilder: (BuildContext context, int index) {
+            return Card(
+              color: Colors.white,
+              margin: EdgeInsets.symmetric(vertical: 10),
+              elevation: 3,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(height: 10),
+                    Text(
+                      usuarioPublicaciones[index],
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                    Text(
+                      textoPublicaciones[index],
+                      style: TextStyle(fontSize: 16),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
         ),
       ),
     );
@@ -143,55 +157,74 @@ class _SocialState extends State<Social> {
     if (response.statusCode == 200) {
       // Si obtiene datos
       var data = jsonDecode(response.body);
-      print('Respuesta del servidor obtenerPublicaciones: $data');
-      // si no es null
+
       if (data != null) {
         setState(() {
-          idPublicaciones = List<String>.from(data['id']);
-          textoPublicaciones = List<String>.from(data['texto']);
-          usuarioPublicaciones = List<String>.from(data['usuario']);
+          for (var publicacion in data) {
+            usuarioPublicaciones.add(publicacion['usuario']);
+            textoPublicaciones.add(publicacion['texto']);
+          }
         });
       }
-
-
     } else {
       // Si hay algún error
       throw Exception('Obtener publicaciones ha fallado');
     }
   }
 
-  // Pestaña de amigos
   Widget construirAmigos() {
     return Scaffold(
+      backgroundColor: Colors.transparent,
       body: Container(
         margin: const EdgeInsets.all(10),
-        decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.5),
-          borderRadius: BorderRadius.circular(15),
+        child: ListView.builder(
+          itemCount: amigos.length,
+          itemBuilder: (BuildContext context, int index) {
+            return _buildAmigoCard(amigos[index]);
+          },
         ),
-        child: SingleChildScrollView(
-          child: Column(
-            children: <Widget>[
-              ...List.generate(amigos.length, (index) => 
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(amigos[index], style: TextStyle(fontSize: 18)),
-                      IconButton(
-                        icon: Icon(Icons.delete, color: Colors.red),
-                        onPressed: () {
-                          // Eliminar solicitud
-                          eliminarAmigo(amigos[index]);
-                        },
-                      ),
-                    ],
-                  ),
-                )
-              ),
-            ],
+      ),
+    );
+  }
+
+  Widget _buildAmigoCard(String nombreAmigo) {
+    return Card(
+      color: Colors.white,
+      margin: EdgeInsets.symmetric(vertical: 10),
+      elevation: 3,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(15),
+      ),
+      child: ListTile(
+        title: Text(
+          nombreAmigo,
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
           ),
+        ),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            IconButton(
+              icon: Icon(Icons.person, color: Colors.lightBlue),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => PerfilOtroUsuario(nombreUsuario: nombreAmigo),
+                  ),
+                );
+              },
+            ),
+            IconButton(
+              icon: Icon(Icons.delete, color: Colors.red),
+              onPressed: () {
+                // Eliminar amigo
+                eliminarAmigo(nombreAmigo);
+              },
+            ),
+          ]
         ),
       ),
     );
@@ -199,7 +232,6 @@ class _SocialState extends State<Social> {
 
   // Función para añadir un amigo
   Future<List<String>> agnadirAmigo(String nombreAmigo) async {
-    print("EL AMIGO A AÑADIR ES: $nombreAmigo");
     var response = await http.post(
       Uri.parse(serverRoute.urlAgnadirAmigo),
       headers: <String, String>{
@@ -214,9 +246,7 @@ class _SocialState extends State<Social> {
 
     if (response.statusCode == 200) {
       // Si obtiene datos
-      var data = jsonDecode(response.body);
-      print('Respuesta del servidor añadir amigo: $data');
-      
+      var data = jsonDecode(response.body);      
       setState(() {
         amigos = List<String>.from(data);
       });
@@ -229,7 +259,6 @@ class _SocialState extends State<Social> {
 
   // Función para obtener los amigos
   Future<void> obtenerAmigos() async {
-    print("Llamamos a obtener amigos");
     var response = await http.post(
       Uri.parse(serverRoute.urlObtenerAmigos),
       headers: <String, String>{
@@ -243,9 +272,7 @@ class _SocialState extends State<Social> {
 
     if (response.statusCode == 200) {
       // Si obtiene datos
-      var data = jsonDecode(response.body);
-      print('Respuesta del servidor obtenerAmigos: $data');
-      
+      var data = jsonDecode(response.body);      
       setState(() {
         amigos = List<String>.from(data);
       });
@@ -271,9 +298,7 @@ class _SocialState extends State<Social> {
 
     if (response.statusCode == 200) {
       // Si obtiene datos
-      var data = jsonDecode(response.body);
-      print('Respuesta del servidor eliminarAmigos: $data');
-      
+      var data = jsonDecode(response.body);      
       setState(() {
         amigos = List<String>.from(data);
       });
@@ -283,8 +308,7 @@ class _SocialState extends State<Social> {
     }
   }
 
-
-  Future<void> enviarSolicitud(String nombreAmigo) async {
+  Future<bool> enviarSolicitud(String nombreAmigo) async {
     var response = await http.post(
       Uri.parse(serverRoute.urlEnviarSolicitudAmistad),
       headers: <String, String>{
@@ -299,17 +323,16 @@ class _SocialState extends State<Social> {
 
     if (response.statusCode == 200) {
       // Si obtiene datos
-      var data = jsonDecode(response.body);
-      print('Respuesta del servidor enviar solicitud: $data');
-      
+      var data = jsonDecode(response.body);   
+      return true;   
     } else {
       // Si hay algún error
-      throw Exception('Enviar Solicitud ha fallado');
+      return false;
     }
   } 
 
   // Funcion que llama a eliminarSolicitudAmistad de backend
-  Future<List<String>> eliminarSolicitudAmistad(String nombreAmigo) async {
+  Future<void> eliminarSolicitudAmistad(String nombreAmigo) async {
     var response = await http.post(
       Uri.parse(serverRoute.urlEliminarSolicitudAmistad),
       headers: <String, String>{
@@ -324,63 +347,74 @@ class _SocialState extends State<Social> {
 
     if (response.statusCode == 200) {
       // Si obtiene datos
-      var data = jsonDecode(response.body);
-      print('Respuesta del servidor eliminar solicitud: $data');
-      
-      return data;
+      var data = jsonDecode(response.body);      
     } else {
       // Si hay algún error
       throw Exception('Eliminar Solicitud ha fallado');
     }
   }
 
-  // Pestaña de solicitudes de amistad, muestra las solicitudes de amistad pendientes 
-  // Para ello llama a la función obtenerSolicitudes de backend
   Widget construirSolicitudes() {
     return Scaffold(
-      body: Container(
-        margin: const EdgeInsets.all(10),
-        decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.5),
-          borderRadius: BorderRadius.circular(15),
-        ),
-        child: SingleChildScrollView(
-          child: Column(
-            children: <Widget>[
-              ...List.generate(solicitudes.length, (index) => 
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(solicitudes[index], style: TextStyle(fontSize: 18)),
-                      IconButton(
-                        icon: Icon(Icons.check, color: Colors.green),
-                        onPressed: () {
-                          // Añadir amigo
-                          agnadirAmigo(solicitudes[index]);
-                        },
-                      ),
-                      IconButton(
-                        icon: Icon(Icons.delete, color: Colors.red),
-                        onPressed: () {
-                          // Eliminar solicitud
-                          eliminarSolicitudAmistad(solicitudes[index]);
-                        },
-                      ),
-                    ],
-                  ),
-                )
-              ),
-              SizedBox(height: 20),
-              buildEntryButton('Nombre amigo', 'Introduzca el nombre del amigo', Icons.person, _nameController),
-              buildActionButton(context, () {
-                enviarSolicitud(_nameController.text);
-                print('Envia solicitud a ${_nameController.text}');
-              }, 'Enviar solicitud')
-            ],
+      backgroundColor: Colors.transparent,
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          Center(
+            child: buildEntryButton('Nombre amigo', 'Introduzca el nombre del amigo', Icons.person, _nameController),
           ),
-        ),
+          SizedBox(height: 20),
+          Center(
+            child: buildActionButton(context, () {
+              enviarSolicitud(_nameController.text);
+              showSuccessSnackBar(context, 'Solicitud enviada a ${_nameController.text}');
+            }, 'Enviar solicitud'),
+          ),
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(10),
+              child: Column(
+                children: List.generate(solicitudes.length, (index) {
+                  return Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(solicitudes[index], style: TextStyle(fontSize: 18)),
+                        Row(
+                          children: [
+                            IconButton(
+                              icon: Icon(Icons.check, color: Color.fromARGB(255, 10, 125, 14)),
+                              onPressed: () {
+                                // Añadir amigo
+                                agnadirAmigo(solicitudes[index]);
+                                // Eliminar la solicitud de la lista
+                                setState(() {
+                                  solicitudes.removeAt(index);
+                                });
+                              },
+                            ),
+                            IconButton(
+                              icon: Icon(Icons.delete, color: Colors.red),
+                              onPressed: () {
+                                // Eliminar solicitud
+                                eliminarSolicitudAmistad(solicitudes[index]);
+                                // Eliminar la solicitud de la lista
+                                setState(() {
+                                  solicitudes.removeAt(index);
+                                });
+                              },
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  );
+                }),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -397,11 +431,8 @@ class _SocialState extends State<Social> {
       }),
     );
 
-    print('STATUS CODE: ${response.statusCode}');
     if (response.statusCode == 200) {
       var data = jsonDecode(response.body);
-      print('Solicitudes devuelta');
-      print(data);
       setState(() {
         solicitudes = List<String>.from(data);
       });
@@ -410,18 +441,4 @@ class _SocialState extends State<Social> {
       throw Exception('La solicitud ha fallado');
     }
   }
-
-  Widget construirMensajes() {
-    return Expanded(
-      child: Container(
-        margin: const EdgeInsets.all(10),
-        decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.5),
-          borderRadius: BorderRadius.circular(15),
-        ),
-      ),
-    );
-  }
-
-  
 }

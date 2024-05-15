@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:battleship/juego.dart';
 import 'package:flutter/material.dart';
+import 'botones.dart';
 import 'comun.dart';
 import 'barco.dart';
 import 'dart:convert';
@@ -55,6 +56,9 @@ class _DefenderState extends State<Defender> {
         eventoOcurrido = data[6];
         disparo = data[2];
         barcosCoordenadas = data[3];
+        if (data[5] != null) {
+          Juego().clima = data[5];
+        }
       }
       if (tipo == 'Recargado' || tipo == 'Rafaga') {
         booleanoExtra = data[11];
@@ -67,8 +71,8 @@ class _DefenderState extends State<Defender> {
       }
 
       if (fin) {
-        Juego().reiniciarPartida();
         showErrorSnackBar(context, 'Has perdido la partida');
+        Juego().reiniciarPartida();
         Navigator.pushNamed(context, '/Principal');
       }
 
@@ -148,7 +152,6 @@ class _DefenderState extends State<Defender> {
             }
         }
         else {
-          print("No entro en el if porque ha habido un disparo con efecto niebla");
           atacar = true;
           if (Juego().indiceHabilidadSeleccionadaEnTurno != -1 && 
           Juego().habilidades[Juego().indiceHabilidadSeleccionadaEnTurno].nombre != 'torpedo') {
@@ -170,11 +173,8 @@ class _DefenderState extends State<Defender> {
   Widget build(BuildContext context) {
     esperarTurno();
     return Container(
-      decoration: const BoxDecoration(
-        image: DecorationImage(
-          image: AssetImage('images/fondo.jpg'),
-          fit: BoxFit.cover,
-        ),
+      decoration: BoxDecoration(
+        color: Juego().colorFondo,
       ),
       child: Scaffold(
         backgroundColor: Colors.transparent,
@@ -182,10 +182,31 @@ class _DefenderState extends State<Defender> {
           children: [
             buildHeader(context, ponerPerfil: false),
             const SizedBox(height: 20),
-            _construirInfoRival('Pepe'),
             _construirBarcosRestantes(),
             _construirTableroConBarcosDefensa(),
             const Spacer(),
+            buildActionButton(context, () {
+              // Caso partida contra IA
+              if(Juego().modalidadPartida == "INDIVIDUAL") {
+                Juego().abandonarPartida(context);
+                Juego().reiniciarPartida();
+                Navigator.pushNamed(context, '/Principal');
+              }
+              else {
+                Juego().abandonarPartidaMulti(context);
+                Juego().reiniciarPartida();
+                Navigator.pushNamed(context, '/Principal');
+              }
+            }, "Abandonar partida"),
+            const SizedBox(height: 10), // Espacio entre el botón y el texto
+            Text(
+              'Clima es: ${Juego().clima}',
+              style: const TextStyle(
+                fontSize: 16,
+                color: Colors.white,
+              ),
+            ),
+            const SizedBox(height: 20), // Ajusta el espacio debajo del texto
           ],
         ),
       ),
@@ -195,16 +216,16 @@ class _DefenderState extends State<Defender> {
   Widget _construirBarcosRestantes() {
     List<Barco> barcosRestantes = Juego().obtenerMisBarcosRestantes();
     return Container(
-      padding: const EdgeInsets.all(10),
+      padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: Colors.blue.shade900.withOpacity(0.6),
+        color: Color.fromARGB(255, 17, 177, 105).withOpacity(0.6),
         borderRadius: BorderRadius.circular(10),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           buildTitle('Tus barcos restantes: ${barcosRestantes.length}', 16),
-          const SizedBox(height: 10),
+          const SizedBox(height: 5),
           Wrap(
             alignment: WrapAlignment.center,
             children: [
@@ -212,7 +233,7 @@ class _DefenderState extends State<Defender> {
                 Column(
                   children: [
                     Padding(
-                      padding: const EdgeInsets.all(5),
+                      padding: const EdgeInsets.all(4),
                       child: Image.asset(
                         'images/${barcosRestantes[i].nombre}.png', 
                         width: 50, 
@@ -220,7 +241,7 @@ class _DefenderState extends State<Defender> {
                       ),
                     ),
                     Padding(
-                      padding: const EdgeInsets.all(5), 
+                      padding: const EdgeInsets.all(3), 
                       child: Text(
                         barcosRestantes[i].longitud.toString(),
                         style: const TextStyle(
@@ -574,7 +595,6 @@ class _DefenderState extends State<Defender> {
   }
 
   bool procesarDisparo(disparo, barcosCoordenadas) {
-    print("DISPARO: ");
     var iReal = disparo['i'];
     var jReal = disparo['j'];
     Offset disparoCoordenadas = Offset(iReal as double, jReal as double);

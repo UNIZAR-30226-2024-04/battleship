@@ -559,6 +559,24 @@ describe("Realizar disparo", () => {
         expect(res.statusCode).toBe(undefined);
         await Partida.updateOne({codigo: _codigo}, {clima: 'Calma'});
     });
+    // it("Debería ganar la partida", async () => {
+    //   await Partida.updateOne({codigo: _codigo}, 
+    //     {tableroBarcos1: [
+    //       {coordenadas: [{i: 1, j: 1, estado: 'Agua'}],
+    //       tipo: 'Patrullero'},
+    //     ]});
+    //     const req = { body: { codigo: _codigo, nombreId: 'usuario2', i: 1, j: 1 } };
+    //     const res = { function(_json) {this._json = _json; return this;}, status: function(s) {
+    //         this.statusCode = s; return this; }, send: () => {} };
+    //     try {
+    //         await realizarDisparo(req, res);
+    //     }
+    //     catch (error) {}
+    //     console.log("RES: ", res);
+    //     expect(res.statusCode).toBe(undefined);
+    //     expect(res._json.finPartida).toBe(true);
+    //     await Partida.updateOne({codigo: _codigo}, {clima: 'Calma'});
+    // });
 });
 
 // Funcion que devuelve:

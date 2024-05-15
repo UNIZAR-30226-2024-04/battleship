@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'authProvider.dart';
 import 'comun.dart';
 import 'botones.dart';
+import 'juego.dart';
 
 
 class Registro extends StatelessWidget {
@@ -16,11 +17,8 @@ class Registro extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
-        image: DecorationImage(
-          image: AssetImage('images/fondo.jpg'),
-          fit: BoxFit.cover,
-        ),
+      decoration: BoxDecoration(
+        color: Juego().colorFondo,
       ),
       child: Scaffold(
         backgroundColor: Colors.transparent,

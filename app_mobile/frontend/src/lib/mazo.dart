@@ -79,23 +79,17 @@ class _MazoState extends State<Mazo> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
-        image: DecorationImage(
-          image: AssetImage('images/fondo.jpg'),
-          fit: BoxFit.cover,
-        ),
+      decoration: BoxDecoration(
+        color: Juego().colorFondo,
       ),
       child: Scaffold(
         backgroundColor: Colors.transparent,
         body: Column(
           children: [
             buildHeader(context),
-            buildTitle('Barcos', 28),
-            const Spacer(),
-            _buildFlota(context),
             const Spacer(),
             buildTitle('Habilidades', 28),
-            const Spacer(),
+            const SizedBox(height: 10.0),
             _buildHabilities(context),
             const Spacer(),
             buildActions(context)
@@ -184,31 +178,6 @@ class _MazoState extends State<Mazo> {
                 }),
               ],
             ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildFlota(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            buildCircledButton('images/clasico.png', 'Clásico', false, () {}),
-            const SizedBox(width: 20),
-            buildCircledButton('images/titan.png', 'Titán', false, () {}),
-          ],
-        ),
-        const SizedBox(height: 5),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            buildCircledButton('images/pirata.png', 'Pirata', false, () {}),
-            const SizedBox(width: 20),
-            buildCircledButton('images/vikingo.png', 'Vikingo', false, () {}),
           ],
         ),
       ],

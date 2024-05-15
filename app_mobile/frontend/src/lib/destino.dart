@@ -11,10 +11,11 @@ import 'principal.dart';
 import 'recContrasena.dart';
 import 'registro.dart';
 import 'sala.dart';
+import 'seleccionarTorneo.dart';
 import 'social.dart';
 
 class DestinoManager {
-  static Widget _destino = const Principal();
+  static Widget _destino = Principal();
 
   static setDestino(Widget destino) {
     _destino = destino;
@@ -51,6 +52,8 @@ class DestinoManager {
       return '/Sala';
     } else if (_destino is Mina) {
       return '/Mina';
+    } else if (_destino is SeleccionarTorneo) {
+      return '/SeleccionarTorneo';
     }
     else {
       throw Exception('Widget no definido');

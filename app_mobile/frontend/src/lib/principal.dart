@@ -6,17 +6,28 @@ import 'botones.dart';
 import 'destino.dart';
 import 'sala.dart';
 
-class Principal extends StatelessWidget {
-  const Principal({super.key});
+class Principal extends StatefulWidget {
+  String bioma = 'Mediterraneo'; // Valor inicial de bioma
+
+  @override
+  _PrincipalState createState() => _PrincipalState();
+}
+
+class _PrincipalState extends State<Principal> {
+
+
+  void _handleBiomaChange(String nuevoBioma) {
+    setState(() {
+      widget.bioma = nuevoBioma;
+      showInfoSnackBar(context, "Bioma actual $nuevoBioma");
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
-        image: DecorationImage(
-          image: AssetImage('images/fondo.jpg'),
-          fit: BoxFit.cover,
-        ),
+      decoration: BoxDecoration(
+        color: Juego().colorFondo,
       ),
       child: Scaffold(
         backgroundColor: Colors.transparent,
@@ -30,13 +41,18 @@ class Principal extends StatelessWidget {
               child: Image(image: AssetImage('images/portada.png')),
             ),
             const Spacer(),
-            buildActionButton(context, () => _handleCompetitivaPressed(context), "Partida Competitiva"),
+            buildTitle('Elige un bioma', 22),
+            const SizedBox(height: 10),
+            buildBiomaButtons(),
             const SizedBox(height: 7),
-            buildActionButton(context, () => _handleAmistosaPressed(context), "Partida Amistosa"),
+            buildTitle('Elige una modalidad', 22),
+            buildActionButton(context, () => _handleCompetitivaPressed(context, widget.bioma), "Partida Competitiva"),
             const SizedBox(height: 7),
-            buildActionButton(context, () => _handleIndividualPressed(context), "Partida Individual"),
+            buildActionButton(context, () => _handleAmistosaPressed(context, widget.bioma), "Partida Amistosa"),
             const SizedBox(height: 7),
-            buildActionButton(context, () => _handleTorneoPressed(context), "Torneo"),
+            buildActionButton(context, () => _handleIndividualPressed(context, widget.bioma), "Partida Individual"),
+            const SizedBox(height: 7),
+            buildActionButton(context, () => _handleTorneoPressed(context, widget.bioma), "Torneo"),
             const Spacer(),
             buildActions(context),
           ],
@@ -45,50 +61,100 @@ class Principal extends StatelessWidget {
     );
   }
 
-  void _handleCompetitivaPressed(BuildContext context) async {
+  Widget buildBiomaButtons() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Expanded(
+              child: buildSmallActionButton(context, () => _handleBiomaChange('Mediterraneo'), 'Mediterraneo'),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: buildSmallActionButton(context, () => _handleBiomaChange('Cantabrico'), 'Cantabrico'),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Expanded(
+              child: buildSmallActionButton(context, () => _handleBiomaChange('Norte'), 'Norte'),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: buildSmallActionButton(context, () => _handleBiomaChange('Bermudas'), 'Bermudas'),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget buildSmallActionButton(BuildContext context, VoidCallback onPressed, String text) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 5),
+      child: ElevatedButton(
+        onPressed: onPressed,
+        style: ElevatedButton.styleFrom(
+          padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 20),
+          textStyle: const TextStyle(fontSize: 14),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+        ),
+        child: Text(text),
+      ),
+    );
+  }
+
+  void _handleCompetitivaPressed(BuildContext context, String bioma) async {
     Juego().modalidadPartida = "COMPETITIVA";
-    print("CODIGO: ${Juego().codigo}");
+    Juego().bioma = bioma;
     if (Juego().codigo != -1) {
       await Juego().cargarPartida(context);
-    }
-    else {
+    } else {
       DestinoManager.setDestino(const Sala());
     }
     Navigator.pushNamed(context, DestinoManager.getRutaDestino());
   }
 
-  void _handleAmistosaPressed(BuildContext context) async {
+  void _handleAmistosaPressed(BuildContext context, String bioma) async {
     Juego().modalidadPartida = "AMISTOSA";
+    Juego().bioma = bioma;
     if (Juego().codigo != -1) {
       await Juego().cargarPartida(context);
-    }
-    else {
+    } else {
       DestinoManager.setDestino(const Sala());
     }
     Navigator.pushNamed(context, DestinoManager.getRutaDestino());
   }
 
-  Future<void> _handleIndividualPressed(BuildContext context) async {
+  Future<void> _handleIndividualPressed(BuildContext context, String bioma) async {
     DestinoManager.setDestino(const Atacar());
     Juego().modalidadPartida = "INDIVIDUAL";
+    Juego().bioma = bioma;
     if (Juego().codigo == -1) {
       await Juego().crearPartida();
       DestinoManager.setDestino(const Atacar());
-    } 
-    else {
+    } else {
       await Juego().cargarPartida(context);
     }
     Navigator.pushNamed(context, DestinoManager.getRutaDestino());
-    }
   }
 
-  Future<void> _handleTorneoPressed(BuildContext context) async {
-    DestinoManager.setDestino(const Atacar());
+  Future<void> _handleTorneoPressed(BuildContext context, String bioma) async {
+    Juego().torneo = true;
     Juego().modalidadPartida = "TORNEO";
-    await Juego().cargarPartida(context);
-    if (Juego().codigo == -1) {
-      await Juego().crearPartida();
+    Juego().bioma = bioma;
+    if (Juego().codigo != -1) {
+      await Juego().cargarPartida(context);
+    } else {
+      DestinoManager.setDestino(const Sala());
     }
-    DestinoManager.setDestino(const Atacar());
-    Navigator.pushNamed(context, '/Atacar');
+    Navigator.pushNamed(context, '/seleccionarTorneo');
+  }
 }

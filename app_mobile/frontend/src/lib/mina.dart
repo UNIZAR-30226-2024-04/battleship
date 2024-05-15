@@ -39,11 +39,8 @@ class _MinaState extends State<Mina> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
-        image: DecorationImage(
-          image: AssetImage('images/fondo.jpg'),
-          fit: BoxFit.cover,
-        ),
+      decoration: BoxDecoration(
+        color: Juego().colorFondo,
       ),
       child: Scaffold(
         backgroundColor: Colors.transparent,
@@ -299,7 +296,6 @@ class _MinaState extends State<Mina> {
 
     if (response.statusCode == 200) {
       var data = jsonDecode(response.body);
-      print("DATA EN MINA: $data");
       var coordenadas = data['minaColocada'];
       var turnosIA = data['turnosIA'];
       bool fin = data['finPartida'];
@@ -323,7 +319,6 @@ class _MinaState extends State<Mina> {
     var iReal = disparo['i'];
     var jReal = disparo['j'];
     Offset disparoCoordenadas = Offset(iReal as double, jReal as double);
-    print("CASILLA REAL DE DISPARO: $disparoCoordenadas");
     bool finPartida = elemento['finPartida'];
     var estado = disparo['estado'];
     bool acertado = estado == 'Tocado' || estado == 'Hundido';
@@ -393,7 +388,6 @@ class _MinaState extends State<Mina> {
 
     if (response.statusCode == 200) {
       var data = jsonDecode(response.body);
-      print("DATA EN MINA: $data");
       var coordenadas = data['minaColocada'];
       var turnos = data['turnos'];
       bool fin = data['finPartida'];

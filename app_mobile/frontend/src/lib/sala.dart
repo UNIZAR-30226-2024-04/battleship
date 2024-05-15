@@ -28,15 +28,31 @@ class _SalaState extends State<Sala> {
   }
 
   Future<void> buscarOCrearSala(bool amistosa) async {
-    if (await Juego().buscarSala()) {
-      print("SALA ENCONTRADA");
-      DestinoManager.setDestino(const Defender());
-      Navigator.pushNamed(context, '/Defender');
-    } else {
-      await Juego().crearSala(amistosa);
-      print("SALA CREADA");
-      DestinoManager.setDestino(const Atacar());
-      Navigator.pushNamed(context, '/Atacar');
+    if(Juego().bioma != 'Bermudas') {
+      Juego().clima = 'Calma';
+    }
+    else {
+      Juego().clima = 'Tormenta';
+    }
+    if(Juego().torneo) {
+      if (await Juego().buscarTorneo()) {
+        DestinoManager.setDestino(const Defender());
+        Navigator.pushNamed(context, '/Defender');
+      } else {
+        await Juego().crearTorneo();
+        DestinoManager.setDestino(const Atacar());
+        Navigator.pushNamed(context, '/Atacar');
+      }
+    }
+    else {
+      if (await Juego().buscarSala(amistosa)) {
+        DestinoManager.setDestino(const Defender());
+        Navigator.pushNamed(context, '/Defender');
+      } else {
+        await Juego().crearSala(amistosa);
+        DestinoManager.setDestino(const Atacar());
+        Navigator.pushNamed(context, '/Atacar');
+      }
     }
   }
 
@@ -47,11 +63,8 @@ class _SalaState extends State<Sala> {
       builder: (BuildContext context, AsyncSnapshot<void> snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Container(
-            decoration: const BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage('images/fondo.jpg'),
-                fit: BoxFit.cover,
-              ),
+            decoration: BoxDecoration(
+              color: Juego().colorFondo,
             ),
             child: const Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -73,11 +86,8 @@ class _SalaState extends State<Sala> {
           );
         } else {
           return Container(
-            decoration: const BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage('images/fondo.jpg'),
-                fit: BoxFit.cover,
-              ),
+            decoration: BoxDecoration(
+              color: Juego().colorFondo,
             ),
             child: Scaffold(
               backgroundColor: Colors.transparent,

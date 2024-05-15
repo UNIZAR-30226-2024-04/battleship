@@ -12,6 +12,7 @@ import 'mina.dart';
 import 'principal.dart';
 import 'recContrasena.dart';
 import 'sala.dart';
+import 'seleccionarTorneo.dart';
 import 'social.dart';
 
 void main() {
@@ -40,7 +41,7 @@ class _MyAppState extends State<MyApp> {
             builder = (BuildContext _) => Juego().miPerfil;
             break;
           case '/Principal':
-            builder = (BuildContext _) => const Principal();
+            builder = (BuildContext _) => Principal();
             break;
           case '/Flota':
             builder = (BuildContext _) => const Flota();
@@ -74,6 +75,9 @@ class _MyAppState extends State<MyApp> {
             break;
           case '/Mina':
             builder = (BuildContext _) => const Mina();
+            break;
+          case '/seleccionarTorneo':
+            builder = (BuildContext _) => const SeleccionarTorneo();
             break;
           default:
             throw Exception('Ruta no definida');

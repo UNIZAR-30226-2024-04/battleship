@@ -18,6 +18,8 @@ import 'dart:async';
 import 'mazo.dart';
 
 class Juego {
+  // Definir el color de fondo de pantalla
+  Color colorFondo = const Color(0xFF1f487E);
   Tablero miTablero = Tablero();
   int numBarcos = 5;
   int misBarcosRestantes = 5;
@@ -41,10 +43,14 @@ class Juego {
   List<Offset> minasColocadasPorRival = [];
   List<Offset> barcosDesveladosSonar = [];
   String modalidadPartida = '';
+  String bioma = '';
+  String clima = '';
   bool hayNiebla = false;
+  String idTorneo = '';
+  bool torneo = false;
   int numHabilidadesUtilizadas = 0; // Número de habilidades utilizadas en toda la partida
   ServerRoute serverRoute = ServerRoute();
-  final socket = IO.io('http://localhost:8080', <String, dynamic>{
+  final socket = IO.io(ServerRoute().urlBase, <String, dynamic>{
     'transports': ['websocket'],
   });
   List<Habilidad> habilidades = [];
@@ -115,6 +121,7 @@ class Juego {
     barcosDesveladosSonar = [];
     numHabilidadesUtilizadas = 0;
     indiceHabilidadSeleccionadaEnTurno = -1;
+    torneo = false;
     // Dejar de escuchar eventos
     socket.off('resultadoTurno');
     socket.off('abandono');
@@ -166,7 +173,6 @@ class Juego {
     );
 
     if (response.statusCode == 200) {
-      print("MAZO ACTUALIZADO CORRECTAMENTE");
     } else {
       throw Exception('La solicitud ha fallado');
     }
@@ -525,7 +531,7 @@ class Juego {
       },
       body: jsonEncode(<String, String>{
         'nombreId1': miPerfil.name,
-        'bioma': 'Mediterraneo' ,
+        'bioma': Juego().bioma,
       }),
       
     );
@@ -576,7 +582,7 @@ class Juego {
       body: jsonEncode(<String, dynamic>{
         'nombreId1': nombreJugador1,
         'nombreId2': nombreJugador2,
-        'bioma': 'Mediterraneo' ,
+        'bioma': Juego().bioma ,
         'amistosa': amistosa,
       }),
       
@@ -592,66 +598,6 @@ class Juego {
     }
   }
 
-  Future<void> crearSala(bool amistosa) async {
-    var response = await http.post(
-      Uri.parse(serverRoute.urlCrearSala),
-      headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-        'Authorization': 'Bearer ${Juego().tokenSesion}',
-      },
-      body: jsonEncode(<String, dynamic>{
-        'nombreId': Juego().miPerfil.name,
-        'bioma': 'Mediterraneo' ,
-        'amistosa': amistosa,
-      }),
-    );
-
-    if (response.statusCode == 200) {
-      var data = jsonDecode(response.body);
-      codigo = data['codigo'];
-      socket.emit('entrarSala', codigo);
-
-      var completer = Completer();
-
-      socket.on('partidaEncontrada', (data) {
-        print('Partida encontrada: $data');
-        if (!completer.isCompleted) {
-          completer.complete();
-        }
-      });
-
-      await completer.future;
-    } else {
-      throw Exception('La solicitud ha fallado');
-    }
-  }
-
-
-  Future<bool> buscarSala() async {
-    var response = await http.post(
-      Uri.parse(serverRoute.urlBuscarSala),
-      headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-        'Authorization': 'Bearer ${Juego().tokenSesion}',
-      },
-      body: jsonEncode(<String, dynamic>{
-        'nombreId': Juego().miPerfil.name,
-      }),
-    );
-
-    if (response.statusCode == 200) {
-      var data = jsonDecode(response.body);
-      codigo = data['codigo'];
-      if (codigo == -1) {
-        return false;
-      }
-      socket.emit('entrarSala', codigo);
-      return true;
-
-    } else {
-      return false;
-    }
-  }  
 
   Future<void> abandonarPartidaMulti(BuildContext context) async {
     var response = await http.post(
@@ -690,8 +636,6 @@ class Juego {
 
     if (response.statusCode == 200) {
       var data = jsonDecode(response.body);
-      print("ACTUALIZANDO ESTADO JUGADOR MULTI");
-      print(data);
       int contadorTurno = data['contadorTurno'];
       var nombreId1 = data['nombreId1'];
       modalidadPartida = data['tipoPartida'];
@@ -779,7 +723,143 @@ class Juego {
       throw Exception('La solicitud ha fallado');
     }
   }
-}
 
-mixin modalidad {
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////// SALA ///////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  Future<void> crearSala(bool amistosa) async {
+    var response = await http.post(
+      Uri.parse(serverRoute.urlCrearSala),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+        'Authorization': 'Bearer ${Juego().tokenSesion}',
+      },
+      body: jsonEncode(<String, dynamic>{
+        'nombreId': Juego().miPerfil.name,
+        'bioma': Juego().bioma ,
+        'amistosa': amistosa,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      var data = jsonDecode(response.body);
+      codigo = data['codigo'];
+      socket.emit('entrarSala', codigo);
+
+      var completer = Completer();
+
+      socket.on('partidaEncontrada', (data) {
+        if (!completer.isCompleted) {
+          completer.complete();
+        }
+      });
+
+      await completer.future;
+    } else {
+      throw Exception('La solicitud ha fallado');
+    }
+  }
+
+
+  Future<bool> buscarSala(bool amistosa) async {
+    var response = await http.post(
+      Uri.parse(serverRoute.urlBuscarSala),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+        'Authorization': 'Bearer ${Juego().tokenSesion}',
+      },
+      body: jsonEncode(<String, dynamic>{
+        'nombreId': Juego().miPerfil.name,
+        'amistosa': amistosa,
+        'bioma': Juego().bioma,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      var data = jsonDecode(response.body);
+      codigo = data['codigo'];
+      if (codigo == -1) {
+        return false;
+      }
+      socket.emit('entrarSala', codigo);
+      return true;
+
+    } else {
+      return false;
+    }
+  }  
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////// TORNEO /////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  Future<bool> buscarTorneo() async {
+    var uri = Uri.parse(ServerRoute().urlBuscarSalaTorneo);
+    var response = await
+     http.post(
+      uri,
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+        'Authorization': 'Bearer ${Juego().tokenSesion}',
+      },
+      body: jsonEncode(<String, dynamic>{
+        'nombreId': Juego().miPerfil.name,
+        'torneo': Juego().idTorneo,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      var data = jsonDecode(response.body);
+      print("BUSCAR TORNEO");
+      print(data);
+      codigo = data['codigo'];
+      if (codigo == -1) {
+        return false;
+      }
+
+      Juego().codigo = codigo;
+
+      socket.emit('entrarSala', codigo);
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  Future<void> crearTorneo() async {
+    var uri = Uri.parse(ServerRoute().urlCrearSalaTorneo);
+    var response = await
+     http.post(
+      uri,
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+        'Authorization': 'Bearer ${Juego().tokenSesion}',
+      },
+      body: jsonEncode(<String, dynamic>{
+        'nombreId': Juego().miPerfil.name, 
+        'torneo': Juego().idTorneo,
+        'bioma': Juego().bioma,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      var data = jsonDecode(response.body);
+      print("CREAR TORNEO");
+      print(data);
+      codigo = data['codigo'];
+      socket.emit('entrarSala', codigo);
+
+      var completer = Completer();
+
+      socket.on('partidaEncontrada', (data) {
+        if (!completer.isCompleted) {
+          completer.complete();
+        }
+      });
+      
+      await completer.future;
+    } else {
+      throw Exception('La solicitud ha fallado');
+    }
+  }
 }

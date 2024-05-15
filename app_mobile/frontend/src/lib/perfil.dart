@@ -1,4 +1,5 @@
 import 'package:battleship/error.dart';
+import 'package:battleship/juego.dart';
 import 'package:flutter/material.dart';
 import 'authProvider.dart';
 import 'botones.dart';
@@ -14,12 +15,9 @@ class Perfil extends StatefulWidget {
   String pais = '';
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _paisController = TextEditingController();
-  final TextEditingController _privacyController = TextEditingController();
   final TextEditingController _oldPasswordController = TextEditingController();
   final TextEditingController _newPasswordController = TextEditingController();
   final TextEditingController _repNewPasswordController = TextEditingController();
-  final bool _rememberMe = false;
-  final AuthProvider _authProvider = AuthProvider();
   int partidasJugadas = 0;
   int partidasGanadas = 0;
   int partidasPerdidas = 0;
@@ -80,11 +78,8 @@ class _PerfilState extends State<Perfil> {
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: Container(
-        decoration: const BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage('images/fondo.jpg'),
-            fit: BoxFit.cover,
-          ),
+        decoration: BoxDecoration(
+          color: Juego().colorFondo,
         ),
         child: Column(
           children: [
@@ -112,6 +107,7 @@ class _PerfilState extends State<Perfil> {
     );
   }
 
+
   Future<void> actualizarEstadisticasPerfil(String nombrePerfil) async {
     var response = await http.post(
       Uri.parse(serverRoute.urlObtenerPerfil),
@@ -136,7 +132,8 @@ class _PerfilState extends State<Perfil> {
           widget.ratioVictorias = 0;
         } 
         else {
-          widget.ratioVictorias = widget.partidasGanadas / widget.partidasJugadas;
+          double ratio = widget.partidasGanadas / widget.partidasJugadas;
+          widget.ratioVictorias = double.parse(ratio.toStringAsFixed(2));
         }
         widget.barcosHundidos = data['barcosHundidos'];
         widget.barcosPerdidos = data['barcosPerdidos'];
@@ -183,9 +180,7 @@ class _PerfilState extends State<Perfil> {
     return Column(
       children: [
         const SizedBox(height: 10.0),
-        buildTitle('Nombre usuario', 28),
-        buildTitle('Seguidores', 14),
-        buildTitle('Siguiendo', 14),
+        buildTitle(Juego().miPerfil._name, 28),
       ],
     );
   }
@@ -285,7 +280,6 @@ class _PerfilState extends State<Perfil> {
         buildEntryAstButton('Contraseña', 'Introduzca la contraseña nueva', Icons.lock, widget._newPasswordController),
         buildEntryAstButton('Contraseña', 'Repita la contraseña nueva', Icons.lock, widget._repNewPasswordController),
         buildDropdownButton(context, 'Nacionalidad', ['España', 'Portugal', 'Francia'], widget._paisController, defaultValue: widget.pais),
-        buildDropdownButton(context, 'Privacidad del perfil', ['Público', 'Privado'], widget._privacyController),
       ],
     );
   }

@@ -105,20 +105,6 @@ Widget buildActions(BuildContext context) {
               Navigator.pushNamed(context, '/Social');
             }
           }),
-          // Botón para pantalla "Ajustes", donde podemos cambiar la configuración de la aplicación.
-          _buildActionItem('Ajustes', 'images/ajustes.png', () {
-            if (ModalRoute.of(context)?.settings.name == '/Ajustes') {
-              return;
-            }
-            
-            DestinoManager.setDestino(Mazo());
-
-            if (!AuthProvider().isLoggedIn) {
-              Navigator.pushNamed(context, '/InicioSesion');
-            } else {
-              Navigator.pushNamed(context, '/Ajustes');
-            }
-          }),
         ],
       ),
     ],
