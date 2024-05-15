@@ -1,5 +1,5 @@
 {
-    "serverAddress": "http://localhost:8080/",
+    "serverAddress": "/",
 
     "entrarSala": "entrarSala",
 
