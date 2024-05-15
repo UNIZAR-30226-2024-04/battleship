@@ -61,7 +61,6 @@ const urlRealizarDisparoMisilTeledirigido = info["serverAddress"] + 'partida/rea
 const urlColocarMina = info["serverAddress"] + 'partida/colocarMina';
 const urlUsarSonar = info["serverAddress"] + 'partida/usarSonar';
 
-const cookies = new Cookies();
 
 // function Mutex() {
 //     // Estado para controlar si el recurso está bloqueado o no
@@ -117,6 +116,9 @@ function desbloqueaBotonesHabilidades() {
 }
 
 export function Game() {
+
+    const cookies = new Cookies();
+
     const navigate = useNavigate();
     const { socket } = useSocket();
     const [lastClickedCell, setLastClickedCell] = useState(null);
@@ -125,6 +127,17 @@ export function Game() {
     const msgTurnoIA = "¡Turno de la IA!";
     let [turno, setTurno] = useState(msgMiTurno); // Estado para almacenar el mensaje de turno
     let [clima, setClima] = useState(null); // Estado para almacenar el clima
+
+    useEffect(() => {
+        if (clima == "Tormenta") {
+            setSkillQueueAux(skillQueue);
+            setSkillQueue([]);
+            bloqueaBotonesHabilidades();
+        } else {
+            setSkillQueue(skillQueueAux);
+            desbloqueaBotonesHabilidades();
+        }
+    }, [clima]);
 
     function triggerFinPartida(finPartida, soyYo) {
         if (finPartida) {
@@ -150,6 +163,21 @@ export function Game() {
             setSkill(null);
         }
     };
+
+    function bloqueaBotonesHabilidades() {
+        const habilidades = document.querySelectorAll(".skill-button-selected");
+        habilidades.forEach(habilidad => {
+            habilidad.style.pointerEvents = "none";
+        });
+    }
+
+    function desbloqueaBotonesHabilidades() {
+        setTurno(msgMiTurno);
+        const habilidades = document.querySelectorAll(".skill-button-selected");
+        habilidades.forEach(habilidad => {
+            habilidad.style.pointerEvents = "auto";
+        });
+    }
 
     const handleClickedCell = (fila, columna) => {
         console.log(`Celda clickeada: Fila ${fila}, Columna ${columna}`);
@@ -189,6 +217,8 @@ export function Game() {
     // Obtener el token y nombreId del usuario
     const tokenCookie = cookies.get('JWT');
     const nombreId1Cookie = cookies.get('perfil')['nombreId'];
+    const biomaCookie = cookies.get('bioma');
+    console.log('BIOMA:', biomaCookie);
 
     // Datos partida
     let [idPartida, setIdPartida] = useState(null);
@@ -199,6 +229,7 @@ export function Game() {
 
     // cola fifo para las skills de tamaño 3
     let [skillQueue, setSkillQueue] = useState(["null"]); // Estado para la cola de habilidades
+    let [skillQueueAux, setSkillQueueAux] = useState(["null"]); // Estado para la cola de habilidades
 
     // Función para agregar una skill a la cola
     const enqueueSkill = (skillName) => {
@@ -256,6 +287,7 @@ export function Game() {
                     // ----------------------------
                     setPartidaInicializada(true);
                     console.log('Creando partida...');
+                    console.log('BIOMA:', biomaCookie);
                     // Creamos partida en bbdd
                     fetch(urlCrearPartida, {
                         method: 'POST',
@@ -263,7 +295,7 @@ export function Game() {
                         'Content-Type': 'application/json',
                         'authorization': tokenCookie
                         },
-                        body: JSON.stringify({ nombreId1: nombreId1Cookie, bioma: 'Mediterraneo', amistosa: true}) // TO DO: biomas!!!
+                        body: JSON.stringify({ nombreId1: nombreId1Cookie, bioma: biomaCookie, amistosa: true}) // TO DO: biomas!!!
                     })
                     .then(response => {
                         if (!response.ok) {
@@ -275,6 +307,7 @@ export function Game() {
                     .then(data => {
                         console.log('Partida creada:');
                         setIdPartida(data.codigo);
+                        // Si el bioma es tormenta bloqueamos las habilidades
                         console.log(idPartida);
                     })
                     .catch(error => {
@@ -287,6 +320,7 @@ export function Game() {
                 const habs = data.mazoHabilidades;
                 console.log('Mazo de habilidades:', habs);
                 setSkillQueue(habs);
+                setSkillQueueAux(habs);
                 // setSkillQueue([]);
                 // for (let i = 0; i < habs.length; i++) {
                 //     enqueueSkill(habs[i]);
@@ -647,9 +681,15 @@ export function Game() {
                 triggerFinPartida(data['finPartida'], true);    // fin de partida si se da el caso
             }
             // Por seguridad en caso de F5
-            desbloqueaBotonesHabilidades();
+            // desbloqueaBotonesHabilidades();
             // Clima
             setClima(data['clima']);
+            if (data['clima'] == "Tormenta") {
+                bloqueaBotonesHabilidades();
+            }
+            else {
+                desbloqueaBotonesHabilidades();
+            }
             // Representar las jugadas de la IA
             funcionTurnosIA(data['turnosIA']);
         })

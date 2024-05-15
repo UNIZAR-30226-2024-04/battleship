@@ -125,6 +125,7 @@ export function GameMulti() {
     
     function desbloqueaBotonesHabilidades() {
         setTurno(msgMiTurno);
+        // Si el clima no es tormenta, desbloquear habilidades
         const habilidades = document.querySelectorAll(".skill-button-selected");
         habilidades.forEach(habilidad => {
             habilidad.style.pointerEvents = "auto";

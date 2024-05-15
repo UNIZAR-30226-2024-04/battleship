@@ -11,21 +11,23 @@ import { useState } from 'react'; // Importa useState para manejar el estado de 
 const crearSalaURI = info['serverAddress'] + 'partidaMulti/crearSala';
 const buscarSalaURI = info['serverAddress'] + 'partidaMulti/buscarSala';
 
-const cookies = new Cookies();
 const io = socketIO(info['serverAddress']); // Puerto del backend en local
 
 
 
 export function Home() {
 
+    const cookies = new Cookies();
     const { setSocket } = useSocket();
     const navigate = useNavigate();
 
     // Obtener el token y nombreId del usuario
     const tokenCookie = cookies.get('JWT');
     const nombreIdCookie = cookies.get('perfil')['nombreId'];
+    
     var bioma2play = 'Mediterraneo';
-    const [selectedButton, setSelectedButton] = useState(null); // Estado para almacenar el botón seleccionado
+    const [selectedButton, setSelectedButton] = useState(1); // Estado para almacenar el botón seleccionado
+    const [hoveredMessage, setHoveredMessage] = useState('');
 
     const handleOnClickPartidaMulti = async () => {
         try {
@@ -101,11 +103,21 @@ export function Home() {
         }
     };
 
-    const handleButtonClick = (value) => {
-        setSelectedButton(value === selectedButton ? null : value); // Cambia el estado del botón seleccionado
-        bioma2play = value === 1 ? 'Mediterraneo' : value === 2 ? 'Cantabrico' : value === 3 ? 'Norte' : 'Bermudas';
+    const handleButtonClick = (buttonNumber) => {
+        setSelectedButton(buttonNumber);
+        bioma2play = buttonNumber === 1 ? 'Mediterraneo' : buttonNumber === 2 ? 'Cantabrico' : buttonNumber === 3 ? 'Norte' : 'Bermudas';
+        cookies.set('bioma', bioma2play, {path: '/'});
+        console.log('bioma2play:', bioma2play);
+    };
+
+    const handleMouseEnter = (message) => {
+        setHoveredMessage(message);
     };
     
+    const handleMouseLeave = () => {
+        setHoveredMessage(null);
+    };
+
     return (
         <div className="home-page-container">
             <Navbar/>
@@ -128,25 +140,58 @@ export function Home() {
                             <span>Buscar torneo</span>
                         </button>
                         <div><br></br></div>
-                        <button className={`tor-button ${selectedButton === 1 ? 'selected' : ''}`} onClick={() => handleButtonClick(1)}>
-                            <span> Mediterráneo </span>
-                        </button>
-                        <button className={`tor-button ${selectedButton === 2 ? 'selected' : ''}`} onClick={() => handleButtonClick(2)}>
-                            <span> Cantábrico </span>
-                        </button>
-                        <button className={`tor-button ${selectedButton === 3 ? 'selected' : ''}`} onClick={() => handleButtonClick(3)}>
-                            <span> Norte </span>
-                        </button>
-                        <button className={`tor-button ${selectedButton === 4 ? 'selected' : ''}`} onClick={() => handleButtonClick(4)}>
-                            <span> Bermudas </span>
-                        </button>
+                       
+                        <div>
+      <div className="button-bioma-container">
+        <label
+          className={`tor-button-bioma ${selectedButton === 1 ? 'selected' : ''} ${hoveredMessage === 1 ? 'hovered' : ''}`}
+          onMouseEnter={() => handleMouseEnter(1)}
+          onMouseLeave={handleMouseLeave}
+        >
+          <input type="radio" name="options" checked={selectedButton === 1} onChange={() => handleButtonClick(1)} />
+          <span> Mediterráneo </span>
+        </label>
+        <label
+          className={`tor-button-bioma ${selectedButton === 2 ? 'selected' : ''} ${hoveredMessage === 2 ? 'hovered' : ''}`}
+          onMouseEnter={() => handleMouseEnter(2)}
+          onMouseLeave={handleMouseLeave}
+        >
+          <input type="radio" name="options" checked={selectedButton === 2} onChange={() => handleButtonClick(2)} />
+          <span> Cantábrico </span>
+        </label>
+        <label
+          className={`tor-button-bioma ${selectedButton === 3 ? 'selected' : ''} ${hoveredMessage === 3 ? 'hovered' : ''}`}
+          onMouseEnter={() => handleMouseEnter(3)}
+          onMouseLeave={handleMouseLeave}
+        >
+          <input type="radio" name="options" checked={selectedButton === 3} onChange={() => handleButtonClick(3)} />
+          <span> Norte </span>
+        </label>
+        <label
+          className={`tor-button-bioma ${selectedButton === 4 ? 'selected' : ''} ${hoveredMessage === 4 ? 'hovered' : ''}`}
+          onMouseEnter={() => handleMouseEnter(4)}
+          onMouseLeave={handleMouseLeave}
+        >
+          <input type="radio" name="options" checked={selectedButton === 4} onChange={() => handleButtonClick(4)} />
+          <span> Bermudas </span>
+        </label>
+      </div>
+      <div className="hovered-message">{hoveredMessage ? `¡El bioma ${hoveredMessage === 1 ? 'Mediterráneo se caracteriza por pocos cambios de clima!' :
+                                         hoveredMessage === 2 ? 'Cantábrico cambiará el clima de tus partidas frecuentemente!' :
+                                         hoveredMessage === 3 ? 'Norte supondrá un reto con cambios de clima casi constantes!' :
+                                          'Bermudas te impedirá usar cualquiera de tus habilidades!'}` : ''}</div>
+    </div>
+    <div><br></br></div>
+
+    
+
                         <button className="home-button" onClick={
                             // Crear sala de juego y navegar a game tras recibir respuesta del socket
                             () => {
                                 handleOnClickPartidaMulti();
                             }
                         }>
-                            <span> Jugar Online </span>
+                            <span> Jugar Online</span>
                         </button>
                         
                         <button className="home-button" onClick={() => navigate('/game')}>

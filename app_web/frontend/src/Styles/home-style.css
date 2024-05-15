@@ -109,3 +109,19 @@
     transform: translate3d(0px, -4px, 0px);
     transition: all 0.15s;
 }
+
+.button-bioma-container {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.tor-button-bioma {
+    /* Estilos para los botones */
+    padding: 5px 10px; /* Ajusta el relleno del botón */
+    font-size: 14px; /* Ajusta el tamaño del texto */
+}
+
+.hovered-message {
+    font-size: 12px; /* Tamaño de fuente más pequeño */
+  }

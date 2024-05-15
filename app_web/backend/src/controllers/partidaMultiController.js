@@ -145,7 +145,6 @@ exports.buscarSala = async (req, res) => {
       const io = getIO();
       io.to('/partida' + sala.codigo).emit(eventosSocket.partidaEncontrada, sala.codigo);
       console.log('Partida encontrada en backend:', sala.codigo);
-      res.json({ codigo: sala.codigo, bioma: sala.bioma, amistosa: sala.amistosa, torneo: sala.torneo });
     } else {
       console.log('No se encontraron salas');
       res.json({ codigo: -1});
