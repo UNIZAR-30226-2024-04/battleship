@@ -2,10 +2,10 @@ import React, { useEffect, useState } from 'react';
 import ChatContainer from "../../Components/ChatContainer.js";
 import Cookies from 'universal-cookie';
 import UserContainerTemplate from '../../Components/UserContainerTemplate';
+import info from '../../Resources/info';
 
-const urlRoot = 'http://localhost:8080/perfil';
-const urlObtenerAmigos = urlRoot + '/obtenerAmigos';
-const urlEliminarAmigo = urlRoot + '/eliminarAmigo';
+const urlObtenerAmigos = info["serverAddress"] + 'perfil/obtenerAmigos';
+const urlEliminarAmigo = info["serverAddress"] + 'perfil/eliminarAmigo';
 
 
 const ChatsMenu = () => {

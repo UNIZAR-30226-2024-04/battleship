@@ -7,8 +7,8 @@ import socketIO from 'socket.io-client';
 import { useSocket } from '../Contexts/SocketContext';
 import info from '../Resources/info';
 
-const crearSalaURI = info['serverAddress'] +'/partidaMulti/crearSala';
-const buscarSalaURI = info['serverAddress']+'/partidaMulti/buscarSala';
+const crearSalaURI = info['serverAddress'] + 'partidaMulti/crearSala';
+const buscarSalaURI = info['serverAddress'] + 'partidaMulti/buscarSala';
 
 const cookies = new Cookies();
 const io = socketIO(info['serverAddress']); // Puerto del backend en local

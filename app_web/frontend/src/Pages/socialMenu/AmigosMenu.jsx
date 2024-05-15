@@ -5,8 +5,8 @@ import Flag from 'react-world-flags';
 import Cookies from 'universal-cookie';
 import info from '../../Resources/info';
 
-const urlObtenerAmigos = info["serverAddress"] + '/obtenerAmigos';
-const urlEliminarAmigo = info["serverAddress"] + '/eliminarAmigo';
+const urlObtenerAmigos = info["serverAddress"] + 'perfil/obtenerAmigos';
+const urlEliminarAmigo = info["serverAddress"] + 'perfil/eliminarAmigo';
 
 
 const AmigosMenu = () => {
