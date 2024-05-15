@@ -114,10 +114,18 @@ export function GameMulti() {
     const msgMiTurno = "¡Es tu turno!";
     const msgTurnoRival = "¡Turno de tu oponente!";
     let [turno, setTurno] = useState(null); // Estado para almacenar el mensaje de turno
+    let [clima, setClima] = useState(null); // Estado para almacenar el clima
 
     function bloqueaBotonesHabilidades() {
         setTurno(msgTurnoRival);
-        const habilidades = document.querySelectorAll(".skill-button-selected");
+        const habilidades = document.querySelectorAll(".skill-button-selected-game");
+        habilidades.forEach(habilidad => {
+            habilidad.style.pointerEvents = "none";
+        });
+    }
+
+    function bloqueaBotonesSombreados() {
+        const habilidades = document.querySelectorAll(".skill-button-not-selected");
         habilidades.forEach(habilidad => {
             habilidad.style.pointerEvents = "none";
         });
@@ -126,11 +134,23 @@ export function GameMulti() {
     function desbloqueaBotonesHabilidades() {
         setTurno(msgMiTurno);
         // Si el clima no es tormenta, desbloquear habilidades
-        const habilidades = document.querySelectorAll(".skill-button-selected");
+        const habilidades = document.querySelectorAll(".skill-button-selected-game");
         habilidades.forEach(habilidad => {
             habilidad.style.pointerEvents = "auto";
         });
     }
+
+    useEffect(() => {
+        if (clima == "Tormenta") {
+            setSkillQueueAux(skillQueue);
+            setSkillQueue([]);
+            bloqueaBotonesHabilidades();
+        } else {
+            setSkillQueue(skillQueueAux);
+            // console.log('Desbloqueando habilidades en uE clima');
+            // desbloqueaBotonesHabilidades();
+        }
+    }, [clima]);
 
     function escuchaRendicion(partidaSocket) {
         console.log('Escuchando rendición');
@@ -311,6 +331,7 @@ export function GameMulti() {
             console.log('Colocando mina en tu tablero');
             colocarMina(fila, columna);
             setSkill(null);
+            dequeueSkill("Mina");
         }
     };
 
@@ -363,6 +384,7 @@ export function GameMulti() {
 
     // cola fifo para las skills de tamaño 3
     let [skillQueue, setSkillQueue] = useState(["null"]); // Estado para la cola de habilidades
+    let [skillQueueAux, setSkillQueueAux] = useState(["null"]); // Estado para la cola de habilidades
 
     // Función para agregar una skill a la cola
     const enqueueSkill = (skillName) => {
@@ -383,8 +405,14 @@ export function GameMulti() {
     const dequeueSkill = (skillName) => {
         if (skillQueue.includes(skillName)) {
             setSkillQueue(prevQueue => prevQueue.filter(skill => skill !== skillName));
+            setSkillQueueAux(prevQueue => prevQueue.filter(skill => skill !== skillName));
         }
     };
+
+    useEffect(() => {
+        bloqueaBotonesSombreados();
+        // desbloqueaBotonesHabilidades();
+    }, [skillQueue]);
 
     let [partidaInicializada, setPartidaInicializada] = useState(false); // Estado para saber si la partida ha sido inicializada
 
@@ -475,6 +503,7 @@ export function GameMulti() {
                 const habs = data.mazoHabilidades;
                 console.log('Mazo de habilidades:', habs);
                 setSkillQueue(habs);
+                setSkillQueueAux(habs);
                 // setSkillQueue([]);
                 // for (let i = 0; i < habs.length; i++) {
                 //     enqueueSkill(habs[i]);
@@ -758,6 +787,9 @@ export function GameMulti() {
             }
             // Por seguridad en caso de F5
             // desbloqueaBotonesHabilidades();
+
+            console.log('Clima en data:', data['clima']);
+            setClima(data['clima']);
         })
         .catch(error => {
             console.error('Error:', error);
@@ -775,6 +807,7 @@ export function GameMulti() {
         if (misilesRafagaRestantes == 0) {
             console.log('Misiles de Rafaga agotados');
             setSkill(null);
+            dequeueSkill("Rafaga");
             setMisilesRafagaRestantes(3);
         }
     }, [misilesRafagaRestantes]);
@@ -872,6 +905,7 @@ export function GameMulti() {
                     }
                 }
                 setSkill(null);
+                dequeueSkill("Recargado");
                 desbloqueaBotonesHabilidades();
             }
             else {
@@ -920,6 +954,7 @@ export function GameMulti() {
                 }
             }
             setSkill(null);
+            dequeueSkill("Teledirigido");
         })
     }
 
@@ -984,6 +1019,7 @@ export function GameMulti() {
                 }
             }
             setSkill(null);
+            dequeueSkill("Sonar");
             bloqueaTableroRival();
             bloqueaBotonesHabilidades();
             // Esperamos a escuchar la respuesta del socket
@@ -1024,6 +1060,7 @@ export function GameMulti() {
                 casilla.appendChild(imgX);
     
                 setSkill(null);
+                dequeueSkill("Mina");
                 bloqueaTableroRival();
                 bloqueaBotonesHabilidades();
                 // Esperamos a escuchar la respuesta del socket
@@ -1069,6 +1106,7 @@ export function GameMulti() {
                     disparos1 = data.misDisparos;
                     tablero2 = data.barcosHundidos;
                     disparos2 = data.disparosEnemigos;
+                    setClima(data.clima);
                     let contadorTurno = data.contadorTurno;
                     const jugador = cookies.get('jugador')
                     
@@ -1148,6 +1186,7 @@ export function GameMulti() {
                     disparos1 = data.misDisparos;
                     tablero2 = data.barcosHundidos;
                     disparos2 = data.disparosEnemigos;
+                    setClima(data.clima);
                     let contadorTurno = data.contadorTurno;
                     const jugador = cookies.get('jugador')
                     
@@ -1396,6 +1435,18 @@ export function GameMulti() {
                             <div className='info-game'>
                                 <h2> {turno} </h2>
                             </div>
+                            <div className='info-game'>
+                            <h2>
+                                {clima === 'Tormenta' ? '¡Tormenta eléctrica! No se pueden usar habilidades.' :
+                                clima === 'Niebla' ? '¡Niebla! Los disparos básicos pueden fallar.' :
+                                clima === 'Calma' ? 'Calma, el cielo está despejado.' :
+                                clima === 'VientoSur' ? '¡Viento sur! Los disparos pueden ser desviados.' :
+                                clima === 'VientoNorte' ? '¡Viento norte! Los disparos pueden ser desviados.' :
+                                clima === 'VientoEste' ? '¡Viento este! Los disparos pueden ser desviados.' :
+                                clima === 'VientoOeste' ? '¡Viento oeste! Los disparos pueden ser desviados.' :
+                                clima}
+                            </h2>
+                            </div>
                         </div>
                         <div className='tab'></div>
                         <div className='game-rivalship-counter-content'>
@@ -1418,29 +1469,29 @@ export function GameMulti() {
                             <span></span>
                         </div>
                         <div className="ship-buttons-container">
-                            <div className={`skill-button ${isSkillEnqueued("Mina") ? 'skill-button-selected' : 'skill-button-not-selected'}`}>
+                            <div className={`skill-button ${isSkillEnqueued("Mina") ? 'skill-button-selected-game' : 'skill-button-not-selected'}`}>
                                 <img onClick={() => setSkill("Mina") } src={mineImg} alt="Mine" />
                             </div>
                             <br></br>
-                            <div className={`skill-button ${isSkillEnqueued("Teledirigido") ? 'skill-button-selected' : 'skill-button-not-selected'}`}>
+                            <div className={`skill-button ${isSkillEnqueued("Teledirigido") ? 'skill-button-selected-game' : 'skill-button-not-selected'}`}>
                                 <img onClick={() => {
                                     setSkill("Teledirigido"); 
                                     disparoMisilTeledirigido();
                                 }} src={missileImg} alt="Missile" />
                             </div>
                             <br></br>
-                            <div className={`skill-button ${isSkillEnqueued("Rafaga") ? 'skill-button-selected' : 'skill-button-not-selected'}`}>
+                            <div className={`skill-button ${isSkillEnqueued("Rafaga") ? 'skill-button-selected-game' : 'skill-button-not-selected'}`}>
                                 <img onClick={() => {
                                     setSkill("Rafaga");
                                     bloqueaBotonesHabilidades();
                                 }} src={burstImg} alt="Burst" />
                             </div>
                             <br></br>
-                            <div className={`skill-button ${isSkillEnqueued("Sonar") ? 'skill-button-selected' : 'skill-button-not-selected'}`}>
+                            <div className={`skill-button ${isSkillEnqueued("Sonar") ? 'skill-button-selected-game' : 'skill-button-not-selected'}`}>
                                 <img onClick={() => setSkill("Sonar") } src={sonarImg} alt="Sonar" />
                             </div>
                             <br></br>
-                            <div className={`skill-button ${isSkillEnqueued("Recargado") ? 'skill-button-selected' : 'skill-button-not-selected'}`}>
+                            <div className={`skill-button ${isSkillEnqueued("Recargado") ? 'skill-button-selected-game' : 'skill-button-not-selected'}`}>
                                 <img onClick={() => {
                                     setSkill("Recargado");
                                     disparoTorpedo(0, 0, true);

@@ -11,6 +11,7 @@ import { Login } from './Pages/login';
 import { Game } from './Pages/game';
 import { GameMulti } from './Pages/gameMulti';
 import { SocketProvider } from './Contexts/SocketContext';
+import OtherUserProfile from './Pages/otherUserProfile';
 
 
 
@@ -25,6 +26,7 @@ function App() {
             <Route path="/gameMulti" element={<GameMulti/>}/>
             <Route path="/fleet" element={<Fleet/>}/>
             <Route path="/profile" element={<Profile/>}/>
+            <Route path="/profile/:nombreId" element={<OtherUserProfile />} />
             <Route path="/settings" element={<Settings/>}/>
             <Route path="/social" element={<Social/>}/>
             <Route path="/register" element={<Register/>}/>

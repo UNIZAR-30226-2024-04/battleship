@@ -1236,7 +1236,16 @@ export function Game() {
                                 <h2> {turno} </h2>
                             </div>
                             <div className='info-game'>
-                                <h2> {clima} </h2>
+                            <h2>
+                                {clima === 'Tormenta' ? '¡Tormenta eléctrica! No se pueden usar habilidades.' :
+                                clima === 'Niebla' ? '¡Niebla! Los disparos básicos pueden fallar.' :
+                                clima === 'Calma' ? 'Calma, el cielo está despejado.' :
+                                clima === 'VientoSur' ? '¡Viento sur! Los disparos pueden ser desviados.' :
+                                clima === 'VientoNorte' ? '¡Viento norte! Los disparos pueden ser desviados.' :
+                                clima === 'VientoEste' ? '¡Viento este! Los disparos pueden ser desviados.' :
+                                clima === 'VientoOeste' ? '¡Viento oeste! Los disparos pueden ser desviados.' :
+                                clima}
+                            </h2>
                             </div>
                         </div>
                         

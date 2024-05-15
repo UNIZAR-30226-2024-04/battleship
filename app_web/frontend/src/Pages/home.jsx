@@ -25,7 +25,7 @@ export function Home() {
     const tokenCookie = cookies.get('JWT');
     const nombreIdCookie = cookies.get('perfil')['nombreId'];
     
-    var bioma2play = 'Mediterraneo';
+    let [bioma2play, setBioma2play] = useState('Mediterraneo'); // Estado para almacenar el bioma seleccionado
     const [selectedButton, setSelectedButton] = useState(1); // Estado para almacenar el botón seleccionado
     const [hoveredMessage, setHoveredMessage] = useState('');
 
@@ -105,7 +105,8 @@ export function Home() {
 
     const handleButtonClick = (buttonNumber) => {
         setSelectedButton(buttonNumber);
-        bioma2play = buttonNumber === 1 ? 'Mediterraneo' : buttonNumber === 2 ? 'Cantabrico' : buttonNumber === 3 ? 'Norte' : 'Bermudas';
+        const bioma2playAux = buttonNumber === 1 ? 'Mediterraneo' : buttonNumber === 2 ? 'Cantabrico' : buttonNumber === 3 ? 'Norte' : 'Bermudas';
+        setBioma2play(bioma2playAux);
         cookies.set('bioma', bioma2play, {path: '/'});
         console.log('bioma2play:', bioma2play);
     };

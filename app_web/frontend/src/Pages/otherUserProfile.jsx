@@ -8,10 +8,10 @@ import info from '../Resources/info';
 const urlObtenerEstadisticas = info["serverAddress"] + 'perfil/obtenerUsuario';
 const urlObtenerPublicaciones = info["serverAddress"] + 'publicacion/obtenerPublicaciones';
 
-const Profile = () => {
+const OtherUserProfile = () => {
     const cookies = new Cookies();
     const [publicaciones, setPublicaciones] = useState([]);
-    const profileCookie = cookies.get('perfil');
+    const profileCookie = cookies.get('perfilAmigo');
 
     const [profileData, setprofileData] = useState({
         uname: '',
@@ -71,7 +71,7 @@ const Profile = () => {
 
         fetchUserData();
 
-
+        
         const obtenerPublicaciones = async () => {
             fetch(urlObtenerPublicaciones, {
                 method: 'POST',
@@ -99,7 +99,6 @@ const Profile = () => {
         };
 
         obtenerPublicaciones();
-
     }, []);
 
 
@@ -185,4 +184,4 @@ const Profile = () => {
     );
 }
 
-export default Profile;
+export default OtherUserProfile;

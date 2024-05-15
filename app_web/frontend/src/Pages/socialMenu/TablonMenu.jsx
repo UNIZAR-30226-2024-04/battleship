@@ -3,7 +3,7 @@ import Cookies from 'universal-cookie';
 import UserContainerTemplate from '../../Components/UserContainerTemplate';
 import info from '../../Resources/info';
 
-const urlObtenerPublicaciones = info['serverAddress'] + 'publicacion/obtenerPublicaciones';
+const urlObtenerPublicacionesAmigos = info['serverAddress'] + 'publicacion/obtenerPublicacionesAmigos';
 
 const TablonMenu = () => {
     const [publicaciones, setPublicaciones] = useState([]);
@@ -13,7 +13,7 @@ const TablonMenu = () => {
 
     useEffect(() => {
         const obtenerPublicaciones = async () => {
-            fetch(urlObtenerPublicaciones, {
+            fetch(urlObtenerPublicacionesAmigos, {
                 method: 'POST',
                 headers: {
                 'Content-Type': 'application/json',
@@ -30,7 +30,9 @@ const TablonMenu = () => {
             })
             .then(data => {
                 console.log('Respuesta del servidor obtenerPublicaciones:', data);
-                setPublicaciones(data.publicaciones || []); // TO DO, reacciones?
+                if (data != null) {
+                    setPublicaciones(data); // TO DO, reacciones?
+                }
             })
             .catch(error => {
                 console.error('Error al obtener las publicaciones:', error);
@@ -48,9 +50,9 @@ const TablonMenu = () => {
                 </div>
                 <div className="profile-activity-content">
                     {publicaciones.map((publicacion) => (
-                        <div key={publicacion.publicacionId} className="profile-activity-info">
-                            <span>{publicacion.texto}</span>
-                            <span>Publicado por {publicacion.usuario}</span>
+                        <div key={publicacion['publicacionId']} className="profile-activity-info">
+                            <span>{publicacion['texto']}</span>
+                            <span>Publicado por {publicacion['usuario']}</span>
                             {/* Aquí puedes incluir lógica para mostrar reacciones, si necesario */}
                         </div>
                     ))}

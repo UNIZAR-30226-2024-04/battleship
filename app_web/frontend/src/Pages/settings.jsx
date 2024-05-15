@@ -28,16 +28,6 @@ export function Settings() {
         switch (selectedMenu) {
             case 'Profile':
                 return <ProfileMenu />;
-            case 'Password':
-                return <PasswordMenu />;
-            case 'Chat':
-                return <ChatMenu />;
-            case 'Sound':
-                return <SoundMenu />;
-            case 'Graphics':
-                return <GraphicsMenu />;
-            case 'Match':
-                return <MatchMenu />;
             case 'Help':
                 return <HelpMenu />;
             default:
@@ -58,11 +48,6 @@ export function Settings() {
                     <div className="settings-main-content">
                         <div className="settings-sidebar">
                             <button onClick={() => handleMenuClick('Profile')}>Perfil</button>
-                            <button onClick={() => handleMenuClick('Password')}>Contraseña</button>
-                            <button onClick={() => handleMenuClick('Chat')}>Chat</button>
-                            <button onClick={() => handleMenuClick('Sound')}>Sonido</button>
-                            <button onClick={() => handleMenuClick('Graphics')}>Gráficos</button>
-                            <button onClick={() => handleMenuClick('Match')}>Partida</button>
                             <button onClick={() => handleMenuClick('Help')}>Ayuda</button>
                         </div>
                         <div className="setings-menus">
