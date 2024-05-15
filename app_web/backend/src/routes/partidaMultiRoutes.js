@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const partidaMultiController = require('../controllers/partidaMultiController');
+const torneoController = require('../controllers/torneoController');
 const verificarToken = require('../middlewares/authjwt');
 
 
@@ -66,5 +67,18 @@ router.post('/obtenerChat', verificarToken, partidaMultiController.obtenerChat);
 
 // Ruta para enviar mensaje
 router.post('/enviarMensaje', verificarToken, partidaMultiController.enviarMensaje);
+
+
+// -------------------------------------------- //
+// ------------------ TORNEO ------------------ //
+// -------------------------------------------- //
+// Ruta para buscar sala de torneo
+router.post('/buscarSalaTorneo', verificarToken, torneoController.buscarSalaTorneo);
+
+// Ruta para crear sala de torneo
+router.post('/crearSalaTorneo', verificarToken, torneoController.crearSalaTorneo);
+
+// Ruta para funcion de comprobacion de torneo
+router.post('/comprobarTorneo', verificarToken, torneoController.comprobarTorneo);
 
 module.exports = router;

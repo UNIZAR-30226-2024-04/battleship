@@ -32,6 +32,14 @@ const ProfileMenu = () => {
                 alert('Las contraseñas no coinciden');
                 return;
             }
+            if (newPassword === '') {
+                alert('La contraseña no puede estar vacía');
+                return;
+            }
+            if (email === '') {
+                alert('El correo no puede estar vacío');
+                return;
+            }
 
             const response = await fetch(ModificarDatosPersonalesURI, {
                 method: 'POST',

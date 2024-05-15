@@ -9,19 +9,25 @@ async function puedeUnirseTorneo(torneo, nombreId) {
         return false;
     }
     // Comprobar que el usuario no ha ganado el torneo
-    torneoEncontrado = await Torneo.findOne(
-        {codigo: torneo}, 
-        {ganadores: {$elemMatch: {nombreId: nombreId}}});
-    if (torneoEncontrado.ganadores.length > 0) {
-        return false;
+    // torneoEncontrado = await Torneo.findOne(
+    //     {codigo: torneo}, 
+    //     {ganadores: {$elemMatch: {nombreId: nombreId}}});
+    for (let i = 0; i < torneoEncontrado.ganadores.length; i++) {
+        if (torneoEncontrado.ganadores[i].nombreId === nombreId) {
+            return false;
+        }
     }
     // Comprobar que el usuario está en la lista de participantes y que sus derrotas no superan el límite
-    torneoEncontrado = await Torneo.findOne(
-        {codigo: torneo}, 
-        {participantes: {$elemMatch: {nombreId: nombreId}, derrotas: {$gte: torneoEncontrado.numeroMaxDerrotas}}
-    });
-    if (torneoEncontrado.participantes.length > 0) {
-        return false;
+    // torneoEncontrado = await Torneo.findOne(
+    //     {codigo: torneo}, 
+    //     {participantes: {$elemMatch: {nombreId: nombreId}, derrotas: {$gte: torneoEncontrado.numeroMaxDerrotas}}
+    // });
+    for (let i = 0; i < torneoEncontrado.participantes.length; i++) {
+        if (torneoEncontrado.participantes[i].nombreId === nombreId) {
+            if (torneoEncontrado.participantes[i].derrotas >= torneoEncontrado.numeroMaxDerrotas) {
+                return false;
+            }
+        }
     }
     return true;
 }
@@ -51,13 +57,16 @@ exports.comprobarTorneo = async (req, res) => {
             var torneoGanado = await Torneo.findOne(
                 {codigo: torneo}, 
                 {ganadores: {$elemMatch: {nombreId: nombreId}}});
-            if (torneoGanado.ganadores.length > 0) {
-                res.json({existe: true, puedeUnirse: false, haGanado: true});
-                console.log('El usuario ya ha ganado el torneo');
-            } else {
-                res.json({existe: true, puedeUnirse: false, haGanado: false});
-                console.log('El usuario ya ha perdido el torneo');
+            for (let i = 0; i < torneoGanado.ganadores.length; i++) {
+                if (torneoGanado.ganadores[i].nombreId === nombreId) {
+                    res.json({existe: true, puedeUnirse: false, haGanado: true});
+                    console.log('El usuario ya ha ganado el torneo');
+                    return;
+                }
             }
+            res.json({existe: true, puedeUnirse: false, haGanado: false});
+            console.log('El usuario ya ha perdido el torneo');
+            return;
         } else {
             res.json({existe: true, puedeUnirse: true, haGanado: false});
             console.log('El usuario puede unirse al torneo');
@@ -117,6 +126,20 @@ exports.buscarSalaTorneo = async (req, res) => {
       
         // Comprobar si el usuario puede jugar en el torneo
         if(await puedeUnirseTorneo(torneo, nombreId)){
+            // Compruebo si estoy en los participantes del torneo
+            const torneoEncontrado = await Torneo.findOne(
+                {codigo: torneo}, 
+                {participantes: {$elemMatch: {nombreId: nombreId}}});
+            for (let i = 0; i < torneoEncontrado.participantes.length; i++) {
+                if (torneoEncontrado.participantes[i].nombreId === nombreId) {
+                    await PartidaMultiController.buscarSala({ body : {nombreId, torneo}}, res);
+                    return;
+                }
+            }
+            await Torneo.updateOne(
+                {codigo: torneo},
+                {$push: {participantes: {nombreId: nombreId, victorias: 0, derrotas: 0}}}
+            );
             await PartidaMultiController.buscarSala({ body : {nombreId, torneo}}, res);
         }
         else {
