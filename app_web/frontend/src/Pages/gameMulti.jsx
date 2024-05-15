@@ -104,25 +104,31 @@ function desbloqueaTableroRival() {
     // TODO: Quitar mensaje de espera en pantalla
 }
 
-function bloqueaBotonesHabilidades() {
-    const habilidades = document.querySelectorAll(".skill-button-selected");
-    habilidades.forEach(habilidad => {
-        habilidad.style.pointerEvents = "none";
-    });
-}
-
-function desbloqueaBotonesHabilidades() {
-    const habilidades = document.querySelectorAll(".skill-button-selected");
-    habilidades.forEach(habilidad => {
-        habilidad.style.pointerEvents = "auto";
-    });
-}
 
 export function GameMulti() {
     const navigate = useNavigate();
     const { socket } = useSocket();
     const [lastClickedCell, setLastClickedCell] = useState(null);
     let [skill, setSkill] = useState(null); // Estado para almacenar la habilidad seleccionada
+    const msgMiTurno = "¡Es tu turno!";
+    const msgTurnoRival = "¡Turno de tu oponente!";
+    let [turno, setTurno] = useState(null); // Estado para almacenar el mensaje de turno
+
+    function bloqueaBotonesHabilidades() {
+        setTurno(msgTurnoRival);
+        const habilidades = document.querySelectorAll(".skill-button-selected");
+        habilidades.forEach(habilidad => {
+            habilidad.style.pointerEvents = "none";
+        });
+    }
+    
+    function desbloqueaBotonesHabilidades() {
+        setTurno(msgMiTurno);
+        const habilidades = document.querySelectorAll(".skill-button-selected");
+        habilidades.forEach(habilidad => {
+            habilidad.style.pointerEvents = "auto";
+        });
+    }
 
     function escuchaRendicion(partidaSocket) {
         console.log('Escuchando rendición');
@@ -1320,28 +1326,28 @@ export function GameMulti() {
     };
 
 
-    useEffect(() => {
-        if (!(skillQueue.length > 0 && skillQueue[0] === "null")) {
-            // Modificar el mazo en la base de datos
-            fetch(urlModificarMazoHabilidades, {
-                method: 'POST',
-                headers: {
-                'Content-Type': 'application/json',
-                'authorization': tokenCookie
-                },
-                body: JSON.stringify({ nombreId: nombreId1Cookie,  mazoHabilidades: skillQueue})
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('La solicitud ha fallado');
-                }
-                return response.json();
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            });
-        }
-    }, [skillQueue]);
+    // useEffect(() => {
+    //     if (!(skillQueue.length > 0 && skillQueue[0] === "null")) {
+    //         // Modificar el mazo en la base de datos
+    //         fetch(urlModificarMazoHabilidades, {
+    //             method: 'POST',
+    //             headers: {
+    //             'Content-Type': 'application/json',
+    //             'authorization': tokenCookie
+    //             },
+    //             body: JSON.stringify({ nombreId: nombreId1Cookie,  mazoHabilidades: skillQueue})
+    //         })
+    //         .then(response => {
+    //             if (!response.ok) {
+    //                 throw new Error('La solicitud ha fallado');
+    //             }
+    //             return response.json();
+    //         })
+    //         .catch(error => {
+    //             console.error('Error:', error);
+    //         });
+    //     }
+    // }, [skillQueue]);
 
 
     const rendirse = () => {
@@ -1379,10 +1385,15 @@ export function GameMulti() {
                         ¡A batallar!
                     </h1>
                     <div className='game-rivalship-counter'>
-                        <div className='end-button-container'>
-                            <button className="home-button" onClick={() => {rendirse()}} >
+                        <div>
+                            <div className='end-button-container'>
+                                <button className="home-button" onClick={() => {rendirse()}} >
                                     <span> Abandonar </span>
-                            </button>
+                                </button>
+                            </div>
+                            <div className='info-game'>
+                                <h2> {turno} </h2>
+                            </div>
                         </div>
                         <div className='tab'></div>
                         <div className='game-rivalship-counter-content'>

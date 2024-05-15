@@ -114,3 +114,11 @@
     filter: brightness(33%);
     pointer-events: none;
 }
+
+.info-game {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+
+}

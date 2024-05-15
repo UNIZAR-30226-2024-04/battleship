@@ -110,6 +110,9 @@ export function Game() {
     const { socket } = useSocket();
     const [lastClickedCell, setLastClickedCell] = useState(null);
     let [skill, setSkill] = useState(null); // Estado para almacenar la habilidad seleccionada
+    const msgMiTurno = "¡Es tu turno!";
+    const msgTurnoIA = "¡Turno de la IA!";
+    let [turno, setTurno] = useState(msgMiTurno); // Estado para almacenar el mensaje de turno
 
     function triggerFinPartida(finPartida, soyYo) {
         if (finPartida) {
@@ -652,6 +655,7 @@ export function Game() {
         if (misilesRafagaRestantes == 0) {
             console.log('Misiles de Rafaga agotados');
             setSkill(null);
+            dequeueSkill("Rafaga"); // Desencolar habilidad
             setMisilesRafagaRestantes(3);
             desbloqueaBotonesHabilidades();
         }
@@ -670,7 +674,6 @@ export function Game() {
         .then(response => {
             if (!response.ok) {
                 console.log('Respuesta del servidor al disparar:', response);
-                throw new Error('Realizar Disparo ha fallado');
             }
             return response.json();
         })
@@ -688,6 +691,9 @@ export function Game() {
             // Representar las jugadas de la IA
             funcionTurnosIA(data['turnosIA']);
         })
+        .catch(error => {
+            console.error('Error:', error);
+        });
     }
 
     // DISPARO TORPEDO RECARGADO
@@ -722,6 +728,7 @@ export function Game() {
                     triggerFinPartida(data['finPartida'], true);    // fin de partida si se da el caso
                 }
                 setSkill(null);
+                dequeueSkill("Recargado");
                 desbloqueaBotonesHabilidades();
             }
             // Representar las jugadas de la IA
@@ -757,6 +764,7 @@ export function Game() {
             // Representar las jugadas de la IA
             funcionTurnosIA(data['turnosIA']);
             setSkill(null);
+            dequeueSkill("Teledirigido");
         })
     }
 
@@ -818,6 +826,7 @@ export function Game() {
             // Representar las jugadas de la IA
             funcionTurnosIA(data['turnosIA']);
             setSkill(null);
+            dequeueSkill("Sonar");
         })
     }
 
@@ -856,6 +865,7 @@ export function Game() {
                 // Representar las jugadas de la IA
                 funcionTurnosIA(data['turnosIA']);
                 setSkill(null);
+                dequeueSkill("Mina");
             }
             else {
                 console.log("Mina no se puede colocar allí");
@@ -1065,28 +1075,28 @@ export function Game() {
     }, [idPartida]);
 
 
-    useEffect(() => {
-        if (!(skillQueue.length > 0 && skillQueue[0] === "null")) {
-            // Modificar el mazo en la base de datos
-            fetch(urlModificarMazoHabilidades, {
-                method: 'POST',
-                headers: {
-                'Content-Type': 'application/json',
-                'authorization': tokenCookie
-                },
-                body: JSON.stringify({ nombreId: nombreId1Cookie,  mazoHabilidades: skillQueue})
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('La solicitud ha fallado');
-                }
-                return response.json();
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            });
-        }
-    }, [skillQueue]);
+    // useEffect(() => {
+    //     if (!(skillQueue.length > 0 && skillQueue[0] === "null")) {
+    //         // Modificar el mazo en la base de datos
+    //         fetch(urlModificarMazoHabilidades, {
+    //             method: 'POST',
+    //             headers: {
+    //             'Content-Type': 'application/json',
+    //             'authorization': tokenCookie
+    //             },
+    //             body: JSON.stringify({ nombreId: nombreId1Cookie,  mazoHabilidades: skillQueue})
+    //         })
+    //         .then(response => {
+    //             if (!response.ok) {
+    //                 throw new Error('La solicitud ha fallado');
+    //             }
+    //             return response.json();
+    //         })
+    //         .catch(error => {
+    //             console.error('Error:', error);
+    //         });
+    //     }
+    // }, [skillQueue]);
 
     const rendirse = () => {
         fetch(urlAbandonarPartida, {
@@ -1123,11 +1133,17 @@ export function Game() {
                         ¡A batallar!
                     </h1>
                     <div className='game-rivalship-counter'>
-                        <div className='end-button-container'>
-                            <button className="home-button" onClick={() => {rendirse()}} >
-                                <span> Abandonar </span>
-                            </button>
+                        <div>
+                            <div className='end-button-container'>
+                                <button className="home-button" onClick={() => {rendirse()}} >
+                                    <span> Abandonar </span>
+                                </button>
+                            </div>
+                            <div className='info-game'>
+                                <h2> {turno} </h2>
+                            </div>
                         </div>
+                        
                         <div className='tab'></div>
                         <div className='game-rivalship-counter-content'>
                             <img className="game-counter-aircraft" src={shipInfo['Aircraft'].imgRotated} />
