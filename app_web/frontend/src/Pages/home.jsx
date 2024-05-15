@@ -6,6 +6,7 @@ import Cookies from "universal-cookie";
 import socketIO from 'socket.io-client';
 import { useSocket } from '../Contexts/SocketContext';
 import info from '../Resources/info';
+import { useState } from 'react'; // Importa useState para manejar el estado de la variable global
 
 const crearSalaURI = info['serverAddress'] + 'partidaMulti/crearSala';
 const buscarSalaURI = info['serverAddress'] + 'partidaMulti/buscarSala';
@@ -23,6 +24,8 @@ export function Home() {
     // Obtener el token y nombreId del usuario
     const tokenCookie = cookies.get('JWT');
     const nombreIdCookie = cookies.get('perfil')['nombreId'];
+    var bioma2play = 'Mediterraneo';
+    const [selectedButton, setSelectedButton] = useState(null); // Estado para almacenar el botón seleccionado
 
     const handleOnClickPartidaMulti = async () => {
         try {
@@ -32,7 +35,7 @@ export function Home() {
                     'Content-Type': 'application/json',
                     'authorization': tokenCookie
                 },
-                body: JSON.stringify({nombreId: nombreIdCookie}),
+                body: JSON.stringify({nombreId: nombreIdCookie, bioma: bioma2play}),
             });
     
             if (!response.ok) {
@@ -72,7 +75,7 @@ export function Home() {
                     'Content-Type': 'application/json',
                     'authorization': tokenCookie
                 },
-                body: JSON.stringify({nombreId: nombreIdCookie}),
+                body: JSON.stringify({nombreId: nombreIdCookie, bioma: bioma2play}),
             });
     
             if (!response.ok) {
@@ -98,6 +101,11 @@ export function Home() {
         }
     };
 
+    const handleButtonClick = (value) => {
+        setSelectedButton(value === selectedButton ? null : value); // Cambia el estado del botón seleccionado
+        bioma2play = value === 1 ? 'Mediterraneo' : value === 2 ? 'Cantabrico' : value === 3 ? 'Norte' : 'Bermudas';
+    };
+    
     return (
         <div className="home-page-container">
             <Navbar/>
@@ -120,6 +128,18 @@ export function Home() {
                             <span>Buscar torneo</span>
                         </button>
                         <div><br></br></div>
+                        <button className={`tor-button ${selectedButton === 1 ? 'selected' : ''}`} onClick={() => handleButtonClick(1)}>
+                            <span> Mediterráneo </span>
+                        </button>
+                        <button className={`tor-button ${selectedButton === 2 ? 'selected' : ''}`} onClick={() => handleButtonClick(2)}>
+                            <span> Cantábrico </span>
+                        </button>
+                        <button className={`tor-button ${selectedButton === 3 ? 'selected' : ''}`} onClick={() => handleButtonClick(3)}>
+                            <span> Norte </span>
+                        </button>
+                        <button className={`tor-button ${selectedButton === 4 ? 'selected' : ''}`} onClick={() => handleButtonClick(4)}>
+                            <span> Bermudas </span>
+                        </button>
                         <button className="home-button" onClick={
                             // Crear sala de juego y navegar a game tras recibir respuesta del socket
                             () => {
