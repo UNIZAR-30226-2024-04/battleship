@@ -78,4 +78,7 @@ router.post('/buscarSalaTorneo', verificarToken, torneoController.buscarSalaTorn
 // Ruta para crear sala de torneo
 router.post('/crearSalaTorneo', verificarToken, torneoController.crearSalaTorneo);
 
+// Ruta para funcion de comprobacion de torneo
+router.post('/comprobarTorneo', verificarToken, torneoController.comprobarTorneo);
+
 module.exports = router;
