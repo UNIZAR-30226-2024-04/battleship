@@ -18,7 +18,7 @@ const { getIO, eventosSocket } = require('../socketManager');
  */
 exports.obtenerChat = async (req, res) => {
     try {
-        const { nombreId1, nombreId2, ...extraParams } = req.body;
+        const { nombreId1, nombreId2, useSocket=true, ...extraParams } = req.body;
         if (Object.keys(extraParams).length > 0) {
             res.status(400).send('Parámetros extra no permitidos');
             console.error('Parámetros extra no permitidos');
@@ -53,7 +53,7 @@ exports.obtenerChat = async (req, res) => {
         }
         res.json(chatDevuelto);
         console.log('Chat obtenido con éxito');
-                
+        if (!useSocket) return;
         const io = getIO();
         io.to('/chat' + nombreId1 + nombreId2).emit(eventosSocket.chat, chatDevuelto.nombreId1, chatDevuelto.nombreId2, chatDevuelto.chat);
     } catch (error) {

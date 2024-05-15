@@ -6,7 +6,6 @@ const partidaRoutes = require('./routes/partidaRoutes');
 const partidaMultiRoutes = require('./routes/partidaMultiRoutes');
 const publicacionRoutes = require('./routes/publicacionRoutes');
 const chatRoutes = require('./routes/chatRoutes');
-
 app = express();
 
 const { mongoURI } = require('./uri');

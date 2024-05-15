@@ -315,10 +315,10 @@ exports.abandonarPartida = async (req, res) => {
         { nombreId: jugador1.nombreId }, // Filtrar
         jugador1, // Actualizar (jugador contiene los cambios)
         { new: true } // Para devolver el documento actualizado
-      );      
+      );
       // Si hay un segundo jugador, también lo cambiamos
       var jugador2;
-      if (partidaActual.nombreId2) {
+      if (partidaActual.nombreId2 && partidaActual.nombreId2 !== 'IA') {
         jugador2 = await Perfil.findOne({ nombreId: partidaActual.nombreId2 });
         jugador2.codigoPartidaActual = -1;
         await Perfil.findOneAndUpdate(
@@ -339,12 +339,12 @@ exports.abandonarPartida = async (req, res) => {
       let estadisticasJugadores = [
         { victoria: victoria1 ? 1 : 0, nuevosBarcosHundidos: 0, nuevosBarcosPerdidos: 0,
           nuevosDisparosAcertados: 0, nuevosDisparosFallados: 0, nuevosTrofeos: 0,
-          nombreId: jugador1.nombreId },
+          nombreId: partidaActual.nombreId1 },
         { victoria: victoria1 ? 0 : 1, nuevosBarcosHundidos: 0, nuevosBarcosPerdidos: 0,
           nuevosDisparosAcertados: 0, nuevosDisparosFallados: 0, nuevosTrofeos: 0,
-          nombreId: jugador2.nombreId }
+          nombreId: partidaActual.nombreId2 }
       ]
-      let partidaContraIA = jugador2.nombreId === "IA";
+      let partidaContraIA = partidaActual.nombreId2 === 'IA';
       const {mensajeError} = await actualizarEstadisticasTurno(nuevosTrofeos, 
         partidaActual, estadisticasJugadores, jugador1, jugador2, partidaContraIA);
       if (mensajeError) {
@@ -403,7 +403,7 @@ exports.mostrarMiTablero = async (req, res) => {
     if (partidaActual) {
       const jugador1 = await Perfil.findOne({ nombreId: partidaActual.nombreId1 });
       let jugador2 = { nombreId: "IA" };
-      if (partidaActual.nombreId2) {
+      if (partidaActual.nombreId2 && partidaActual.nombreId2 !== 'IA') {
         jugador2 = await Perfil.findOne({ nombreId: partidaActual.nombreId2 });
       }
       // Comprobamos que el jugador está en la partida
@@ -498,7 +498,7 @@ exports.mostrarTableroEnemigo = async (req, res) => {
     if (partidaActual) {
       const jugador1 = await Perfil.findOne({ nombreId: partidaActual.nombreId1 });
       let jugador2 = { nombreId: "IA" };
-      if (partidaActual.nombreId2) {
+      if (partidaActual.nombreId2 && partidaActual.nombreId2 !== 'IA') {
         jugador2 = await Perfil.findOne({ nombreId: partidaActual.nombreId2 });
       }
       // Comprobamos que el jugador está en la partida
@@ -610,7 +610,7 @@ exports.mostrarTableros = async (req, res) => {
     if (partidaActual) {      
       const jugador1 = await Perfil.findOne({ nombreId: partidaActual.nombreId1 });
       let jugador2 = { nombreId: "IA" };
-      if (partidaActual.nombreId2) {
+      if (partidaActual.nombreId2 && partidaActual.nombreId2 !== 'IA') {
         jugador2 = await Perfil.findOne({ nombreId: partidaActual.nombreId2 });
       }
       // Comprobamos que el jugador está en la partida
@@ -702,7 +702,7 @@ async function verificarTurno(filtro, nombreId, habilidad) {
   if (partidaActual) {
     let jugador1 = await Perfil.findOne({ nombreId: partidaActual.nombreId1 });
     let jugador2 = { nombreId: "IA" };
-    if (partidaActual.nombreId2) {
+    if (partidaActual.nombreId2 && partidaActual.nombreId2 !== 'IA') {
       jugador2 = await Perfil.findOne({ nombreId: partidaActual.nombreId2 });
     }
     // Comprobamos que el jugador está en la partida
@@ -1253,7 +1253,7 @@ exports.realizarDisparo = async (req, res) => {
           nombreId: jugador2.nombreId }
       ]
 
-      const partidaContraIA = !partidaActual.nombreId2;
+      const partidaContraIA = !partidaActual.nombreId2 || partidaActual.nombreId2 === 'IA';
       // Aplicar efecto de clima y actualizar el clima
       const {i: iClima, j: jClima, eventoOcurrido} = efectoClima(partidaActual.clima, i, j);
       const nuevoClima = seleccionarClima(partidaActual.bioma, partidaActual.clima);
@@ -1408,7 +1408,7 @@ exports.realizarDisparoMisilRafaga = async (req, res) => {
           nombreId: jugador2.nombreId }
       ]
 
-      const partidaContraIA = !partidaActual.nombreId2;
+      const partidaContraIA = !partidaActual.nombreId2 || partidaActual.nombreId2 === 'IA';;
       let primerMisilRafaga = misilesRafagaRestantes === 3;
       let ultimoMisilRafaga = misilesRafagaRestantes === 1;
       // Consumir habilidad si es el primer misil de la ráfaga
@@ -1547,7 +1547,7 @@ exports.realizarDisparoTorpedoRecargado = async (req, res) => {
           nuevosDisparosAcertados: 0, nuevosDisparosFallados: 0, nuevosTrofeos: 0,
           nombreId: jugador2.nombreId }
       ]
-      var partidaContraIA = !partidaActual.nombreId2;
+      var partidaContraIA = !partidaActual.nombreId2 || partidaActual.nombreId2 === 'IA';
       var disparosTorpedo = [];
       var numBarcosTocados = 0;
       var barcosHundidos = [];
@@ -1703,7 +1703,7 @@ exports.realizarDisparoMisilTeledirigido = async (req, res) => {
           nombreId: jugador2.nombreId }
       ]
 
-      const partidaContraIA = !partidaActual.nombreId2;
+      const partidaContraIA = !partidaActual.nombreId2 || partidaActual.nombreId2 === 'IA';;
       // Consumir habilidad
       if (jugador === 1) partidaActual.usosHab1--;
       else partidaActual.usosHab2--;
@@ -1863,7 +1863,7 @@ exports.colocarMina = async (req, res) => {
           nombreId: jugador2.nombreId }
       ]
 
-      const partidaContraIA = !partidaActual.nombreId2;
+      const partidaContraIA = !partidaActual.nombreId2 || partidaActual.nombreId2 === 'IA';;
       // Consumir habilidad y colocar mina
       if (jugador === 1) {
         partidaActual.usosHab1--;
@@ -1985,7 +1985,7 @@ exports.usarSonar = async (req, res) => {
           nombreId: jugador2.nombreId }
       ]
 
-      const partidaContraIA = !partidaActual.nombreId2;
+      const partidaContraIA = !partidaActual.nombreId2 || partidaActual.nombreId2 === 'IA';;
       // Consumir habilidad 
       if (jugador === 1) {
         partidaActual.usosHab1--;
