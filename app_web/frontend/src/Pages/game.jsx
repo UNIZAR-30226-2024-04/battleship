@@ -92,14 +92,14 @@ function esBarcoHorizontal(barco) {
 }
 
 function bloqueaBotonesHabilidades() {
-    const habilidades = document.querySelectorAll(".skill-button");
+    const habilidades = document.querySelectorAll(".skill-button-selected");
     habilidades.forEach(habilidad => {
         habilidad.style.pointerEvents = "none";
     });
 }
 
 function desbloqueaBotonesHabilidades() {
-    const habilidades = document.querySelectorAll(".skill-button");
+    const habilidades = document.querySelectorAll(".skill-button-selected");
     habilidades.forEach(habilidad => {
         habilidad.style.pointerEvents = "auto";
     });
@@ -267,6 +267,15 @@ export function Game() {
                         setPartidaInicializada(false);
                     });
                 }
+
+                // Obtener el mazo de habilidades del usuario
+                const habs = data.mazoHabilidades;
+                console.log('Mazo de habilidades:', habs);
+                setSkillQueue(habs);
+                // setSkillQueue([]);
+                // for (let i = 0; i < habs.length; i++) {
+                //     enqueueSkill(habs[i]);
+                // }
             })  
             .catch(error => {
                 console.error('Error:', error);
@@ -1140,29 +1149,29 @@ export function Game() {
                             <span></span>
                         </div>
                         <div className="ship-buttons-container">
-                            <div className={`skill-button ${isSkillEnqueued("Mina") ? 'skill-button-selected' : ''}`}>
+                            <div className={`skill-button ${isSkillEnqueued("Mina") ? 'skill-button-selected' : 'skill-button-not-selected'}`}>
                                 <img onClick={() => setSkill("Mina") } src={mineImg} alt="Mine" />
                             </div>
                             <br></br>
-                            <div className={`skill-button ${isSkillEnqueued("Teledirigido") ? 'skill-button-selected' : ''}`}>
+                            <div className={`skill-button ${isSkillEnqueued("Teledirigido") ? 'skill-button-selected' : 'skill-button-not-selected'}`}>
                                 <img onClick={() => {
                                     setSkill("Teledirigido"); 
                                     disparoMisilTeledirigido();
                                 }} src={missileImg} alt="Missile" />
                             </div>
                             <br></br>
-                            <div className={`skill-button ${isSkillEnqueued("Rafaga") ? 'skill-button-selected' : ''}`}>
+                            <div className={`skill-button ${isSkillEnqueued("Rafaga") ? 'skill-button-selected' : 'skill-button-not-selected'}`}>
                                 <img onClick={() => {
                                     setSkill("Rafaga");
                                     bloqueaBotonesHabilidades();
                                 }} src={burstImg} alt="Burst" />
                             </div>
                             <br></br>
-                            <div className={`skill-button ${isSkillEnqueued("Sonar") ? 'skill-button-selected' : ''}`}>
+                            <div className={`skill-button ${isSkillEnqueued("Sonar") ? 'skill-button-selected' : 'skill-button-not-selected'}`}>
                                 <img onClick={() => setSkill("Sonar") } src={sonarImg} alt="Sonar" />
                             </div>
                             <br></br>
-                            <div className={`skill-button ${isSkillEnqueued("Recargado") ? 'skill-button-selected' : ''}`}>
+                            <div className={`skill-button ${isSkillEnqueued("Recargado") ? 'skill-button-selected' : 'skill-button-not-selected'}`}>
                                 <img onClick={() => {
                                     setSkill("Recargado");
                                     disparoTorpedo(0, 0, true);
