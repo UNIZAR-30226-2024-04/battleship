@@ -363,7 +363,7 @@ exports.modificarDatosPersonales = async (req, res) => {
         });
       }
       res.json(perfilDevuelto);
-      console.log("Perfil modificado con éxito");
+      console.log("Datos personales modificados con éxito");
     } else {
       res.status(404).send('No se ha encontrado el perfil a modificar');
       console.error("No se ha encontrado el perfil a modificar");
@@ -1003,7 +1003,6 @@ exports.actualizarEstadisticas = async (req, res) => {
       await crearPublicacionPartidasJugadas(nombreId, perfilModificado.partidasJugadas);
     }
 
-
     // Verificar si el perfil existe y enviar la respuesta al cliente
     if (perfilModificado) {
       let perfilDevuelto = { nombreId: perfilModificado.nombreId,
@@ -1016,7 +1015,7 @@ exports.actualizarEstadisticas = async (req, res) => {
         trofeos: perfilModificado.trofeos
       };
       res.json(perfilDevuelto);
-      console.log("Perfil modificado con éxito");
+      console.log("Estadísticas actualizadas con éxito");
     } else {
       res.status(404).send('No se ha encontrado el perfil a actualizar');
       console.error("No se ha encontrado el perfil a actualizar");
@@ -1099,7 +1098,7 @@ exports.actualizarPuntosExperiencia = async (req, res) => {
       let perfilDevuelto = { nombreId: perfilModificado.nombreId,
         puntosExperiencia: perfilModificado.puntosExperiencia };
       res.json(perfilDevuelto);
-      console.log("Perfil modificado con éxito");
+      console.log("Experiencia modificada con éxito");
     } else {
       res.status(404).send('No se ha encontrado el perfil a actualizar');
       console.error("No se ha encontrado el perfil a actualizar");

@@ -335,17 +335,16 @@ exports.abandonarPartida = async (req, res) => {
         { new: true } // Para devolver el documento actualizado
       );
       let nuevosTrofeos = [0, 0];
-      let victoria1 = partidaActual.ganador === partidaActual.nombreId1;
+      let victoria1 = (partidaActual.ganador === partidaActual.nombreId1);
       let estadisticasJugadores = [
-        { victoria: victoria1, nuevosBarcosHundidos: 0, nuevosBarcosPerdidos: 0,
+        { victoria: victoria1 ? 1 : 0, nuevosBarcosHundidos: 0, nuevosBarcosPerdidos: 0,
           nuevosDisparosAcertados: 0, nuevosDisparosFallados: 0, nuevosTrofeos: 0,
           nombreId: jugador1.nombreId },
-        { victoria: !victoria1, nuevosBarcosHundidos: 0, nuevosBarcosPerdidos: 0,
+        { victoria: victoria1 ? 0 : 1, nuevosBarcosHundidos: 0, nuevosBarcosPerdidos: 0,
           nuevosDisparosAcertados: 0, nuevosDisparosFallados: 0, nuevosTrofeos: 0,
           nombreId: jugador2.nombreId }
       ]
       let partidaContraIA = jugador2.nombreId === "IA";
-      
       const {mensajeError} = await actualizarEstadisticasTurno(nuevosTrofeos, 
         partidaActual, estadisticasJugadores, jugador1, jugador2, partidaContraIA);
       if (mensajeError) {
@@ -989,6 +988,8 @@ async function actualizarEstadisticasTurno(nuevosTrofeos, partidaActual, estadis
   let mensajeError = undefined;
   let tempRes1 = { json: () => {}, status: function(s) { 
     this.statusCode = s; return this;} };
+  let tempRes2 = { json: () => {}, status: function(s) {
+    this.statusCode = s; return this;} };
   // Actualizar ptos de experiencia y ELO si la partida no es amistosa
   if (!partidaActual.amistosa) {
     estadisticasJugadores[0].nuevosTrofeos = 
@@ -1007,13 +1008,13 @@ async function actualizarEstadisticasTurno(nuevosTrofeos, partidaActual, estadis
       return {mensajeError};
     }
   }
-  await actualizarEstadisticas({ body: estadisticasJugadores[0] }, tempRes1);
-  if (tempRes1.statusCode !== undefined && tempRes1.statusCode !== 200) {
+  await actualizarEstadisticas({ body: estadisticasJugadores[0] }, tempRes2);
+  if (tempRes2.statusCode !== undefined && tempRes2.statusCode !== 200) {
     mensajeError = 'Error al actualizar las estadísticas del jugador 1';
     return {mensajeError};
   }
   if (!partidaContraIA) {
-    let tempRes2 = { json: () => {}, status: function(s) {
+    let tempRes3 = { json: () => {}, status: function(s) {
       this.statusCode = s; return this;} };
     // Las partidas amistosas no cuentan para la experiencia ni para los trofeos
     if (!partidaActual.amistosa) {
@@ -1024,14 +1025,16 @@ async function actualizarEstadisticasTurno(nuevosTrofeos, partidaActual, estadis
       + (estadisticasJugadores[1].victoria === 1) ? 10 : 0;
       estadisticasJugadores[1].nuevosTrofeos = nuevosTrofeos[1];
       await actualizarPuntosExperiencia({ body: { nombreId: estadisticasJugadores[1].nombreId,
-        nuevosPuntosExperiencia: experienciaJ2 } }, tempRes2);
-      if (tempRes2.statusCode !== undefined && tempRes2.statusCode !== 200) {
+        nuevosPuntosExperiencia: experienciaJ2 } }, tempRes3);
+      if (tempRes3.statusCode !== undefined && tempRes3.statusCode !== 200) {
         mensajeError = 'Error al actualizar los puntos de experiencia del jugador 2';
         return {mensajeError};
       }
     }
-    await actualizarEstadisticas({ body: estadisticasJugadores[1] }, tempRes2);
-    if (tempRes2.statusCode !== undefined && tempRes2.statusCode !== 200) {
+    let tempRes4 = { json: () => {}, status: function(s) {
+      this.statusCode = s; return this;}  };
+    await actualizarEstadisticas({ body: estadisticasJugadores[1] }, tempRes4);
+    if (tempRes4.statusCode !== undefined && tempRes4.statusCode !== 200) {
       mensajeError = 'Error al actualizar las estadísticas del jugador 2';
       return {mensajeError};
     }
