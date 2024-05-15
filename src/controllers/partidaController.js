@@ -308,17 +308,18 @@ exports.abandonarPartida = async (req, res) => {
     const filtro = { codigo: codigo };
     const partidaActual = await Partida.findOne(filtro);
     if (partidaActual) {
-      const jugador = await Perfil.findOne({ nombreId: partidaActual.nombreId1 });
+      var jugador1 = await Perfil.findOne({ nombreId: partidaActual.nombreId1 });
       // Cambiamos el código de partida actual del jugador a -1
-      jugador.codigoPartidaActual = -1;
+      jugador1.codigoPartidaActual = -1;
       await Perfil.findOneAndUpdate(
-        { nombreId: jugador.nombreId }, // Filtrar
-        jugador, // Actualizar (jugador contiene los cambios)
+        { nombreId: jugador1.nombreId }, // Filtrar
+        jugador1, // Actualizar (jugador contiene los cambios)
         { new: true } // Para devolver el documento actualizado
       );      
       // Si hay un segundo jugador, también lo cambiamos
+      var jugador2;
       if (partidaActual.nombreId2) {
-        const jugador2 = await Perfil.findOne({ nombreId: partidaActual.nombreId2 });
+        jugador2 = await Perfil.findOne({ nombreId: partidaActual.nombreId2 });
         jugador2.codigoPartidaActual = -1;
         await Perfil.findOneAndUpdate(
           { nombreId: jugador2.nombreId }, // Filtrar
@@ -327,12 +328,31 @@ exports.abandonarPartida = async (req, res) => {
         );
       }
       // Cambiar el ganador de la partida
-      partidaActual.ganador = jugador.nombreId === nombreId ? partidaActual.nombreId2 : partidaActual.nombreId1;
+      partidaActual.ganador = jugador1.nombreId === nombreId ? partidaActual.nombreId2 : partidaActual.nombreId1;
       await Partida.findOneAndUpdate(
         filtro, // Filtrar
         partidaActual, // Actualizar (partidaActual contiene los cambios)
         { new: true } // Para devolver el documento actualizado
       );
+      let nuevosTrofeos = [0, 0];
+      let victoria1 = partidaActual.ganador === partidaActual.nombreId1;
+      let estadisticasJugadores = [
+        { victoria: victoria1, nuevosBarcosHundidos: 0, nuevosBarcosPerdidos: 0,
+          nuevosDisparosAcertados: 0, nuevosDisparosFallados: 0, nuevosTrofeos: 0,
+          nombreId: jugador1.nombreId },
+        { victoria: !victoria1, nuevosBarcosHundidos: 0, nuevosBarcosPerdidos: 0,
+          nuevosDisparosAcertados: 0, nuevosDisparosFallados: 0, nuevosTrofeos: 0,
+          nombreId: jugador2.nombreId }
+      ]
+      let partidaContraIA = jugador2.nombreId === "IA";
+      
+      const {mensajeError} = await actualizarEstadisticasTurno(nuevosTrofeos, 
+        partidaActual, estadisticasJugadores, jugador1, jugador2, partidaContraIA);
+      if (mensajeError) {
+        res.status(500).send(mensajeError);
+        console.error(mensajeError);
+        return;
+      }
       res.json({ mensaje: 'Partida abandonada con éxito' });
       
     } else {
