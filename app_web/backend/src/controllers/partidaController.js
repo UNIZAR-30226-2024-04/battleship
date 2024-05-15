@@ -1087,6 +1087,7 @@ function seleccionarClima(bioma, clima) {
         else { return 'Calma'; }
       }
     }
+    return clima;
   }
   // Climas del bioma Cantabrico: Calma, Viento, Niebla, Tormenta
   // Cambia de climas con frecuencia 30 %
@@ -1110,6 +1111,7 @@ function seleccionarClima(bioma, clima) {
         else { return 'Calma'; }
       }
     }
+    return clima;
   }
   // Climas del bioma Norte: Calma, Viento, Niebla, Tormenta
   // Cambia de climas con frecuencia 50 %
@@ -1137,7 +1139,7 @@ function seleccionarClima(bioma, clima) {
         else { return 'Niebla'; }
       }
     }
-
+    return clima;
   }
   else if(bioma === 'Bermudas') {
     return 'Tormenta'

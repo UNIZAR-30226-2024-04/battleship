@@ -101,20 +101,6 @@ function esBarcoHorizontal(barco) {
     return barco.coordenadas[0].i === barco.coordenadas[1].i;
 }
 
-function bloqueaBotonesHabilidades() {
-    const habilidades = document.querySelectorAll(".skill-button-selected");
-    habilidades.forEach(habilidad => {
-        habilidad.style.pointerEvents = "none";
-    });
-}
-
-function desbloqueaBotonesHabilidades() {
-    const habilidades = document.querySelectorAll(".skill-button-selected");
-    habilidades.forEach(habilidad => {
-        habilidad.style.pointerEvents = "auto";
-    });
-}
-
 export function Game() {
 
     const cookies = new Cookies();
@@ -128,6 +114,27 @@ export function Game() {
     let [turno, setTurno] = useState(msgMiTurno); // Estado para almacenar el mensaje de turno
     let [clima, setClima] = useState(null); // Estado para almacenar el clima
 
+    function bloqueaBotonesHabilidades() {
+        const habilidades = document.querySelectorAll(".skill-button-selected-game");
+        habilidades.forEach(habilidad => {
+            habilidad.style.pointerEvents = "none";
+        });
+    }
+
+    function bloqueaBotonesSombreados() {
+        const habilidades = document.querySelectorAll(".skill-button-not-selected");
+        habilidades.forEach(habilidad => {
+            habilidad.style.pointerEvents = "none";
+        });
+    }
+    
+    function desbloqueaBotonesHabilidades() {
+        const habilidades = document.querySelectorAll(".skill-button-selected-game");
+        habilidades.forEach(habilidad => {
+            habilidad.style.pointerEvents = "auto";
+        });
+    }
+
     useEffect(() => {
         if (clima == "Tormenta") {
             setSkillQueueAux(skillQueue);
@@ -135,7 +142,8 @@ export function Game() {
             bloqueaBotonesHabilidades();
         } else {
             setSkillQueue(skillQueueAux);
-            desbloqueaBotonesHabilidades();
+            // console.log('Desbloqueando habilidades en uE clima');
+            // desbloqueaBotonesHabilidades();
         }
     }, [clima]);
 
@@ -165,15 +173,17 @@ export function Game() {
     };
 
     function bloqueaBotonesHabilidades() {
-        const habilidades = document.querySelectorAll(".skill-button-selected");
+        console.log('Bloqueando habilidades');
+        const habilidades = document.querySelectorAll(".skill-button-selected-game");
         habilidades.forEach(habilidad => {
             habilidad.style.pointerEvents = "none";
         });
     }
 
     function desbloqueaBotonesHabilidades() {
+        console.log('Desbloqueando habilidades');
         setTurno(msgMiTurno);
-        const habilidades = document.querySelectorAll(".skill-button-selected");
+        const habilidades = document.querySelectorAll(".skill-button-selected-game");
         habilidades.forEach(habilidad => {
             habilidad.style.pointerEvents = "auto";
         });
@@ -250,8 +260,14 @@ export function Game() {
     const dequeueSkill = (skillName) => {
         if (skillQueue.includes(skillName)) {
             setSkillQueue(prevQueue => prevQueue.filter(skill => skill !== skillName));
+            setSkillQueueAux(prevQueue => prevQueue.filter(skill => skill !== skillName));
         }
     };
+
+    useEffect(() => {
+        bloqueaBotonesSombreados();
+        desbloqueaBotonesHabilidades();
+    }, [skillQueue]);
 
     let [partidaInicializada, setPartidaInicializada] = useState(false); // Estado para saber si la partida ha sido inicializada
 
@@ -321,7 +337,7 @@ export function Game() {
                 console.log('Mazo de habilidades:', habs);
                 setSkillQueue(habs);
                 setSkillQueueAux(habs);
-                // setSkillQueue([]);
+                // skill-button-selected-game([]);
                 // for (let i = 0; i < habs.length; i++) {
                 //     enqueueSkill(habs[i]);
                 // }
@@ -683,13 +699,14 @@ export function Game() {
             // Por seguridad en caso de F5
             // desbloqueaBotonesHabilidades();
             // Clima
+            console.log('Clima en data:', data['clima']);
             setClima(data['clima']);
-            if (data['clima'] == "Tormenta") {
-                bloqueaBotonesHabilidades();
-            }
-            else {
-                desbloqueaBotonesHabilidades();
-            }
+            // if (data['clima'] == "Tormenta") {
+            //     bloqueaBotonesHabilidades();
+            // }
+            // else {
+            //     desbloqueaBotonesHabilidades();
+            // }
             // Representar las jugadas de la IA
             funcionTurnosIA(data['turnosIA']);
         })
@@ -1244,29 +1261,29 @@ export function Game() {
                             <span></span>
                         </div>
                         <div className="ship-buttons-container">
-                            <div className={`skill-button ${isSkillEnqueued("Mina") ? 'skill-button-selected' : 'skill-button-not-selected'}`}>
+                            <div className={`skill-button ${isSkillEnqueued("Mina") ? 'skill-button-selected-game' : 'skill-button-not-selected'}`}>
                                 <img onClick={() => setSkill("Mina") } src={mineImg} alt="Mine" />
                             </div>
                             <br></br>
-                            <div className={`skill-button ${isSkillEnqueued("Teledirigido") ? 'skill-button-selected' : 'skill-button-not-selected'}`}>
+                            <div className={`skill-button ${isSkillEnqueued("Teledirigido") ? 'skill-button-selected-game' : 'skill-button-not-selected'}`}>
                                 <img onClick={() => {
                                     setSkill("Teledirigido"); 
                                     disparoMisilTeledirigido();
                                 }} src={missileImg} alt="Missile" />
                             </div>
                             <br></br>
-                            <div className={`skill-button ${isSkillEnqueued("Rafaga") ? 'skill-button-selected' : 'skill-button-not-selected'}`}>
+                            <div className={`skill-button ${isSkillEnqueued("Rafaga") ? 'skill-button-selected-game' : 'skill-button-not-selected'}`}>
                                 <img onClick={() => {
                                     setSkill("Rafaga");
                                     bloqueaBotonesHabilidades();
                                 }} src={burstImg} alt="Burst" />
                             </div>
                             <br></br>
-                            <div className={`skill-button ${isSkillEnqueued("Sonar") ? 'skill-button-selected' : 'skill-button-not-selected'}`}>
+                            <div className={`skill-button ${isSkillEnqueued("Sonar") ? 'skill-button-selected-game' : 'skill-button-not-selected'}`}>
                                 <img onClick={() => setSkill("Sonar") } src={sonarImg} alt="Sonar" />
                             </div>
                             <br></br>
-                            <div className={`skill-button ${isSkillEnqueued("Recargado") ? 'skill-button-selected' : 'skill-button-not-selected'}`}>
+                            <div className={`skill-button ${isSkillEnqueued("Recargado") ? 'skill-button-selected-game' : 'skill-button-not-selected'}`}>
                                 <img onClick={() => {
                                     setSkill("Recargado");
                                     disparoTorpedo(0, 0, true);
