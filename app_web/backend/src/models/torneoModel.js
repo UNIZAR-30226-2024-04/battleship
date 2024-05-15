@@ -5,10 +5,19 @@ const mongoose = require('mongoose');
 
 
 /**
+ * @typedef {Object} Torneo
+ * @memberof module:torneo
+ * @property {String} codigo - Identificador del torneo
+ * @property {Object[]} participantes - Lista de participantes
+ * @property {String} participantes.nombreId - Nombre de usuario del participante
+ * @property {Number} participantes.victorias - Número de victorias del participante
+ * @property {Number} participantes.derrotas - Número de derrotas del participante
+ * @property {String[]} ganadores - Lista de ganadores
+ * @property {String} ganadores.nombreId - Nombre de usuario del ganador
+ * @property {Number} numeroVictorias - Número de victorias para ganar el torneo
+ * @property {Number} numeroMaxDerrotas - Número máximo de derrotas permitidas
  * 
- * 
- * 
- * 
+ * @description Tipo de dato Torneo, formado por los datos de un torneo 
  * 
  */
 

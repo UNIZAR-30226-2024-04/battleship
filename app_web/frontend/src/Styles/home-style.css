@@ -78,4 +78,34 @@
     transform: translate3d(0px, -4px, 0px);
     transition: all 0.15s;
 }
-  
+
+.tor-button{
+    display: block;
+    cursor: pointer;
+    width: 16em;
+    background: #91402B;
+    padding: 0;
+    margin-bottom: 10px;
+    border: none;
+    border-radius: 12px;
+}
+
+.tor-button span {
+    display: block;
+    color: white;
+    font-size: 1.25rem;
+    background: #E75904;
+    padding: 12px 42px;
+    border-radius: 12px;
+    transform: translateY(-6px);
+    transition: all 0.15s;
+}
+
+.tor-button:active span {
+    transform: translateY(-2px);
+}
+
+.tor-button:hover {
+    transform: translate3d(0px, -4px, 0px);
+    transition: all 0.15s;
+}

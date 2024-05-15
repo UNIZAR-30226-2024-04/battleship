@@ -110,6 +110,16 @@ export function Home() {
                         <h1 className="home-banner-container">
                             Juega a Hundir la Flota
                         </h1>
+                        <input type="text" placeholder="Nombre de torneo" />
+                        <div><br></br></div>
+                        <button className="tor-button" onClick={() => {
+                            // Mostrar el texto introducido en la consola
+                            console.log('Texto introducido:', document.querySelector('input').value);
+
+                        }}>
+                            <span>Buscar torneo</span>
+                        </button>
+                        <div><br></br></div>
                         <button className="home-button" onClick={
                             // Crear sala de juego y navegar a game tras recibir respuesta del socket
                             () => {

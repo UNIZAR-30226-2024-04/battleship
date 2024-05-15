@@ -16,6 +16,7 @@ const Tablero = require('../data/tablero');
  * @property {String[]} listaAmigos - Lista de amigos del usuario
  * @property {String[]} listaSolicitudes - Lista de solicitudes de amistad
  * @property {Number} trofeos - Trofeos del usuario (ELO)
+ * @property {Number} maxTrofeos - Máximo de trofeos alcanzado por el usuario
  * @property {Number} puntosExperiencia - Puntos que determinan el nivel del usuario
  * @property {Tablero} tableroInicial - Lista barcos del jugador
  * @property {habilidadesDisponibles[]} mazoHabilidades - Habilidades(enteros) elegidas de una lista fija
@@ -59,6 +60,10 @@ const perfilSchema = new Schema({
   trofeos: {                 // Trofeos del usuario (ELO)
     type: Number, 
     default: 0 
+  },
+  maxTrofeos: {              // Máximo de trofeos alcanzado por el usuario
+    type: Number,
+    default: 0
   },
   puntosExperiencia: {       // Puntos que determinan el nivel del usuario
     type: Number, 

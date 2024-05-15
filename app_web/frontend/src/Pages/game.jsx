@@ -33,6 +33,15 @@ import explosionImg from '../Images/ingame/explosion.png';
 import sonarBarcoImg from '../Images/symbols/shipSymbol.png';
 import sonarMinaImg from '../Images/symbols/mineSymbol.png';
 
+import calmaImg from '../Images/climas/Calma.png';
+import tormentaImg from '../Images/climas/Tormenta.png';
+import nieblaImg from '../Images/climas/Niebla.png';
+import vientoNorteImg from '../Images/climas/VientoNorte.png';
+import vientoSurImg from '../Images/climas/VientoSur.png';
+import vientoEsteImg from '../Images/climas/VientoEste.png';
+import vientoOesteImg from '../Images/climas/VientoOeste.png';
+
+
 import { useSocket } from '../Contexts/SocketContext';
 import { Navigate } from 'react-router-dom';
 
@@ -113,6 +122,7 @@ export function Game() {
     const msgMiTurno = "¡Es tu turno!";
     const msgTurnoIA = "¡Turno de la IA!";
     let [turno, setTurno] = useState(msgMiTurno); // Estado para almacenar el mensaje de turno
+    let [clima, setClima] = useState(null); // Estado para almacenar el clima
 
     function triggerFinPartida(finPartida, soyYo) {
         if (finPartida) {
@@ -636,6 +646,8 @@ export function Game() {
             }
             // Por seguridad en caso de F5
             desbloqueaBotonesHabilidades();
+            // Clima
+            setClima(data['clima']);
             // Representar las jugadas de la IA
             funcionTurnosIA(data['turnosIA']);
         })
@@ -908,6 +920,7 @@ export function Game() {
                     disparos1 = data.misDisparos;
                     tablero2 = data.barcosHundidos;
                     disparos2 = data.disparosEnemigos;
+                    setClima(data.clima);
 
                     borrarWidgetsTablero(myBoard);
                     mostrarWidgetsTablero(tablero1, myBoard);
@@ -959,6 +972,7 @@ export function Game() {
                     disparos1 = data.misDisparos;
                     tablero2 = data.barcosHundidos;
                     disparos2 = data.disparosEnemigos;
+                    setClima(data.clima);
 
                     // iterar en la lista disparos1
                     for (let i = 0; i < disparos1.length; i++) {
@@ -1123,6 +1137,26 @@ export function Game() {
         });
     }
 
+    function getImgClima() {
+        if (clima === "calma") {
+            return calmaImg;
+        } else if (clima === "tormenta") {
+            return tormentaImg;
+        } else if (clima === "niebla") {
+            return nieblaImg;
+        } else if (clima === "vientoNorte") {
+            return vientoNorteImg;
+        } else if (clima === "vientoSur") {
+            return vientoSurImg;
+        } else if (clima === "vientoEste") {
+            return vientoEsteImg;
+        } else if (clima === "vientoOeste") {
+            return vientoOesteImg;
+        } else {
+            return calmaImg;
+        }
+    }
+
 
     return (
         <>
@@ -1141,6 +1175,9 @@ export function Game() {
                             </div>
                             <div className='info-game'>
                                 <h2> {turno} </h2>
+                            </div>
+                            <div className='info-game'>
+                                <h2> {clima} </h2>
                             </div>
                         </div>
                         

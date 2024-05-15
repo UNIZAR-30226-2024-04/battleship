@@ -3,7 +3,10 @@ const {registrarUsuario} = require('../controllers/perfilController');
 const Perfil = require('../models/perfilModel');
 const Publicacion = require('../models/publicacionModel');
 const {crearPublicacion, obtenerPublicaciones, 
-    reaccionarPublicacion, eliminarPublicacion} = require('../controllers/publicacionController');
+    reaccionarPublicacion, eliminarPublicacion,
+    obtenerPublicacionesAmigos} = require('../controllers/publicacionController');
+const {enviarSolicitudAmistad, agnadirAmigo} = require('../controllers/perfilController');
+
 const e = require('express');
 
 const { mongoURI } = require('../uri');
@@ -253,7 +256,7 @@ describe('Crear publicacion', () => {
         expect(res.statusCode).toBe(400);
     });
 });
-
+let publicacionId, publicacionId2;
 // Test for obtenerPublicaciones
 describe('Obtener publicaciones', () => {
     beforeAll(async () => {
@@ -275,7 +278,10 @@ describe('Obtener publicaciones', () => {
         try {
             await crearPublicacion(req2, res2);
         } catch (error) {}
-        publicacionId = res2._json.publicacionId;
+
+        const publicaciones = await Publicacion.find({usuario: 'usuario1'});
+        expect(publicaciones.length).toBe(1);
+        publicacionId = publicaciones[0].publicacionId;
         expect(res2.statusCode).toBe(undefined);
     });
     it('Debería obtener las publicaciones de un usuario correctamente', async () => {
@@ -309,8 +315,89 @@ describe('Obtener publicaciones', () => {
     });
 });
 
+
+// Test for obtenerPublicacionesAmigos
+describe('Obtener publicaciones de amigos', () => {
+    beforeAll(async () => {
+        const connection = mongoose.connection;
+        await connection.dropDatabase();
+        const req = { body: { nombreId: 'usuario1', contraseña: 'Passwd1.',
+        correo: 'usuario1@example.com' } };
+        const res = { json: () => {}, status: function(s) { 
+          this.statusCode = s; return this; }, send: () => {} };
+        try {
+          await registrarUsuario(req, res);
+        } catch (error) {}
+        expect(res.statusCode).toBe(undefined);
+
+        // Crear publicación
+        const req2 = { body: { nombreId: 'usuario1', tipoPublicacion: 0, nivel : 1 } };
+        const res2 = { json: function(_json) { this._json = _json; return this;},
+            status: function(s) { this.statusCode = s; return this; }, send: () => {} };
+        try {
+            await crearPublicacion(req2, res2);
+        } catch (error) {}
+
+        const publicaciones = await Publicacion.find({usuario: 'usuario1'});
+        expect(publicaciones.length).toBe(1);
+        publicacionId = publicaciones[0].publicacionId;
+        expect(res2.statusCode).toBe(undefined);
+
+        const req3 = { body: { nombreId: 'usuario2', contraseña: 'Passwd2.',
+        correo: 'usuario2@example.com' } };
+        const res3 = { json: () => {}, status: function(s) { 
+          this.statusCode = s; return this; }, send: () => {} };
+        try {
+          await registrarUsuario(req3, res3);
+        } catch (error) {}
+        expect(res3.statusCode).toBe(undefined);
+
+        // Crear publicación
+        const req4 = { body: { nombreId: 'usuario2', tipoPublicacion: 0, nivel : 1 } };
+        const res4 = { json: function(_json) { this._json = _json; return this;},
+            status: function(s) { this.statusCode = s; return this; }, send: () => {} };
+        try {
+            await crearPublicacion(req4, res4);
+        } catch (error) {}
+
+        const publicaciones2 = await Publicacion.find({usuario: 'usuario2'});
+        expect(publicaciones2.length).toBe(1);
+        publicacionId2 = publicaciones2[0].publicacionId;
+        expect(res4.statusCode).toBe(undefined);
+
+        // usuario2 y usuario1 son amigos
+        const req5 = { body: { nombreId: 'usuario2', nombreIdAmigo: 'usuario1' } };
+        const res5 = { json: () => {}, status: function(s) { 
+        this.statusCode = s; return this; }, send: () => {} };
+        try {
+            await enviarSolicitudAmistad(req5, res5);
+        } catch (error) {}
+        expect(res5.statusCode).toBe(undefined);
+
+        const req6 = { body: { nombreId: 'usuario1', nombreIdAmigo: 'usuario2' } };
+        const res6 = { json: () => {}, status: function(s) { 
+        this.statusCode = s; return this; }, send: () => {} };
+        try {
+            await agnadirAmigo(req6, res6);
+        } catch (error) {}
+        expect(res6.statusCode).toBe(undefined);
+    });
+    it('Debería obtener las publicaciones de amigos correctamente', async () => {
+        const req = { body: { nombreId: 'usuario1' } };
+        const res = { json: function(_json) { this._json = _json; return this;},
+            status: function(s) { this.statusCode = s; return this; }, send: () => {} };
+        try {
+            await obtenerPublicacionesAmigos(req, res);
+        } catch (error) {}
+        expect(res.statusCode).toBe(undefined);
+        expect(res._json.length).toBe(2);
+        console.log(res._json);
+        expect(res._json[0].publicacionId).toBe(publicacionId2);
+        expect(res._json[1].publicacionId).toBe(publicacionId);
+    });
+});
+
 // Test for reaccionarPublicacion
-let publicacionId;
 describe('Reaccionar a publicación', () => {
     beforeAll(async () => {
         const connection = mongoose.connection;
@@ -337,10 +424,11 @@ describe('Reaccionar a publicación', () => {
         try {
             await crearPublicacion(req3, res3);
         } catch (error) {}
-        publicacionId = res3._json.publicacionId;
+
+        const publicaciones = await Publicacion.find({usuario: 'usuario1'});
+        expect(publicaciones.length).toBe(1);
+        publicacionId = publicaciones[0].publicacionId;
         expect(res3.statusCode).toBe(undefined);
-        expect(res3._json.publicacionId).not.toBe(undefined);
-        console.log(res3._json);
     });
     it('Debería reaccionar a una publicación correctamente', async () => {
         const req = { body: { nombreId: 'usuario2', publicacionId: publicacionId, 
@@ -470,10 +558,10 @@ describe('Eliminar publicación', () => {
         try {
             await crearPublicacion(req3, res3);
         } catch (error) {}
-        publicacionId = res3._json.publicacionId;
+        const publicaciones = await Publicacion.find({usuario: 'usuario1'});
+        expect(publicaciones.length).toBe(1);
+        publicacionId = publicaciones[0].publicacionId;
         expect(res3.statusCode).toBe(undefined);
-        expect(res3._json.publicacionId).not.toBe(undefined);
-        console.log(res3._json);
     });
     it('Debería fallar al no ser el dueño de la publicación', async () => {
         const req = { body: { nombreId: 'usuario2', publicacionId: publicacionId } };

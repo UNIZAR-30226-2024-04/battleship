@@ -39,9 +39,9 @@ const salaSchema = new Schema({
     type: Boolean,
     default: false
   },
-  torneo: { // Indica si la partida es parte de un torneo
-    type: Boolean,
-    default: false
+  torneo: { // Indica si la partida es parte de un torneo y el código del torneo
+    type: String,
+    default: '-1'    // -1: No es parte de un torneo, cualquier otro valor: Código del torneo
   },
 }, { timestamps: true }); // timestamps añade automáticamente campos para 'createdAt' y 'updatedAt'
 
