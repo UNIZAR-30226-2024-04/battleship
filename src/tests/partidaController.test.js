@@ -171,7 +171,24 @@ describe("Abandonar partida", () => {
         } catch (error) {}
         expect(res.statusCode).toBe(undefined);
     });
-});
+    it("Debería abandonar una partida correctamente contra la IA", async () => {
+      const req3 = { body: { nombreId1: 'usuario1', bioma: 'Norte' } };
+      const res3 = { json: function(_json) {this._json = _json; return this;}, status: function(s) { 
+          this.statusCode = s; return this; }, send: () => {} };
+      try {
+          await crearPartida(req3, res3);
+      } catch (error) {}
+      expect(res3.statusCode).toBe(undefined);
+      _codigo = res3._json.codigo;
+      const req = { body: { codigo: _codigo, nombreId: 'usuario1' } };
+      const res = { json: () => {}, status: function(s) {
+        this.statusCode = s; return this; }, send: () => {} };
+      try {
+          await abandonarPartida(req, res);
+      } catch (error) {}
+      expect(res.statusCode).toBe(undefined);
+    });
+  });
 
 // Test for mostrarMiTablero
 describe("Mostrar mi tablero", () => {
@@ -1345,7 +1362,7 @@ describe("Usar sónar", () => {
   });
 });
 
-// Test de climas
+//Test de climas
 
 
 // Test for enviarMensaje

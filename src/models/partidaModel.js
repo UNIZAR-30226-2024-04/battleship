@@ -51,6 +51,7 @@ const partidaSchema = new Schema({
   },
   nombreId2: { // Perfil del jugador 2
     type: String, // NombreId del jugador
+    default: 'IA' // Valor predeterminado como 'IA'
   },
   tableroBarcos1: { // Lista barcos del jugador 1
     type: Tablero,

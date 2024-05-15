@@ -1,27 +1,73 @@
-
 const PartidaMultiController = require('./partidaMultiController');
-
+const Torneo = require('../models/torneoModel');   // Importar el modelo de torneo
 
 // Función interna que comprueba si un jugador puede unirse a un torneo
 async function puedeUnirseTorneo(torneo, nombreId) {
     // Comprobar si el usuario puede jugar en el torneo
-    const torneoEncontrado = await Torneo.findOne({codigo: torneo});
+    var torneoEncontrado = await Torneo.findOne({codigo: torneo});
     if (!torneoEncontrado) {
-        console.log('No se encontró el torneo');
         return false;
     }
     // Comprobar que el usuario no ha ganado el torneo
-    if (torneoEncontrado.ganadores.find(ganador => ganador.nombreId === nombreId)) {
-        console.log('El usuario ya ha ganado el torneo');
+    torneoEncontrado = await Torneo.findOne(
+        {codigo: torneo}, 
+        {ganadores: {$elemMatch: {nombreId: nombreId}}});
+    if (torneoEncontrado.ganadores.length > 0) {
         return false;
     }
-    // Comprobar que el usuario no ha perdido el torneo
-    const participante = torneoEncontrado.participantes.find(participante => participante.nombreId === nombreId);
-    if (participante && participante.derrotas >= torneoEncontrado.numeroMaxDerrotas) {
-        console.log('El usuario ha perdido el torneo');
+    // Comprobar que el usuario está en la lista de participantes y que sus derrotas no superan el límite
+    torneoEncontrado = await Torneo.findOne(
+        {codigo: torneo}, 
+        {participantes: {$elemMatch: {nombreId: nombreId}, derrotas: {$gte: torneoEncontrado.numeroMaxDerrotas}}
+    });
+    if (torneoEncontrado.participantes.length > 0) {
         return false;
     }
     return true;
+}
+
+/**
+ * @function comprobarTorneo
+ * @description Comprueba si un jugador puede unirse a un torneo
+ * @param {Object} req - El objeto de solicitud HTTP
+ * @param {String} req.body.nombreId - El nombreId del jugador
+ * @param {String} req.body.torneo - El código del torneo que quiere unirse
+ * @param {Object} res - El objeto de respuesta HTTP con el resultado de la comprobación
+ * @param {Boolean} res.existe - Indica si el torneo existe
+ * @param {Boolean} res.puedeUnirse - Indica si el jugador puede unirse al torneo
+ * @param {Boolean} res.haGanado - Indica si el jugador ha ganado el torneo
+ */
+exports.comprobarTorneo = async (req, res) => {
+    try {
+        const { nombreId, torneo, ...extraParam } = req.body;
+        const torneoEncontrado = await Torneo.findOne({codigo: torneo});
+        if (!torneoEncontrado) {
+            res.json({existe: false, puedeUnirse: false, haGanado: false});
+            console.log('No se encontró el torneo');
+            return;
+        }
+        const puedeUnirse = await puedeUnirseTorneo(torneo, nombreId);
+        if (!puedeUnirse) {
+            var torneoGanado = await Torneo.findOne(
+                {codigo: torneo}, 
+                {ganadores: {$elemMatch: {nombreId: nombreId}}});
+            if (torneoGanado.ganadores.length > 0) {
+                res.json({existe: true, puedeUnirse: false, haGanado: true});
+                console.log('El usuario ya ha ganado el torneo');
+            } else {
+                res.json({existe: true, puedeUnirse: false, haGanado: false});
+                console.log('El usuario ya ha perdido el torneo');
+            }
+        } else {
+            res.json({existe: true, puedeUnirse: true, haGanado: false});
+            console.log('El usuario puede unirse al torneo');
+            return;
+        }
+    }
+    catch (error) {
+        console.error('Hubo un error comprobando el torneo', error);
+        res.status(500).send('Hubo un error comprobando el torneo');
+    }
 }
 
 
@@ -37,19 +83,19 @@ async function puedeUnirseTorneo(torneo, nombreId) {
  */
 exports.crearSalaTorneo = async (req, res) => {
     try {
-        const { nombreId, bioma = 'Mediterraneo', torneo = false, ...extraParam } = req.body;
+        const { nombreId, bioma = 'Mediterraneo', torneo, ...extraParam } = req.body;
         // Comprobar si el usuario puede jugar en el torneo
         if(await puedeUnirseTorneo(torneo, nombreId)){
-            PartidaMultiController.crearSala({ body : {nombreId, bioma, torneo}}, res);
+            await PartidaMultiController.crearSala({ body : {nombreId, bioma, torneo}}, res);
         }
         else {
-            res.status(500).send('El usuario no puede unirse al torneo');
-            console.log('El usuario no puede unirse al torneo');
+            res.status(400).send('El usuario no puede unirse al torneo');
+            console.error('El usuario no puede unirse al torneo');
             return;
         }        
     } 
     catch (error) {
-      res.status(500).send('Hubo un error creando la sala'+ error.message);
+      res.status(500).send('Hubo un error creando la sala '+ error.message);
       console.error('Hubo un error creando la sala', error);
     }
   };
@@ -71,10 +117,10 @@ exports.buscarSalaTorneo = async (req, res) => {
       
         // Comprobar si el usuario puede jugar en el torneo
         if(await puedeUnirseTorneo(torneo, nombreId)){
-            PartidaMultiController.buscarSala({ body : {nombreId, torneo}}, res);
+            await PartidaMultiController.buscarSala({ body : {nombreId, torneo}}, res);
         }
         else {
-            res.status(500).send('El usuario no puede unirse al torneo');
+            res.status(400).send('El usuario no puede unirse al torneo');
             console.log('El usuario no puede unirse al torneo');
             return;
         }
