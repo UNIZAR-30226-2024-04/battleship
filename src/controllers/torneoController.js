@@ -117,6 +117,17 @@ exports.buscarSalaTorneo = async (req, res) => {
       
         // Comprobar si el usuario puede jugar en el torneo
         if(await puedeUnirseTorneo(torneo, nombreId)){
+            // Compruebo si estoy en los participantes del torneo
+            const torneoEncontrado = await Torneo.findOne(
+                {codigo: torneo}, 
+                {participantes: {$elemMatch: {nombreId: nombreId}}});
+            // Si no estoy en la lista de participantes me añado
+            if (torneoEncontrado.participantes.length === 0) {
+                await Torneo.updateOne(
+                    {codigo: torneo},
+                    {$push: {participantes: {nombreId: nombreId, victorias: 0, derrotas: 0}}}
+                );
+            }
             await PartidaMultiController.buscarSala({ body : {nombreId, torneo}}, res);
         }
         else {
