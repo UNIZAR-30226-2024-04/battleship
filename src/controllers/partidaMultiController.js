@@ -76,7 +76,7 @@ exports.crearSala = async (req, res) => {
       codigo, 
       nombreId1: nombreId, 
       nombreId2: undefined,
-      bioma,
+      bioma: bioma,
       amistosa: amistosa,
       torneo: torneo
     });
@@ -88,7 +88,11 @@ exports.crearSala = async (req, res) => {
       console.error('Los sockets no están disponibles');
       return;
     }
-    res.json({ codigo: salaGuardada.codigo });
+    res.json({ codigo: salaGuardada.codigo,
+              bioma: salaGuardada.bioma,
+              amistosa: salaGuardada.amistosa,
+              torneo: salaGuardada.torneo
+    });
     console.log('Sala creada con éxito');
   } catch (error) {
     res.status(500).send('Hubo un error creando la sala'+ error.message);
@@ -143,7 +147,11 @@ exports.buscarSala = async (req, res) => {
       console.log('Partida encontrada en backend:', sala.codigo);
     } else {
       console.log('No se encontraron salas');
-      res.json({ codigo: -1 });
+      res.json({ codigo: -1,
+              bioma: salaGuardada.bioma,
+              amistosa: salaGuardada.amistosa,
+              torneo: salaGuardada.torneo
+      });
     }
   }
   catch (error) {

@@ -443,7 +443,9 @@ exports.mostrarMiTablero = async (req, res) => {
         tableroBarcos: tableroBarcos,
         minas: minas,
         disparosEnemigos: disparosEnemigos,
-        contadorTurno: contadorTurno
+        contadorTurno: contadorTurno,
+        bioma: partidaActual.bioma,
+        clima: partidaActual.clima
       };
       res.json(tableroDisparos);
       console.log('Mi tablero obtenido con éxito');
@@ -551,7 +553,9 @@ exports.mostrarTableroEnemigo = async (req, res) => {
         minasExplotadas: minasExplotadas,
         barcosHundidos: listaBarcosHundidos,
         contadorTurno: contadorTurno,
-        tipoPartida: tipoPartida
+        tipoPartida: tipoPartida,
+        bioma: partidaActual.bioma,
+        clima: partidaActual.clima
       };
       res.json(disparosBarcos);
       console.log('Tablero enemigo obtenido con éxito');
@@ -670,7 +674,9 @@ exports.mostrarTableros = async (req, res) => {
         misDisparos: misDisparos,
         barcosHundidos: listaBarcosHundidos,
         minasEnemigas: minasEnemigas,
-        contadorTurno: partidaActual.contadorTurno
+        contadorTurno: partidaActual.contadorTurno,
+        bioma: partidaActual.bioma,
+        clima: partidaActual.clima
       };
       res.json(tableros);
       console.log('Tableros obtenidos con éxito');
