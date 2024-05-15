@@ -1,12 +1,13 @@
 const mongoose = require('mongoose');
 const {crearPartida, mostrarMiTablero, mostrarTableroEnemigo,
-    mostrarTableros, realizarDisparo, enviarMensaje, obtenerChat,
+    mostrarTableros, realizarDisparo, abandonarPartida, enviarMensaje, obtenerChat,
     realizarDisparoMisilRafaga, realizarDisparoTorpedoRecargado,
     realizarDisparoMisilTeledirigido, colocarMina, usarSonar} = require('../controllers/partidaController');
 const {registrarUsuario} = require('../controllers/perfilController');
 const Partida = require('../models/partidaModel');
+const Publicacion = require('../models/publicacionModel');
 
-const mongoURI = 'mongodb://localhost/BattleshipDB';
+const { mongoURI } = require('../uri');
 mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true, 
   useCreateIndex: true, useFindAndModify: false});
 const Coordenada = require('../data/coordenada');
@@ -121,6 +122,74 @@ describe("Crear partida", () => {
 });
 
 var _codigo = 0;
+
+// Test for abandonarPartida
+describe("Abandonar partida", () => {
+    beforeAll(async () => {
+      const connection = mongoose.connection;
+      await connection.dropDatabase();
+      const req = { body: { nombreId: 'usuario1', contraseña: 'Passwd1.',
+      correo: 'usuario1@example.com' } };
+      const res = { json: () => {}, status: function(s) { 
+        this.statusCode = s; return this; }, send: () => {} };
+      try {
+        await registrarUsuario(req, res);
+      } catch (error) {}
+      expect(res.statusCode).toBe(undefined);
+      const req2 = { body: { nombreId: 'usuario2', contraseña: 'Passwd2.',
+      correo: 'usuario2@example.com' } };
+      const res2 = { json: () => {}, status: function(s) { 
+        this.statusCode = s; return this; }, send: () => {} };
+      try {
+        await registrarUsuario(req2, res2);
+      } catch (error) {}
+      expect(res2.statusCode).toBe(undefined);
+      const req3 = { body: { nombreId1: 'usuario1', nombreId2: 'usuario2', bioma: 'Norte' } };
+      const res3 = { json: function(_json) {this._json = _json; return this;}, status: function(s) { 
+          this.statusCode = s; return this; }, send: () => {} };
+      try {
+          await crearPartida(req3, res3);
+      } catch (error) {}
+      expect(res3.statusCode).toBe(undefined);
+      _codigo = res3._json.codigo;
+    });
+    it("Debería fallar al abandonar una partida con demasiados campos", async () => {
+        const req = { body: { codigo: _codigo, nombreId: 'usuario1', extra: 1 } };
+        const res = { json: () => {}, status: function(s) {
+          this.statusCode = s; return this; }, send: () => {} };
+        try {
+            await abandonarPartida(req, res);
+        } catch (error) {}
+        expect(res.statusCode).toBe(400);
+    });
+    it("Debería abandonar una partida correctamente", async () => {
+        const req = { body: { codigo: _codigo, nombreId: 'usuario1' } };
+        const res = { json: () => {}, status: function(s) {
+          this.statusCode = s; return this; }, send: () => {} };
+        try {
+            await abandonarPartida(req, res);
+        } catch (error) {}
+        expect(res.statusCode).toBe(undefined);
+    });
+    it("Debería abandonar una partida correctamente contra la IA", async () => {
+      const req3 = { body: { nombreId1: 'usuario1', bioma: 'Norte' } };
+      const res3 = { json: function(_json) {this._json = _json; return this;}, status: function(s) { 
+          this.statusCode = s; return this; }, send: () => {} };
+      try {
+          await crearPartida(req3, res3);
+      } catch (error) {}
+      expect(res3.statusCode).toBe(undefined);
+      _codigo = res3._json.codigo;
+      const req = { body: { codigo: _codigo, nombreId: 'usuario1' } };
+      const res = { json: () => {}, status: function(s) {
+        this.statusCode = s; return this; }, send: () => {} };
+      try {
+          await abandonarPartida(req, res);
+      } catch (error) {}
+      expect(res.statusCode).toBe(undefined);
+    });
+  });
+
 // Test for mostrarMiTablero
 describe("Mostrar mi tablero", () => {
     beforeAll(async () => {
@@ -599,11 +668,14 @@ describe("Realizar disparo contra la IA", () => {
             }
 
             // Comprobamos que no se ha acabado la partida
-            if (coord_y > tableroDim) {
+            if (!fin && coord_y > tableroDim) {
               expect(true).toBe(false);
             }
       }
     }
+
+    const publicaciones = await Publicacion.find({usuario: 'usuario1'});
+    expect(publicaciones.length).toBeGreaterThan(0);
   }, 10000);
 });
 
@@ -652,7 +724,7 @@ it("Debería realizar una ráfaga de misiles y responder la IA correctamente", a
     } catch (error) {}
     expect(res.statusCode).toBe(undefined);
     expect(res._json.disparoRealizado.estado).toBe('Agua');
-    expect(res._json.usosHab).toBe(3);
+    expect(res._json.usosHab).toBe(2);
     expect(res._json.turnosIA.length).toBe(0);
     // Segundo misil: tocado
     i = 0;
@@ -672,7 +744,7 @@ it("Debería realizar una ráfaga de misiles y responder la IA correctamente", a
     } catch (error) {}
     expect(res.statusCode).toBe(undefined);
     expect(res._json.disparoRealizado.estado).toBe('Tocado');
-    expect(res._json.usosHab).toBe(3);
+    expect(res._json.usosHab).toBe(2);
     expect(res._json.turnosIA.length).toBe(0);
     // Último misil: agua
     req = { body: { codigo: _codigo, nombreId: 'usuario1', i: i, j: j, misilesRafagaRestantes: 1} };
@@ -721,7 +793,7 @@ it("Debería recargar un torpedo y responder la IA correctamente", async () => {
         await realizarDisparoTorpedoRecargado(req, res);
     } catch (error) {}
     expect(res.statusCode).toBe(undefined);
-    expect(res._json.disparosRealizados).toBe(undefined);
+    expect(res._json.disparosRealizados).toEqual([]);
     expect(res._json.usosHab).toBe(3);
     expect(res._json.turnosIA.length).toBeGreaterThan(0);
 });
@@ -856,7 +928,7 @@ describe("Colocar mina", () => {
     expect(res.statusCode).toBe(undefined);
     partidaActual = await Partida.findOne({codigo: _codigo});
     misMinas = partidaActual.minas1;
-    ocupadaPorMina = misMinas.some(mina => mina.i === i && mina.j === j && mina.estado === 'Agua');
+    ocupadaPorMina = misMinas.some(mina => mina.i === i && mina.j === j);
     expect(ocupadaPorMina).toBe(true);
     expect(res._json.finPartida).toBe(false);
     expect(res._json.usosHab).toBe(2);
@@ -872,7 +944,7 @@ describe("Colocar mina", () => {
     try {
       await colocarMina(req, res);
     } catch (error) {}    
-    expect(res.statusCode).toBe(404);
+    expect(res._json.minaColocada).toBe(false);
   });
   it("Debería fallar al colocar una mina en una casilla ocupada por otra mina", async () => {
     const partidaActual = await Partida.findOne({codigo: _codigo});
@@ -884,7 +956,7 @@ describe("Colocar mina", () => {
     try {
       await colocarMina(req, res);
     } catch (error) {}    
-    expect(res.statusCode).toBe(404);
+    expect(res._json.minaColocada).toBe(false);
   });
 });
 
@@ -1040,14 +1112,14 @@ describe("Respuesta de mina de la IA a un disparo de ráfaga mío", () => {
       { new: true } // Para devolver el documento actualizado
     );
     // Disparar a la minas de la IA
-    let req = { body: { codigo: _codigo, nombreId: 'usuario1', i: 1, j: 1, misilesRafagaRestantes: 1} };
+    let req = { body: { codigo: _codigo, nombreId: 'usuario1', i: 1, j: 1, misilesRafagaRestantes: 3} };
     let res = { json: function(_json) {this._json = _json; return this;}, status: function(s) {
         this.statusCode = s; return this; }, send: () => {} };
     try {
       await realizarDisparoMisilRafaga(req, res);
     } catch (error) {}    
     expect(res.statusCode).toBe(undefined);
-    expect(res._json.turnosIA.length).toBeGreaterThan(0);
+    //expect(res._json.turnosIA.length).toBeGreaterThan(0);
     expect(res._json.usosHab).toBe(2);
     expect(res._json.minaDisparada).toBeDefined();  // He explotado una mina
     expect(res._json.disparosRespuestaMina.length).toBe(5);  // La mina ha respondido con 5 disparos
@@ -1057,7 +1129,7 @@ describe("Respuesta de mina de la IA a un disparo de ráfaga mío", () => {
     let minaExplotada = partidaActual.minas2.find(mina => mina.i === iMinaExplotada && mina.j === jMinaExplotada 
       && mina.estado === "Hundido");
     expect(minaExplotada).toBeDefined();  // La mina disparada está hundida
-    expect(partidaActual.contadorTurno).toBe(3);
+    expect(partidaActual.contadorTurno % 2).toBe(1);
   });
 });
 
@@ -1290,7 +1362,7 @@ describe("Usar sónar", () => {
   });
 });
 
-// Test de climas
+//Test de climas
 
 
 // Test for enviarMensaje

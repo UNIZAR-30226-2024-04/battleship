@@ -4,9 +4,11 @@ const mongoose = require("mongoose");
 const perfilRoutes = require('./routes/perfilRoutes');
 const partidaRoutes = require('./routes/partidaRoutes');
 const partidaMultiRoutes = require('./routes/partidaMultiRoutes');
+const publicacionRoutes = require('./routes/publicacionRoutes');
+const chatRoutes = require('./routes/chatRoutes');
 app = express();
 
-const mongoURI = 'mongodb://localhost/BattleshipDB';
+const { mongoURI } = require('./uri');
 
 app.connectDatabase = async () => {
     try {
@@ -35,6 +37,8 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/perfil', perfilRoutes);
 app.use('/partida', partidaRoutes);
 app.use('/partidaMulti', partidaMultiRoutes);
+app.use('/publicacion', publicacionRoutes);
+app.use('/chat', chatRoutes);
 
 app.get('/', (req, res) => {
     res.json({ message: 'API de Battleship' });

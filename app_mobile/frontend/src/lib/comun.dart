@@ -97,7 +97,7 @@ Widget buildActions(BuildContext context) {
               return;
             }
 
-            DestinoManager.setDestino(const Social());
+            DestinoManager.setDestino(Social());
 
             if (!AuthProvider().isLoggedIn) {
               Navigator.pushNamed(context, '/InicioSesion');

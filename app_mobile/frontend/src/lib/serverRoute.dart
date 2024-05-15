@@ -1,51 +1,106 @@
 class ServerRoute {
-  // Juego - Partida
-  String urlObtenerTablero = 'http://localhost:8080/perfil/obtenerDatosPersonales';
-  String urlMoverBarcoInicial = 'http://localhost:8080/perfil/moverBarcoInicial';
-  String urlCrearPartida = 'http://localhost:8080/partida/crearPartida';
-  String urlMostrarMiTablero = 'http://localhost:8080/partida/mostrarMiTablero';
-  String urlMostrarMiTableroMulti = 'http://localhost:8080/partidaMulti/mostrarMiTablero';
-  String urlMostrarTableroEnemigo = 'http://localhost:8080/partida/mostrarTableroEnemigo';
-  String urlMostrarTableroEnemigoMulti = 'http://localhost:8080/partidaMulti/mostrarTableroEnemigo';
-  String urlCrearPartidaMulti = 'http://localhost:8080/partidaMulti/crearPartida';
-  String urlCrearSala = 'http://localhost:8080/partidaMulti/crearSala';
-  String urlBuscarSala = 'http://localhost:8080/partidaMulti/buscarSala';
-  String urlAbandonarPartida = 'http://localhost:8080/partida/abandonarPartida';
-  String urlAbandonarPartidaMulti = 'http://localhost:8080/partidaMulti/abandonarPartida';
-  String urlDisparar = 'http://localhost:8080/partida/realizarDisparo';
-  String urlDispararMulti = 'http://localhost:8080/partidaMulti/realizarDisparo';
+  //String urlBase = 'http://13.81.81.208/api/';
+  String urlBase = 'http://localhost:8080/';
+  String urlObtenerTablero = '';
+  String urlMoverBarcoInicial = '';
+  String urlCrearPartida = '';
+  String urlMostrarMiTablero = '';
+  String urlMostrarMiTableroMulti = '';
+  String urlMostrarTableroEnemigo = '';
+  String urlMostrarTableroEnemigoMulti = '';
+  String urlCrearPartidaMulti = '';
+  String urlCrearSala = '';
+  String urlBuscarSala = '';
+  String urlAbandonarPartida = '';
+  String urlAbandonarPartidaMulti = '';
+  String urlDisparar = '';
+  String urlDispararMulti = '';
 
   // Perfil - Usuario
-  String urlInicioSesion = 'http://localhost:8080/perfil/iniciarSesion';
-  String urlRegistro = 'http://localhost:8080/perfil/registrarUsuario';
-  String urlModificarDatosPersonales = 'http://localhost:8080/perfil/modificarDatosPersonales';
-  String urlEliminarUsuario = 'http://localhost:8080/perfil/eliminarUsuario';
-  String urlObtenerPerfil = 'http://localhost:8080/perfil/obtenerUsuario';
+  String urlInicioSesion = '';
+  String urlRegistro = '';
+  String urlModificarDatosPersonales = '';
+  String urlEliminarUsuario = '';
+  String urlObtenerPerfil = '';
 
   // Mazo y Barcos 
-  String urlDispararRafaga = 'http://localhost:8080/partida/realizarDisparoMisilRafaga';
-  String urlDispararTorpedo = 'http://localhost:8080/partida/realizarDisparoTorpedoRecargado';
-  String urlDispararTeledirigido = 'http://localhost:8080/partida/realizarDisparoMisilTeledirigido';
-  String urlColocarMina = 'http://localhost:8080/partida/colocarMina';
-  String urlUsarSonar = 'http://localhost:8080/partida/usarSonar';
-  String urlDispararRafagaMulti = 'http://localhost:8080/partidaMulti/realizarDisparoMisilRafaga';
-  String urlDispararTorpedoMulti = 'http://localhost:8080/partidaMulti/realizarDisparoTorpedoRecargado';
-  String urlDispararTeledirigidoMulti = 'http://localhost:8080/partidaMulti/realizarDisparoMisilTeledirigido';
-  String urlColocarMinaMulti = 'http://localhost:8080/partidaMulti/colocarMina';
-  String urlUsarSonarMulti = 'http://localhost:8080/partidaMulti/usarSonar';
-  String urlModificarMazo = 'http://localhost:8080/perfil/modificarMazo';
+  String urlDispararRafaga = '';
+  String urlDispararTorpedo = '';
+  String urlDispararTeledirigido = '';
+  String urlColocarMina = '';
+  String urlUsarSonar = '';
+  String urlDispararRafagaMulti = '';
+  String urlDispararTorpedoMulti = '';
+  String urlDispararTeledirigidoMulti = '';
+  String urlColocarMinaMulti = '';
+  String urlUsarSonarMulti = '';
+  String urlModificarMazo = '';
 
   // Social - Amigos / Solicitudes de amistad
-  String urlObtenerAmigos = 'http://localhost:8080/perfil/obtenerAmigos';
-  String urlAgnadirAmigo = 'http://localhost:8080/perfil/agnadirAmigo';
-  String urlEliminarAmigo = 'http://localhost:8080/perfil/eliminarAmigo';
-  String urlObtenerSolicitudAmistad = 'http://localhost:8080/perfil/obtenerSolicitudAmistad';
-  String urlEnviarSolicitudAmistad = 'http://localhost:8080/perfil/enviarSolicitudAmistad';
-  String urlEliminarSolicitudAmistad = 'http://localhost:8080/perfil/eliminarSolicitudAmistad';
+  String urlObtenerAmigos = '';
+  String urlAgnadirAmigo = '';
+  String urlEliminarAmigo = '';
+  String urlObtenerSolicitudAmistad = '';
+  String urlEnviarSolicitudAmistad = '';
+  String urlEliminarSolicitudAmistad = '';
 
   // Social - Publicaciones
-  String urlCrearPublicacion = 'http://localhost:8080/publicacion/crearPublicacion';
-  String urlObtenerPublicacion = 'http://localhost:8080/publicacion/obtenerPublicacion';
-  String urlReaccionarPublicacion = 'http://localhost:8080/publicacion/reaccionarPublicacion';
-  String urlEliminarPublicacion = 'http://localhost:8080/publicacion/eliminarPublicacion';
+  String urlCrearPublicacion = '';
+  String urlObtenerPublicaciones = '';
+  String urlObtenerPublicacionesAmigos = '';
+  String urlReaccionarPublicacion = '';
+  String urlEliminarPublicacion = '';
+    
+  ServerRoute() {
+    // Juego - Partida
+    urlObtenerTablero = '${urlBase}perfil/obtenerDatosPersonales';
+    urlMoverBarcoInicial = '${urlBase}perfil/moverBarcoInicial';
+    urlCrearPartida = '${urlBase}partida/crearPartida';
+    urlMostrarMiTablero = '${urlBase}partida/mostrarMiTablero';
+    urlMostrarMiTableroMulti = '${urlBase}partidaMulti/mostrarMiTablero';
+    urlMostrarTableroEnemigo = '${urlBase}partida/mostrarTableroEnemigo';
+    urlMostrarTableroEnemigoMulti = '${urlBase}partidaMulti/mostrarTableroEnemigo';
+    urlCrearPartidaMulti = '${urlBase}partidaMulti/crearPartida';
+    urlCrearSala = '${urlBase}partidaMulti/crearSala';
+    urlBuscarSala = '${urlBase}partidaMulti/buscarSala';
+    urlAbandonarPartida = '${urlBase}partida/abandonarPartida';
+    urlAbandonarPartidaMulti = '${urlBase}partidaMulti/abandonarPartida';
+    urlDisparar = '${urlBase}partida/realizarDisparo';
+    urlDispararMulti = '${urlBase}partidaMulti/realizarDisparo';
+
+    // Perfil - Usuario
+    urlInicioSesion = '${urlBase}perfil/iniciarSesion';
+    urlRegistro = '${urlBase}perfil/registrarUsuario';
+    urlModificarDatosPersonales = '${urlBase}perfil/modificarDatosPersonales';
+    urlEliminarUsuario = '${urlBase}perfil/eliminarUsuario';
+    urlObtenerPerfil = '${urlBase}perfil/obtenerUsuario';
+
+    // Mazo y Barcos 
+    urlDispararRafaga = '${urlBase}partida/realizarDisparoMisilRafaga';
+    urlDispararTorpedo = '${urlBase}partida/realizarDisparoTorpedoRecargado';
+    urlDispararTeledirigido = '${urlBase}partida/realizarDisparoMisilTeledirigido';
+    urlColocarMina = '${urlBase}partida/colocarMina';
+    urlUsarSonar = '${urlBase}partida/usarSonar';
+    urlDispararRafagaMulti = '${urlBase}partidaMulti/realizarDisparoMisilRafaga';
+    urlDispararTorpedoMulti = '${urlBase}partidaMulti/realizarDisparoTorpedoRecargado';
+    urlDispararTeledirigidoMulti = '${urlBase}partidaMulti/realizarDisparoMisilTeledirigido';
+    urlColocarMinaMulti = '${urlBase}partidaMulti/colocarMina';
+    urlUsarSonarMulti = '${urlBase}partidaMulti/usarSonar';
+    urlModificarMazo = '${urlBase}perfil/modificarMazo';
+
+    // Social - Amigos / Solicitudes de amistad
+    urlObtenerAmigos = '${urlBase}perfil/obtenerAmigos';
+    urlAgnadirAmigo = '${urlBase}perfil/agnadirAmigo';
+    urlEliminarAmigo = '${urlBase}perfil/eliminarAmigo';
+    urlObtenerSolicitudAmistad = '${urlBase}perfil/obtenerSolicitudesAmistad';
+    urlEnviarSolicitudAmistad = '${urlBase}perfil/enviarSolicitudAmistad';
+    urlEliminarSolicitudAmistad = '${urlBase}perfil/eliminarSolicitudAmistad';
+
+    // Social - Publicaciones
+    urlCrearPublicacion = '${urlBase}publicacion/crearPublicacion';
+    urlObtenerPublicaciones = '${urlBase}publicacion/obtenerPublicaciones';
+    urlObtenerPublicacionesAmigos = '${urlBase}publicacion/obtenerPublicacionesAmigos';
+    urlReaccionarPublicacion = '${urlBase}publicacion/reaccionarPublicacion';
+    urlEliminarPublicacion = '${urlBase}publicacion/eliminarPublicacion';
+  }
 }

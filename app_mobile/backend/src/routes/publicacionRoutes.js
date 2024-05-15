@@ -9,8 +9,13 @@ router.post('/crearPublicacion', verificarToken, publicacionController.crearPubl
 // Ruta para obtener publicaciones de un usuario
 router.post('/obtenerPublicaciones', publicacionController.obtenerPublicaciones);
 
+// Ruta para obtener publicaciones de un usuario y sus amigos
+router.post('/obtenerPublicacionesAmigos', verificarToken, publicacionController.obtenerPublicacionesAmigos);
+
 // Ruta para reaccionar a una publicacion
 router.post('/reaccionarPublicacion', verificarToken, publicacionController.reaccionarPublicacion);
 
 // Ruta para eliminar una publicacion
 router.post('/eliminarPublicacion', verificarToken, publicacionController.eliminarPublicacion);
+
+module.exports = router;

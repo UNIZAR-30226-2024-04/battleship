@@ -61,13 +61,14 @@ exports.crearPartida = async (req, res) => {
  * @param {Object} req - El objeto de solicitud HTTP
  * @param {String} req.body.nombreId - El nombreId del jugador 1
  * @param {BiomasDisponibles} req.body.bioma - El bioma de la partida
- * @param {Boolean} [req.body.amistosa] - Indica si la partida es amistosa, por defecto es false
+ * @param {Boolean} [req.body.amistosa = false] - Indica si la partida es amistosa, por defecto es false
+ * @param {String} [req.body.torneo = '-1'] - Indica si la partida es parte de un torneo, por defecto es -1
  * @param {Object} res - El objeto despuesta HTTP con el codigo de la partida creada TODO: CAMBIAR ESTO EN BACKEND
  * @param {Number} res.codigo - El código de la partida
  */
 exports.crearSala = async (req, res) => {
   try {
-    const { nombreId, bioma = 'Mediterraneo', amistosa = false, torneo = false, ...extraParam } = req.body;
+    const { nombreId, bioma = 'Mediterraneo', amistosa = false, torneo = '-1', ...extraParam } = req.body;
     // llamar a la funcion de partidaController para generar el codigo
     const codigo = await PartidaController.generarCodigo();
     // Crear la sala en la base de datos
@@ -75,7 +76,7 @@ exports.crearSala = async (req, res) => {
       codigo, 
       nombreId1: nombreId, 
       nombreId2: undefined,
-      bioma,
+      bioma: bioma,
       amistosa: amistosa,
       torneo: torneo
     });
@@ -87,7 +88,11 @@ exports.crearSala = async (req, res) => {
       console.error('Los sockets no están disponibles');
       return;
     }
-    res.json({ codigo: salaGuardada.codigo });
+    res.json({ codigo: salaGuardada.codigo,
+              bioma: salaGuardada.bioma,
+              amistosa: salaGuardada.amistosa,
+              torneo: salaGuardada.torneo
+    });
     console.log('Sala creada con éxito');
   } catch (error) {
     res.status(500).send('Hubo un error creando la sala'+ error.message);
@@ -101,13 +106,16 @@ exports.crearSala = async (req, res) => {
  * @description Permite a un jugador unirse a una sala multijugador ya creada y empezar la partida
  * @param {Object} req - El objeto de solicitud HTTP
  * @param {String} req.body.nombreId - El nombreId del jugador
+ * @param {Boolean} [req.body.amistosa = false] - Indica si la partida es amistosa
+ * @param {String} [req.body.torneo = '-1'] - Indica si la partida es parte de un torneo
+ * @param {String} [req.body.bioma = 'Mediterraneo'] - El bioma de la partida
  * @param {Object} res - El objeto de respuesta HTTP con el codigo de la partida creada
  * @param {Number} res.codigo - El código de la partida  (-1 si no se encuentra sala)
  */
 exports.buscarSala = async (req, res) => {
   // Esta funcion no llama a ninguna funcion de partidaController
   try {
-    const { nombreId, ...extraParam } = req.body;
+    const { nombreId, amistosa = false, torneo = '-1', bioma = 'Mediterraneo', ...extraParam } = req.body;
     // Buscar sala en base de datos
     if (!nombreId) {
       res.status(400).send('Falta el nombreId');
@@ -117,9 +125,18 @@ exports.buscarSala = async (req, res) => {
       res.status(400).send('Faltan parametros');
       return;
     }
-    // Busca sala cualquiera en la base de datos que no tenga el nombreId2
-    const sala = await Sala.findOne({ nombreId2: undefined });
-    if (sala) {
+    // Buscar todas las salas que cumplan con los parametros
+    const salas = await Sala.find({ nombreId2: undefined, amistosa: amistosa, torneo: torneo, bioma: bioma });
+
+    if (salas.length > 0) {
+      // Ordenar las salas por similitud de trofeos de los jugadores
+      salas.sort((a, b) => {
+        const perfilA = Perfil.findOne({ nombreId: a.nombreId1 });
+        const perfilB = Perfil.findOne({ nombreId: b.nombreId1 });
+        return abs(perfilA.trofeos - perfilB.trofeos);
+      });
+      // Seleccionar la primera sala
+      const sala = salas[0];
       // Si se encuentra la sala, se actualiza el nombreId2
       sala.nombreId2 = nombreId;
       await sala.save();
@@ -128,8 +145,10 @@ exports.buscarSala = async (req, res) => {
       const io = getIO();
       io.to('/partida' + sala.codigo).emit(eventosSocket.partidaEncontrada, sala.codigo);
       console.log('Partida encontrada en backend:', sala.codigo);
+      res.json({ codigo: sala.codigo, bioma: sala.bioma, amistosa: sala.amistosa, torneo: sala.torneo });
     } else {
-      res.json({ codigo: -1 });
+      console.log('No se encontraron salas');
+      res.json({ codigo: -1});
     }
   }
   catch (error) {
@@ -248,8 +267,6 @@ exports.mostrarTableros = async (req, res) => {
 exports.realizarDisparo = async (req, res) => {
   const respuesta = await PartidaController.realizarDisparo(req, res);
   const io = getIO();
-  console.log('Resultado turno previo disparo recibido en backend:', req.body.nombreId, respuesta.disparoRealizado, respuesta.barcoCoordenadas, respuesta.finPartida,
-  respuesta.clima, respuesta.eventoOcurrido, respuesta.minaDisparada, respuesta.disparosRespuestaMina, respuesta.barcosHundidosRespuestaMina);
   io.to('/partida' + req.body.codigo).emit(eventosSocket.resultadoTurno, "disparo", req.body.nombreId, respuesta.disparoRealizado, respuesta.barcoCoordenadas, respuesta.finPartida, respuesta.clima,
    respuesta.eventoOcurrido, 0, respuesta.minaDisparada, respuesta.disparosRespuestaMina, respuesta.barcosHundidosRespuestaMina);
   console.log('Resultado turno tras disparo recibido en backend:', req.body.nombreId, respuesta.disparoRealizado, respuesta.barcoCoordenadas, respuesta.finPartida,

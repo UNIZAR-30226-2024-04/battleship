@@ -6,7 +6,8 @@ const {registrarUsuario, autenticarUsuario, eliminarUsuario, iniciarSesion,
   const { barcosDisponibles } = require('../data/barco');
 const e = require('express');
 const Perfil = require('../models/perfilModel');
-const mongoURI = 'mongodb://localhost/BattleshipDB';
+const { mongoURI } = require('../uri');
+
 mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true, 
   useCreateIndex: true, useFindAndModify: false});
 
@@ -810,6 +811,21 @@ describe('Modificar mazo', () => {
       } catch (error) {}
       expect(res.statusCode).toBe(400);
   });
+  it('Debería fallar al modificar el mazo de un usuario en partida', async () => {
+    const req = { body: { nombreId: 'usuario1', mazoHabilidades: ['Teledirigido', 'Mina', 'Recargado'] } };
+    const res = { json: function(_json) {this._json = _json; return this;}, status: function(s) {
+      this.statusCode = s; return this; }, send: () => {} };
+    await Perfil.findOneAndUpdate({nombreId: 'usuario1'}, {codigoPartidaActual: '1234567890'}, {new: true});
+      try {
+      await modificarMazo(req, res);
+    } catch (error) {}
+    expect(res.statusCode).toBe(undefined);
+    const perfil = await Perfil.findOne({nombreId: 'usuario1'});
+    expect(perfil.mazoHabilidades.length).toBe(3);
+    expect(perfil.mazoHabilidades[0]).toBe('Rafaga');
+    expect(perfil.mazoHabilidades[1]).toBe('Mina');
+    expect(perfil.mazoHabilidades[2]).toBe('Sonar');
+});
 });
 
 // Test for moverBarcoInicial
@@ -1125,30 +1141,30 @@ describe('Enviar solicitud de amistad', () => {
   });
   it('Debería fallar al enviar una solicitud de amistad a un nombreId ya amigo', async () => {
       const req = { body: { nombreId: 'usuario2', nombreIdAmigo: 'usuario3' } };
-      const res = { json: () => {}, status: function(s) { 
+      const res = { json: function(_json) {this._json = _json; return this;}, status: function(s) {
         this.statusCode = s; return this; }, send: () => {} };
       try {
         await enviarSolicitudAmistad(req, res);
       } catch (error) {}
-      expect(res.statusCode).toBe(404);
+      expect(res._json.exito).toBe(false);
   });
   it('Debería fallar al enviar una solicitud de amistad a un nombreId con solicitud previa', async () => {
       const req = { body: { nombreId: 'usuario1', nombreIdAmigo: 'usuario2' } };
-      const res = { json: () => {}, status: function(s) { 
+      const res = { json: function(_json) {this._json = _json; return this;}, status: function(s) {
         this.statusCode = s; return this; }, send: () => {} };
       try {
         await enviarSolicitudAmistad(req, res);
       } catch (error) {}
-      expect(res.statusCode).toBe(404);
+      expect(res._json.exito).toBe(false);
   });
   it('Debería fallar al enviar una solicitud de amistad a un nombreId que ya te la ha enviado', async () => {
     const req = { body: { nombreId: 'usuario2', nombreIdAmigo: 'usuario1' } };
-    const res = { json: () => {}, status: function(s) { 
+    const res = { json: function(_json) {this._json = _json; return this;}, status: function(s) {
       this.statusCode = s; return this; }, send: () => {} };
     try {
       await enviarSolicitudAmistad(req, res);
     } catch (error) {}
-    expect(res.statusCode).toBe(404);
+    expect(res._json.exito).toBe(false);
   });
 });
 

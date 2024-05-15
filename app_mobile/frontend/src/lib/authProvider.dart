@@ -4,7 +4,6 @@ import 'package:http/http.dart' as http;
 import 'comun.dart';
 import 'juego.dart';
 import 'error.dart';
-import 'dart:html';
 import 'serverRoute.dart';
 
 /*
@@ -167,8 +166,8 @@ class AuthProvider with ChangeNotifier {
         _isLoggedIn = true;
         Juego().setSession(name, "", password, tokenSesion);
         await Juego().cargarPartida(context);
-        document.cookie = 'usuario=$name';
-        document.cookie = 'tokenSesion=$tokenSesion';
+        //document.cookie = 'usuario=$name';
+        //document.cookie = 'tokenSesion=$tokenSesion';
         print(tokenSesion);
         notifyListeners(); // Notifica a los listeners que la variable ha cambiado
         return true;
@@ -208,8 +207,8 @@ class AuthProvider with ChangeNotifier {
       _isLoggedIn = true;
       Juego().setSession(name, email, password, tokenSesion);
       await Juego().cargarPartida(context);
-      document.cookie = 'usuario=$name';
-      document.cookie = 'tokenSesion=$tokenSesion';
+      //document.cookie = 'usuario=$name';
+      //document.cookie = 'tokenSesion=$tokenSesion';
       mensajeErrorModel.cleanErrorMessage();
       notifyListeners();      // Notifica a los listeners que la variable ha cambiado
       return true;

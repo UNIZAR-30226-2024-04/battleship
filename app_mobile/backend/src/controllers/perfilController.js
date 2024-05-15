@@ -8,6 +8,7 @@ const Coordenada = require('../data/coordenada');
 const config = require('../config/auth.config');
 const {barcosDisponibles} = require('../data/barco');
 const { calcularNivel } = require('../data/niveles');
+const {crearPublicacion} = require('./publicacionController');
 /**
  * @module perfil
  * @description Funciones para el manejo de perfiles de usuario.
@@ -362,7 +363,7 @@ exports.modificarDatosPersonales = async (req, res) => {
         });
       }
       res.json(perfilDevuelto);
-      console.log("Perfil modificado con éxito");
+      console.log("Datos personales modificados con éxito");
     } else {
       res.status(404).send('No se ha encontrado el perfil a modificar');
       console.error("No se ha encontrado el perfil a modificar");
@@ -656,26 +657,42 @@ exports.modificarMazo = async (req, res) => {
       console.error("No puede haber habilidades repetidas en el mazo");
       return;
     }
-    // Buscar y actualizar el perfil en la base de datos
+    // Verificar si el jugador no está en partida
     const filtro = { nombreId: nombreId };
-    const perfilModificado = await Perfil.findOneAndUpdate(
-      filtro, // Filtro para encontrar el perfil a modificar
-      {
-        $set: {
-          mazoHabilidades: mazoHabilidades
-        }
-      },
-      { new: true } // Para devolver el documento actualizado
-    );
+    const perfil = await Perfil.findOne(filtro);
+    if (perfil) {
+      if (perfil.codigoPartidaActual === -1) {
+        // Buscar y actualizar el perfil en la base de datos
+        const perfilModificado = await Perfil.findOneAndUpdate(
+          filtro, // Filtro para encontrar el perfil a modificar
+          {
+            $set: {
+              mazoHabilidades: mazoHabilidades
+            }
+          },
+          { new: true } // Para devolver el documento actualizado
+        );
 
-    // Verificar si el perfil existe y enviar la respuesta al cliente
-    if (perfilModificado) {
-      let mazoDevuelto = perfilModificado.mazoHabilidades;
-      mazoDevuelto.forEach(habilidad => {
-        habilidad._id = undefined;
-      });
-      res.json(mazoDevuelto);
-      console.log("Mazo modificado con éxito");
+        // Verificar si el perfil existe y enviar la respuesta al cliente
+        if (perfilModificado) {
+          let mazoDevuelto = perfilModificado.mazoHabilidades;
+          mazoDevuelto.forEach(habilidad => {
+            habilidad._id = undefined;
+          });
+          res.json(mazoDevuelto);
+          console.log("Mazo modificado con éxito");
+        } else {
+          res.status(404).send('No se ha encontrado el perfil a modificar');
+          console.error("No se ha encontrado el perfil a modificar");
+        }
+      } else {
+        let mazoDevuelto = perfil.mazoHabilidades;
+        mazoDevuelto.forEach(habilidad => {
+          habilidad._id = undefined;
+        });
+        res.json(mazoDevuelto);
+        console.log("Mazo no modificado porque el jugador está en partida");
+      }
     } else {
       res.status(404).send('No se ha encontrado el perfil a modificar');
       console.error("No se ha encontrado el perfil a modificar");
@@ -869,6 +886,24 @@ exports.moverBarcoInicial = async (req, res) => {
 /*--------------------------------------------- PERFIL POST PARTIDA  -------------------------------------------------*/
 /*--------------------------------------------------------------------------------------------------------------------*/
 
+async function crearPublicacionPartidasGanadas(nombreId, partidasGanadas) {
+  const req = { body: { nombreId: nombreId, tipoPublicacion: 2, partidasGanadas: partidasGanadas } };
+  const res = { json: () => {}, status: () => ({ send: () => {} }) }; // No hace nada
+  await crearPublicacion(req, res);
+}
+
+async function crearPublicacionPartidasJugadas(nombreId, partidasJugadas) {
+  const req = { body: { nombreId: nombreId, tipoPublicacion: 3, partidasJugadas: partidasJugadas } };
+  const res = { json: () => {}, status: () => ({ send: () => {} }) }; // No hace nada
+  await crearPublicacion(req, res);
+}
+
+async function crearPublicacionTrofeos(nombreId, trofeos) {
+  const req = { body: { nombreId: nombreId, tipoPublicacion: 0, trofeos: trofeos } };
+  const res = { json: () => {}, status: () => ({ send: () => {} }) }; // No hace nada
+  await crearPublicacion(req, res);
+}
+
 // /**
 //  * @memberof module:perfil
 //  * @function actualizarEstadisticas
@@ -922,9 +957,16 @@ exports.actualizarEstadisticas = async (req, res) => {
         console.error("Las estadísticas deben ser numéricas");
         return;
     }
+    const perfil = await Perfil.findOne({ nombreId: nombreId });
+    if (!perfil) {
+      res.status(404).send('No se ha encontrado el perfil a actualizar');
+      console.error("No se ha encontrado el perfil a actualizar");
+      return;
+    }
+    let maxTrofeos = perfil.maxTrofeos;
     // Buscar y actualizar el perfil en la base de datos
     const filtro = { nombreId: nombreId };
-    const perfilModificado = await Perfil.findOneAndUpdate(
+    let perfilModificado = await Perfil.findOneAndUpdate(
       filtro, // Filtro para encontrar el perfil a modificar
       {
         $inc: {
@@ -939,6 +981,28 @@ exports.actualizarEstadisticas = async (req, res) => {
       },
       { new: true } // Para devolver el documento actualizado
     );
+    if (perfilModificado.trofeos > maxTrofeos) {
+      await Perfil.findOneAndUpdate(
+        filtro, // Filtro para encontrar el perfil a modificar
+        {
+          $set: {
+            maxTrofeos: perfilModificado.trofeos
+          }
+        }
+      );
+      if ((victoria !== undefined) && perfilModificado.trofeos + 10 > maxTrofeos) {
+        await crearPublicacionTrofeos(nombreId, perfilModificado.trofeos);
+      }
+    }
+    if ((victoria === 1) && (perfilModificado.partidasGanadas % 10 === 0 ||
+      perfilModificado.partidasGanadas === 1)) {
+      await crearPublicacionPartidasGanadas(nombreId, perfilModificado.partidasGanadas);
+    }
+    if ((victoria !== undefined) && perfilModificado.partidasJugadas % 10 === 0
+      || perfilModificado.partidasJugadas === 1) {
+      await crearPublicacionPartidasJugadas(nombreId, perfilModificado.partidasJugadas);
+    }
+
     // Verificar si el perfil existe y enviar la respuesta al cliente
     if (perfilModificado) {
       let perfilDevuelto = { nombreId: perfilModificado.nombreId,
@@ -951,7 +1015,7 @@ exports.actualizarEstadisticas = async (req, res) => {
         trofeos: perfilModificado.trofeos
       };
       res.json(perfilDevuelto);
-      console.log("Perfil modificado con éxito");
+      console.log("Estadísticas actualizadas con éxito");
     } else {
       res.status(404).send('No se ha encontrado el perfil a actualizar');
       console.error("No se ha encontrado el perfil a actualizar");
@@ -963,6 +1027,12 @@ exports.actualizarEstadisticas = async (req, res) => {
     console.log("Error al actualizar el perfil", error);
   }
 };
+
+async function crearPublicacionNuevoNivel(nombreId, nivel) {
+  const req = { body: { nombreId: nombreId, tipoPublicacion: 0, nivel: nivel } };
+  const res = { json: () => {}, status: () => ({ send: () => {} }) }; // No hace nada
+  await crearPublicacion(req, res);
+}
 
 // /**
 //  * @memberof module:perfil
@@ -1001,6 +1071,14 @@ exports.actualizarPuntosExperiencia = async (req, res) => {
         console.error("Los puntos de experiencia deben ser numéricos");
         return;
     }
+    const perfil = await Perfil.findOne({ nombreId: nombreId });
+    if (!perfil) {
+      res.status(404).send('No se ha encontrado el perfil a actualizar');
+      console.error("No se ha encontrado el perfil a actualizar");
+      return;
+    }
+    const nivelAnterior = calcularNivel(perfil.puntosExperiencia)[0];
+    const nivelNuevo = calcularNivel(perfil.puntosExperiencia + nuevosPuntosExperiencia)[0];
     // Buscar y actualizar el perfil en la base de datos
     const filtro = { nombreId: nombreId };
     const perfilModificado = await Perfil.findOneAndUpdate(
@@ -1012,12 +1090,15 @@ exports.actualizarPuntosExperiencia = async (req, res) => {
       },
       { new: true } // Para devolver el documento actualizado
     );
+    if (nivelNuevo > nivelAnterior) {
+      await crearPublicacionNuevoNivel(nombreId, nivelNuevo);
+    }
     // Verificar si el perfil existe y enviar la respuesta al cliente
     if (perfilModificado) {
       let perfilDevuelto = { nombreId: perfilModificado.nombreId,
         puntosExperiencia: perfilModificado.puntosExperiencia };
       res.json(perfilDevuelto);
-      console.log("Perfil modificado con éxito");
+      console.log("Experiencia modificada con éxito");
     } else {
       res.status(404).send('No se ha encontrado el perfil a actualizar');
       console.error("No se ha encontrado el perfil a actualizar");

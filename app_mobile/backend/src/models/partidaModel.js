@@ -29,6 +29,7 @@ const Coordenada = require('../data/coordenada');
  * @property {Coordenada[]} minas2 - Lista con las minas colocadas por J2
  * @property {String} bioma - Bioma en el que se va a jugar la partida y que se caracteriza por una mayor probabilidad de clima
  * @property {Boolean} amistosa - Indica si la partida es amistosa o no
+ * @property {String} torneo - Indica si la partida es parte de un torneo y el código del torneo
  * @property {String} ganador - NombreId del jugador ganador
  */
 
@@ -50,6 +51,7 @@ const partidaSchema = new Schema({
   },
   nombreId2: { // Perfil del jugador 2
     type: String, // NombreId del jugador
+    default: 'IA' // Valor predeterminado como 'IA'
   },
   tableroBarcos1: { // Lista barcos del jugador 1
     type: Tablero,
@@ -102,7 +104,7 @@ const partidaSchema = new Schema({
     default: '-1'    // -1: No es parte de un torneo, cualquier otro valor: Código del torneo
   },
   ganador: {  // NombreId del jugador ganador
-    type: 'String',
+    type: String,
     default: ''
   }
 }, { timestamps: true }); // timestamps añade automáticamente campos para 'createdAt' y 'updatedAt'

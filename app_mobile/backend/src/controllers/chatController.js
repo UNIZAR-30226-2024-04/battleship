@@ -1,5 +1,7 @@
 const Chat = require('../models/chatModel');
 const Perfil = require('../models/perfilModel');
+const { getIO, eventosSocket } = require('../socketManager');
+
 /**
  * 
  * @memberof module:chat
@@ -51,6 +53,9 @@ exports.obtenerChat = async (req, res) => {
         }
         res.json(chatDevuelto);
         console.log('Chat obtenido con éxito');
+        
+        const io = getIO();
+        io.to('/chat' + nombreId1 + nombreId2).emit(eventosSocket.chat, chatDevuelto.nombreId1, chatDevuelto.nombreId2, chatDevuelto.chat);
     } catch (error) {
         res.status(500).send('Hubo un error');
         console.error('Hubo un error');
