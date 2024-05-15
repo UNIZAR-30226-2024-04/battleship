@@ -2,8 +2,9 @@ import { useNavigate } from "react-router-dom";
 import { Navbar } from "../Components/Navbar";
 import '../Styles/login-style.css';
 import Cookies from 'universal-cookie';
+import info from '../Resources/info';
 
-const iniciarSesionURI = 'http://localhost:8080/perfil/iniciarSesion';
+const iniciarSesionURI = info["serverAddress"] + 'perfil/iniciarSesion';
 
 
 export function Login() {

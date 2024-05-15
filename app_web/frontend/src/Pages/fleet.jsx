@@ -24,10 +24,12 @@ import burstImg from '../Images/skills/rafaga.png';
 import sonarImg from '../Images/skills/sonar.png';
 import torpedoImg from '../Images/skills/torpedo.png';
 
+import info from '../Resources/info';
+
 // Establecer la url de obtenerDatosPersonales, moverBarcoInicial del backend
-const urlObtenerDatosPersonales = 'http://localhost:8080/perfil/obtenerDatosPersonales';
-const urlMoverBarcoInicial = 'http://localhost:8080/perfil/moverBarcoInicial';
-const urlModificarMazoHabilidades = 'http://localhost:8080/perfil/modificarMazo';
+const urlObtenerDatosPersonales = info["serverAddress"] + 'perfil/obtenerDatosPersonales';
+const urlMoverBarcoInicial = info["serverAddress"] + 'perfil/moverBarcoInicial';
+const urlModificarMazoHabilidades = info["serverAddress"] + 'perfil/modificarMazo';
 
 const cookies = new Cookies();
 

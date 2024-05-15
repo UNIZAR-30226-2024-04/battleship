@@ -38,18 +38,19 @@ import socketIO from 'socket.io-client'; // Este creo que es el socket bueno
 import info from '../Resources/info';
 
 // Establecer la url de obtenerPerfil, moverBarcoInicial del backend
-const urlObtenerDatosPersonales = 'http://localhost:8080/perfil/obtenerDatosPersonales';
-const urlMoverBarcoInicial = 'http://localhost:8080/perfil/moverBarcoInicial';
-const urlModificarMazoHabilidades = 'http://localhost:8080/perfil/modificarMazo';
-const urlCrearPartida = 'http://localhost:8080/partidaMulti/crearPartida';
-const urlRealizarDisparo = 'http://localhost:8080/partidaMulti/realizarDisparo';
-const urlMostrarTableros = 'http://localhost:8080/partidaMulti/mostrarTableros';
-const urlAbandonarPartida = 'http://localhost:8080/partidaMulti/abandonarPartida';
-const urlRealizarDisparoMisilRafaga = 'http://localhost:8080/partidaMulti/realizarDisparoMisilRafaga';
-const urlRealizarDisparoTorpedoRecargado = 'http://localhost:8080/partidaMulti/realizarDisparoTorpedoRecargado';
-const urlRealizarDisparoMisilTeledirigido = 'http://localhost:8080/partidaMulti/realizarDisparoMisilTeledirigido';
-const urlColocarMina = 'http://localhost:8080/partidaMulti/colocarMina';
-const urlUsarSonar = 'http://localhost:8080/partidaMulti/usarSonar';
+const urlObtenerDatosPersonales = info["serverAddress"] + 'perfil/obtenerDatosPersonales';
+const urlMoverBarcoInicial = info["serverAddress"] + 'perfil/moverBarcoInicial';
+const urlModificarMazoHabilidades = info["serverAddress"] + 'perfil/modificarMazo';
+const urlCrearPartida = info["serverAddress"] + 'partidaMulti/crearPartida';
+const urlRealizarDisparo = info["serverAddress"] + 'partidaMulti/realizarDisparo';
+const urlMostrarTableros = info["serverAddress"] + 'partidaMulti/mostrarTableros';
+const urlAbandonarPartida = info["serverAddress"] + 'partidaMulti/abandonarPartida';
+const urlRealizarDisparoMisilRafaga = info["serverAddress"] + 'partidaMulti/realizarDisparoMisilRafaga';
+const urlRealizarDisparoTorpedoRecargado = info["serverAddress"] + 'partidaMulti/realizarDisparoTorpedoRecargado';
+const urlRealizarDisparoMisilTeledirigido = info["serverAddress"] + 'partidaMulti/realizarDisparoMisilTeledirigido';
+const urlColocarMina = info["serverAddress"] + 'partidaMulti/colocarMina';
+const urlUsarSonar = info["serverAddress"] + 'partidaMulti/usarSonar';
+
 
 const cookies = new Cookies();
 const io = socketIO(info['serverAddress']); // Puerto del backend en local

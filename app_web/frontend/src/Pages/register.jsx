@@ -1,7 +1,8 @@
 import { Navbar } from "../Components/Navbar";
 import '../Styles/register-style.css';
+import info from '../Resources/info';
 
-const registrarUsuarioURI = "http://localhost:8080/perfil/registrarUsuario";
+const registrarUsuarioURI = info["serverAddress"] + "perfil/registrarUsuario";
 
 /* Confirmar contraseña
 <input

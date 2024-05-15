@@ -1,16 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import Cookies from 'universal-cookie';
 import UserContainerTemplate from '../../Components/UserContainerTemplate';
-
 import info from '../../Resources/info';
 
-const urlServer = info['serverAddress'];
-
-const urlRoot = urlServer + '/perfil/';
-const urlObtenerSolicitudes = urlRoot + 'obtenerSolicitudesAmistad';
-const urlEnviarSolicitud = urlRoot + 'enviarSolicitudAmistad';
-const urlEliminarSolicitud = urlRoot + 'eliminarSolicitudAmistad';
-const urlAgnadirAmigo = urlRoot + 'agnadirAmigo';
+const urlObtenerSolicitudes = info['serverAddress'] + 'perfil/obtenerSolicitudesAmistad';
+const urlEnviarSolicitud = info['serverAddress'] + 'perfil/enviarSolicitudAmistad';
+const urlEliminarSolicitud = info['serverAddress'] + 'perfil/eliminarSolicitudAmistad';
+const urlAgnadirAmigo = info['serverAddress'] + 'perfil/agnadirAmigo';
 
 
 const SolicitudesMenu = () => {

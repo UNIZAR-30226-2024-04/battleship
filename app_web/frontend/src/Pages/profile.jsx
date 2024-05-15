@@ -3,8 +3,9 @@ import Cookies from 'universal-cookie';
 import { Navbar } from "../Components/Navbar";
 import Flag from 'react-world-flags'
 import '../Styles/profile-style.css';
+import info from '../Resources/info';
 
-const urlObtenerEstadisticas = 'http://localhost:8080/perfil/obtenerUsuario';
+const urlObtenerEstadisticas = info["serverAddress"] + 'perfil/obtenerUsuario';
 
 const Profile = () => {
     const cookies = new Cookies();

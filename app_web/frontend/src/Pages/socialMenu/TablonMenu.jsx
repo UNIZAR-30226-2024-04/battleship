@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import Cookies from 'universal-cookie';
 import UserContainerTemplate from '../../Components/UserContainerTemplate';
-
 import info from '../../Resources/info';
-const urlServer = info['serverAddress'];
-//const urlObtenerPublicaciones = urlServer + '/publicacion/obtenerPublicaciones';
-const urlObtenerPublicaciones = 'http://localhost:8080/publicacion/obtenerPublicaciones';
+
+const urlObtenerPublicaciones = info['serverAddress'] + 'publicacion/obtenerPublicaciones';
 
 const TablonMenu = () => {
     const [publicaciones, setPublicaciones] = useState([]);

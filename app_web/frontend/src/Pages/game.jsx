@@ -45,19 +45,21 @@ import vientoOesteImg from '../Images/climas/VientoOeste.png';
 import { useSocket } from '../Contexts/SocketContext';
 import { Navigate } from 'react-router-dom';
 
+import info from '../Resources/info';
+
 // Establecer la url de obtenerPerfil, moverBarcoInicial del backend
-const urlObtenerDatosPersonales = 'http://localhost:8080/perfil/obtenerDatosPersonales';
-const urlMoverBarcoInicial = 'http://localhost:8080/perfil/moverBarcoInicial';
-const urlModificarMazoHabilidades = 'http://localhost:8080/perfil/modificarMazo';
-const urlCrearPartida = 'http://localhost:8080/partida/crearPartida';
-const urlRealizarDisparo = 'http://localhost:8080/partida/realizarDisparo';
-const urlMostrarTableros = 'http://localhost:8080/partida/mostrarTableros';
-const urlAbandonarPartida = 'http://localhost:8080/partida/abandonarPartida';
-const urlRealizarDisparoMisilRafaga = 'http://localhost:8080/partida/realizarDisparoMisilRafaga';
-const urlRealizarDisparoTorpedoRecargado = 'http://localhost:8080/partida/realizarDisparoTorpedoRecargado';
-const urlRealizarDisparoMisilTeledirigido = 'http://localhost:8080/partida/realizarDisparoMisilTeledirigido';
-const urlColocarMina = 'http://localhost:8080/partida/colocarMina';
-const urlUsarSonar = 'http://localhost:8080/partida/usarSonar';
+const urlObtenerDatosPersonales = info["serverAddress"] + 'perfil/obtenerDatosPersonales';
+const urlMoverBarcoInicial = info["serverAddress"] + 'perfil/moverBarcoInicial';
+const urlModificarMazoHabilidades = info["serverAddress"] + 'perfil/modificarMazo';
+const urlCrearPartida = info["serverAddress"] + 'partida/crearPartida';
+const urlRealizarDisparo = info["serverAddress"] + 'partida/realizarDisparo';
+const urlMostrarTableros = info["serverAddress"] + 'partida/mostrarTableros';
+const urlAbandonarPartida = info["serverAddress"] + 'partida/abandonarPartida';
+const urlRealizarDisparoMisilRafaga = info["serverAddress"] + 'partida/realizarDisparoMisilRafaga';
+const urlRealizarDisparoTorpedoRecargado = info["serverAddress"] + 'partida/realizarDisparoTorpedoRecargado';
+const urlRealizarDisparoMisilTeledirigido = info["serverAddress"] + 'partida/realizarDisparoMisilTeledirigido';
+const urlColocarMina = info["serverAddress"] + 'partida/colocarMina';
+const urlUsarSonar = info["serverAddress"] + 'partida/usarSonar';
 
 const cookies = new Cookies();
 

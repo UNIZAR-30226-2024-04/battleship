@@ -3,10 +3,10 @@ import UserContainerTemplate from '../../Components/UserContainerTemplate';
 import countriesData from '../../Resources/countries.json';
 import Flag from 'react-world-flags';
 import Cookies from 'universal-cookie';
+import info from '../../Resources/info';
 
-const urlRoot = 'http://localhost:8080/perfil';
-const urlObtenerAmigos = urlRoot + '/obtenerAmigos';
-const urlEliminarAmigo = urlRoot + '/eliminarAmigo';
+const urlObtenerAmigos = info["serverAddress"] + '/obtenerAmigos';
+const urlEliminarAmigo = info["serverAddress"] + '/eliminarAmigo';
 
 
 const AmigosMenu = () => {
