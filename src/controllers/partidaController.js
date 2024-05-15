@@ -1187,7 +1187,7 @@ function efectoClima(clima, i, j) {
   if (clima == 'Niebla') {
     return tirarMoneda() ? {i: undefined, j: undefined, eventoOcurrido: "Niebla"} : {i: i, j: j, eventoOcurrido: "Calma"};
   } else if (clima == 'VientoNorte' || clima == 'VientoSur' || clima == 'VientoEste' || clima == 'VientoOeste') {
-    return desplazarCasilla(i, j, clima);
+    return tirarMoneda() ? desplazarCasilla(i, j, clima) : {i: i, j: j, eventoOcurrido: "Calma"};
   } else {
     return {i: i, j: j, eventoOcurrido: "Calma"};
   }
