@@ -4,7 +4,8 @@ import UserContainerTemplate from '../../Components/UserContainerTemplate';
 
 import info from '../../Resources/info';
 const urlServer = info['serverAddress'];
-const urlObtenerPublicaciones = urlServer + 'publicacion/obtenerPublicaciones';
+//const urlObtenerPublicaciones = urlServer + '/publicacion/obtenerPublicaciones';
+const urlObtenerPublicaciones = 'http://localhost:8080/publicacion/obtenerPublicaciones';
 
 const TablonMenu = () => {
     const [publicaciones, setPublicaciones] = useState([]);
@@ -18,7 +19,7 @@ const TablonMenu = () => {
                 method: 'POST',
                 headers: {
                 'Content-Type': 'application/json',
-                'authorization': tokenCookie
+                'Authorization': tokenCookie
                 },
                 body: JSON.stringify({ nombreId: perfilCookie['nombreId'] })
             })
@@ -31,7 +32,7 @@ const TablonMenu = () => {
             })
             .then(data => {
                 console.log('Respuesta del servidor obtenerPublicaciones:', data);
-                setPublicaciones(data.publicaciones); // TO DO, ver que devuelve la lista devuelta por backend
+                setPublicaciones(data.publicaciones || []); // TO DO, reacciones?
             })
             .catch(error => {
                 console.error('Error al obtener las publicaciones:', error);
@@ -48,10 +49,11 @@ const TablonMenu = () => {
                     <span>ACTIVIDAD RECIENTE</span>
                 </div>
                 <div className="profile-activity-content">
-                    {publicaciones.map((publicacion, index) => (
-                        <div key={index} className="profile-activity-info">
-                            <span>{publicacion.mensaje}</span>
-                            <span>{publicacion.hora}</span>
+                    {publicaciones.map((publicacion) => (
+                        <div key={publicacion.publicacionId} className="profile-activity-info">
+                            <span>{publicacion.texto}</span>
+                            <span>Publicado por {publicacion.usuario}</span>
+                            {/* Aquí puedes incluir lógica para mostrar reacciones, si necesario */}
                         </div>
                     ))}
                 </div>

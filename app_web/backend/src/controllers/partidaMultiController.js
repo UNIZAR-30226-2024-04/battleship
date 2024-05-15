@@ -94,6 +94,8 @@ exports.crearSala = async (req, res) => {
               torneo: salaGuardada.torneo
     });
     console.log('Sala creada con éxito');
+    const io = getIO();
+    io.to('/partida' + codigo).emit(eventosSocket.abandono, codigo, nombreId);
   } catch (error) {
     res.status(500).send('Hubo un error creando la sala'+ error.message);
     console.error('Hubo un error creando la sala', error);

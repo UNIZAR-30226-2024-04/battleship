@@ -4,17 +4,10 @@ import ChatBoxReciever, { ChatBoxSender } from './ChatBox';
 import InputText from './InputText';
 import info from '../Resources/info';
 
-import {
-    doc,
-    setDoc,
-    collection,
-    serverTimestamp,
-    query,
-    onSnapshot,
-    orderBy,
-  
-  } from 'firebase/firestore';
-  import db from "./firebaseConfig/firebaseConfig.js"
+const urlChat = info['serverAddress'] + '/chat';
+const urlObtenerChat = urlChat + '/obtenerChat';
+const urlEnviarMensaje = urlChat + '/enviarMensaje';
+
 
 // dirChat es \partidaidPartida o los id de los dos jugadores ("\chatid1id2" con id1<id2) en caso de chat privado
 export default function ChatContainer(dirChat, idMiNombre, idSuNombre) { 
@@ -25,7 +18,6 @@ export default function ChatContainer(dirChat, idMiNombre, idSuNombre) {
     const [user, setUser] = useState(null);
     setUser(idMiNombre);
     const avatar = localStorage.getItem('avatar')
-    const chatsRef = collection(db , "Messages")
     const messagesEndRef = useRef(null)
     const scrollToBottom = () => {
       messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
@@ -40,49 +32,63 @@ export default function ChatContainer(dirChat, idMiNombre, idSuNombre) {
             setChats(senderChats)
         })
     })
-
-
-    useEffect(()=>{
-
-        const q = query(chatsRef , orderBy('createdAt' , 'asc'))
-      
-        const unsub = onSnapshot(q, (querySnapshot) =>{
-          const fireChats =[]
-          querySnapshot.forEach(doc => {
-            fireChats.push(doc.data())
-          });
-         setChats([...fireChats])
+    
+    function loadChatsFromMongoDB() {
+        fetch(urlObtenerChat, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ nombreId1: idMiNombre, nombreId2: idSuNombre })
         })
-        return ()=> {
-          unsub()
-        }
-      
-      },[])
+        .then(response => {
+            if (!response.ok) {
+                console.log('Respuesta del servidor obtenerChat:', response);
+                throw new Error('Obtener chat ha fallado');
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Respuesta del servidor obtenerChat:', data);
+            setChats(data.chat || []);
+        })
+        .catch(error => {
+            console.error('Error al obtener el chat:', error);
+        });
+    }
+    
+    useEffect(() => {
+        loadChatsFromMongoDB();
+    }, []);
 
-     function addToFirrebase(chat){
-        const newChat = {
-            avatar,
-            createdAt: serverTimestamp(),
-            user,
-            message: chat.message
-        }
-
-        const chatRef = doc(chatsRef)
-        setDoc(chatRef , newChat)
-        .then(()=> console.log('Chat added succesfully'))
-        .catch(console.log)
-     } 
-   
-
-    function sendChatToSocket(chat){
-        socketChat.emit("chat" , chat)
+    function enviarMensajeMongo(mensaje) {
+        fetch(urlEnviarMensaje, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ nombreId1: idMiNombre, nombreId2: idSuNombre, mensaje: mensaje })
+        })
+        .then(response => {
+            if (!response.ok) {
+                console.log('Respuesta del servidor enviarMensaje:', response);
+                throw new Error('Enviar mensaje ha fallado');
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Respuesta del servidor enviarMensaje:', data);
+            loadChatsFromMongoDB();
+        })
+        .catch(error => {
+            console.error('Error al enviar el mensaje:', error);
+        });
     }
 
-    function addMessage(chat){
-        const newChat = {...chat , user:localStorage.getItem("user") , avatar}
-        addToFirrebase(chat)
-        setChats([...chats , newChat])
-        sendChatToSocket([...chats , newChat])
+    function addMessage(mensaje){
+        enviarMensajeMongo(mensaje);
+        const newChat = {...mensaje , user:localStorage.getItem("user") , avatar}
+        setChats([...chats , newChat])        
     }
 
     function ChatsList(){
@@ -113,10 +119,6 @@ export default function ChatContainer(dirChat, idMiNombre, idSuNombre) {
         </div>
         }
 
-    <div style={{margin:10 , display:'flex', justifyContent:'center'}} >
-    <small style={{backgroundColor:'lightblue' , padding:5 , borderRadius:5}} >Interested in some 1 on 1 Coding Tutorials and Mentorship. Lets chat on Discord: <strong> kutlo_sek#5370 </strong></small>
-        
-    </div>
      
     </div>
   )
