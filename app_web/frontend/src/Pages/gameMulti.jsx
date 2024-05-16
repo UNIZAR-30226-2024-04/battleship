@@ -53,7 +53,7 @@ const urlUsarSonar = info["serverAddress"] + 'partidaMulti/usarSonar';
 
 
 const cookies = new Cookies();
-const io = socketIO(info['serverAddress']); // Puerto del backend en local
+const io = socketIO(info['serverAddress'], {transports: ['polling', 'websocket', 'flashsocket']}); // Puerto del backend en local
 
 // function Mutex() {
 //     // Estado para controlar si el recurso está bloqueado o no

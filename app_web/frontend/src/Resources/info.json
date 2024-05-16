@@ -1,6 +1,8 @@
 {
     "serverAddress": "http://localhost:8080/",
 
+    "socketAddr": "localhost:8080",
+
     "entrarSala": "entrarSala",
 
     "partidaEncontrada": "partidaEncontrada",

@@ -15,7 +15,7 @@ const crearSalaTorneoURI = info['serverAddress'] + 'partidaMulti/crearSalaTorneo
 const buscarSalaTorneoURI = info['serverAddress'] + 'partidaMulti/buscarSalaTorneo';
 const comprobarTorneoURI = info['serverAddress'] + 'partidaMulti/comprobarTorneo';
 
-const io = socketIO(info['serverAddress']); // Puerto del backend en local
+const io = socketIO(info['serverAddress'], {transports: ['polling', 'websocket', 'flashsocket']}); // Puerto del backend en local
 
 
 
@@ -24,6 +24,8 @@ export function Home() {
     const cookies = new Cookies();
     const { setSocket } = useSocket();
     const navigate = useNavigate();
+
+    console.log(io);
 
     // Obtener el token y nombreId del usuario
     const tokenCookie = cookies.get('JWT');
