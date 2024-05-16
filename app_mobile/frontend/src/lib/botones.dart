@@ -117,7 +117,7 @@ Widget buildActionButton(BuildContext context, VoidCallback? onPressed, String t
                   borderRadius: BorderRadius.circular(15),
                 ),
                 backgroundColor: Colors.orange,
-                minimumSize: const Size(260, 65),
+                minimumSize: const Size(250, 55),
                 elevation: 8,
               ),
               child: Text(

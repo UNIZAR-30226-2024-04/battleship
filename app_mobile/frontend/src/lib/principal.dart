@@ -7,7 +7,9 @@ import 'destino.dart';
 import 'sala.dart';
 
 class Principal extends StatefulWidget {
-  String bioma = 'Mediterraneo'; // Valor inicial de bioma
+  String bioma = 'Mediterraneo';
+
+  Principal({super.key}); // Valor inicial de bioma
 
   @override
   _PrincipalState createState() => _PrincipalState();
@@ -34,10 +36,10 @@ class _PrincipalState extends State<Principal> {
         body: Column(
           children: [
             buildHeader(context),
-            const SizedBox(height: 30),
+            const SizedBox(height: 25),
             const SizedBox(
-              width: 195,
-              height: 195,
+              width: 155,
+              height: 155,
               child: Image(image: AssetImage('images/portada.png')),
             ),
             const Spacer(),
@@ -100,7 +102,7 @@ class _PrincipalState extends State<Principal> {
       child: ElevatedButton(
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
-          padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 20),
+          padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 18),
           textStyle: const TextStyle(fontSize: 14),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10),

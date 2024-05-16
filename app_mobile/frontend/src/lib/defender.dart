@@ -218,7 +218,7 @@ class _DefenderState extends State<Defender> {
     return Container(
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: Color.fromARGB(255, 17, 177, 105).withOpacity(0.6),
+        color: const Color.fromARGB(255, 17, 177, 105).withOpacity(0.6),
         borderRadius: BorderRadius.circular(10),
       ),
       child: Column(
@@ -595,9 +595,9 @@ class _DefenderState extends State<Defender> {
   }
 
   bool procesarDisparo(disparo, barcosCoordenadas) {
-    var iReal = disparo['i'];
-    var jReal = disparo['j'];
-    Offset disparoCoordenadas = Offset(iReal as double, jReal as double);
+    int iReal = disparo['i'];
+    int jReal = disparo['j'];
+    Offset disparoCoordenadas = Offset(iReal.toDouble(), jReal.toDouble());
     var estado = disparo['estado'];
     bool acertado = estado == 'Tocado' || estado == 'Hundido';
     bool hundido = estado == 'Hundido';

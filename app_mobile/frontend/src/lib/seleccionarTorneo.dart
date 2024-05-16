@@ -7,7 +7,7 @@ import 'package:http/http.dart' as http;
 import 'serverRoute.dart';
 
 class SeleccionarTorneo extends StatefulWidget {
-  const SeleccionarTorneo({Key? key}) : super(key: key);
+  const SeleccionarTorneo({super.key});
 
   @override
   _SeleccionarTorneoState createState() => _SeleccionarTorneoState();
@@ -36,7 +36,7 @@ class _SeleccionarTorneoState extends State<SeleccionarTorneo> {
   }
 
   Widget _buildSelecter(BuildContext context, VoidCallback? onPressed) {
-    return Container(
+    return SizedBox(
       height: MediaQuery.of(context).size.height * 0.6,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,

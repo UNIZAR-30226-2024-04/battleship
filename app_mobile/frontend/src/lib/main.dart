@@ -53,7 +53,7 @@ class _MyAppState extends State<MyApp> {
             builder = (BuildContext _) => const Ajustes();
             break;
           case '/Social':
-            builder = (BuildContext _) => Social();
+            builder = (BuildContext _) => const Social();
             break;
           case '/Registrarse':
             builder = (BuildContext _) => Registro();

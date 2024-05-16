@@ -108,7 +108,7 @@ class _SocialState extends State<Social> {
           itemBuilder: (BuildContext context, int index) {
             return Card(
               color: Colors.white,
-              margin: EdgeInsets.symmetric(vertical: 10),
+              margin: const EdgeInsets.symmetric(vertical: 10),
               elevation: 3,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(15),
@@ -118,18 +118,18 @@ class _SocialState extends State<Social> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    SizedBox(height: 10),
+                    const SizedBox(height: 10),
                     Text(
                       usuarioPublicaciones[index],
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    SizedBox(height: 10),
+                    const SizedBox(height: 10),
                     Text(
                       textoPublicaciones[index],
-                      style: TextStyle(fontSize: 16),
+                      style: const TextStyle(fontSize: 16),
                     ),
                   ],
                 ),
@@ -190,7 +190,7 @@ class _SocialState extends State<Social> {
   Widget _buildAmigoCard(String nombreAmigo) {
     return Card(
       color: Colors.white,
-      margin: EdgeInsets.symmetric(vertical: 10),
+      margin: const EdgeInsets.symmetric(vertical: 10),
       elevation: 3,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(15),
@@ -198,7 +198,7 @@ class _SocialState extends State<Social> {
       child: ListTile(
         title: Text(
           nombreAmigo,
-          style: TextStyle(
+          style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
           ),
@@ -207,7 +207,7 @@ class _SocialState extends State<Social> {
           mainAxisSize: MainAxisSize.min,
           children: [
             IconButton(
-              icon: Icon(Icons.person, color: Colors.lightBlue),
+              icon: const Icon(Icons.person, color: Colors.lightBlue),
               onPressed: () {
                 Navigator.push(
                   context,
@@ -218,7 +218,7 @@ class _SocialState extends State<Social> {
               },
             ),
             IconButton(
-              icon: Icon(Icons.delete, color: Colors.red),
+              icon: const Icon(Icons.delete, color: Colors.red),
               onPressed: () {
                 // Eliminar amigo
                 eliminarAmigo(nombreAmigo);
@@ -363,7 +363,7 @@ class _SocialState extends State<Social> {
           Center(
             child: buildEntryButton('Nombre amigo', 'Introduzca el nombre del amigo', Icons.person, _nameController),
           ),
-          SizedBox(height: 20),
+          const SizedBox(height: 20),
           Center(
             child: buildActionButton(context, () {
               enviarSolicitud(_nameController.text);
@@ -380,11 +380,11 @@ class _SocialState extends State<Social> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(solicitudes[index], style: TextStyle(fontSize: 18)),
+                        Text(solicitudes[index], style: const TextStyle(fontSize: 18)),
                         Row(
                           children: [
                             IconButton(
-                              icon: Icon(Icons.check, color: Color.fromARGB(255, 10, 125, 14)),
+                              icon: const Icon(Icons.check, color: Color.fromARGB(255, 10, 125, 14)),
                               onPressed: () {
                                 // Añadir amigo
                                 agnadirAmigo(solicitudes[index]);
@@ -395,7 +395,7 @@ class _SocialState extends State<Social> {
                               },
                             ),
                             IconButton(
-                              icon: Icon(Icons.delete, color: Colors.red),
+                              icon: const Icon(Icons.delete, color: Colors.red),
                               onPressed: () {
                                 // Eliminar solicitud
                                 eliminarSolicitudAmistad(solicitudes[index]);

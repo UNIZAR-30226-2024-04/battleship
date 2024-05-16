@@ -38,7 +38,7 @@ class _AjustesState extends State<Ajustes> {
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
-          color: Color(0xFF1f487),
+          color: Color(0x0ff1f487),
         ),
         child: Column(
           children: [

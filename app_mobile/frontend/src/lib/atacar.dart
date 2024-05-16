@@ -134,7 +134,7 @@ class _AtacarState extends State<Atacar> {
     return Container(
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: Color.fromARGB(255, 17, 177, 105).withOpacity(0.6),
+        color: const Color.fromARGB(255, 17, 177, 105).withOpacity(0.6),
         borderRadius: BorderRadius.circular(10),
       ),
       child: Column(
@@ -180,7 +180,7 @@ class _AtacarState extends State<Atacar> {
   /*
    * Construir widget con las habilidades disponibles del jugador.
    */
-Widget _construirHabilidades() {
+  Widget _construirHabilidades() {
     return Container(
       padding: const EdgeInsets.all(5),
       child: Column(
@@ -190,66 +190,62 @@ Widget _construirHabilidades() {
             alignment: WrapAlignment.center,
             children: [
               for (int i = 0; i < Juego().habilidades.length; i++)
-                Column(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(5),
-                      child: ElevatedButton(
-                        // Seleccionar habilidad.
-                        onPressed: () {
-                          if (Juego().indiceHabilidadSeleccionadaEnTurno != -1) {
-                            showErrorSnackBar(context, 'Ya has seleccionado una habilidad para este turno');
-                            return;
-                          }
-                          
-                          if(Juego().numHabilidadesUtilizadas > 2) {  // 0, 1, 2
-                            showErrorSnackBar(context, 'Ya has utilizado todas tus habilidades para la partida');
-                            return;
-                          }
-                          else {
-                            Juego().numHabilidadesUtilizadas ++;
-                          }
+                Padding(
+                  padding: const EdgeInsets.all(5),
+                  child: ElevatedButton(
+                    // Seleccionar habilidad.
+                    onPressed: () {
+                      if (Juego().indiceHabilidadSeleccionadaEnTurno != -1) {
+                        showErrorSnackBar(context, 'Ya has seleccionado una habilidad para este turno');
+                        return;
+                      }
+                      
+                      if(Juego().numHabilidadesUtilizadas > 2) {  // 0, 1, 2
+                        showErrorSnackBar(context, 'Ya has utilizado todas tus habilidades para la partida');
+                        return;
+                      }
+                      else {
+                        Juego().numHabilidadesUtilizadas ++;
+                      }
 
-                          setState(() {
-                            Juego().indiceHabilidadSeleccionadaEnTurno = i;
-                          });
+                      setState(() {
+                        Juego().indiceHabilidadSeleccionadaEnTurno = i;
+                      });
 
-                          if(Juego().habilidades[i].nombre == 'teledirigido') {
-                            _handleTap(0, 0);
-                          }
+                      if(Juego().habilidades[i].nombre == 'teledirigido') {
+                        _handleTap(0, 0);
+                      }
 
-                          if(Juego().habilidades[i].nombre == 'torpedo') {
-                            _handleTap(0, 0);
-                            Navigator.pushNamed(context, '/Defender');
-                          }
+                      if(Juego().habilidades[i].nombre == 'torpedo') {
+                        _handleTap(0, 0);
+                        Navigator.pushNamed(context, '/Defender');
+                      }
 
-                          if(Juego().habilidades[i].nombre == 'mina') {
-                            Navigator.pushNamed(context, '/Mina');   
-                          } 
-                        },
+                      if(Juego().habilidades[i].nombre == 'mina') {
+                        Navigator.pushNamed(context, '/Mina');   
+                      } 
+                    },
 
-                        style: ElevatedButton.styleFrom(
-                          shape: const CircleBorder(),
-                          padding: const EdgeInsets.all(20),
-                          backgroundColor: Colors.black.withOpacity(0.5),
-                        ),
-
-                        child: Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            Image.asset(
-                              Juego().habilidades[i].getImagePath(),
-                              width: 50,
-                              height: 50,
-                              fit: BoxFit.fill,
-                              color: Juego().indiceHabilidadSeleccionadaEnTurno == i ? Colors.black.withOpacity(0.7) : null,
-                              colorBlendMode: Juego().indiceHabilidadSeleccionadaEnTurno == i ? BlendMode.darken : null,
-                            ),
-                          ],
-                        ),
-                      ),
+                    style: ElevatedButton.styleFrom(
+                      shape: const CircleBorder(),
+                      padding: const EdgeInsets.all(10), // Reducir el padding
+                      backgroundColor: Colors.black.withOpacity(0.5),
                     ),
-                  ],
+
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        Image.asset(
+                          Juego().habilidades[i].getImagePath(),
+                          width: 42,
+                          height: 42,
+                          fit: BoxFit.fill,
+                          color: Juego().indiceHabilidadSeleccionadaEnTurno == i ? Colors.black.withOpacity(0.7) : null,
+                          colorBlendMode: Juego().indiceHabilidadSeleccionadaEnTurno == i ? BlendMode.darken : null,
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
             ],
           ),
@@ -729,9 +725,9 @@ Future<List<bool>> usarSonar(int i, int j) async {
   bool procesarTurnoIA(turnoIA) {
     var elemento = turnoIA;
     var disparo = elemento['disparoRealizado'];
-    var iReal = disparo['i'];
-    var jReal = disparo['j'];
-    Offset disparoCoordenadas = Offset(iReal as double, jReal as double);
+    int iReal = disparo['i'];
+    int jReal = disparo['j'];
+    Offset disparoCoordenadas = Offset(iReal.toDouble(), jReal.toDouble());
     bool finPartida = elemento['finPartida'];
     var estado = disparo['estado'];
     bool acertado = estado == 'Tocado' || estado == 'Hundido';
@@ -796,9 +792,9 @@ Future<List<bool>> usarSonar(int i, int j) async {
 /// ***********************************************************************************************************
 // Funcion que procesa mi disparo
  bool procesarDisparo(disparo, barcosCoordenadas, i, j) {
-    var iReal = disparo['i'];
-    var jReal = disparo['j'];
-    Offset disparoCoordenadas = Offset(iReal as double, jReal as double);
+    int iReal = disparo['i'];
+    int jReal = disparo['j'];
+    Offset disparoCoordenadas = Offset(iReal.toDouble(), jReal.toDouble());
     var estado = disparo['estado'];
     bool acertado = estado == 'Tocado' || estado == 'Hundido';
     bool hundido = estado == 'Hundido';

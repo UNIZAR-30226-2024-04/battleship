@@ -11,7 +11,7 @@ class Tablero {
 
   Tablero() {
     _casillasAtacadas = List.generate(_numFilas + 1, (_) => List.filled(_numColumnas + 1, false));
-    _boardSize = 374.0;
+    _boardSize = 330.0;
     _casillaSize = _boardSize / _numFilas;
     _barcos = [];
   }

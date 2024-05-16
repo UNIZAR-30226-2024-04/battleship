@@ -4,12 +4,11 @@ import 'package:battleship/serverRoute.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'comun.dart';
-import 'botones.dart';
 
 class PerfilOtroUsuario extends StatefulWidget {
   final String nombreUsuario;
 
-  PerfilOtroUsuario({required this.nombreUsuario});
+  const PerfilOtroUsuario({super.key, required this.nombreUsuario});
 
   @override
   _PerfilOtroUsuarioState createState() => _PerfilOtroUsuarioState();

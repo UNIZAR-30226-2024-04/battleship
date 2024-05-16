@@ -316,9 +316,9 @@ class _MinaState extends State<Mina> {
   bool procesarTurnoIA(turnoIA) {
     var elemento = turnoIA;
     var disparo = elemento['disparoRealizado'];
-    var iReal = disparo['i'];
-    var jReal = disparo['j'];
-    Offset disparoCoordenadas = Offset(iReal as double, jReal as double);
+    int iReal = disparo['i'];
+    int jReal = disparo['j'];
+    Offset disparoCoordenadas = Offset(iReal.toDouble(), jReal.toDouble());
     bool finPartida = elemento['finPartida'];
     var estado = disparo['estado'];
     bool acertado = estado == 'Tocado' || estado == 'Hundido';
