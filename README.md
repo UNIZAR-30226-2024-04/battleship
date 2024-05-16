@@ -15,6 +15,9 @@ Ejecutar el siguiente comando desde app_mobile:
 npm start
 ```
 
+## APK
+https://drive.google.com/drive/folders/1EwN2YRDkRMD8nnpRWgGdklbmPtIU2vdf?usp=sharing
+
 ## Visualización
 Para una mejor visualización, se recomienda usar Toggle Device Toolbar. Por ejemplo, seleccionar iPhone 12 Pro.
 
